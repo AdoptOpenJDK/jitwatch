@@ -1,0 +1,16 @@
+<project name="jitwatch" default="all" basedir=".">
+	<property name="src" value="src" />
+	<property name="bin" value="bin" />
+	<property name="lib" value="lib" />
+
+	<target name="init">
+		<delete dir="${bin}" />
+		<mkdir dir="${bin}" />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src}" destdir="${bin}" />
+	</target>
+
+	<target name="all" depends="compile" />
+</project>
