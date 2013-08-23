@@ -14,3 +14,5 @@ If a debug JVM or HotSpot disassembly binary (hsdis) was used then you can also 
 Visualiser separated from core code via a listener interface to allow alternative UIs to sit on top.
 
 NB: User interface uses JavaFX so requires $JAVA_HOME/jre/lib/jfxrt.jar on compile and runtime classpath if you are using Java 7.
+
+NB: Requires JDK lib/tools.jar on classpath to build and also to run if you want to inspect bytecode.
