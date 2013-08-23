@@ -8,8 +8,13 @@
 		<mkdir dir="${bin}" />
 	</target>
 
+	<path id="classpath">
+	        <fileset dir="${lib}" includes="**/*.jar"/>
+        </path>
+
+
 	<target name="compile" depends="init">
-		<javac srcdir="${src}" destdir="${bin}" />
+		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" />
 	</target>
 
 	<target name="all" depends="compile" />
