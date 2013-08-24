@@ -9,11 +9,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class CodeViewerStage extends Stage
+public class TextViewerStage extends Stage
 {
     private TextArea textArea;
     
-    public CodeViewerStage(String title, String source)
+    public TextViewerStage(String title, String source, boolean showLineNumbers)
     {
         initStyle(StageStyle.DECORATED);
         
@@ -23,27 +23,25 @@ public class CodeViewerStage extends Stage
         }
         
         source = source.replace("\t",  "    "); // 4 spaces
-
-        VBox vbox = new VBox();
-
-        textArea = new TextArea();
-        textArea.setText(source);
-        textArea.setStyle("-fx-font-family:monospace;");
-
-        vbox.setPadding(new Insets(4));
-          
-        vbox.getChildren().add(textArea);
-        VBox.setVgrow(textArea, Priority.ALWAYS);
-
-        setTitle(title);
         
+        StringBuilder builder = new StringBuilder();
+       
         String[] rows = source.split("\n");
         
         int max = 0;
         
         for (int i = 0; i < rows.length; i++)
         {
-            int rowLen = rows[i].length();
+        	String row = rows[i];
+        	
+        	if (showLineNumbers)
+        	{
+        		builder.append(i+1).append(' ');
+        	}
+        	
+        	builder.append(row).append("\n");
+        	
+            int rowLen = row.length();
             
             if (rowLen > max)
             {
@@ -56,6 +54,19 @@ public class CodeViewerStage extends Stage
         
         x = Math.max(x, 20);
         y = Math.max(y, 20);
+        
+        VBox vbox = new VBox();
+
+        textArea = new TextArea();
+        textArea.setText(builder.toString());
+        textArea.setStyle("-fx-font-family:monospace;");
+
+        vbox.setPadding(new Insets(4));
+          
+        vbox.getChildren().add(textArea);
+        VBox.setVgrow(textArea, Priority.ALWAYS);
+
+        setTitle(title);
         
         Scene scene = new Scene(vbox, x * 12, y * 19);
 
