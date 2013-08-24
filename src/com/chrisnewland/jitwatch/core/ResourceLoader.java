@@ -11,20 +11,6 @@ import java.util.zip.ZipFile;
 
 public class ResourceLoader
 {
-	public static void main(String[] args)
-	{
-		String[] locations = new String[]{"/home/chris/java/src.zip", "/home/chris/dma/src"};
-
-		String result = getSource(locations, "com/sun/java/swing/plaf/nimbus/NimbusLookAndFeel.java");
-		System.out.println(result);
-
-		result = getSource(locations, "com/allipo/dma/util/CoreUtil.java");
-		System.out.println(result);
-		
-		result = getSource(locations, "com/allipo/dma/util/fff.java");
-		System.out.println(result);
-	}
-
 	public static String getSource(String[] locations, String fileName)
 	{
 		String source = null;
@@ -33,8 +19,6 @@ public class ResourceLoader
 		{
 			File lf = new File(location);
 			
-			//System.out.println("Looking for " + fileName + " in " + lf.getAbsolutePath());
-
 			if (lf.exists())
 			{
 				if (lf.isDirectory())

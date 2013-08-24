@@ -492,8 +492,6 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void openSource(MetaMethod method)
 	{
-		// System.out.println("Open: " + method.toString());
-
 		MetaClass methodClass = method.getMetaClass();
 
 		String fqName = methodClass.getFullyQualifiedName();
@@ -511,7 +509,6 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 
 		String searchMethod = method.getSignatureForBytecode();
-		// System.out.println("Get bytecode for : " + searchMethod);
 
 		MetaClass methodClass = method.getMetaClass();
 
@@ -687,10 +684,6 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			int stringCompare = child.getValue().toString().compareTo(value.toString());
 
-			// System.out.println("Parent: "+ parent.getValue() + " Comparing "
-			// + child.getValue() + " to " + value.toString() + " " +
-			// stringCompare);
-
 			if (stringCompare == 0)
 			{
 				found = child;
@@ -702,8 +695,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 				if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
 				{
-					// System.out.println("Not moving " + value + " past " +
-					// child.getValue());
+					
 				}
 				else
 				{
@@ -714,8 +706,6 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
 				{
-					// System.out.println("Not inserting " + value + " before "
-					// + child.getValue());
 					placeToInsert++;
 				}
 				else
@@ -737,8 +727,6 @@ public class JITWatchUI extends Application implements IJITListener
 
 				}
 			}
-			// System.out.println("added '" + value + "' to '" +
-			// parent.getValue() + "' pos " + placeToInsert);
 		}
 
 		return found;
@@ -752,7 +740,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		if (selectedNode == null)
 		{
-			// System.out.println("nothing selected");
+			// nothing selected
 			return;
 		}
 
@@ -761,8 +749,6 @@ public class JITWatchUI extends Application implements IJITListener
 		if (value instanceof MetaClass)
 		{
 			MetaClass metaClass = (MetaClass) value;
-
-			// System.out.println("selected " + metaClass);
 
 			List<MetaMethod> metaMethods = metaClass.getMetaMethods();
 

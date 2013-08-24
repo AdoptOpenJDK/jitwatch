@@ -27,7 +27,6 @@ public class MetaPackage implements Comparable<MetaPackage>
 
 	public void addChildPackage(MetaPackage child)
 	{
-		// System.out.println(toString() + " ----> " + child.toString());
 		childPackages.add(child);
 	}
 
@@ -53,8 +52,6 @@ public class MetaPackage implements Comparable<MetaPackage>
 
 	public void addClass(MetaClass metaClass)
 	{
-		// System.out.println("MetaPackage.addClass(): " +
-		// metaClass.getFullyQualifiedName());
 		packageClasses.add(metaClass);
 	}
 
@@ -91,7 +88,6 @@ public class MetaPackage implements Comparable<MetaPackage>
 		else
 		{
 			return toString().equals(obj.toString());
-
 		}
 	}
 }

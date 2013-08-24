@@ -10,18 +10,9 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 public class BytecodeLoader
 {
-//	public static void main(String[] args)
-//	{
-//		String[] locations = new String[] { "/home/chris/dma/bin", "/home/chris/dma/lib/client/novocode.jar" };
-//
-//		fetchByteCodeForClass(locations, "com.allipo.dma.buffer.SuperBuffer");
-//		fetchByteCodeForClass(locations, "com.allipo.dma.widgets.mdi.MDITradingApp");
-//	}
-	
+
 	public static Map<String, String> fetchByteCodeForClass(String[] classLocations, String fqClassName)
 	{
-		//System.out.println("Fetching bytecode for class " + fqClassName);
-
 		String[] args;
 
 		if (classLocations.length == 0)
@@ -53,7 +44,7 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.out.println("Could not process class");
+			System.out.println("Could not obtain bytcode for class: "+ fqClassName);
 		}
 
 		String result = new String(baos.toByteArray());
@@ -116,7 +107,6 @@ public class BytecodeLoader
 	{
 		if (signature != null && builder.length() > 0)
 		{
-
 			// remove spaces between multiple method parameters
 
 			int openParentheses = signature.lastIndexOf("(");
@@ -133,8 +123,6 @@ public class BytecodeLoader
 					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
 				}
 			}
-
-			//System.out.println(signature);
 
 			bytecodeMap.put(signature, builder.toString());
 			builder.delete(0, builder.length());

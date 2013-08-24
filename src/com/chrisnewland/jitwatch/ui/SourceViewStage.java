@@ -63,9 +63,7 @@ public class SourceViewStage extends Stage
     }
     
     public void jumpTo(String regex)
-    {
-        System.out.println("Looking for " + regex);
-        
+    {        
     	Platform.runLater(new Runnable()
         {
             

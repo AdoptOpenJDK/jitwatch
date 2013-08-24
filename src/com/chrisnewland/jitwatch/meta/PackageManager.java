@@ -34,22 +34,16 @@ public class PackageManager
 
 	public MetaClass getMetaClass(String className)
 	{
-		// System.out.println("pm.getMetaClass() " + className);
-
 		return metaClasses.get(className);
 	}
 
 	public MetaPackage getMetaPackage(String packageName)
 	{
-		// System.out.println("pm.getMetaPackage() " + packageName);
-
 		return metaPackages.get(packageName);
 	}
 
 	public MetaPackage buildPackage(String packageName)
 	{
-		// System.out.println("buildPackage: " + packageName);
-
 		String[] parts = packageName.split("\\.");
 
 		StringBuilder builder = new StringBuilder();
@@ -70,18 +64,14 @@ public class PackageManager
 
 			String nameBuild = builder.toString();
 
-			// System.out.println("Checking package " + nameBuild);
-
 			mp = metaPackages.get(nameBuild);
 
 			if (mp == null)
 			{
-				// System.out.println("not found: " + nameBuild);
 				mp = new MetaPackage(nameBuild);
 
 				if (depth == 0)
 				{
-					// System.out.println("ROOT: " + mp);
 					roots.add(mp);
 				}
 				else
@@ -90,12 +80,6 @@ public class PackageManager
 				}
 
 				metaPackages.put(nameBuild, mp);
-				// System.out.println("stored package: " + mp);
-
-			}
-			else
-			{
-				// System.out.println("found");
 			}
 
 			parent = mp;
@@ -109,8 +93,6 @@ public class PackageManager
 			mp = new MetaPackage("");
 			metaPackages.put("", mp);
 		}
-
-		// System.out.println("Built package " + mp);
 
 		return mp;
 	}
