@@ -70,6 +70,8 @@ public class JITWatch
 
 	private IJITListener logListener = null;
 
+	private long currentLineNumber;
+	
 	private JITStats stats = new JITStats();
 
 	// Not going to use a CopyOnWriteArrayList
@@ -230,6 +232,8 @@ public class JITWatch
 		stats.reset();
 
 		jitEvents.clear();
+		
+		currentLineNumber = 0;
 
 		BufferedReader input = new BufferedReader(new FileReader(hotspotLog));
 
@@ -324,7 +328,7 @@ public class JITWatch
 			{
 				String sig = convertNativeCodeMethodName(currentLine);
 
-				currentMethod = convertNMethodSig(sig, currentLine);
+				currentMethod = convertNMethodSig(sig);
 				inNativeCode = true;
 
 				appendNativeCode(currentLine);
@@ -339,6 +343,8 @@ public class JITWatch
 		{
 			t.printStackTrace();
 		}
+		
+		currentLineNumber++;
 
 	}
 
@@ -395,16 +401,13 @@ public class JITWatch
 
 			if (packageOK)
 			{
-				// fqMethodName = fqMethodName.replace("&lt;", "<");
-				// fqMethodName = fqMethodName.replace("&gt;", ">");
-
 				attrs.remove("method");
-				handleMethod(fqMethodName, attrs, eventType, currentLine);
+				handleMethod(fqMethodName, attrs, eventType);
 			}
 		}
 	}
 
-	private MetaMethod convertNMethodSig(String sig, String currentLine)
+	private MetaMethod convertNMethodSig(String sig)
 	{
 		// java/lang/String charAt (I)C
 
@@ -456,16 +459,16 @@ public class JITWatch
 		}
 		else
 		{
-			logError("Could not parse line: " + currentLine);
+			logError("Could not parse line " + currentLineNumber + " : " + sig);
 		}
 
 		return metaMethod;
 
 	}
 
-	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type, String currentLine)
+	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type)
 	{
-		MetaMethod metaMethod = convertNMethodSig(methodSignature, currentLine);
+		MetaMethod metaMethod = convertNMethodSig(methodSignature);
 
 		String stampAttr = attrs.get("stamp");
 		long stampTime = (long) (Double.parseDouble(stampAttr) * 1000);
