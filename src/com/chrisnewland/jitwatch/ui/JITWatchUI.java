@@ -431,7 +431,7 @@ public class JITWatchUI extends Application implements IJITListener
 		textArea.setText("Welcome to JITWatch\n");
 
 		// so that additional classpaths are logged
-		jw = new JITWatch(this);
+		jw = new JITWatch(this, true);
 
 		if (watchFile == null)
 		{
