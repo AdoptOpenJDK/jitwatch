@@ -177,6 +177,11 @@ public class JITWatchUI extends Application implements IJITListener
 				{
 					statsStage.close();
 				}
+				
+				if (histoStage != null)
+				{
+					histoStage.close();
+				}
 
 				stopWatching();
 			}

@@ -127,7 +127,7 @@ public class HistoStage extends Stage
 			// ============
 			// Draw X axis
 			// ============
-			double xInc = findScale((long)maxStamp);
+			double xInc = findScale((long) maxStamp);
 
 			int gridX = 0;
 
@@ -170,8 +170,17 @@ public class HistoStage extends Stage
 				gc.setStroke(colourLine);
 
 				double y = GRAPH_GAP_Y + normalise(value, 0, maxEvents, chartHeight, true);
-				gc.strokeLine(x, GRAPH_GAP_Y+chartHeight, x, y);
+				gc.strokeLine(x, GRAPH_GAP_Y + chartHeight, x, y);
 
+			}
+
+			int yPos = GRAPH_GAP_Y + 20;
+			gc.setStroke(Color.BLACK);
+
+			for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99 })
+			{
+				gc.strokeText(percent + "% : " + histo.getPercentile(percent) + "ms", chartWidth - 60, yPos);
+				yPos += 20;
 			}
 		}
 	}

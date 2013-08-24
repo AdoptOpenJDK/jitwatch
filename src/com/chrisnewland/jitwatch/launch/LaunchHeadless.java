@@ -43,8 +43,6 @@ public class LaunchHeadless
 			}
         }, false);
         
-
-        
         jw.watch(new File(args[0]));
     }
 }
