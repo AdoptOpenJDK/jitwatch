@@ -90,8 +90,8 @@ public class JITWatchUI extends Application implements IJITListener
 	// not synchronized
 	private StringBuilder errorLog = new StringBuilder();
 	private int errorCount = 0;
-	
-	private boolean newEvents = false;
+
+	private boolean repaintTree = false;
 
 	public JITWatchUI()
 	{
@@ -301,7 +301,7 @@ public class JITWatchUI extends Application implements IJITListener
 				btnStats.setDisable(true);
 			}
 		});
-		
+
 		btnHisto = new Button("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -320,8 +320,8 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				SourceViewStage svs = new SourceViewStage("Error Log", errorLog.toString());
-				svs.show();
+				TextViewerStage viwer = new TextViewerStage("Error Log", errorLog.toString(), false);
+				viwer.show();
 			}
 		});
 
@@ -461,11 +461,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent arg0)
 			{
-				if (newEvents)
-				{
-					newEvents = false;
-					refresh();
-				}
+				refresh();
 			}
 		});
 
@@ -500,14 +496,13 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String source = ResourceLoader.getSource(jw.getSourceLocations(), fqName);
 
-		SourceViewStage svs = new SourceViewStage("Source code for " + fqName, source);
-		svs.show();
-		svs.jumpTo(method.getSignatureRegEx());
+		TextViewerStage tvs = new TextViewerStage("Source code for " + fqName, source, true);
+		tvs.show();
+		tvs.jumpTo(method.getSignatureRegEx());
 	}
 
 	private void openBytecode(MetaMethod method)
 	{
-
 		String searchMethod = method.getSignatureForBytecode();
 
 		MetaClass methodClass = method.getMetaClass();
@@ -516,15 +511,15 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String bc = bytecodeCache.get(searchMethod);
 
-		SourceViewStage svs = new SourceViewStage("Bytecode for " + method.toString(), bc);
-		svs.show();
+		TextViewerStage tvs = new TextViewerStage("Bytecode for " + method.toString(), bc, false);
+		tvs.show();
 	}
 
 	private void openNativeCode(MetaMethod method)
 	{
 		String nativeCode = method.getNativeCode();
-		SourceViewStage svs = new SourceViewStage("Native code for " + method.toString(), nativeCode);
-		svs.show();
+		TextViewerStage tvs = new TextViewerStage("Native code for " + method.toString(), nativeCode, false);
+		tvs.show();
 	}
 
 	private void chooseHotSpotFile()
@@ -543,6 +538,8 @@ public class JITWatchUI extends Application implements IJITListener
 			log("Selected file: " + watchFile.getAbsolutePath());
 			log("Click Start button to process or tail the file");
 			updateButtons();
+
+			refreshLog();
 		}
 	}
 
@@ -582,7 +579,11 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void refresh()
 	{
-		showTree();
+		if (repaintTree)
+		{
+			repaintTree = false;
+			showTree();
+		}
 
 		if (timeLineStage != null)
 		{
@@ -596,12 +597,16 @@ public class JITWatchUI extends Application implements IJITListener
 
 		if (logBuffer.length() > 0)
 		{
-			textArea.appendText(logBuffer.toString());
-			logBuffer.delete(0, logBuffer.length());
+			refreshLog();
 		}
 
 		btnErrorLog.setText("Errors (" + errorCount + ")");
+	}
 
+	private void refreshLog()
+	{
+		textArea.appendText(logBuffer.toString());
+		logBuffer.delete(0, logBuffer.length());
 	}
 
 	public MetaMethod getSelectedMethod()
@@ -637,7 +642,7 @@ public class JITWatchUI extends Application implements IJITListener
 		btnStats.setDisable(false);
 		statsStage = null;
 	}
-	
+
 	public void histoStageClosed()
 	{
 		btnHisto.setDisable(false);
@@ -648,14 +653,13 @@ public class JITWatchUI extends Application implements IJITListener
 	public void handleJITEvent(JITEvent event)
 	{
 		log(event.toString());
-		newEvents = true;
+		repaintTree = true;
 	}
-	
+
 	@Override
 	public void handleLogEntry(String entry)
 	{
 		log(entry);
-		newEvents = true;
 	}
 
 	@Override
@@ -663,7 +667,6 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 		errorLog.append(entry).append("\n");
 		errorCount++;
-		newEvents = true;
 	}
 
 	private void log(final String entry)
@@ -695,7 +698,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 				if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
 				{
-					
+
 				}
 				else
 				{

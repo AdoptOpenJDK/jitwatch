@@ -23,7 +23,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 
-		Scene scene = new Scene(vbox, 360, 320);
+		Scene scene = new Scene(vbox, 360, 340);
 		
 		listView = new ListView<Label>();
 		
