@@ -76,9 +76,12 @@ public class JITWatch
 	// as writes will vastly outnumber reads
 	private List<JITEvent> jitEvents = new ArrayList<>();
 
-	public JITWatch(IJITListener logListener)
+	private boolean mountSourcesAndClasses;
+
+	public JITWatch(IJITListener logListener, boolean mountSourcesAndClasses)
 	{
 		this.logListener = logListener;
+		this.mountSourcesAndClasses = mountSourcesAndClasses;
 		pm = new PackageManager();
 		setProperties(getProperties());
 	}
@@ -91,8 +94,15 @@ public class JITWatch
 	public void setProperties(Properties props)
 	{
 		String confPackages = (String) props.get(JITWatch.CONF_PACKAGE_FILTER);
-		String confClasses = (String) props.get(JITWatch.CONF_CLASSES);
-		String confSources = (String) props.get(JITWatch.CONF_SOURCES);
+
+		String confClasses = null;
+		String confSources = null;
+		
+		if (mountSourcesAndClasses)
+		{
+			confClasses = (String) props.get(JITWatch.CONF_CLASSES);
+			confSources = (String) props.get(JITWatch.CONF_SOURCES);
+		}
 
 		if (confPackages != null && confPackages.trim().length() > 0)
 		{
@@ -267,7 +277,7 @@ public class JITWatch
 		currentLine = currentLine.replace("&apos;", "'");
 		currentLine = currentLine.replace("&lt;", "<");
 		currentLine = currentLine.replace("&gt;", ">");
-		
+
 		try
 		{
 			if (currentLine.startsWith(TAG_TASK_QUEUED))
@@ -385,8 +395,8 @@ public class JITWatch
 
 			if (packageOK)
 			{
-//				fqMethodName = fqMethodName.replace("&lt;", "<");
-//				fqMethodName = fqMethodName.replace("&gt;", ">");
+				// fqMethodName = fqMethodName.replace("&lt;", "<");
+				// fqMethodName = fqMethodName.replace("&gt;", ">");
 
 				attrs.remove("method");
 				handleMethod(fqMethodName, attrs, eventType, currentLine);
@@ -446,7 +456,7 @@ public class JITWatch
 		}
 		else
 		{
-			logError("Could not parse line: " + currentLine);	
+			logError("Could not parse line: " + currentLine);
 		}
 
 		return metaMethod;
@@ -496,7 +506,7 @@ public class JITWatch
 			long nmsize = Long.parseLong(attrs.get("nmsize"));
 			stats.addNativeBytes(nmsize);
 		}
-		
+
 		if (currentMethod != null)
 		{
 			currentMethod.addCompiledAttributes(attrs);

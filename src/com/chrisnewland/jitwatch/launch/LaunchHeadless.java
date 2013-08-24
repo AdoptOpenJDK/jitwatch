@@ -11,6 +11,14 @@ public class LaunchHeadless
 {
     public static void main(String[] args) throws IOException
     {
+        if (args.length < 1)
+        {
+            System.err.println("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
+            System.exit(-1);
+        }
+        
+        final boolean showErrors = args.length == 2 && Boolean.valueOf(args[1]) == true;
+    	
         JITWatch jw = new JITWatch(new IJITListener()
         {
             @Override
@@ -22,7 +30,10 @@ public class LaunchHeadless
             @Override
             public void handleErrorEntry(String entry)
             {
-                System.err.println(entry);
+            	if (showErrors)
+            	{
+            		System.err.println(entry);
+            	}
             }
 
 			@Override
@@ -30,15 +41,9 @@ public class LaunchHeadless
 			{
                 System.out.println(event.toString());				
 			}
-        });
-
-        //jw.setSuppressMissingClassWarnings(true);
+        }, false);
         
-        if (args.length != 1)
-        {
-            System.err.println("Usage: LaunchHeadless <hotspot log file>");
-            System.exit(-1);
-        }
+
         
         jw.watch(new File(args[0]));
     }
