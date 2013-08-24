@@ -264,13 +264,9 @@ public class JITWatch
 
 	private void handleLine(String currentLine)
 	{
-		//System.out.println(currentLine);
-
 		currentLine = currentLine.replace("&apos;", "'");
 		currentLine = currentLine.replace("&lt;", "<");
 		currentLine = currentLine.replace("&gt;", ">");
-
-		//System.out.println(currentLine);
 		
 		try
 		{
@@ -343,8 +339,6 @@ public class JITWatch
 
 	private void completeNativeCode()
 	{
-		// System.out.println(nativeCodeBuilder.toString());
-
 		inNativeCode = false;
 
 		if (currentMethod != null)
@@ -431,14 +425,9 @@ public class JITWatch
 
 			String signature = createSig(className, methodName, paramClasses, returnClass);
 
-			// System.out.println("@ " + signature);
-
 			if (signature != null)
 			{
 				MetaClass metaClass = pm.getMetaClass(className);
-
-				// System.out.println("@ metaClass for " + className + " = " +
-				// metaClass);
 
 				if (metaClass != null)
 				{
@@ -457,9 +446,7 @@ public class JITWatch
 		}
 		else
 		{
-			System.out.println(currentLine);
-			System.out.println("Could not parse " + sig);
-			
+			logError("Could not parse line: " + currentLine);	
 		}
 
 		return metaMethod;
@@ -472,9 +459,6 @@ public class JITWatch
 
 		String stampAttr = attrs.get("stamp");
 		long stampTime = (long) (Double.parseDouble(stampAttr) * 1000);
-
-		// System.out.println("handleMethod:" + type + " m: " + metaMethod +
-		// " sig: "+ methodSignature);
 
 		if (metaMethod != null)
 		{
@@ -498,11 +482,6 @@ public class JITWatch
 			case TASK:
 				metaMethod.addCompiledAttributes(attrs);
 				currentMethod = metaMethod;
-			//	System.out.println("TASK: " + currentMethod);
-			//	System.out.println(methodSignature);
-			//	Thread.dumpStack();
-
-			//	System.exit(-1);
 				break;
 			}
 		}
@@ -524,8 +503,7 @@ public class JITWatch
 		}
 		else
 		{
-			System.out.println("Error on line: " + line);
-			Thread.dumpStack();
+			logError("handleTaskDone: currentMethod not set?" + line);
 		}
 	}
 
@@ -658,8 +636,6 @@ public class JITWatch
 		int arrayDepth = 0;
 		int pos = 0;
 
-		// System.out.println("fixname: " + name);
-
 		outerloop: while (pos < name.length())
 		{
 			char c = name.charAt(pos);
@@ -723,8 +699,6 @@ public class JITWatch
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 
 		final int typeLen = types.length();
-
-		// System.out.println("types: " + types);
 
 		if (typeLen > 0)
 		{
@@ -889,8 +863,6 @@ public class JITWatch
 
 	private void handleLoaded(String currentLine)
 	{
-		// System.out.println(currentLine);
-
 		String fqClassName = getSubstringBetween(currentLine, LOADED, " ");
 
 		if (fqClassName != null)
@@ -943,7 +915,6 @@ public class JITWatch
 					{
 						MetaMethod metaMethod = new MetaMethod(m, metaClass);
 						metaClass.addMetaMethod(metaMethod);
-						// System.out.println(clazz + " declared: " + m);
 					}
 				}
 				catch (ClassNotFoundException cnf)
