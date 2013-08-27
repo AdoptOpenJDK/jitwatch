@@ -90,7 +90,7 @@ public class TimeLineStage extends Stage
 
 		root.getChildren().add(canvas);
 
-		setTitle("JITWatch Timeline");
+		setTitle("JITWatch Compilations Timeline");
 
 		setScene(scene);
 		show();
@@ -122,14 +122,9 @@ public class TimeLineStage extends Stage
 			// assume compiled is no more than 20% bigger than queued
 			int maxEvents = (int) (events.size() / 2.0 * 1.2);
 
-			double lastQX = GRAPH_GAP_LEFT + normalise(0, minStamp, maxStamp, chartWidth, false);
-			double lastQY = GRAPH_GAP_Y + normalise(0, 0, maxEvents, chartHeight, true);
-
 			double lastCX = GRAPH_GAP_LEFT + normalise(0, minStamp, maxStamp, chartWidth, false);
-
 			double lastCY = GRAPH_GAP_Y + normalise(0, 0, maxEvents, chartHeight, true);
 
-			int cumQ = 0;
 			int cumC = 0;
 
 			gc.setStroke(Color.BLACK);
@@ -147,7 +142,10 @@ public class TimeLineStage extends Stage
 
 				double x = GRAPH_GAP_LEFT + normalise(gridX, 0, maxStamp, chartWidth, false);
 				gc.strokeLine(x, GRAPH_GAP_Y, x, GRAPH_GAP_Y + chartHeight);
-				gc.strokeText(JITWatchUtil.formatTimestamp(gridX, false), x, GRAPH_GAP_Y + chartHeight + 12);
+
+				boolean showMillis = gridX > 0 && gridX < 5000;
+
+				gc.strokeText(JITWatchUtil.formatTimestamp(gridX, showMillis), x, GRAPH_GAP_Y + chartHeight + 12);
 
 				gridX += xInc;
 			}
@@ -243,39 +241,8 @@ public class TimeLineStage extends Stage
 						compiledStampTime = -1;
 					}
 				}
-				else
-				{
-					// gc.setFill(colorQueue);
-					// gc.setStroke(colorQueue);
-					// gc.fillRect(x, height - halfBottomHeight, 1,
-					// halfBottomHeight);
 
-					cumQ++;
-
-					// double y = GRAPH_GAP_Y + normalise(cumQ, 0, maxEvents,
-					// chartHeight, true);
-					// gc.strokeLine(lastQX, lastQY, x, y);
-
-					// lastQX = x;
-					// lastQY = y;
-					/*
-					 * if (queuedStampTime != -1 && stamp > queuedStampTime) {
-					 * 
-					 * double smX = GRAPH_GAP_LEFT + normalise(queuedStampTime,
-					 * minStamp, maxStamp, chartWidth, false);
-					 * 
-					 * gc.fillOval(smX - markerDiameter / 2, y - markerDiameter
-					 * / 2, markerDiameter, markerDiameter);
-					 * gc.strokeText(selectedMethod
-					 * .toStringUnqualifiedMethodName(), smX + 10, y);
-					 * 
-					 * queuedStampTime = -1; }
-					 */
-				}
 			}
-
-			// gc.setStroke(colorQueue);
-			// gc.strokeText("Queued: " + cumQ, GRAPH_GAP_LEFT, 12);
 
 			JITStats stats = parent.getJITStats();
 
@@ -292,24 +259,25 @@ public class TimeLineStage extends Stage
 
 	private double findXScale(double min, double max)
 	{
-		double rangeMinutes = (max - min) / 60000;
+		double rangeMillis = max - min;
 
 		int requiredLines = 6;
 
-		int[] gapMinutes = new int[] { 120, 60, 30, 15, 10, 5, 2, 1 };
+		long[] gapMillis = new long[] { 120 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000, 2 * 60000,
+				1 * 60000, 30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
 
-		int incrementMinutes = 120;
+		long incrementMillis = 120 * 60000;
 
-		for (int i = 0; i < gapMinutes.length; i++)
+		for (int i = 0; i < gapMillis.length; i++)
 		{
-			if (rangeMinutes / gapMinutes[i] >= requiredLines)
+			if (rangeMillis / gapMillis[i] >= requiredLines)
 			{
-				incrementMinutes = gapMinutes[i];
+				incrementMillis = gapMillis[i];
 				break;
 			}
 		}
 
-		return incrementMinutes * 60000;
+		return incrementMillis;
 	}
 
 	private int findYScale(int max)

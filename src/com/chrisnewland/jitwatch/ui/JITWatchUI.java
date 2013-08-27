@@ -601,6 +601,11 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			statsStage.redraw();
 		}
+		
+		if (histoStage != null)
+		{
+			histoStage.redraw();
+		}
 
 		if (logBuffer.length() > 0)
 		{
