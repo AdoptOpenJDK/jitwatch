@@ -196,6 +196,11 @@ public class JITStats
 		return totalCompileTime;
 	}
 	
+	public long getTotalCompiledMethods()
+	{
+		return countC1 + countC2 + countC2N + countOSR;
+	}
+	
 	public long getNativeBytes()
 	{
 		return nativeBytes;

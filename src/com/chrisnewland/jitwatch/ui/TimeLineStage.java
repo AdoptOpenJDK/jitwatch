@@ -116,8 +116,8 @@ public class TimeLineStage extends Stage
 			gc.setStroke(Color.BLACK);
 			gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
 
-			double minStamp = 0;
-			double maxStamp = events.get(events.size() - 1).getStamp();
+			long minStamp = 0;
+			long maxStamp = events.get(events.size() - 1).getStamp();
 
 			// assume compiled is no more than 20% bigger than queued
 			int maxEvents = (int) (events.size() / 2.0 * 1.2);
@@ -125,62 +125,19 @@ public class TimeLineStage extends Stage
 			double lastCX = GRAPH_GAP_LEFT + normalise(0, minStamp, maxStamp, chartWidth, false);
 			double lastCY = GRAPH_GAP_Y + normalise(0, 0, maxEvents, chartHeight, true);
 
-			int cumC = 0;
-
 			gc.setStroke(Color.BLACK);
 			gc.setFont(new Font("monospace", 10));
 
-			// ============
-			// Draw X axis
-			// ============
-			double xInc = findXScale(minStamp, maxStamp);
-
-			int gridX = 0;
-
-			while (gridX < maxStamp)
-			{
-
-				double x = GRAPH_GAP_LEFT + normalise(gridX, 0, maxStamp, chartWidth, false);
-				gc.strokeLine(x, GRAPH_GAP_Y, x, GRAPH_GAP_Y + chartHeight);
-
-				boolean showMillis = gridX > 0 && gridX < 5000;
-
-				gc.strokeText(JITWatchUtil.formatTimestamp(gridX, showMillis), x, GRAPH_GAP_Y + chartHeight + 12);
-
-				gridX += xInc;
-			}
-
-			// ============
-			// Draw Y axis
-			// ============
-			int yInc = findYScale(maxEvents);
-
-			int gridY = 0;
-
-			while (gridY < maxEvents)
-			{
-
-				double y = GRAPH_GAP_Y + normalise(gridY, 0, maxEvents, chartHeight, true);
-				gc.strokeLine(GRAPH_GAP_LEFT, y, GRAPH_GAP_LEFT + chartWidth, y);
-				gc.strokeText(Integer.toString(gridY), 2, y + 2);
-
-				gridY += yInc;
-			}
+			drawXAxis(gc, minStamp, maxStamp, chartWidth, chartHeight);
+			drawYAxis(gc, maxEvents, chartWidth, chartHeight);
 
 			MetaMethod selectedMethod = parent.getSelectedMethod();
 
-			double queuedStampTime = -1;
 			double compiledStampTime = -1;
 
 			if (selectedMethod != null)
 			{
-				String qStamp = selectedMethod.getQueuedAttribute("stamp");
 				String cStamp = selectedMethod.getCompiledAttribute("stamp");
-
-				if (qStamp != null)
-				{
-					queuedStampTime = 1000 * Double.parseDouble(qStamp);
-				}
 
 				if (cStamp != null)
 				{
@@ -191,6 +148,7 @@ public class TimeLineStage extends Stage
 			Color colourLine = Color.RED;
 			Color colourMarker = Color.BLUE;
 
+			int cumC = 0;
 			int markerDiameter = 8;
 
 			for (JITEvent event : events)
@@ -204,9 +162,6 @@ public class TimeLineStage extends Stage
 					gc.setFill(colourLine);
 					gc.setStroke(colourLine);
 
-					// gc.fillRect(x, height - bottomHeight, 1,
-					// halfBottomHeight);
-
 					cumC++;
 
 					double y = GRAPH_GAP_Y + normalise(cumC, 0, maxEvents, chartHeight, true);
@@ -217,7 +172,6 @@ public class TimeLineStage extends Stage
 
 					if (compiledStampTime != -1 && stamp > compiledStampTime)
 					{
-
 						double smX = GRAPH_GAP_LEFT + normalise(compiledStampTime, minStamp, maxStamp, chartWidth, false);
 
 						gc.setFill(colourMarker);
@@ -241,25 +195,65 @@ public class TimeLineStage extends Stage
 						compiledStampTime = -1;
 					}
 				}
-
 			}
 
-			JITStats stats = parent.getJITStats();
+			showStatsLegend(gc);
+		}
+	}
+	
+	private void showStatsLegend(GraphicsContext gc)
+	{
+		JITStats stats = parent.getJITStats();
 
-			StringBuilder compiledStatsBuilder = new StringBuilder();
-			compiledStatsBuilder.append("Compiled: ").append(cumC);
-			compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(")");
-			compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(")");
-			compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(")");
-			compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(")");
-			gc.setStroke(colourLine);
-			gc.strokeText(compiledStatsBuilder.toString(), GRAPH_GAP_LEFT, 12);
+		StringBuilder compiledStatsBuilder = new StringBuilder();
+		compiledStatsBuilder.append("Compiled: ").append(stats.getTotalCompiledMethods());
+		compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(")");
+		compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(")");
+		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(")");
+		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(")");
+		gc.setStroke(Color.BLACK);
+		gc.strokeText(compiledStatsBuilder.toString(), GRAPH_GAP_LEFT, 12);
+	}
+
+	private void drawXAxis(GraphicsContext gc, long minStamp, long maxStamp, double chartWidth, double chartHeight)
+	{
+		long xInc = getXStep(minStamp, maxStamp);
+
+		int gridX = 0;
+
+		while (gridX < maxStamp)
+		{
+			double x = GRAPH_GAP_LEFT + normalise(gridX, 0, maxStamp, chartWidth, false);
+			gc.strokeLine(x, GRAPH_GAP_Y, x, GRAPH_GAP_Y + chartHeight);
+
+			boolean showMillis = gridX > 0 && gridX < 5000;
+
+			gc.strokeText(JITWatchUtil.formatTimestamp(gridX, showMillis), x, GRAPH_GAP_Y + chartHeight + 12);
+
+			gridX += xInc;
 		}
 	}
 
-	private double findXScale(double min, double max)
+	private void drawYAxis(GraphicsContext gc, int maxEvents, double chartWidth, double chartHeight)
 	{
-		double rangeMillis = max - min;
+		int yInc = getYStep(maxEvents);
+
+		int gridY = 0;
+
+		while (gridY < maxEvents)
+		{
+
+			double y = GRAPH_GAP_Y + normalise(gridY, 0, maxEvents, chartHeight, true);
+			gc.strokeLine(GRAPH_GAP_LEFT, y, GRAPH_GAP_LEFT + chartWidth, y);
+			gc.strokeText(Integer.toString(gridY), 2, y + 2);
+
+			gridY += yInc;
+		}
+	}
+
+	private long getXStep(long min, long max)
+	{
+		long rangeMillis = max - min;
 
 		int requiredLines = 6;
 
@@ -280,7 +274,7 @@ public class TimeLineStage extends Stage
 		return incrementMillis;
 	}
 
-	private int findYScale(int max)
+	private int getYStep(int max)
 	{
 		int requiredLines = 10;
 
