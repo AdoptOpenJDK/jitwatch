@@ -113,6 +113,8 @@ public class JITWatchUI extends Application implements IJITListener
 		textArea.clear();
 
 		selectedMethod = null;
+		
+		errorCount = 0;
 
 		refreshSelectedTreeNode();
 
