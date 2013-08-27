@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 public class Histo
 {
 	private Map<Long, Integer> bucketMap = new HashMap<>();
+
+	// lots of writes, not COWAL
 	private List<Long> values = new ArrayList<>();
 
 	private long lastTime = 0;
@@ -29,7 +31,10 @@ public class Histo
 
 	public void recordTime(long time)
 	{
-		values.add(time);
+		synchronized (values)
+		{
+			values.add(time);
+		}
 
 		if (resolution > 1)
 		{
@@ -92,13 +97,20 @@ public class Histo
 	{
 		long result = 0;
 
-		Collections.sort(values);
+		List<Long> valuesCopy = null;
 
-		int count = values.size();
+		synchronized (values)
+		{
+			valuesCopy = new ArrayList<>(values);
+		}
+
+		Collections.sort(valuesCopy);
+
+		int count = valuesCopy.size();
 
 		if (percentile >= 100)
 		{
-			result = values.get(count - 1);
+			result = valuesCopy.get(count - 1);
 		}
 		else if (percentile <= 0)
 		{
@@ -106,10 +118,10 @@ public class Histo
 		}
 		else
 		{
-			double position = 0.5 + ((double) percentile) / 100.0 * (double) count;	
-			int index = (int)Math.round(position) - 1;
-		
-			result = values.get(index);
+			double position = 0.5 + ((double) percentile) / 100.0 * (double) count;
+			int index = (int) Math.round(position) - 1;
+
+			result = valuesCopy.get(index);
 		}
 
 		return result;

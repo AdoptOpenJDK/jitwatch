@@ -87,7 +87,7 @@ public class HistoStage extends Stage
 
 		root.getChildren().add(canvas);
 
-		setTitle("JITWatch Histo");
+		setTitle("JITWatch Compile Times Histogram");
 
 		setScene(scene);
 		show();
@@ -174,12 +174,23 @@ public class HistoStage extends Stage
 
 			}
 
-			int yPos = GRAPH_GAP_Y + 20;
+			double legendWidth = 100;
+			double legendHeight = 185;
+			double xPos = canvas.getWidth() - GRAPH_GAP_RIGHT - legendWidth - 5;
+			double yPos = GRAPH_GAP_Y + 5;
+
+			gc.setFill(Color.WHITE);
 			gc.setStroke(Color.BLACK);
 
-			for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99 })
+			gc.fillRect(xPos, yPos, legendWidth, legendHeight);
+			gc.strokeRect(xPos, yPos, legendWidth, legendHeight);
+
+			xPos += 5;
+			yPos += 15;
+
+			for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99, 100 })
 			{
-				gc.strokeText(percent + "% : " + histo.getPercentile(percent) + "ms", chartWidth - 60, yPos);
+				gc.strokeText(percent + "% : " + histo.getPercentile(percent) + "ms", xPos, yPos);
 				yPos += 20;
 			}
 		}
