@@ -5,7 +5,7 @@ import java.util.List;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.JITWatchUtil;
-import com.chrisnewland.jitwatch.meta.MetaMethod;
+import com.chrisnewland.jitwatch.meta.IMetaMember;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -131,13 +131,13 @@ public class TimeLineStage extends Stage
 			drawXAxis(gc, minStamp, maxStamp, chartWidth, chartHeight);
 			drawYAxis(gc, maxEvents, chartWidth, chartHeight);
 
-			MetaMethod selectedMethod = parent.getSelectedMethod();
+			IMetaMember selectedMember = parent.getSelectedMember();
 
 			double compiledStampTime = -1;
 
-			if (selectedMethod != null)
+			if (selectedMember != null)
 			{
-				String cStamp = selectedMethod.getCompiledAttribute("stamp");
+				String cStamp = selectedMember.getCompiledAttribute("stamp");
 
 				if (cStamp != null)
 				{
@@ -178,19 +178,39 @@ public class TimeLineStage extends Stage
 						gc.setStroke(colourMarker);
 						gc.fillOval(smX - markerDiameter / 2, y - markerDiameter / 2, markerDiameter, markerDiameter);
 
-						String line1 = selectedMethod.toStringUnqualifiedMethodName();
-						String line2 = "Compiled at " + JITWatchUtil.formatTimestamp((long) compiledStampTime, true) + " using "
-								+ selectedMethod.getCompiledAttribute("compiler");
+						String line1 = selectedMember.toStringUnqualifiedMethodName();
 
-						String compiletime = selectedMethod.getCompiledAttribute("compileMillis");
+						String compiler = selectedMember.getCompiledAttribute("compiler");
+
+						if (compiler == null)
+						{
+							compiler = selectedMember.getCompiledAttribute("compile_kind");
+
+							if (compiler == null)
+							{
+								compiler = "unknown!";
+							}
+						}
+
+						String line2 = "Compiled at " + JITWatchUtil.formatTimestamp((long) compiledStampTime, true) + " using "
+								+ compiler;
+
+						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
 
 						if (compiletime != null)
 						{
 							line2 += " took " + compiletime + "ms";
 						}
+						
+						double legendY = y;
+						
+						if (legendY > GRAPH_GAP_Y + chartHeight - 32)
+						{
+							legendY = GRAPH_GAP_Y + chartHeight - 32;
+						}
 
-						gc.strokeText(line1, smX + 10, y);
-						gc.strokeText(line2, smX + 10, y + 16);
+						gc.strokeText(line1, smX + 10, legendY);
+						gc.strokeText(line2, smX + 10, legendY + 16);
 
 						compiledStampTime = -1;
 					}
@@ -200,7 +220,7 @@ public class TimeLineStage extends Stage
 			showStatsLegend(gc);
 		}
 	}
-	
+
 	private void showStatsLegend(GraphicsContext gc)
 	{
 		JITStats stats = parent.getJITStats();

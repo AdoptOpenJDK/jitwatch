@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -22,7 +23,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.chrisnewland.jitwatch.meta.IMetaMember;
 import com.chrisnewland.jitwatch.meta.MetaClass;
+import com.chrisnewland.jitwatch.meta.MetaConstructor;
 import com.chrisnewland.jitwatch.meta.MetaMethod;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
 import com.chrisnewland.jitwatch.meta.PackageManager;
@@ -66,7 +69,7 @@ public class JITWatch
 
 	private boolean inNativeCode = false;
 	private StringBuilder nativeCodeBuilder = new StringBuilder();
-	private MetaMethod currentMethod = null;
+	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
 
@@ -328,7 +331,7 @@ public class JITWatch
 			{
 				String sig = convertNativeCodeMethodName(currentLine);
 
-				currentMethod = convertNMethodSig(sig);
+				currentMember = convertNMethodSig(sig);
 				inNativeCode = true;
 
 				appendNativeCode(currentLine);
@@ -357,9 +360,9 @@ public class JITWatch
 	{
 		inNativeCode = false;
 
-		if (currentMethod != null)
+		if (currentMember != null)
 		{
-			currentMethod.setNativeCode(nativeCodeBuilder.toString());
+			currentMember.setNativeCode(nativeCodeBuilder.toString());
 		}
 
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
@@ -407,11 +410,12 @@ public class JITWatch
 		}
 	}
 
-	private MetaMethod convertNMethodSig(String sig)
+	private IMetaMember convertNMethodSig(String sig)
 	{
+		// <class> <method> (<params>)<return>
 		// java/lang/String charAt (I)C
-
-		MetaMethod metaMethod = null;
+		
+		IMetaMember metaMember = null;
 
 		Matcher matcher = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)").matcher(sig);
 
@@ -435,22 +439,22 @@ public class JITWatch
 			{
 				returnClass = returnClasses[0];
 			}
-
+			
 			String signature = createSig(className, methodName, paramClasses, returnClass);
-
+			
 			if (signature != null)
 			{
-				MetaClass metaClass = pm.getMetaClass(className);
+				MetaClass metaClass = pm.getMetaClass(className); 
 
 				if (metaClass != null)
 				{
-					List<MetaMethod> metaList = metaClass.getMetaMethods();
+					List<IMetaMember> metaList = metaClass.getMetaMembers();
 
-					for (MetaMethod meta : metaList)
-					{
+					for (IMetaMember meta : metaList)
+					{							
 						if (meta.matches(signature))
 						{
-							metaMethod = meta;
+							metaMember = meta;
 							break;
 						}
 					}
@@ -462,39 +466,39 @@ public class JITWatch
 			logError("Could not parse line " + currentLineNumber + " : " + sig);
 		}
 
-		return metaMethod;
+		return metaMember;
 
 	}
 
 	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type)
 	{
-		MetaMethod metaMethod = convertNMethodSig(methodSignature);
+		IMetaMember metaMember = convertNMethodSig(methodSignature);
 
 		String stampAttr = attrs.get("stamp");
 		long stampTime = (long) (Double.parseDouble(stampAttr) * 1000);
 
-		if (metaMethod != null)
+		if (metaMember != null)
 		{
 			switch (type)
 			{
 			case QUEUE:
-				metaMethod.setQueuedAttributes(attrs);
-				JITEvent queuedEvent = new JITEvent(stampTime, false, metaMethod.toString());
+				metaMember.setQueuedAttributes(attrs);
+				JITEvent queuedEvent = new JITEvent(stampTime, false, metaMember.toString());
 				addEvent(queuedEvent);
 				logEvent(queuedEvent);
 				break;
 			case NMETHOD:
-				metaMethod.setCompiledAttributes(attrs);
-				metaMethod.getMetaClass().incCompiledMethodCount();
-				updateStats(metaMethod);
+				metaMember.setCompiledAttributes(attrs);
+				metaMember.getMetaClass().incCompiledMethodCount();
+				updateStats(metaMember);
 
-				JITEvent compiledEvent = new JITEvent(stampTime, true, metaMethod.toString());
+				JITEvent compiledEvent = new JITEvent(stampTime, true, metaMember.toString());
 				addEvent(compiledEvent);
 				logEvent(compiledEvent);
 				break;
 			case TASK:
-				metaMethod.addCompiledAttributes(attrs);
-				currentMethod = metaMethod;
+				metaMember.addCompiledAttributes(attrs);
+				currentMember = metaMember;
 				break;
 			}
 		}
@@ -510,9 +514,9 @@ public class JITWatch
 			stats.addNativeBytes(nmsize);
 		}
 
-		if (currentMethod != null)
+		if (currentMember != null)
 		{
-			currentMethod.addCompiledAttributes(attrs);
+			currentMember.addCompiledAttributes(attrs);
 		}
 		else
 		{
@@ -533,11 +537,11 @@ public class JITWatch
 		return copy;
 	}
 
-	private void updateStats(MetaMethod meta)
+	private void updateStats(IMetaMember meta)
 	{
 		String fullSignature = meta.toString();
 
-		for (String modifier : MetaMethod.MODIFIERS)
+		for (String modifier : IMetaMember.MODIFIERS)
 		{
 			if (fullSignature.contains(modifier + " "))
 			{
@@ -614,11 +618,18 @@ public class JITWatch
 	public String createSig(String className, String methodName, Class<?>[] paramTypes, Class<?> returnType)
 	{
 		StringBuilder builder = new StringBuilder();
-
+		
 		String rName = returnType.getName();
 		rName = fixName(rName);
 
-		builder.append(rName).append(" ").append(className).append(".").append(methodName);
+		if ("<init>".equals(methodName))
+		{
+			builder.append(className);
+		}
+		else
+		{		
+			builder.append(rName).append(" ").append(className).append(".").append(methodName);
+		}
 
 		builder.append("(");
 
@@ -922,12 +933,16 @@ public class JITWatch
 						metaClass.setInterface(true);
 					}
 
-					Method[] declaredMethods = clazz.getDeclaredMethods();
-
-					for (Method m : declaredMethods)
+					for (Method m : clazz.getDeclaredMethods())
 					{
 						MetaMethod metaMethod = new MetaMethod(m, metaClass);
 						metaClass.addMetaMethod(metaMethod);
+					}
+					
+					for (Constructor<?> c : clazz.getDeclaredConstructors())
+					{
+						MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
+						metaClass.addMetaConstructor(metaConstructor);
 					}
 				}
 				catch (ClassNotFoundException cnf)

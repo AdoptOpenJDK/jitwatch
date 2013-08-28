@@ -1,237 +1,85 @@
 package com.chrisnewland.jitwatch.meta;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class MetaMethod implements Comparable<MetaMethod>
+public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMethod>
 {
-    private Method method;
-    private boolean isQueued = false;
-    private boolean isCompiled = false;
+	private Method method;
 
-    private MetaClass methodClass;
-    
-    private String nativeCode = null;
-    
-    private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
-    private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+	public MetaMethod(Method method, MetaClass methodClass)
+	{
+		this.method = method;
+		this.methodClass = methodClass;
+	}
 
-    public static final String PUBLIC = "public";
-    public static final String PRIVATE = "private";
-    public static final String PROTECTED = "protected";
-    public static final String STATIC = "static";
-    public static final String FINAL = "final";
-    public static final String SYNCHRONIZED = "synchronized";
-    public static final String STRICTFP = "strictfp";
-    public static final String NATIVE = "native";
-    public static final String ABSTRACT = "abstract";
+	@Override
+	public String toString()
+	{
+		String methodSigWithoutThrows = method.toString();
 
-    public static final String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP,
-            NATIVE, ABSTRACT };
+		int closingParentheses = methodSigWithoutThrows.indexOf(')');
 
-    public MetaMethod(Method method, MetaClass methodClass)
-    {
-        this.method = method;
-        this.methodClass = methodClass;
-    }
+		if (closingParentheses != methodSigWithoutThrows.length() - 1)
+		{
+			methodSigWithoutThrows = methodSigWithoutThrows.substring(0, closingParentheses + 1);
+		}
 
-    public List<String> getQueuedAttributes()
-    {
-        List<String> attrList = new ArrayList<String>(queuedAttributes.keySet());
-        Collections.sort(attrList);
+		return methodSigWithoutThrows;
+	}
 
-        return attrList;
-    }
+	@Override
+	public String getSignatureRegEx()
+	{
+		String unqualifiedSig = makeUnqualified(method.toString());
 
-    public MetaClass getMetaClass()
-    {
-        return methodClass;
-    }
+		return unqualifiedSig;
+	}
 
-    public String getQueuedAttribute(String key)
-    {
-        return queuedAttributes.get(key);
-    }
+	@Override
+	public String getSignatureForBytecode()
+	{
+		String ts = method.toString();
 
-    public List<String> getCompiledAttributes()
-    {
-        List<String> attrList = new ArrayList<String>(compiledAttributes.keySet());
-        Collections.sort(attrList);
+		int openParams = ts.lastIndexOf('(');
 
-        return attrList;
-    }
+		if (openParams != -1)
+		{
+			int pos = openParams;
 
-    public String getCompiledAttribute(String key)
-    {
-        return compiledAttributes.get(key);
-    }
-    
-    public void addCompiledAttribute(String key, String value)
-    {
-        compiledAttributes.put(key,value);
-    }
+			int lastDot = -1;
 
-    @Override
-    public String toString()
-    {
-        String methodSigWithoutThrows = method.toString();
+			while (pos-- > 0)
+			{
+				if (ts.charAt(pos) == '.' && lastDot == -1)
+				{
+					lastDot = pos;
+				}
 
-        int closingParentheses = methodSigWithoutThrows.indexOf(')');
+				if (ts.charAt(pos) == ' ')
+				{
+					break;
+				}
+			}
 
-        if (closingParentheses != methodSigWithoutThrows.length() - 1)
-        {
-            methodSigWithoutThrows = methodSigWithoutThrows.substring(0, closingParentheses + 1);
-        }
+			StringBuilder builder = new StringBuilder(ts);
+			builder.delete(pos + 1, lastDot + 1);
+			ts = builder.toString();
 
-        return methodSigWithoutThrows;
-    }
+		}
 
-    public void setQueuedAttributes(Map<String, String> queuedAttributes)
-    {
-        isQueued = true;
-        this.queuedAttributes = queuedAttributes;
-    }
+		return ts;
+	}
 
-    public boolean isQueued()
-    {
-        return isQueued;
-    }
-
-    public void setCompiledAttributes(Map<String, String> compiledAttributes)
-    {
-        isCompiled = true;
-        isQueued = false;
-        this.compiledAttributes = compiledAttributes;
-    }
-    
-    public void addCompiledAttributes(Map<String, String> additionalAttrs)
-    {
-    	compiledAttributes.putAll(additionalAttrs);
-    }
-
-    public boolean isCompiled()
-    {
-        return isCompiled;
-    }
-
-    public String toStringUnqualifiedMethodName()
-    {
-        String ts = toString();
-
-        return makeUnqualified(ts);
-    }
-
-    private String makeUnqualified(String sig)
-    {
-        int openParams = sig.lastIndexOf('(');
-
-        if (openParams != -1)
-        {
-            int pos = openParams;
-
-            int lastDot = -1;
-
-            while (pos-- >= 0)
-            {
-                if (sig.charAt(pos) == '.' && lastDot == -1)
-                {
-                    lastDot = pos;
-                }
-
-                if (sig.charAt(pos) == ' ')
-                {
-                    break;
-                }
-            }
-
-            StringBuilder builder = new StringBuilder(sig);
-            builder.delete(pos + 1, lastDot + 1);
-            sig = builder.toString();
-
-        }
-
-        return sig;
-    }
-
-    public String getSignatureRegEx()
-    {
-        String unqualifiedSig = makeUnqualified(method.toString());
-
-
-        return unqualifiedSig;
-    }
-
-    public String getSignatureForBytecode()
-    {
-        String ts = method.toString();
-
-        int openParams = ts.lastIndexOf('(');
-
-        if (openParams != -1)
-        {
-            int pos = openParams;
-
-            int lastDot = -1;
-
-            while (pos-- >= 0)
-            {
-                if (ts.charAt(pos) == '.' && lastDot == -1)
-                {
-                    lastDot = pos;
-                }
-
-                if (ts.charAt(pos) == ' ')
-                {
-                    break;
-                }
-            }
-
-            StringBuilder builder = new StringBuilder(ts);
-            builder.delete(pos + 1, lastDot + 1);
-            ts = builder.toString();
-
-        }
-
-        return ts;
-    }
-
-    public boolean matches(String input)
-    {
-        // strip access mode and modifiers
-        String nameToMatch = this.toString();
-
-        for (String mod : MODIFIERS)
-        {
-            nameToMatch = nameToMatch.replace(mod + " ", "");
-        }
-
-        return nameToMatch.equals(input);
-    }
-    
-    public String getNativeCode()
-    {
-        return nativeCode;
-    }
-
-    public void setNativeCode(String nativecode)
-    {
-        this.nativeCode = nativecode;
-    }
-
-    @Override
-    public int compareTo(MetaMethod o)
-    {
-        if (o == null)
-        {
-            return -1;
-        }
-        else
-        {
-            return toString().compareTo(o.toString());
-        }
-    }
+	@Override
+	public int compareTo(MetaMethod o)
+	{
+		if (o == null)
+		{
+			return -1;
+		}
+		else
+		{
+			return toString().compareTo(o.toString());
+		}
+	}
 }

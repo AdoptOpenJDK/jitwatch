@@ -17,6 +17,7 @@ public class MetaClass implements Comparable<MetaClass>
 	private boolean missingDef = false;
 
 	private List<MetaMethod> classMethods = new CopyOnWriteArrayList<MetaMethod>();
+	private List<MetaConstructor> classConstructors = new CopyOnWriteArrayList<MetaConstructor>();
 	
 	private int compiledMethodCount = 0;
 	
@@ -97,28 +98,27 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		classMethods.add(method);
 	}
-
-	public List<MetaMethod> getMetaMethods()
+	
+	public void addMetaConstructor(MetaConstructor constructor)
 	{
-		MetaMethod[] asArray = classMethods.toArray(new MetaMethod[classMethods.size()]);
-		Arrays.sort(asArray);
-		return new ArrayList<>(Arrays.asList(asArray));
+		classConstructors.add(constructor);
 	}
 
-//	public int getCompiledMethodCount()
-//	{
-//		int count = 0;
-//
-//		for (MetaMethod mm : classMethods)
-//		{
-//			if (mm.isCompiled())
-//			{
-//				count++;
-//			}
-//		}
-//
-//		return count;
-//	}
+	public List<IMetaMember> getMetaMembers()
+	{
+		List<IMetaMember> result = new ArrayList<>();
+		
+		IMetaMember[] constructorsArray = classConstructors.toArray(new MetaConstructor[classConstructors.size()]);
+		Arrays.sort(constructorsArray);
+		
+		IMetaMember[] methodsArray = classMethods.toArray(new MetaMethod[classMethods.size()]);
+		Arrays.sort(methodsArray);
+
+		result.addAll(Arrays.asList(constructorsArray));
+		result.addAll(Arrays.asList(methodsArray));
+		
+		return result;
+	}
 
 	@Override
 	public int compareTo(MetaClass other)

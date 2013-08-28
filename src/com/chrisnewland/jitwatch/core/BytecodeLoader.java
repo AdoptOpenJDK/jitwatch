@@ -10,7 +10,6 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 public class BytecodeLoader
 {
-
 	public static Map<String, String> fetchByteCodeForClass(String[] classLocations, String fqClassName)
 	{
 		String[] args;
@@ -123,7 +122,7 @@ public class BytecodeLoader
 					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
 				}
 			}
-
+			
 			bytecodeMap.put(signature, builder.toString());
 			builder.delete(0, builder.length());
 		}

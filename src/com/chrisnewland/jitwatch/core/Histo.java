@@ -118,7 +118,7 @@ public class Histo
 		}
 		else
 		{
-			double position = 0.5 + ((double) percentile) / 100.0 * (double) count;
+			double position = 0.5 + (percentile) / 100.0 * count;
 			int index = (int) Math.round(position) - 1;
 
 			result = valuesCopy.get(index);

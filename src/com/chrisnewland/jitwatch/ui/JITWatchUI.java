@@ -2,6 +2,7 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -11,8 +12,8 @@ import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.JITWatch;
 import com.chrisnewland.jitwatch.core.ResourceLoader;
+import com.chrisnewland.jitwatch.meta.IMetaMember;
 import com.chrisnewland.jitwatch.meta.MetaClass;
-import com.chrisnewland.jitwatch.meta.MetaMethod;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
 
 import javafx.animation.Animation;
@@ -31,6 +32,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
@@ -43,9 +45,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
 import javafx.util.Duration;
 
 public class JITWatchUI extends Application implements IJITListener
@@ -56,13 +60,15 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private TreeItem<Object> rootItem;
 
-	private ListView<MetaMethod> methodList;
-	private ListView<Label> methodInfoList;
+	private ListView<IMetaMember> memberList;
+	private ListView<Label> memberInfoList;
 
 	private boolean showOnlyCompiled = true;
 	private boolean hideInterfaces = true;
 
 	private TreeItem<Object> selectedNode;
+	
+	private List<Stage> openPopupStages = new ArrayList<>();
 
 	private TextArea textArea;
 
@@ -82,7 +88,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private StatsStage statsStage;
 	private HistoStage histoStage;
 
-	private MetaMethod selectedMethod;
+	private IMetaMember selectedMember;
 
 	// needs to be synchronized as buffer drained async on GUI thread
 	private StringBuffer logBuffer = new StringBuffer();
@@ -112,8 +118,8 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 		textArea.clear();
 
-		selectedMethod = null;
-		
+		selectedMember = null;
+
 		errorCount = 0;
 
 		refreshSelectedTreeNode();
@@ -165,26 +171,11 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				if (configStage != null)
+				for (Stage s : openPopupStages)
 				{
-					configStage.close();
-				}
-
-				if (timeLineStage != null)
-				{
-					timeLineStage.close();
-				}
-
-				if (statsStage != null)
-				{
-					statsStage.close();
+					s.close();
 				}
 				
-				if (histoStage != null)
-				{
-					histoStage.close();
-				}
-
 				stopWatching();
 			}
 		});
@@ -281,6 +272,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				configStage = new ConfigStage(JITWatchUI.this, jw.getProperties());
 				configStage.show();
+				
+				openPopupStages.add(configStage);
+				
 				btnConfigure.setDisable(true);
 			}
 		});
@@ -293,6 +287,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 				timeLineStage.show();
+				
+				openPopupStages.add(timeLineStage);
+				
 				btnTimeLine.setDisable(true);
 			}
 		});
@@ -305,6 +302,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
 				statsStage.show();
+				
+				openPopupStages.add(statsStage);
+				
 				btnStats.setDisable(true);
 			}
 		});
@@ -317,6 +317,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
 				histoStage.show();
+				
+				openPopupStages.add(histoStage);
+				
 				btnHisto.setDisable(true);
 			}
 		});
@@ -327,8 +330,10 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				TextViewerStage viwer = new TextViewerStage("Error Log", errorLog.toString(), false);
-				viwer.show();
+				TextViewerStage viewer = new TextViewerStage("Error Log", errorLog.toString(), false);
+				viewer.show();
+				
+				openPopupStages.add(viewer);
 			}
 		});
 
@@ -351,16 +356,16 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.setPrefHeight(topHeight);
 		hboxTop.setSpacing(10);
 
-		methodList = new ListView<MetaMethod>();
-		methodList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MetaMethod>()
+		memberList = new ListView<IMetaMember>();
+		memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends MetaMethod> arg0, MetaMethod oldVal, MetaMethod newVal)
+			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
 			{
-				showMethodInfo(newVal);
+				showMemberInfo(newVal);
 			}
 		});
-
+		
 		final ContextMenu contextMenu = new ContextMenu();
 
 		MenuItem menuItemSource = new MenuItem("Show Source");
@@ -371,15 +376,16 @@ public class JITWatchUI extends Application implements IJITListener
 
 		MenuItem menuItemNative = new MenuItem("Show Native Code");
 		contextMenu.getItems().add(menuItemNative);
+		
 
-		methodList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
+		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent e)
 			{
 				if (e.getButton() == MouseButton.SECONDARY)
 				{
-					contextMenu.show(methodList, e.getScreenX(), e.getScreenY());
+					contextMenu.show(memberList, e.getScreenX(), e.getScreenY());
 				}
 			}
 		});
@@ -389,7 +395,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openSource(methodList.getSelectionModel().getSelectedItem());
+				openSource(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -398,7 +404,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openBytecode(methodList.getSelectionModel().getSelectedItem());
+				openBytecode(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -407,23 +413,22 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openNativeCode(methodList.getSelectionModel().getSelectedItem());
+				openNativeCode(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
-		methodInfoList = new ListView<Label>();
+		memberInfoList = new ListView<Label>();
 
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
-		spMethodInfo.getItems().add(methodList);
-		spMethodInfo.getItems().add(methodInfoList);
+		spMethodInfo.getItems().add(memberList);
+		spMethodInfo.getItems().add(memberInfoList);
 
-		methodList.prefHeightProperty().bind(scene.heightProperty());
-		methodInfoList.prefHeightProperty().bind(scene.heightProperty());
+		memberList.prefHeightProperty().bind(scene.heightProperty());
+		memberInfoList.prefHeightProperty().bind(scene.heightProperty());
 
 		treeView.prefWidthProperty().bind(scene.widthProperty());
-		// vboxMethods.prefWidthProperty().bind(scene.widthProperty());
 
 		SplitPane spMain = new SplitPane();
 		spMain.setOrientation(Orientation.VERTICAL);
@@ -431,6 +436,7 @@ public class JITWatchUI extends Application implements IJITListener
 		SplitPane spCentre = new SplitPane();
 		spCentre.getItems().add(treeView);
 		spCentre.getItems().add(spMethodInfo);
+		spCentre.setDividerPositions(0.3, 0.7);
 
 		textArea = new TextArea();
 		textArea.setStyle("-fx-font-family:monospace;");
@@ -450,10 +456,10 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 		spMain.getItems().add(spCentre);
 		spMain.getItems().add(textArea);
+		spMain.setDividerPositions(0.7, 0.3);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
-		// borderPane.setBottom(textArea);
 
 		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
 		stage.setScene(scene);
@@ -493,9 +499,9 @@ public class JITWatchUI extends Application implements IJITListener
 		return jw.getEventListCopy();
 	}
 
-	private void openSource(MetaMethod method)
+	private void openSource(IMetaMember member)
 	{
-		MetaClass methodClass = method.getMetaClass();
+		MetaClass methodClass = member.getMetaClass();
 
 		String fqName = methodClass.getFullyQualifiedName();
 
@@ -505,28 +511,35 @@ public class JITWatchUI extends Application implements IJITListener
 
 		TextViewerStage tvs = new TextViewerStage("Source code for " + fqName, source, true);
 		tvs.show();
-		tvs.jumpTo(method.getSignatureRegEx());
+		
+		openPopupStages.add(tvs);
+		
+		tvs.jumpTo(member.getSignatureRegEx());
 	}
 
-	private void openBytecode(MetaMethod method)
+	private void openBytecode(IMetaMember member)
 	{
-		String searchMethod = method.getSignatureForBytecode();
-
-		MetaClass methodClass = method.getMetaClass();
+		String searchMethod = member.getSignatureForBytecode();
+		
+		MetaClass methodClass = member.getMetaClass();
 
 		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(jw.getClassLocations());
 
 		String bc = bytecodeCache.get(searchMethod);
 
-		TextViewerStage tvs = new TextViewerStage("Bytecode for " + method.toString(), bc, false);
+		TextViewerStage tvs = new TextViewerStage("Bytecode for " + member.toString(), bc, false);
 		tvs.show();
+		
+		openPopupStages.add(tvs);
 	}
 
-	private void openNativeCode(MetaMethod method)
+	private void openNativeCode(IMetaMember member)
 	{
-		String nativeCode = method.getNativeCode();
-		TextViewerStage tvs = new TextViewerStage("Native code for " + method.toString(), nativeCode, false);
+		String nativeCode = member.getNativeCode();
+		TextViewerStage tvs = new TextViewerStage("Native code for " + member.toString(), nativeCode, false);
 		tvs.show();
+		
+		openPopupStages.add(tvs);
 	}
 
 	private void chooseHotSpotFile()
@@ -550,36 +563,36 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 	}
 
-	private void showMethodInfo(MetaMethod metaMethod)
+	private void showMemberInfo(IMetaMember member)
 	{
-		methodInfoList.getItems().clear();
+		memberInfoList.getItems().clear();
 
-		if (metaMethod == null)
+		if (member == null)
 		{
 			return;
 		}
 
-		selectedMethod = metaMethod;
+		selectedMember = member;
 
-		List<String> queuedAttrKeys = metaMethod.getQueuedAttributes();
+		List<String> queuedAttrKeys = member.getQueuedAttributes();
 
 		for (String key : queuedAttrKeys)
 		{
-			if (metaMethod.isQueued() || metaMethod.isCompiled())
+			if (member.isQueued() || member.isCompiled())
 			{
-				Label l = new Label("Queued: " + key + " = " + metaMethod.getQueuedAttribute(key));
-				methodInfoList.getItems().add(l);
+				Label l = new Label("Queued: " + key + " = " + member.getQueuedAttribute(key));
+				memberInfoList.getItems().add(l);
 			}
 		}
 
-		List<String> compiledAttrKeys = metaMethod.getCompiledAttributes();
+		List<String> compiledAttrKeys = member.getCompiledAttributes();
 
 		for (String key : compiledAttrKeys)
 		{
-			if (metaMethod.isCompiled())
+			if (member.isCompiled())
 			{
-				Label l = new Label("Compiled: " + key + " = " + metaMethod.getCompiledAttribute(key));
-				methodInfoList.getItems().add(l);
+				Label l = new Label("Compiled: " + key + " = " + member.getCompiledAttribute(key));
+				memberInfoList.getItems().add(l);
 			}
 		}
 	}
@@ -601,7 +614,7 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			statsStage.redraw();
 		}
-		
+
 		if (histoStage != null)
 		{
 			histoStage.redraw();
@@ -621,14 +634,14 @@ public class JITWatchUI extends Application implements IJITListener
 		logBuffer.delete(0, logBuffer.length());
 	}
 
-	public MetaMethod getSelectedMethod()
+	public IMetaMember getSelectedMember()
 	{
-		return selectedMethod;
+		return selectedMember;
 	}
 
 	private void clearAndRefresh()
 	{
-		selectedMethod = null;
+		selectedMember = null;
 		rootItem.getChildren().clear();
 		showTree();
 	}
@@ -642,7 +655,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		btnConfigure.setDisable(false);
 	}
-
+	
 	public void timeLineClosed()
 	{
 		btnTimeLine.setDisable(false);
@@ -749,9 +762,9 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void refreshSelectedTreeNode()
 	{
-		methodList.getItems().clear();
+		memberList.getItems().clear();
 
-		showMethodInfo(null);
+		showMemberInfo(null);
 
 		if (selectedNode == null)
 		{
@@ -765,17 +778,54 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			MetaClass metaClass = (MetaClass) value;
 
-			List<MetaMethod> metaMethods = metaClass.getMetaMethods();
+			List<IMetaMember> metaMembers = metaClass.getMetaMembers();
 
-			for (MetaMethod metaMethod : metaMethods)
+			for (IMetaMember member : metaMembers)
 			{
-				if (metaMethod.isCompiled())
+				if (member.isCompiled())
 				{
-					methodList.getItems().add(metaMethod);
+					memberList.getItems().add(member);
 				}
 				else if (!showOnlyCompiled)
 				{
-					methodList.getItems().add(metaMethod);
+					memberList.getItems().add(member);
+				}
+			}
+
+			memberList.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+			{
+				@Override
+				public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+				{
+					return new MetaMethodCell();
+				}
+			});
+
+		}
+	}
+
+	static class MetaMethodCell extends ListCell<IMetaMember>
+	{
+		@Override
+		public void updateItem(IMetaMember item, boolean empty)
+		{
+			super.updateItem(item, empty);
+
+			if (item != null)
+			{
+				setText(item.toStringUnqualifiedMethodName());
+
+				if (isSelected())
+				{
+					setTextFill(Color.WHITE);
+				}
+				else if (item.isCompiled())
+				{
+					setTextFill(Color.RED);
+				}
+				else
+				{
+					setTextFill(Color.BLACK);
 				}
 			}
 		}
