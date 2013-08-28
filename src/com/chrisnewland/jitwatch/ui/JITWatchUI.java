@@ -82,6 +82,8 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnStats;
 	private Button btnHisto;
 	private Button btnErrorLog;
+	
+	private Label lblHeap;
 
 	private ConfigStage configStage;
 	private TimeLineStage timeLineStage;
@@ -89,6 +91,8 @@ public class JITWatchUI extends Application implements IJITListener
 	private HistoStage histoStage;
 
 	private IMetaMember selectedMember;
+	
+	private Runtime runtime = Runtime.getRuntime();
 
 	// needs to be synchronized as buffer drained async on GUI thread
 	private StringBuffer logBuffer = new StringBuffer();
@@ -340,6 +344,8 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
+		lblHeap = new Label();
+		
 		int topHeight = 50;
 		int bottomHeight = 100;
 
@@ -356,6 +362,7 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnErrorLog);
 		hboxTop.getChildren().add(cbOnlyCompiled);
 		hboxTop.getChildren().add(cbHideInterfaces);
+		hboxTop.getChildren().add(lblHeap);
 		hboxTop.setPrefHeight(topHeight);
 		hboxTop.setSpacing(10);
 
@@ -626,7 +633,17 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			refreshLog();
 		}
+		
+		long totalMemory = runtime.totalMemory();
+		long freeMemory = runtime.freeMemory();
+		long usedMemory = totalMemory - freeMemory;
+		
+		long megabyte = 1024*1024;
+		
+		String heapString = "Heap: " + (usedMemory/megabyte) + "/" + (totalMemory/megabyte) + "M";
 
+		lblHeap.setText(heapString);
+		
 		btnErrorLog.setText("Errors (" + errorCount + ")");
 	}
 

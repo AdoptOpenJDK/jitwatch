@@ -24,7 +24,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 
-		Scene scene = new Scene(vbox, 360, 340);
+		Scene scene = new Scene(vbox, 360, 420);
 		
 		listView = new ListView<Label>();
 		
@@ -68,6 +68,11 @@ public class StatsStage extends Stage
 		listView.getItems().add(makeLabel("C2N Compiled", stats.getCountC2N()));	
 		listView.getItems().add(makeLabel("Total JIT Time", stats.getTotalCompileTime()));
 		listView.getItems().add(makeLabel("Native bytes", stats.getNativeBytes()));		
+
+		listView.getItems().add(makeLabel("Loaded Classes", stats.getCountClass()));		
+		listView.getItems().add(makeLabel("Total Methods", stats.getCountMethod()));		
+		listView.getItems().add(makeLabel("Total Constructors", stats.getCountConstructor()));		
+
 	}
 	
 	private Label makeLabel(String title, long value)

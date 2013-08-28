@@ -20,10 +20,13 @@ public class JITStats
 	private long countC2N = 0;
 	private long totalCompileTime = 0;
 	private long nativeBytes = 0;
-	
+
+	private long countClass = 0;
+	private long countMethod = 0;
+	private long countConstructor = 0;
+
 	private Histo histo = new Histo(10);
-	
-	
+
 	public void reset()
 	{
 		countPrivate = 0;
@@ -41,10 +44,14 @@ public class JITStats
 		countC2 = 0;
 		countC2N = 0;
 		totalCompileTime = 0;
-		nativeBytes = 0;		
+		nativeBytes = 0;
 		histo.clear();
+
+		countClass = 0;
+		countMethod = 0;
+		countConstructor = 0;
 	}
-	
+
 	public void recordDelay(long delay)
 	{
 		totalCompileTime += delay;
@@ -55,7 +62,7 @@ public class JITStats
 	{
 		return histo;
 	}
-	
+
 	public void incCountPrivate()
 	{
 		countPrivate++;
@@ -115,12 +122,27 @@ public class JITStats
 	{
 		countC2++;
 	}
-	
+
 	public void incCountC2N()
 	{
 		countC2N++;
 	}
-	
+
+	public void incCountClass()
+	{
+		countClass++;
+	}
+
+	public void incCountMethod()
+	{
+		countMethod++;
+	}
+
+	public void incCountConstructor()
+	{
+		countConstructor++;
+	}
+
 	public void addNativeBytes(long count)
 	{
 		nativeBytes += count;
@@ -185,22 +207,52 @@ public class JITStats
 	{
 		return countC2;
 	}
-	
+
 	public long getCountC2N()
 	{
 		return countC2N;
 	}
-	
+
+	public long getCountClass()
+	{
+		return countClass;
+	}
+
+	public void setCountClass(long countClass)
+	{
+		this.countClass = countClass;
+	}
+
+	public long getCountMethod()
+	{
+		return countMethod;
+	}
+
+	public void setCountMethod(long countMethod)
+	{
+		this.countMethod = countMethod;
+	}
+
+	public long getCountConstructor()
+	{
+		return countConstructor;
+	}
+
+	public void setCountConstructor(long countConstructor)
+	{
+		this.countConstructor = countConstructor;
+	}
+
 	public long getTotalCompileTime()
 	{
 		return totalCompileTime;
 	}
-	
+
 	public long getTotalCompiledMethods()
 	{
 		return countC1 + countC2 + countC2N + countOSR;
 	}
-	
+
 	public long getNativeBytes()
 	{
 		return nativeBytes;
