@@ -5,6 +5,11 @@ Log analyser for Java HotSpot compiler.
 
 Processes a completed hotspot.log or tails a live one.
 
+To generate the log file used by JITWatch run your program with JRE switches
+-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly 
+
+hsdis is required for -XX:PrintAssembly
+
 Easily view which methods are compiled and plot a timeline of JIT compilations.
 
 Add source trees and jars/class folders to enable opening source / bytecode from a context menu.
