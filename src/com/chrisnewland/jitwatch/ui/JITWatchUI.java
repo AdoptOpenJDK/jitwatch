@@ -67,7 +67,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private boolean hideInterfaces = true;
 
 	private TreeItem<Object> selectedNode;
-	
+
 	private List<Stage> openPopupStages = new ArrayList<>();
 
 	private TextArea textArea;
@@ -173,9 +173,12 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				for (Stage s : openPopupStages)
 				{
-					s.close();
+					if (s != null)
+					{
+						s.close();
+					}
 				}
-				
+
 				stopWatching();
 			}
 		});
@@ -272,9 +275,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				configStage = new ConfigStage(JITWatchUI.this, jw.getProperties());
 				configStage.show();
-				
+
 				openPopupStages.add(configStage);
-				
+
 				btnConfigure.setDisable(true);
 			}
 		});
@@ -287,9 +290,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 				timeLineStage.show();
-				
+
 				openPopupStages.add(timeLineStage);
-				
+
 				btnTimeLine.setDisable(true);
 			}
 		});
@@ -302,9 +305,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
 				statsStage.show();
-				
+
 				openPopupStages.add(statsStage);
-				
+
 				btnStats.setDisable(true);
 			}
 		});
@@ -317,9 +320,9 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
 				histoStage.show();
-				
+
 				openPopupStages.add(histoStage);
-				
+
 				btnHisto.setDisable(true);
 			}
 		});
@@ -330,9 +333,9 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				TextViewerStage viewer = new TextViewerStage("Error Log", errorLog.toString(), false);
+				TextViewerStage viewer = new TextViewerStage(JITWatchUI.this, "Error Log", errorLog.toString(), false);
 				viewer.show();
-				
+
 				openPopupStages.add(viewer);
 			}
 		});
@@ -365,7 +368,7 @@ public class JITWatchUI extends Application implements IJITListener
 				showMemberInfo(newVal);
 			}
 		});
-		
+
 		final ContextMenu contextMenu = new ContextMenu();
 
 		MenuItem menuItemSource = new MenuItem("Show Source");
@@ -376,7 +379,6 @@ public class JITWatchUI extends Application implements IJITListener
 
 		MenuItem menuItemNative = new MenuItem("Show Native Code");
 		contextMenu.getItems().add(menuItemNative);
-		
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
 		{
@@ -509,36 +511,36 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String source = ResourceLoader.getSource(jw.getSourceLocations(), fqName);
 
-		TextViewerStage tvs = new TextViewerStage("Source code for " + fqName, source, true);
+		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Source code for " + fqName, source, true);
 		tvs.show();
-		
+
 		openPopupStages.add(tvs);
-		
+
 		tvs.jumpTo(member.getSignatureRegEx());
 	}
 
 	private void openBytecode(IMetaMember member)
 	{
 		String searchMethod = member.getSignatureForBytecode();
-		
+
 		MetaClass methodClass = member.getMetaClass();
 
 		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(jw.getClassLocations());
 
 		String bc = bytecodeCache.get(searchMethod);
 
-		TextViewerStage tvs = new TextViewerStage("Bytecode for " + member.toString(), bc, false);
+		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Bytecode for " + member.toString(), bc, false);
 		tvs.show();
-		
+
 		openPopupStages.add(tvs);
 	}
 
 	private void openNativeCode(IMetaMember member)
 	{
 		String nativeCode = member.getNativeCode();
-		TextViewerStage tvs = new TextViewerStage("Native code for " + member.toString(), nativeCode, false);
+		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Native code for " + member.toString(), nativeCode, false);
 		tvs.show();
-		
+
 		openPopupStages.add(tvs);
 	}
 
@@ -655,23 +657,30 @@ public class JITWatchUI extends Application implements IJITListener
 
 		btnConfigure.setDisable(false);
 	}
-	
-	public void timeLineClosed()
-	{
-		btnTimeLine.setDisable(false);
-		timeLineStage = null;
-	}
 
-	public void statsClosed()
+	public void handleStageClosed(Stage stage)
 	{
-		btnStats.setDisable(false);
-		statsStage = null;
-	}
+		openPopupStages.remove(stage);
 
-	public void histoStageClosed()
-	{
-		btnHisto.setDisable(false);
-		histoStage = null;
+		if (stage instanceof TimeLineStage)
+		{
+			btnTimeLine.setDisable(false);
+			timeLineStage = null;
+		}
+		else if (stage instanceof StatsStage)
+		{
+			btnStats.setDisable(false);
+			statsStage = null;
+		}
+		else if (stage instanceof HistoStage)
+		{
+			btnHisto.setDisable(false);
+			histoStage = null;
+		}
+		else if (stage instanceof TimeLineStage)
+		{
+
+		}
 	}
 
 	@Override

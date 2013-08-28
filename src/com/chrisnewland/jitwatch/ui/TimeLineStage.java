@@ -58,7 +58,7 @@ public class TimeLineStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				parent.timeLineClosed();
+				parent.handleStageClosed(TimeLineStage.this);
 			}
 		});
 

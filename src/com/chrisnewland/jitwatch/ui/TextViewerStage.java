@@ -1,6 +1,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
@@ -8,14 +9,24 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
 public class TextViewerStage extends Stage
 {
     private TextArea textArea;
     
-    public TextViewerStage(String title, String source, boolean showLineNumbers)
+    public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers)
     {
         initStyle(StageStyle.DECORATED);
+        
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(TextViewerStage.this);
+			}
+		});
         
         if (source == null)
         {

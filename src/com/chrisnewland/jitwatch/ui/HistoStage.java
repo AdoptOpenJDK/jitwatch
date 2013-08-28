@@ -55,7 +55,7 @@ public class HistoStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				parent.histoStageClosed();
+				parent.handleStageClosed(HistoStage.this);
 			}
 		});
 

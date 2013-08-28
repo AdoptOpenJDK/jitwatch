@@ -1,6 +1,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.core.JITStats;
+
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -40,7 +41,7 @@ public class StatsStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				parent.statsClosed();
+				parent.handleStageClosed(StatsStage.this);
 			}
 		});
 	}
