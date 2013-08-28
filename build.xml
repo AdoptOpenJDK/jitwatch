@@ -9,9 +9,9 @@
 	</target>
 
 	<path id="classpath">
-<!--
-	        <fileset dir="${lib}" includes="**/*.jar"/>
--->
+		<filelist>
+		      <file name="${java.home}\lib\jfxrt.jar"/>
+		</filelist>
         </path>
 
 	<target name="compile" depends="init">
