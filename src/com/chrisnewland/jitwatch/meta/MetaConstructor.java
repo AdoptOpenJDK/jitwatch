@@ -4,18 +4,18 @@ import java.lang.reflect.Constructor;
 
 public class MetaConstructor extends AbstractMetaMember implements Comparable<MetaConstructor>
 {
-	private Constructor<?> constructor;
+	private String constructorToString;
 
 	public MetaConstructor(Constructor<?> constructor, MetaClass methodClass)
 	{
-		this.constructor = constructor;
+		this.constructorToString = constructor.toString();
 		this.methodClass = methodClass;
 	}
 
 	@Override
 	public String toString()
 	{
-		String methodSigWithoutThrows = constructor.toString();
+		String methodSigWithoutThrows = constructorToString;
 
 		int closingParentheses = methodSigWithoutThrows.indexOf(')');
 
@@ -30,7 +30,7 @@ public class MetaConstructor extends AbstractMetaMember implements Comparable<Me
 	@Override
 	public String getSignatureRegEx()
 	{
-		String unqualifiedSig = makeUnqualified(constructor.toString());
+		String unqualifiedSig = makeUnqualified(constructorToString);
 
 		return unqualifiedSig;
 	}
@@ -38,7 +38,7 @@ public class MetaConstructor extends AbstractMetaMember implements Comparable<Me
 	@Override
 	public String getSignatureForBytecode()
 	{
-		return constructor.toString();
+		return constructorToString;
 	}
 
 	@Override

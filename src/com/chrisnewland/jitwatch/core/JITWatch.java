@@ -928,6 +928,8 @@ public class JITWatch
 				{
 					Class<?> clazz = loadClassWithoutInitialising(fqClassName);
 
+					stats.incCountClass();
+					
 					if (clazz.isInterface())
 					{
 						metaClass.setInterface(true);
@@ -937,12 +939,14 @@ public class JITWatch
 					{
 						MetaMethod metaMethod = new MetaMethod(m, metaClass);
 						metaClass.addMetaMethod(metaMethod);
+						stats.incCountMethod();
 					}
 					
 					for (Constructor<?> c : clazz.getDeclaredConstructors())
 					{
 						MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
 						metaClass.addMetaConstructor(metaConstructor);
+						stats.incCountConstructor();
 					}
 				}
 				catch (ClassNotFoundException cnf)

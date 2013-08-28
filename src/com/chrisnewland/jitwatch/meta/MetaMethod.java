@@ -4,18 +4,18 @@ import java.lang.reflect.Method;
 
 public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMethod>
 {
-	private Method method;
+	private String methodToString;
 
 	public MetaMethod(Method method, MetaClass methodClass)
 	{
-		this.method = method;
+		this.methodToString = method.toString();
 		this.methodClass = methodClass;
 	}
 
 	@Override
 	public String toString()
 	{
-		String methodSigWithoutThrows = method.toString();
+		String methodSigWithoutThrows = methodToString;
 
 		int closingParentheses = methodSigWithoutThrows.indexOf(')');
 
@@ -30,7 +30,7 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
 	@Override
 	public String getSignatureRegEx()
 	{
-		String unqualifiedSig = makeUnqualified(method.toString());
+		String unqualifiedSig = makeUnqualified(methodToString);
 
 		return unqualifiedSig;
 	}
@@ -38,7 +38,7 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
 	@Override
 	public String getSignatureForBytecode()
 	{
-		String ts = method.toString();
+		String ts = methodToString;
 
 		int openParams = ts.lastIndexOf('(');
 
