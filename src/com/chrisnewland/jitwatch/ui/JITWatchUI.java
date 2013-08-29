@@ -272,7 +272,7 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		btnConfigure = new Button("Configure");
+		btnConfigure = new Button("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -287,7 +287,7 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		btnTimeLine = new Button("TimeLine");
+		btnTimeLine = new Button("Chart");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

@@ -1,5 +1,6 @@
 package com.chrisnewland.jitwatch.ui;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,11 +9,19 @@ import com.chrisnewland.jitwatch.core.HistoTreeWalker;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -23,10 +32,11 @@ public class HistoStage extends Stage
 {
 	private Canvas canvas;
 	private GraphicsContext gc;
-	private JITWatchUI parent;
 
 	private Histo histo;
-	
+
+	private String selectedAttribute;
+
 	private static final int GRAPH_GAP_LEFT = 60;
 	private static final int GRAPH_GAP_RIGHT = 20;
 
@@ -50,10 +60,6 @@ public class HistoStage extends Stage
 
 	public HistoStage(final JITWatchUI parent)
 	{
-		this.parent = parent;
-		
-		histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true,  "compileMillis",10);
-		
 		initStyle(StageStyle.DECORATED);
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -71,11 +77,46 @@ public class HistoStage extends Stage
 		canvas = new Canvas(width, height);
 		gc = canvas.getGraphicsContext2D();
 
-		StackPane root = new StackPane();
-		Scene scene = new Scene(root, width, height);
+		final Map<String, String> attrMap = new HashMap<>();
+		attrMap.put("Method JIT-Compilation Times", "compileMillis");
+		attrMap.put("Bytecodes per Compiled Method", "bytes");
+		attrMap.put("Native Bytes per Compiled Method", "nmsize");
 
-		canvas.widthProperty().bind(root.widthProperty());
-		canvas.heightProperty().bind(root.heightProperty());
+		VBox vbox = new VBox();
+
+		ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
+
+		selectedAttribute = attrMap.get(options.get(0));
+
+		final ComboBox<String> comboBox = new ComboBox<>(options);
+		comboBox.setValue(options.get(0));
+
+		Button btnGo = new Button("Go");
+
+		btnGo.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				selectedAttribute = attrMap.get(comboBox.getValue());
+				histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
+				redraw();
+			}
+		});
+
+		HBox hbox = new HBox();
+		hbox.setPadding(new Insets(4,0,0,GRAPH_GAP_LEFT));
+		hbox.setSpacing(10);
+		hbox.getChildren().add(comboBox);
+		hbox.getChildren().add(btnGo);
+
+		vbox.getChildren().add(hbox);
+		vbox.getChildren().add(canvas);
+
+		Scene scene = new Scene(vbox, width, height);
+
+		canvas.widthProperty().bind(scene.widthProperty());
+		canvas.heightProperty().bind(scene.heightProperty().subtract(30));
 
 		class SceneResizeListener implements ChangeListener<Number>
 		{
@@ -91,9 +132,11 @@ public class HistoStage extends Stage
 		canvas.widthProperty().addListener(rl);
 		canvas.heightProperty().addListener(rl);
 
-		root.getChildren().add(canvas);
+		setTitle("JITWatch Histogram");
 
-		setTitle("JITWatch Compile Times Histogram");
+		System.out.println("plotting " + selectedAttribute);
+		
+		histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
 
 		setScene(scene);
 		show();
@@ -105,20 +148,20 @@ public class HistoStage extends Stage
 	{
 		List<Map.Entry<Long, Integer>> result = histo.getSortedData();
 
+		double width = canvas.getWidth();
+		double height = canvas.getHeight();
+		double chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
+		double chartHeight = height - GRAPH_GAP_Y * 2;
+
+		gc.setFill(Color.WHITE);
+		gc.fillRect(0, 0, width, height);
+		gc.setFill(Color.BEIGE);
+		gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+		gc.setStroke(Color.BLACK);
+		gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+		
 		if (result.size() > 0)
 		{
-			double width = canvas.getWidth();
-			double height = canvas.getHeight();
-			double chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
-			double chartHeight = height - GRAPH_GAP_Y * 2;
-
-			gc.setFill(Color.WHITE);
-			gc.fillRect(0, 0, width, height);
-			gc.setFill(Color.BEIGE);
-			gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-			gc.setStroke(Color.BLACK);
-			gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-
 			double minStamp = 0;
 			double maxStamp = histo.getLastTime();
 
@@ -193,7 +236,7 @@ public class HistoStage extends Stage
 
 			for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99, 100 })
 			{
-				gc.strokeText(percent + "% : " + histo.getPercentile(percent) + "ms", xPos, yPos);
+				gc.strokeText(percent + "% : " + histo.getPercentile(percent), xPos, yPos);
 				yPos += 20;
 			}
 		}
