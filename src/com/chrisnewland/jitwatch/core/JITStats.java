@@ -25,8 +25,6 @@ public class JITStats
 	private long countMethod = 0;
 	private long countConstructor = 0;
 
-	private Histo histo = new Histo(10);
-
 	public void reset()
 	{
 		countPrivate = 0;
@@ -45,7 +43,6 @@ public class JITStats
 		countC2N = 0;
 		totalCompileTime = 0;
 		nativeBytes = 0;
-		histo.clear();
 
 		countClass = 0;
 		countMethod = 0;
@@ -55,12 +52,6 @@ public class JITStats
 	public void recordDelay(long delay)
 	{
 		totalCompileTime += delay;
-		histo.recordTime(delay);
-	}
-
-	public Histo getHisto()
-	{
-		return histo;
 	}
 
 	public void incCountPrivate()

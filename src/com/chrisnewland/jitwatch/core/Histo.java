@@ -29,39 +29,39 @@ public class Histo
 		this.resolution = resolution;
 	}
 
-	public void recordTime(long time)
+	public void addValue(long value)
 	{
 		synchronized (values)
 		{
-			values.add(time);
+			values.add(value);
 		}
 
 		if (resolution > 1)
 		{
-			time = (time / resolution) * resolution;
+			value = (value / resolution) * resolution;
 		}
 
 		int newCount = 0;
 
-		if (bucketMap.containsKey(time))
+		if (bucketMap.containsKey(value))
 		{
-			newCount = bucketMap.get(time) + 1;
+			newCount = bucketMap.get(value) + 1;
 		}
 		else
 		{
 			newCount = 1;
 		}
 
-		bucketMap.put(time, newCount);
+		bucketMap.put(value, newCount);
 
 		if (newCount > maxCount)
 		{
 			maxCount = newCount;
 		}
 
-		if (time > lastTime)
+		if (value > lastTime)
 		{
-			lastTime = time;
+			lastTime = value;
 		}
 
 	}

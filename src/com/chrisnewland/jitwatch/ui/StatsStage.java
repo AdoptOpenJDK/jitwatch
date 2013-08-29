@@ -23,12 +23,14 @@ public class StatsStage extends Stage
 		this.parent = parent;
 		
 		VBox vbox = new VBox();
-
-		Scene scene = new Scene(vbox, 360, 420);
+		
+		Scene scene = new Scene(vbox, 360, 450);
 		
 		listView = new ListView<Label>();
 		
 		vbox.getChildren().add(listView);
+		
+		listView.prefHeightProperty().bind(scene.heightProperty());
 
 		setTitle("JITWatch Method Statistics");
 		

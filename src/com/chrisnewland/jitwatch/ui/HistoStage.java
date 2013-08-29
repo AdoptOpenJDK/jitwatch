@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.Histo;
+import com.chrisnewland.jitwatch.core.HistoTreeWalker;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -23,6 +25,8 @@ public class HistoStage extends Stage
 	private GraphicsContext gc;
 	private JITWatchUI parent;
 
+	private Histo histo;
+	
 	private static final int GRAPH_GAP_LEFT = 60;
 	private static final int GRAPH_GAP_RIGHT = 20;
 
@@ -47,7 +51,9 @@ public class HistoStage extends Stage
 	public HistoStage(final JITWatchUI parent)
 	{
 		this.parent = parent;
-
+		
+		histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true,  "compileMillis",10);
+		
 		initStyle(StageStyle.DECORATED);
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -97,8 +103,6 @@ public class HistoStage extends Stage
 
 	public void redraw()
 	{
-		Histo histo = parent.getJITStats().getHisto();
-
 		List<Map.Entry<Long, Integer>> result = histo.getSortedData();
 
 		if (result.size() > 0)
@@ -118,7 +122,6 @@ public class HistoStage extends Stage
 			double minStamp = 0;
 			double maxStamp = histo.getLastTime();
 
-			// assume compiled is no more than 20% bigger than queued
 			int maxEvents = histo.getMaxCount();
 
 			gc.setStroke(Color.BLACK);

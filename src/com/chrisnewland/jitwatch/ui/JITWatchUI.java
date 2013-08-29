@@ -15,6 +15,7 @@ import com.chrisnewland.jitwatch.core.ResourceLoader;
 import com.chrisnewland.jitwatch.meta.IMetaMember;
 import com.chrisnewland.jitwatch.meta.MetaClass;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
+import com.chrisnewland.jitwatch.meta.PackageManager;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -857,6 +858,11 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 	}
 
+	public PackageManager getPackageManager()
+	{
+		return jw.getPackageManager();
+	}
+	
 	private void showTree()
 	{
 		List<MetaPackage> roots = jw.getPackageManager().getRootPackages();
