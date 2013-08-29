@@ -208,8 +208,8 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		int width = 900;
-		int height = 480;
+		int width = 1024;
+		int height = 592;
 
 		BorderPane borderPane = new BorderPane();
 
