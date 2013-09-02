@@ -3,3 +3,4 @@
 .project
 .settings/
 /ide-bin
+/target

@@ -10,7 +10,7 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 public class BytecodeLoader
 {
-	public static Map<String, String> fetchByteCodeForClass(String[] classLocations, String fqClassName)
+    public static Map<String, String> fetchByteCodeForClass(String[] classLocations, String fqClassName)
 	{
 		String[] args;
 
