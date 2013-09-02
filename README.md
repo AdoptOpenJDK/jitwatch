@@ -21,3 +21,23 @@ Instructions for building hsdis are here http://dropzone.nfshost.com/hsdis.htm
 NB: UI built with JavaFX so requires $JAVA_HOME/jre/lib/jfxrt.jar on compile and runtime classpath if you are using Java 7.
 
 NB: Requires $JDK_HOME/lib/tools.jar on classpath if you want to inspect bytecode.
+
+--------------------------
+How to build:
+
+ant
+
+or if your ant is not configured to point at a JDK
+
+ant -Djava.home=path_to_jdk
+--------------------------
+How to run with (GUI version)
+
+./launchUI.sh
+
+How to run (Console version - simplified output)
+
+./launchHeadless.sh
+
+If required, edit the launch scripts to set up your JDK_HOME variable by uncommenting and completing the line
+#export JDK_HOME=
