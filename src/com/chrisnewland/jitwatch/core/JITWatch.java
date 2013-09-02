@@ -30,12 +30,13 @@ import com.chrisnewland.jitwatch.meta.MetaMethod;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
 import com.chrisnewland.jitwatch.meta.PackageManager;
 
-// To generate the log file used by JITWatch run your program with JRE switches
-// -XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly 
-
-//http://dropzone.nfshost.com/hsdis.htm
-//https://wikis.oracle.com/display/HotSpotInternals/LogCompilation+overview
-
+/** 
+ * To generate the log file used by JITWatch run your program with JRE switches
+ * <code>-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly</code>
+ * 
+ * http://dropzone.nfshost.com/hsdis.htm
+ * https://wikis.oracle.com/display/HotSpotInternals/LogCompilation+overview
+ */
 public class JITWatch
 {
 	enum EventType
@@ -77,8 +78,7 @@ public class JITWatch
 	
 	private JITStats stats = new JITStats();
 
-	// Not going to use a CopyOnWriteArrayList
-	// as writes will vastly outnumber reads
+	// Not going to use a CopyOnWriteArrayList as writes will vastly out number reads
 	private List<JITEvent> jitEvents = new ArrayList<>();
 
 	private boolean mountSourcesAndClasses;
@@ -189,10 +189,9 @@ public class JITWatch
 	{
 		log("Adding classpath: " + uri.toString());
 
-		try
+		try(URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader())
 		{
-			URL url = uri.toURL();
-			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+		    URL url = uri.toURL();
 			Class<?> urlClass = URLClassLoader.class;
 			Method method = urlClass.getDeclaredMethod("addURL", new Class<?>[] { URL.class });
 			method.setAccessible(true);
