@@ -68,8 +68,6 @@
     </properties>
 
     <dependencyManagement>
-        <!-- TODO Uncomment when you add tests -->
-        <!-- 
         <dependencies>
             <dependency>
                 <groupId>junit</groupId>
@@ -77,18 +75,34 @@
                 <version>4.11</version>
             </dependency>
         </dependencies>
-        -->
     </dependencyManagement>
 
     <dependencies>
-        <!-- TODO Uncomment when you add tests -->
-        <!-- 
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        -->
+
+<dependency>
+   <groupId>com.oracle</groupId>
+   <artifactId>javafx</artifactId>
+   <version>2.2</version>
+   <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
+   <scope>system</scope>
+</dependency>
+
+
+<dependency>
+   <groupId>com.oracle</groupId>
+   <artifactId>tools.jar</artifactId>
+   <version>1.7</version>
+   <systemPath>${java.home}/..//lib/tools.jar</systemPath>
+   <scope>system</scope>
+</dependency>
+
+
     </dependencies>
 
     <build>
