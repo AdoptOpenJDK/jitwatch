@@ -1,8 +1,9 @@
 <project name="jitwatch" default="all" basedir=".">
-	<property name="src" value="src" />
+	<property name="src" value="src/main/java" />
 	<property name="bin" value="bin" />
 	<property name="lib" value="lib" />
-
+	<property environment="env"/>
+	
 	<target name="init">
 		<delete dir="${bin}" />
 		<mkdir dir="${bin}" />
@@ -10,8 +11,8 @@
 
 	<path id="classpath">
 		<filelist>
-		      <file name="${java.home}/jre/lib/jfxrt.jar"/>
-			  <file name="${java.home}/lib/tools.jar"/>			
+		      	<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar"/>
+			<file name="${env.JAVA_HOME}/lib/tools.jar"/>			
 		</filelist>
         </path>
 
