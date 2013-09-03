@@ -6,7 +6,6 @@
 	<target name="init">
 		<delete dir="${bin}" />
 		<mkdir dir="${bin}" />
-		<echo message="${java.home}"/>
 	</target>
 
 	<path id="classpath">
