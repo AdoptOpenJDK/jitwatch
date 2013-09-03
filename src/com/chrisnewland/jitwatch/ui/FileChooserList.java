@@ -1,6 +1,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.event.ActionEvent;
@@ -147,15 +148,15 @@ public class FileChooserList extends VBox
 		}
 	}
 
-	public String getFiles()
+	public List<String> getFiles()
 	{
-		StringBuilder sb = new StringBuilder();
-
+		List<String> result = new ArrayList<>();
+		
 		for (Label label : fileList.getItems())
 		{
-			sb.append(label.getText()).append("\n");
+			result.add(label.getText());
 		}
 
-		return sb.toString();
+		return result;
 	}
 }

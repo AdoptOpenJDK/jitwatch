@@ -20,7 +20,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -133,8 +132,6 @@ public class HistoStage extends Stage
 		canvas.heightProperty().addListener(rl);
 
 		setTitle("JITWatch Histogram");
-
-		System.out.println("plotting " + selectedAttribute);
 		
 		histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
 

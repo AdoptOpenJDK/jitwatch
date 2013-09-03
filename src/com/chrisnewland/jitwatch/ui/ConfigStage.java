@@ -1,11 +1,7 @@
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import com.chrisnewland.jitwatch.core.JITWatch;
+import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.StringUtil;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,31 +19,22 @@ import javafx.stage.WindowEvent;
 
 public class ConfigStage extends Stage
 {
-    public ConfigStage(final JITWatchUI parent, final Properties props)
+    public ConfigStage(final JITWatchUI parent, final JITWatchConfig config)
     {
         initStyle(StageStyle.UTILITY);
-
-        String confPackages = (String) props.get(JITWatch.CONF_PACKAGE_FILTER);
-        String confSources = (String) props.get(JITWatch.CONF_SOURCES);
-        String confClasses = (String) props.get(JITWatch.CONF_CLASSES);
 
         VBox vbox = new VBox();
 
         Label labelFilter = new Label("Package filter (leave empty to show all packages)");
         final TextArea taFilter = new TextArea();
-        taFilter.setText(JITWatch.unpack(confPackages));
+        taFilter.setText(StringUtil.listToText(config.getAllowedPackages(), "\n"));
         taFilter.setDisable(false);
         
         vbox.setPadding(new Insets(10));
         vbox.setSpacing(10);
 
-        String[] sources = JITWatch.unpack(confSources).split("\n");
-        List<String> sourceList = new ArrayList<>(Arrays.asList(sources));
-        final FileChooserList chooserSource = new FileChooserList(this, "Source locations", sourceList);
-
-        String[] classes = JITWatch.unpack(confClasses).split("\n");
-        List<String> classList = new ArrayList<>(Arrays.asList(classes));
-        final FileChooserList chooserClasses = new FileChooserList(this, "Class locations", classList);
+        final FileChooserList chooserSource = new FileChooserList(this, "Source locations", config.getSourceLocations());
+        final FileChooserList chooserClasses = new FileChooserList(this, "Class locations", config.getClassLocations());
 
         HBox hboxButtons = new HBox();
         hboxButtons.setSpacing(20);
@@ -61,12 +48,14 @@ public class ConfigStage extends Stage
         {
             @Override
             public void handle(ActionEvent e)
-            {
-                props.setProperty(JITWatch.CONF_PACKAGE_FILTER, JITWatch.pack(taFilter.getText()));
-                props.setProperty(JITWatch.CONF_SOURCES, JITWatch.pack(chooserSource.getFiles()));
-                props.setProperty(JITWatch.CONF_CLASSES, JITWatch.pack(chooserClasses.getFiles()));
+            {               
+                config.setAllowedPackages(StringUtil.textToList(taFilter.getText(), "\n"));
+                config.setSourceLocations(chooserSource.getFiles());
+                config.setClassLocations(chooserClasses.getFiles());
 
-                parent.updateConfig(props);
+                config.saveConfig();
+                
+				parent.handleStageClosed(ConfigStage.this);
                 close();
             }
         });
@@ -76,7 +65,7 @@ public class ConfigStage extends Stage
             @Override
             public void handle(ActionEvent e)
             {
-                parent.updateConfig(null);
+				parent.handleStageClosed(ConfigStage.this);
                 close();
             }
         });
@@ -107,7 +96,7 @@ public class ConfigStage extends Stage
             @Override
             public void handle(WindowEvent arg0)
             {
-                parent.updateConfig(null);
+				parent.handleStageClosed(ConfigStage.this);
             }
         });
     }

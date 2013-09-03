@@ -2,9 +2,7 @@ package com.chrisnewland.jitwatch.core;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,10 +14,8 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +26,7 @@ import com.chrisnewland.jitwatch.meta.MetaMethod;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
 import com.chrisnewland.jitwatch.meta.PackageManager;
 
-/** 
+/**
  * To generate the log file used by JITWatch run your program with JRE switches
  * <code>-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly</code>
  * 
@@ -51,18 +47,9 @@ public class JITWatch
 
 	private static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 
-	private static final String JITWATCH_PROPERTIES = "jitwatch.properties";
-	public static final String CONF_PACKAGE_FILTER = "PackageFilter";
-	public static final String CONF_SOURCES = "Sources";
-	public static final String CONF_CLASSES = "Classes";
-
 	private static final String LOADED = "[Loaded ";
 
 	private static final String METHOD_START = "method='";
-
-	private String[] allowedPackages;
-	private String[] sourceLocations;
-	private String[] classLocations;
 
 	private PackageManager pm;
 
@@ -75,123 +62,39 @@ public class JITWatch
 	private IJITListener logListener = null;
 
 	private long currentLineNumber;
-	
+
 	private JITStats stats = new JITStats();
 
-	// Not going to use a CopyOnWriteArrayList as writes will vastly out number reads
+	// Not going to use a CopyOnWriteArrayList as writes will vastly out number
+	// reads
 	private List<JITEvent> jitEvents = new ArrayList<>();
 
-	private boolean mountSourcesAndClasses;
+	private JITWatchConfig config;
 
 	public JITWatch(IJITListener logListener, boolean mountSourcesAndClasses)
 	{
 		this.logListener = logListener;
-		this.mountSourcesAndClasses = mountSourcesAndClasses;
 		pm = new PackageManager();
-		setProperties(getProperties());
-	}
+		config = new JITWatchConfig(mountSourcesAndClasses, logListener);
 
-	public File getConfigFile()
-	{
-		return new File(System.getProperty("user.dir"), JITWATCH_PROPERTIES);
-	}
-
-	public void setProperties(Properties props)
-	{
-		String confPackages = (String) props.get(JITWatch.CONF_PACKAGE_FILTER);
-
-		String confClasses = null;
-		String confSources = null;
-		
 		if (mountSourcesAndClasses)
 		{
-			confClasses = (String) props.get(JITWatch.CONF_CLASSES);
-			confSources = (String) props.get(JITWatch.CONF_SOURCES);
-		}
-
-		if (confPackages != null && confPackages.trim().length() > 0)
-		{
-			allowedPackages = confPackages.split(",");
-		}
-		else
-		{
-			allowedPackages = new String[0];
-		}
-
-		if (confClasses != null && confClasses.trim().length() > 0)
-		{
-			classLocations = confClasses.split(",");
-
-			for (String filename : classLocations)
+			for (String filename : config.getClassLocations())
 			{
 				addURIToClasspath(new File(filename).toURI());
 			}
 		}
-
-		if (confClasses != null && confClasses.trim().length() > 0)
-		{
-			sourceLocations = confSources.split(",");
-
-			for (String source : sourceLocations)
-			{
-				log("Adding source: " + source);
-			}
-		}
-
-		try
-		{
-			props.store(new FileWriter(getConfigFile()), null);
-		}
-		catch (IOException ioe)
-		{
-			log(ioe.toString());
-		}
-	}
-
-	public Properties getProperties()
-	{
-		Properties jwProps = new Properties();
-
-		try
-		{
-			jwProps.load(new FileReader(getConfigFile()));
-		}
-		catch (FileNotFoundException fnf)
-		{
-
-		}
-		catch (IOException ioe)
-		{
-			log(ioe.toString());
-		}
-
-		return jwProps;
-	}
-
-	public static String unpack(String property)
-	{
-		if (property == null)
-		{
-			return "";
-		}
-		else
-		{
-			return property.replace(",", "\n");
-		}
-	}
-
-	public static String pack(String property)
-	{
-		return property.trim().replace("\n", ",");
 	}
 
 	private void addURIToClasspath(URI uri)
 	{
-		log("Adding classpath: " + uri.toString());
+		logListener.handleLogEntry("Adding classpath: " + uri.toString());
 
-		try(URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader())
+		try
 		{
-		    URL url = uri.toURL();
+			// Try-with-resources on System classloader causes problems due to closing?
+			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+			URL url = uri.toURL();
 			Class<?> urlClass = URLClassLoader.class;
 			Method method = urlClass.getDeclaredMethod("addURL", new Class<?>[] { URL.class });
 			method.setAccessible(true);
@@ -211,14 +114,6 @@ public class JITWatch
 		}
 	}
 
-	private void log(String entry)
-	{
-		if (logListener != null)
-		{
-			logListener.handleLogEntry(entry);
-		}
-	}
-
 	private void logError(String entry)
 	{
 		if (logListener != null)
@@ -234,7 +129,7 @@ public class JITWatch
 		stats.reset();
 
 		jitEvents.clear();
-		
+
 		currentLineNumber = 0;
 
 		BufferedReader input = new BufferedReader(new FileReader(hotspotLog));
@@ -345,7 +240,7 @@ public class JITWatch
 		{
 			t.printStackTrace();
 		}
-		
+
 		currentLineNumber++;
 
 	}
@@ -367,39 +262,17 @@ public class JITWatch
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
 	}
 
-	private Map<String, String> getAttributes(String line)
-	{
-		String[] spaceSep = line.split(" ");
-
-		Map<String, String> result = new HashMap<>();
-
-		for (String part : spaceSep)
-		{
-			String[] kvParts = part.split("=");
-
-			if (kvParts.length == 2)
-			{
-				String key = kvParts[0];
-				String value = getSubstringBetween(kvParts[1], "'", "'");
-
-				result.put(key, value);
-			}
-		}
-
-		return result;
-	}
-
 	private void handleMethod(String currentLine, EventType eventType)
 	{
-		Map<String, String> attrs = getAttributes(currentLine);
+		Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
 
-		String fqMethodName = getSubstringBetween(currentLine, METHOD_START, "'");
+		String fqMethodName = StringUtil.getSubstringBetween(currentLine, METHOD_START, "'");
 
 		if (fqMethodName != null)
 		{
 			fqMethodName = fqMethodName.replace("/", ".");
 
-			boolean packageOK = allowedPackages.length == 0 || isAllowedPackage(fqMethodName);
+			boolean packageOK = config.isAllowedPackage(fqMethodName);
 
 			if (packageOK)
 			{
@@ -413,7 +286,7 @@ public class JITWatch
 	{
 		// <class> <method> (<params>)<return>
 		// java/lang/String charAt (I)C
-		
+
 		IMetaMember metaMember = null;
 
 		Matcher matcher = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)").matcher(sig);
@@ -438,19 +311,19 @@ public class JITWatch
 			{
 				returnClass = returnClasses[0];
 			}
-			
+
 			String signature = createSig(className, methodName, paramClasses, returnClass);
-			
+
 			if (signature != null)
 			{
-				MetaClass metaClass = pm.getMetaClass(className); 
+				MetaClass metaClass = pm.getMetaClass(className);
 
 				if (metaClass != null)
 				{
 					List<IMetaMember> metaList = metaClass.getMetaMembers();
 
 					for (IMetaMember meta : metaList)
-					{							
+					{
 						if (meta.matches(signature))
 						{
 							metaMember = meta;
@@ -505,7 +378,7 @@ public class JITWatch
 
 	private void handleTaskDone(String line)
 	{
-		Map<String, String> attrs = getAttributes(line);
+		Map<String, String> attrs = StringUtil.getLineAttributes(line);
 
 		if (attrs.containsKey("nmsize"))
 		{
@@ -617,7 +490,7 @@ public class JITWatch
 	public String createSig(String className, String methodName, Class<?>[] paramTypes, Class<?> returnType)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		String rName = returnType.getName();
 		rName = fixName(rName);
 
@@ -626,7 +499,7 @@ public class JITWatch
 			builder.append(className);
 		}
 		else
-		{		
+		{
 			builder.append(rName).append(" ").append(className).append(".").append(methodName);
 		}
 
@@ -859,19 +732,6 @@ public class JITWatch
 		throw new RuntimeException("Unknown class for " + c);
 	}
 
-	private boolean isAllowedPackage(String packageName)
-	{
-		for (String allowedPackage : allowedPackages)
-		{
-			if (allowedPackage.equals(packageName) || packageName.startsWith(allowedPackage + "."))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
@@ -886,7 +746,7 @@ public class JITWatch
 
 	private void handleLoaded(String currentLine)
 	{
-		String fqClassName = getSubstringBetween(currentLine, LOADED, " ");
+		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, " ");
 
 		if (fqClassName != null)
 		{
@@ -906,7 +766,7 @@ public class JITWatch
 				className = fqClassName;
 			}
 
-			boolean packageOK = allowedPackages.length == 0 || isAllowedPackage(packageName);
+			boolean packageOK = config.isAllowedPackage(packageName);
 
 			if (packageOK)
 			{
@@ -928,7 +788,7 @@ public class JITWatch
 					Class<?> clazz = loadClassWithoutInitialising(fqClassName);
 
 					stats.incCountClass();
-					
+
 					if (clazz.isInterface())
 					{
 						metaClass.setInterface(true);
@@ -940,7 +800,7 @@ public class JITWatch
 						metaClass.addMetaMethod(metaMethod);
 						stats.incCountMethod();
 					}
-					
+
 					for (Constructor<?> c : clazz.getDeclaredConstructors())
 					{
 						MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
@@ -959,26 +819,6 @@ public class JITWatch
 				}
 			}
 		}
-	}
-
-	private String getSubstringBetween(String input, String start, String end)
-	{
-		int startPos = input.indexOf(start);
-
-		String result = null;
-
-		if (startPos != -1)
-		{
-			int endPos = input.indexOf(end, startPos + start.length());
-
-			if (endPos != -1)
-			{
-				result = input.substring(startPos + start.length(), endPos);
-			}
-
-		}
-
-		return result;
 	}
 
 	public String convertNativeCodeMethodName(String name)
@@ -1007,14 +847,9 @@ public class JITWatch
 		return name;
 	}
 
-	public String[] getClassLocations()
+	public JITWatchConfig getConfig()
 	{
-		return classLocations;
-	}
-
-	public String[] getSourceLocations()
-	{
-		return sourceLocations;
+		return config;
 	}
 
 	public JITStats getJITStats()

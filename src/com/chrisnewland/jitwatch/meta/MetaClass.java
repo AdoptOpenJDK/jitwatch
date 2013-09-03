@@ -54,7 +54,7 @@ public class MetaClass implements Comparable<MetaClass>
 		this.missingDef = missingDef;
 	}
 	
-	public Map<String, String> getBytecodeCache(String[] classLocations)
+	public Map<String, String> getBytecodeCache(List<String> classLocations)
 	{
 		if (bytecodeCache == null)
 		{

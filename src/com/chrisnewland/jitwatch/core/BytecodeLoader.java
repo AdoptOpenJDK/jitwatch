@@ -3,6 +3,7 @@ package com.chrisnewland.jitwatch.core;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.sun.tools.javap.JavapTask;
@@ -10,11 +11,11 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 public class BytecodeLoader
 {
-    public static Map<String, String> fetchByteCodeForClass(String[] classLocations, String fqClassName)
+    public static Map<String, String> fetchByteCodeForClass(List<String> classLocations, String fqClassName)
 	{
 		String[] args;
 
-		if (classLocations.length == 0)
+		if (classLocations.size() == 0)
 		{
 			args = new String[] { "-c", "-p", fqClassName };
 		}

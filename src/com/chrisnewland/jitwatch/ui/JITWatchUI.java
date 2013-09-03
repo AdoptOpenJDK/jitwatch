@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
@@ -278,7 +276,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				configStage = new ConfigStage(JITWatchUI.this, jw.getProperties());
+				configStage = new ConfigStage(JITWatchUI.this, jw.getConfig());
 				configStage.show();
 
 				openPopupStages.add(configStage);
@@ -517,7 +515,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		fqName = fqName.replace(".", "/") + ".java";
 
-		String source = ResourceLoader.getSource(jw.getSourceLocations(), fqName);
+		String source = ResourceLoader.getSource(jw.getConfig().getSourceLocations(), fqName);
 
 		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Source code for " + fqName, source, true);
 		tvs.show();
@@ -533,7 +531,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		MetaClass methodClass = member.getMetaClass();
 
-		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(jw.getClassLocations());
+		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(jw.getConfig().getClassLocations());
 
 		String bc = bytecodeCache.get(searchMethod);
 
@@ -666,16 +664,6 @@ public class JITWatchUI extends Application implements IJITListener
 		showTree();
 	}
 
-	public void updateConfig(Properties updatedProps)
-	{
-		if (updatedProps != null)
-		{
-			jw.setProperties(updatedProps);
-		}
-
-		btnConfigure.setDisable(false);
-	}
-
 	public void handleStageClosed(Stage stage)
 	{
 		openPopupStages.remove(stage);
@@ -695,9 +683,10 @@ public class JITWatchUI extends Application implements IJITListener
 			btnHisto.setDisable(false);
 			histoStage = null;
 		}
-		else if (stage instanceof TimeLineStage)
+		else if (stage instanceof ConfigStage)
 		{
-
+			btnConfigure.setDisable(false);
+			configStage = null;
 		}
 	}
 

@@ -6,12 +6,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class ResourceLoader
 {
-	public static String getSource(String[] locations, String fileName)
+	public static String getSource(List<String> locations, String fileName)
 	{
 		String source = null;
 
