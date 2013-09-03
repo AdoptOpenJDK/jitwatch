@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.core.Histo;
-import com.chrisnewland.jitwatch.core.HistoTreeWalker;
+import com.chrisnewland.jitwatch.histo.Histo;
+import com.chrisnewland.jitwatch.histo.HistoTreeWalker;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

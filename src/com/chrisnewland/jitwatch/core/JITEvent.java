@@ -13,7 +13,7 @@ public class JITEvent
         this.isCompile = isCompile;
         this.methodSignature = methodSignature;
 
-        this.stampString = JITWatchUtil.formatTimestamp(stamp, true);
+        this.stampString = StringUtil.formatTimestamp(stamp, true);
     }
 
     public long getStamp()

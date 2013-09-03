@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.chrisnewland.jitwatch.core.BytecodeLoader;
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 
 public class MetaClass implements Comparable<MetaClass>
 {

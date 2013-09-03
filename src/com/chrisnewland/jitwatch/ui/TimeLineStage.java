@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
-import com.chrisnewland.jitwatch.core.JITWatchUtil;
+import com.chrisnewland.jitwatch.core.StringUtil;
 import com.chrisnewland.jitwatch.meta.IMetaMember;
 
 import javafx.beans.value.ChangeListener;
@@ -192,7 +192,7 @@ public class TimeLineStage extends Stage
 							}
 						}
 
-						String line2 = "Compiled at " + JITWatchUtil.formatTimestamp((long) compiledStampTime, true) + " using "
+						String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
 								+ compiler;
 
 						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
@@ -248,7 +248,7 @@ public class TimeLineStage extends Stage
 
 			boolean showMillis = gridX > 0 && gridX < 5000;
 
-			gc.strokeText(JITWatchUtil.formatTimestamp(gridX, showMillis), x, GRAPH_GAP_Y + chartHeight + 12);
+			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), x, GRAPH_GAP_Y + chartHeight + 12);
 
 			gridX += xInc;
 		}

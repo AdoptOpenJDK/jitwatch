@@ -56,7 +56,9 @@ public class JITWatch
 	private boolean watching = false;
 
 	private boolean inNativeCode = false;
+
 	private StringBuilder nativeCodeBuilder = new StringBuilder();
+
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
@@ -65,8 +67,7 @@ public class JITWatch
 
 	private JITStats stats = new JITStats();
 
-	// Not going to use a CopyOnWriteArrayList as writes will vastly out number
-	// reads
+	// Not using CopyOnWriteArrayList as writes will vastly out number reads
 	private List<JITEvent> jitEvents = new ArrayList<>();
 
 	private JITWatchConfig config;
@@ -92,7 +93,8 @@ public class JITWatch
 
 		try
 		{
-			// Try-with-resources on System classloader causes problems due to closing?
+			// Try-with-resources on System classloader causes problems due to
+			// closing?
 			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 			URL url = uri.toURL();
 			Class<?> urlClass = URLClassLoader.class;
@@ -225,7 +227,7 @@ public class JITWatch
 			{
 				String sig = convertNativeCodeMethodName(currentLine);
 
-				currentMember = convertNMethodSig(sig);
+				currentMember = findMemberWithSignature(sig);
 				inNativeCode = true;
 
 				appendNativeCode(currentLine);
@@ -282,7 +284,7 @@ public class JITWatch
 		}
 	}
 
-	private IMetaMember convertNMethodSig(String sig)
+	private IMetaMember findMemberWithSignature(String sig)
 	{
 		// <class> <method> (<params>)<return>
 		// java/lang/String charAt (I)C
@@ -298,53 +300,73 @@ public class JITWatch
 			String paramTypes = matcher.group(3).replace("(", "").replace(")", "");
 			String returnType = matcher.group(4);
 
-			Class<?>[] paramClasses = getClassTypes(paramTypes);
-			Class<?>[] returnClasses = getClassTypes(returnType); // expect 1
+			Class<?>[] paramClasses = null;
+			Class<?>[] returnClasses = null;
 
-			Class<?> returnClass;
-
-			if (returnClasses.length == 0)
+			try
 			{
-				returnClass = Void.class;
+				paramClasses = ParseUtil.getClassTypes(paramTypes);
 			}
-			else
+			catch (Exception e)
 			{
-				returnClass = returnClasses[0];
+				logError(e.getMessage());
 			}
 
-			String signature = createSig(className, methodName, paramClasses, returnClass);
-
-			if (signature != null)
+			try
 			{
-				MetaClass metaClass = pm.getMetaClass(className);
+				returnClasses = ParseUtil.getClassTypes(returnType); // expect 1
+			}
+			catch (Exception e)
+			{
+				logError(e.getMessage());
+			}
 
-				if (metaClass != null)
+			if (paramClasses != null && returnClasses != null)
+			{
+				Class<?> returnClass;
+
+				if (returnClasses.length == 0)
 				{
-					List<IMetaMember> metaList = metaClass.getMetaMembers();
+					returnClass = Void.class;
+				}
+				else
+				{
+					returnClass = returnClasses[0];
+				}
 
-					for (IMetaMember meta : metaList)
+				String signature = ParseUtil.buildMethodSignature(className, methodName, paramClasses, returnClass);
+
+				if (signature != null)
+				{
+					MetaClass metaClass = pm.getMetaClass(className);
+
+					if (metaClass != null)
 					{
-						if (meta.matches(signature))
+						List<IMetaMember> metaList = metaClass.getMetaMembers();
+
+						for (IMetaMember meta : metaList)
 						{
-							metaMember = meta;
-							break;
+							if (meta.matches(signature))
+							{
+								metaMember = meta;
+								break;
+							}
 						}
 					}
 				}
 			}
-		}
-		else
-		{
-			logError("Could not parse line " + currentLineNumber + " : " + sig);
+			else
+			{
+				logError("Could not parse line " + currentLineNumber + " : " + sig);
+			}
 		}
 
 		return metaMember;
-
 	}
 
 	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type)
 	{
-		IMetaMember metaMember = convertNMethodSig(methodSignature);
+		IMetaMember metaMember = findMemberWithSignature(methodSignature);
 
 		String stampAttr = attrs.get("stamp");
 		long stampTime = (long) (Double.parseDouble(stampAttr) * 1000);
@@ -389,10 +411,6 @@ public class JITWatch
 		if (currentMember != null)
 		{
 			currentMember.addCompiledAttributes(attrs);
-		}
-		else
-		{
-			logError("handleTaskDone: currentMethod not set?" + line);
 		}
 	}
 
@@ -487,263 +505,6 @@ public class JITWatch
 		}
 	}
 
-	public String createSig(String className, String methodName, Class<?>[] paramTypes, Class<?> returnType)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		String rName = returnType.getName();
-		rName = fixName(rName);
-
-		if ("<init>".equals(methodName))
-		{
-			builder.append(className);
-		}
-		else
-		{
-			builder.append(rName).append(" ").append(className).append(".").append(methodName);
-		}
-
-		builder.append("(");
-
-		for (Class<?> c : paramTypes)
-		{
-			String cName = c.getName();
-			cName = fixName(cName);
-
-			builder.append(cName).append(",");
-		}
-
-		if (paramTypes.length > 0)
-		{
-			builder.deleteCharAt(builder.length() - 1);
-		}
-
-		builder.append(")");
-
-		String toMatch = builder.toString();
-
-		return toMatch;
-	}
-
-	private String fixName(String name)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		int arrayDepth = 0;
-		int pos = 0;
-
-		outerloop: while (pos < name.length())
-		{
-			char c = name.charAt(pos);
-
-			switch (c)
-			{
-			case '[':
-				arrayDepth++;
-				break;
-			case 'S':
-				builder.append("short");
-				break;
-			case 'C':
-				builder.append("char");
-				break;
-			case 'B':
-				builder.append("byte");
-				break;
-			case 'J':
-				builder.append("long");
-				break;
-			case 'D':
-				builder.append("double");
-				break;
-			case 'Z':
-				builder.append("boolean");
-				break;
-			case 'I':
-				builder.append("int");
-				break;
-			case 'F':
-				builder.append("float");
-				break;
-			case ';':
-				break;
-			default:
-				if (name.charAt(pos) == 'L' && name.endsWith(";"))
-				{
-					builder.append(name.substring(pos + 1, name.length() - 1));
-				}
-				else
-				{
-					builder.append(name.substring(pos));
-				}
-				break outerloop;
-			}
-
-			pos++;
-		}
-
-		for (int i = 0; i < arrayDepth; i++)
-		{
-			builder.append("[]");
-		}
-
-		return builder.toString();
-	}
-
-	private Class<?>[] getClassTypes(String types)
-	{
-		List<Class<?>> classes = new ArrayList<Class<?>>();
-
-		final int typeLen = types.length();
-
-		if (typeLen > 0)
-		{
-			StringBuilder builder = new StringBuilder();
-
-			try
-			{
-				int pos = 0;
-
-				while (pos < types.length())
-				{
-					char c = types.charAt(pos);
-
-					switch (c)
-					{
-					case '[':
-						// Could be
-						// [Ljava.lang.String; Object array
-						// [I primitive array
-						// [..[I (multidimensional primitive array
-						// [..[Ljava.lang.String multidimensional Object array
-						builder.delete(0, builder.length());
-						builder.append(c);
-						pos++;
-						c = types.charAt(pos);
-
-						while (c == '[')
-						{
-							builder.append(c);
-							pos++;
-							c = types.charAt(pos);
-						}
-
-						if (c == 'L')
-						{
-							// array of ref type
-							while (pos < typeLen)
-							{
-								c = types.charAt(pos++);
-								builder.append(c);
-
-								if (c == ';')
-								{
-									break;
-								}
-							}
-						}
-						else
-						{
-							// array of primitive
-							builder.append(c);
-							pos++;
-						}
-
-						Class<?> arrayClass = loadClassWithoutInitialising(builder.toString());
-						classes.add(arrayClass);
-						builder.delete(0, builder.length());
-						break;
-					case 'L':
-						// ref type
-						while (pos < typeLen)
-						{
-							pos++;
-							c = types.charAt(pos);
-
-							if (c == ';')
-							{
-								pos++;
-								break;
-							}
-
-							builder.append(c);
-						}
-						Class<?> refClass = loadClassWithoutInitialising(builder.toString());
-						classes.add(refClass);
-						builder.delete(0, builder.length());
-						break;
-					default:
-						// primitive
-						Class<?> primitiveClass = getPrimitiveClass(c);
-						classes.add(primitiveClass);
-						pos++;
-
-					} // end switch
-
-				} // end while
-
-			}
-			catch (ClassNotFoundException cnf)
-			{
-				logError("ClassNotFoundException: " + builder.toString());
-			}
-			catch (NoClassDefFoundError ncdf)
-			{
-				logError("NoClassDefFoundError: " + builder.toString());
-			}
-			catch (Exception ex)
-			{
-				logError("Exception: " + ex.getMessage());
-			}
-			catch (Error err)
-			{
-				logError("Error: " + err.getMessage());
-			}
-
-		} // end if empty
-
-		return classes.toArray(new Class<?>[classes.size()]);
-	}
-
-	private Class<?> getPrimitiveClass(char c)
-	{
-		switch (c)
-		{
-		case 'S':
-			return Short.TYPE;
-		case 'C':
-			return Character.TYPE;
-		case 'B':
-			return Byte.TYPE;
-		case 'V':
-			return Void.TYPE;
-		case 'J':
-			return Long.TYPE;
-		case 'D':
-			return Double.TYPE;
-		case 'Z':
-			return Boolean.TYPE;
-		case 'I':
-			return Integer.TYPE;
-		case 'F':
-			return Float.TYPE;
-		}
-
-		throw new RuntimeException("Unknown class for " + c);
-	}
-
-	private Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
-	{
-		try
-		{
-			return Class.forName(fqClassName, false, this.getClass().getClassLoader());
-		}
-		catch (Throwable t)
-		{
-			throw t;
-		}
-	}
-
 	private void handleLoaded(String currentLine)
 	{
 		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, " ");
@@ -785,7 +546,7 @@ public class JITWatch
 
 				try
 				{
-					Class<?> clazz = loadClassWithoutInitialising(fqClassName);
+					Class<?> clazz = ParseUtil.loadClassWithoutInitialising(fqClassName);
 
 					stats.incCountClass();
 

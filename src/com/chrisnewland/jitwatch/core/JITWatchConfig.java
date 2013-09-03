@@ -95,7 +95,7 @@ public class JITWatchConfig
 		}
 	}
 
-	public File getConfigFile()
+	private File getConfigFile()
 	{
 		return new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 	}

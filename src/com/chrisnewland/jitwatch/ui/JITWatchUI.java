@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.JITWatch;
-import com.chrisnewland.jitwatch.core.ResourceLoader;
+import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.meta.IMetaMember;
 import com.chrisnewland.jitwatch.meta.MetaClass;
 import com.chrisnewland.jitwatch.meta.MetaPackage;
@@ -124,6 +125,7 @@ public class JITWatchUI extends Application implements IJITListener
 		selectedMember = null;
 
 		errorCount = 0;
+		errorLog.delete(0, errorLog.length());
 
 		refreshSelectedTreeNode();
 
