@@ -16,20 +16,15 @@ To generate the log file used by JITWatch run your program with JVM switches
 
 If you want to use the -XX:+PrintAssembly switch to view the assembly language (disassembled JIT-compiled native code) then you need the to use a debug JVM build or have built the hsdis (HotSpot disassembler) binary.
 Instructions for building hsdis are here http://dropzone.nfshost.com/hsdis.htm
-
---------------------------
-NB: UI built with JavaFX so requires $JAVA_HOME/jre/lib/jfxrt.jar on compile and runtime classpath if you are using Java 7.
-
-NB: Requires $JDK_HOME/lib/tools.jar on classpath if you want to inspect bytecode.
-
 --------------------------
 How to build:
 
 <pre>ant</pre>
 
-or if your ant is not configured to point at a JDK
+If you get compile errors relating to external dependencies (JDK lib/tools.jar and jre/lib/jfxrt.jar) then set your JAVA_HOME environment variable to point to a JDK
 
-<pre>ant -Djava.home=jdk_path</pre>
+<pre>export JAVA_HOME=/path/to/jdk
+ant</pre>
 --------------------------
 How to run with (GUI version)
 
