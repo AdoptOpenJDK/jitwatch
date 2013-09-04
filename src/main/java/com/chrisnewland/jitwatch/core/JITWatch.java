@@ -16,8 +16,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.meta.IMetaMember;
 import com.chrisnewland.jitwatch.meta.MetaClass;
@@ -284,82 +282,48 @@ public class JITWatch
 		}
 	}
 
-	//TODO refactor for testability
-	private IMetaMember findMemberWithSignature(String sig)
+	private IMetaMember findMemberWithSignature(String logSignature)
 	{
-		// <class> <method> (<params>)<return>
-		// java/lang/String charAt (I)C
-
 		IMetaMember metaMember = null;
 
-		Matcher matcher = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)").matcher(sig);
+		String[] parsedResult = null;
 
-		if (matcher.find())
+		try
 		{
-			String className = matcher.group(1);
-			String methodName = matcher.group(2);
-			String paramTypes = matcher.group(3).replace("(", "").replace(")", "");
-			String returnType = matcher.group(4);
+			parsedResult = ParseUtil.parseLogSignature(logSignature);
+		}
+		catch (Exception e)
+		{
+			logError(e.getMessage());
+		}
 
-			Class<?>[] paramClasses = null;
-			Class<?>[] returnClasses = null;
+		if (parsedResult != null)
+		{
+			String className = parsedResult[0];
+			String parsedSignature = parsedResult[1];
 
-			try
+			if (parsedSignature != null)
 			{
-				paramClasses = ParseUtil.getClassTypes(paramTypes);
-			}
-			catch (Exception e)
-			{
-				logError(e.getMessage());
-			}
+				MetaClass metaClass = pm.getMetaClass(className);
 
-			try
-			{
-				returnClasses = ParseUtil.getClassTypes(returnType); // expect 1
-			}
-			catch (Exception e)
-			{
-				logError(e.getMessage());
-			}
-
-			if (paramClasses != null && returnClasses != null)
-			{
-				Class<?> returnClass;
-
-				if (returnClasses.length == 0)
+				if (metaClass != null)
 				{
-					returnClass = Void.class;
-				}
-				else
-				{
-					returnClass = returnClasses[0];
-				}
+					List<IMetaMember> metaList = metaClass.getMetaMembers();
 
-				String signature = ParseUtil.buildMethodSignature(className, methodName, paramClasses, returnClass);
-
-				if (signature != null)
-				{
-					MetaClass metaClass = pm.getMetaClass(className);
-
-					if (metaClass != null)
+					for (IMetaMember meta : metaList)
 					{
-						List<IMetaMember> metaList = metaClass.getMetaMembers();
-
-						for (IMetaMember meta : metaList)
+						if (meta.matches(parsedSignature))
 						{
-							if (meta.matches(signature))
-							{
-								metaMember = meta;
-								break;
-							}
+							metaMember = meta;
+							break;
 						}
 					}
 				}
 			}
-			else
-			{
-				logError("Could not parse line " + currentLineNumber + " : " + sig);
-			}
+		}
+		else
+		{
+			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
 		}
 
 		return metaMember;

@@ -2,9 +2,13 @@ package com.chrisnewland.jitwatch.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParseUtil
 {
+	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
+	
 	public static Class<?> getPrimitiveClass(char c)
 	{
 		switch (c)
@@ -31,14 +35,13 @@ public class ParseUtil
 
 		throw new RuntimeException("Unknown class for " + c);
 	}
-	
+
 	/*
-	 * [C => char[]
-	 * [[I => int[][]
+	 * [C => char[] [[I => int[][]
 	 * [Ljava.lang.Object; => java.lang.Object[]
 	 */
 	public static String expandParameterType(String name)
-	{		
+	{
 		StringBuilder builder = new StringBuilder();
 
 		int arrayDepth = 0;
@@ -98,10 +101,51 @@ public class ParseUtil
 		{
 			builder.append("[]");
 		}
-		
+
 		return builder.toString();
 	}
-	
+
+	/*
+	 * Parses a log file signature into a class name and java declaration-stlye
+	 * method signature
+	 * 
+	 * @return String[] 0=className 1=methodSignature
+	 */
+	public static String[] parseLogSignature(String logSignature) throws Exception
+	{
+		String result[] = null;
+
+		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(logSignature);
+
+		if (matcher.find())
+		{
+			String className = matcher.group(1);
+			String methodName = matcher.group(2);
+			String paramTypes = matcher.group(3).replace("(", "").replace(")", "");
+			String returnType = matcher.group(4);
+
+			Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
+			Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType); // length 1
+
+			Class<?> returnClass;
+
+			if (returnClasses.length == 0)
+			{
+				returnClass = Void.class;
+			}
+			else
+			{
+				returnClass = returnClasses[0];
+			}
+			
+			String signature = ParseUtil.buildMethodSignature(className, methodName, paramClasses, returnClass);
+
+			result = new String[] { className, signature };
+		}
+
+		return result;
+	}
+
 	public static String buildMethodSignature(String className, String methodName, Class<?>[] paramTypes, Class<?> returnType)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -139,7 +183,7 @@ public class ParseUtil
 
 		return toMatch;
 	}
-	
+
 	public static Class<?>[] getClassTypes(String types) throws Exception
 	{
 		List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -254,7 +298,7 @@ public class ParseUtil
 
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
-	
+
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
