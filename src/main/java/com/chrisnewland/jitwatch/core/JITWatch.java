@@ -284,6 +284,7 @@ public class JITWatch
 		}
 	}
 
+	//TODO refactor for testability
 	private IMetaMember findMemberWithSignature(String sig)
 	{
 		// <class> <method> (<params>)<return>
