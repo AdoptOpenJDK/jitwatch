@@ -28,14 +28,6 @@ public class MetaConstructor extends AbstractMetaMember implements Comparable<Me
 	}
 
 	@Override
-	public String getSignatureRegEx()
-	{
-		String unqualifiedSig = makeUnqualified(constructorToString);
-
-		return unqualifiedSig;
-	}
-
-	@Override
 	public String getSignatureForBytecode()
 	{
 		return constructorToString;

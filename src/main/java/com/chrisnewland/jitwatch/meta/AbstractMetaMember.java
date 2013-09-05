@@ -157,4 +157,12 @@ public abstract class AbstractMetaMember implements IMetaMember
 	{
 		this.nativeCode = nativecode;
 	}
+	
+	@Override
+	public String getSignatureRegEx()
+	{
+		String unqualifiedSig = toStringUnqualifiedMethodName();
+
+		return unqualifiedSig;
+	}
 }

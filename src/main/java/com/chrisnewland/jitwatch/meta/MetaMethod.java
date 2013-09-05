@@ -28,14 +28,6 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
 	}
 
 	@Override
-	public String getSignatureRegEx()
-	{
-		String unqualifiedSig = makeUnqualified(methodToString);
-
-		return unqualifiedSig;
-	}
-
-	@Override
 	public String getSignatureForBytecode()
 	{
 		String ts = methodToString;
