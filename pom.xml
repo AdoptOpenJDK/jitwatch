@@ -16,21 +16,17 @@
         <maven>3.0.5</maven>
     </prerequisites>
 
-    <!-- TODO Section needs correct license details -->
-    <!-- 
     <licenses>
         <license>
-            <id>BSD License</id>
-            <description>BSD License</description>
+            <id>Simplified BSD License</id>
+            <description>Simplified BSD License</description>
         </license>
     </licenses>
-    -->
 
     <developers>
-        <!-- TODO Add timezone -->
         <developer>
             <name>Chris Newland</name>
-            <timezone></timezone>
+            <timezone>GMT</timezone>
         </developer>
     </developers>
 
@@ -98,7 +94,7 @@
    <groupId>com.oracle</groupId>
    <artifactId>tools.jar</artifactId>
    <version>1.7</version>
-   <systemPath>${java.home}/..//lib/tools.jar</systemPath>
+   <systemPath>${java.home}/../lib/tools.jar</systemPath>
    <scope>system</scope>
 </dependency>
 
