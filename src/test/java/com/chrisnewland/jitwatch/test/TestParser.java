@@ -2,6 +2,8 @@ package com.chrisnewland.jitwatch.test;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -10,31 +12,91 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import com.chrisnewland.jitwatch.core.ParseUtil;
+import com.chrisnewland.jitwatch.meta.MetaConstructor;
+import com.chrisnewland.jitwatch.meta.MetaMethod;
 
 public class TestParser
 {
-	@Test
-	public void testSourceSignatureMatcher()
+	private Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)
 	{
-		String methodSig = "public int getIndexForTime(long,int)";
-		
-		String regex = "^(.*)public int getIndexForTime\\(long( )+([0-9a-zA-Z_]+),( )+int( )+([0-9a-zA-Z_]+)\\)(.*)";
+		Method m = null;
 
-		String sourceSig = "public int getIndexForTime(long searchTime, int startIndex)";
-		
-		// handle array params
-		// handle unqualified classes
-		
-		Matcher matcher = Pattern.compile(regex).matcher(sourceSig);
+		try
+		{
+			Class<?> clazz = ParseUtil.loadClassWithoutInitialising(fqClassName);
+			m = clazz.getDeclaredMethod(method, paramTypes);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 
+		return m;
+	}
+
+	private Constructor<?> getConstructor(String fqClassName, Class<?>[] paramTypes)
+	{
+		Constructor<?> c = null;
+
+		try
+		{
+			Class<?> clazz = ParseUtil.loadClassWithoutInitialising(fqClassName);
+			c = clazz.getDeclaredConstructor(paramTypes);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return c;
+	}
+	
+	@Test
+	public void testSourceSignatureRegExMatcher()
+	{
+		String regexPackage = "([0-9a-zA-Z_\\.]*)";
+
+		// single primitive param, void return
+		Method m = getMethod("java.lang.AbstractStringBuilder", "ensureCapacity", new Class<?>[] { int.class });
+		MetaMethod method = new MetaMethod(m, null);
+		String expectedRegex = "^(.*)public void ensureCapacity\\(( )*int( )+([0-9a-zA-Z_]+)( )*\\)(.*)";
+		assertEquals(expectedRegex, method.getSignatureRegEx());
+		String sourceSig = "public void ensureCapacity(int foo)";
+		Matcher matcher = Pattern.compile(expectedRegex).matcher(sourceSig);
 		boolean match = matcher.find();
-		
 		assertTrue(match);
-		
-		String methodSigFQ = "public void clean(java.lang.String,com.allipo.dma.stock.IStock,boolean)";
-		
-		//TODO store param array in member obj
-		
+
+		// 2 primitive params,void return
+		Method m2 = getMethod("java.lang.AbstractStringBuilder", "setCharAt", new Class<?>[] { int.class, char.class });
+		MetaMethod method2 = new MetaMethod(m2, null);
+		String expectedRegex2 = "^(.*)public void setCharAt\\(( )*int( )+([0-9a-zA-Z_]+),( )*char( )+([0-9a-zA-Z_]+)( )*\\)(.*)";
+		assertEquals(expectedRegex2, method2.getSignatureRegEx());
+		String sourceSig2 = "public void setCharAt(int foo, char bar)";
+		Matcher matcher2 = Pattern.compile(expectedRegex2).matcher(sourceSig2);
+		boolean match2 = matcher2.find();
+		assertTrue(match2);
+
+		// Object param and return type
+		Method m3 = getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { java.lang.String.class });
+		MetaMethod methodFQ = new MetaMethod(m3, null);
+		String expectedRegexFQ = "^(.*)public " + regexPackage
+				+ "AbstractStringBuilder append\\(( )*" + regexPackage + "String( )+([0-9a-zA-Z_]+)( )*\\)(.*)";
+		assertEquals(expectedRegexFQ, methodFQ.getSignatureRegEx());
+		String sourceSigFQ = "public AbstractStringBuilder append(String foo)";
+		Matcher matcherFQ = Pattern.compile(expectedRegexFQ).matcher(sourceSigFQ);
+		boolean matchFQ = matcherFQ.find();
+		assertTrue(matchFQ);
+
+		// constructor with primitive params
+		Constructor<?> c1 = getConstructor("java.lang.AbstractStringBuilder", new Class<?>[] { int.class });
+		MetaConstructor con1 = new MetaConstructor(c1, null);
+		String expectedRegexC1 = "^(.*)" + regexPackage
+				+ "AbstractStringBuilder\\(( )*" + "int( )+([0-9a-zA-Z_]+)( )*\\)(.*)";
+		assertEquals(expectedRegexC1, con1.getSignatureRegEx());
+		String sourceSigC1 = "AbstractStringBuilder(int foo)";
+		Matcher matcherC1 = Pattern.compile(expectedRegexC1).matcher(sourceSigC1);
+		boolean matchC1 = matcherC1.find();
+		assertTrue(matchC1);
 	}
 
 	@Test

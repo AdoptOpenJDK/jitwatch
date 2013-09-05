@@ -10,6 +10,10 @@ public class MetaConstructor extends AbstractMetaMember implements Comparable<Me
 	{
 		this.constructorToString = constructor.toString();
 		this.methodClass = methodClass;
+		
+		memberName = constructor.getName();
+		paramTypes = constructor.getParameterTypes();
+		modifier = constructor.getModifiers();
 	}
 
 	@Override

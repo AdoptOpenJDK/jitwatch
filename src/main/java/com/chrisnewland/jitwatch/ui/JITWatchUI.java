@@ -523,12 +523,14 @@ public class JITWatchUI extends Application implements IJITListener
 		tvs.show();
 
 		openPopupStages.add(tvs);
+		
+		//TODO if source already open then re-use
 
 		tvs.jumpTo(member.getSignatureRegEx());
 	}
 
 	private void openBytecode(IMetaMember member)
-	{
+	{		
 		String searchMethod = member.getSignatureForBytecode();
 
 		MetaClass methodClass = member.getMetaClass();

@@ -117,6 +117,20 @@ public class StringUtil
 
 		return result;
 	}
+	
+	public static String makeUnqualified(String input)
+	{
+		int lastDot = input.lastIndexOf('.');
+		
+		String result = input;
+		
+		if (lastDot != -1)
+		{
+			result = input.substring(lastDot+1);
+		}
+				
+		return result;
+	}
 
 	public static Map<String, String> getLineAttributes(String line)
 	{

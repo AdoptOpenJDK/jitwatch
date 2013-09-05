@@ -10,6 +10,11 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
 	{
 		this.methodToString = method.toString();
 		this.methodClass = methodClass;
+		
+		memberName = method.getName();
+		returnType = method.getReturnType();		
+		paramTypes = method.getParameterTypes();
+		modifier = method.getModifiers();
 	}
 
 	@Override
@@ -54,7 +59,10 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
 			}
 
 			StringBuilder builder = new StringBuilder(ts);
-			builder.delete(pos + 1, lastDot + 1);
+			if (lastDot != -1)
+			{
+				builder.delete(pos + 1, lastDot + 1);
+			}
 			ts = builder.toString();
 
 		}

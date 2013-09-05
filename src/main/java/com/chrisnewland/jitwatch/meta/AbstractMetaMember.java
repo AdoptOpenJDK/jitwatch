@@ -1,10 +1,13 @@
 package com.chrisnewland.jitwatch.meta;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.chrisnewland.jitwatch.core.StringUtil;
 
 public abstract class AbstractMetaMember implements IMetaMember
 {
@@ -16,6 +19,11 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 	protected Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
 	protected Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+
+	protected int modifier; // bitset
+	protected String memberName;
+	protected Class<?> returnType;
+	protected Class<?>[] paramTypes;
 
 	@Override
 	public List<String> getQueuedAttributes()
@@ -95,41 +103,30 @@ public abstract class AbstractMetaMember implements IMetaMember
 	@Override
 	public String toStringUnqualifiedMethodName()
 	{
-		String ts = toString();
+		StringBuilder builder = new StringBuilder();
+		builder.append(Modifier.toString(modifier)).append(' ');
 
-		return makeUnqualified(ts);
-	}
-
-	protected String makeUnqualified(String sig)
-	{
-		int openParams = sig.lastIndexOf('(');
-
-		if (openParams != -1)
+		if (returnType != null)
 		{
-			int pos = openParams;
-
-			int lastDot = -1;
-
-			while (pos-- > 0)
-			{
-				if (sig.charAt(pos) == '.' && lastDot == -1)
-				{
-					lastDot = pos;
-				}
-
-				if (sig.charAt(pos) == ' ')
-				{
-					break;
-				}
-			}
-
-			StringBuilder builder = new StringBuilder(sig);
-			builder.delete(pos + 1, lastDot + 1);
-			sig = builder.toString();
-
+			builder.append(returnType.getName()).append(' ');
 		}
 
-		return sig;
+		builder.append(memberName);
+		builder.append('(');
+
+		if (paramTypes.length > 0)
+		{
+			for (Class<?> paramClass : paramTypes)
+			{
+				builder.append(paramClass.getName()).append(',');
+			}
+
+			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		builder.append(')');
+
+		return builder.toString();
 	}
 
 	@Override
@@ -157,12 +154,80 @@ public abstract class AbstractMetaMember implements IMetaMember
 	{
 		this.nativeCode = nativecode;
 	}
-	
+
 	@Override
 	public String getSignatureRegEx()
 	{
-		String unqualifiedSig = toStringUnqualifiedMethodName();
 
-		return unqualifiedSig;
+		String anyChars = "(.*)";
+		String spaceZeroOrMore = "( )*";
+		String spaceOneOrMore = "( )+";
+		String paramName = "([0-9a-zA-Z_]+)";
+		String regexPackage = "([0-9a-zA-Z_\\.]*)";
+
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("^");
+		builder.append(anyChars);
+
+		String modifiers = Modifier.toString(modifier);
+
+		if (modifiers.length() > 0)
+		{
+			builder.append(modifiers).append(' ');
+		}
+
+		if (returnType != null)
+		{
+			String rt = returnType.getName();
+
+			if (rt.contains("."))
+			{
+				rt = regexPackage + StringUtil.makeUnqualified(rt);
+			}
+
+			builder.append(rt);
+			builder.append(' ');
+		}
+
+		if (this instanceof MetaConstructor)
+		{
+			builder.append(regexPackage);
+			builder.append(StringUtil.makeUnqualified(memberName));
+		}
+		else
+		{
+			builder.append(memberName);
+		}
+
+		builder.append("\\(");
+
+		if (paramTypes.length > 0)
+		{
+			for (Class<?> paramClass : paramTypes)
+			{
+				builder.append(spaceZeroOrMore);
+
+				String paramType = paramClass.getName();
+
+				if (paramType.contains("."))
+				{
+					paramType = regexPackage + StringUtil.makeUnqualified(paramType);
+				}
+
+				builder.append(paramType);
+				builder.append(spaceOneOrMore);
+				builder.append(paramName);
+				builder.append(",");
+			}
+
+			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		builder.append(spaceZeroOrMore);
+		builder.append("\\)");
+		builder.append(anyChars);
+
+		return builder.toString();
 	}
 }
