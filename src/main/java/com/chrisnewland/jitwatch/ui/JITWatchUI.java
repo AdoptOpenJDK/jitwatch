@@ -377,16 +377,19 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		final ContextMenu contextMenu = new ContextMenu();
+		final ContextMenu contextMenuCompiled = new ContextMenu();
+		final ContextMenu contextMenuNotCompiled = new ContextMenu();
 
 		MenuItem menuItemSource = new MenuItem("Show Source");
-		contextMenu.getItems().add(menuItemSource);
-
 		MenuItem menuItemBytecode = new MenuItem("Show Bytecode");
-		contextMenu.getItems().add(menuItemBytecode);
-
 		MenuItem menuItemNative = new MenuItem("Show Native Code");
-		contextMenu.getItems().add(menuItemNative);
+
+		contextMenuCompiled.getItems().add(menuItemSource);
+		contextMenuCompiled.getItems().add(menuItemBytecode);
+		contextMenuCompiled.getItems().add(menuItemNative);
+		
+		contextMenuNotCompiled.getItems().add(menuItemSource);
+		contextMenuNotCompiled.getItems().add(menuItemBytecode);
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
 		{
@@ -395,7 +398,14 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				if (e.getButton() == MouseButton.SECONDARY)
 				{
-					contextMenu.show(memberList, e.getScreenX(), e.getScreenY());
+					if (selectedMember.isCompiled())
+					{
+						contextMenuCompiled.show(memberList, e.getScreenX(), e.getScreenY());
+					}
+					else
+					{
+						contextMenuNotCompiled.show(memberList, e.getScreenX(), e.getScreenY());
+					}
 				}
 			}
 		});

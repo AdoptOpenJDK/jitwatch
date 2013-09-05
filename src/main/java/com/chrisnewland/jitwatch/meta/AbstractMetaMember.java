@@ -227,6 +227,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 		builder.append(spaceZeroOrMore);
 		builder.append("\\)");
 		builder.append(anyChars);
+		builder.append("$");
 
 		return builder.toString();
 	}

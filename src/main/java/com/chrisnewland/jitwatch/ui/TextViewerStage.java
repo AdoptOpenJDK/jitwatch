@@ -106,7 +106,6 @@ public class TextViewerStage extends Stage
 					Matcher matcher = Pattern.compile(regex).matcher(line);
 					if (matcher.find())
 					{
-						System.out.println("matched sig on line " + pos);
 						break;
 					}
 
