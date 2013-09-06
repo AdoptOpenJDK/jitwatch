@@ -97,6 +97,17 @@ public class TestParser
 		Matcher matcherC1 = Pattern.compile(expectedRegexC1).matcher(sourceSigC1);
 		boolean matchC1 = matcherC1.find();
 		assertTrue(matchC1);
+		
+		//array return type, no params
+		Method m4 = getMethod("java.lang.AbstractStringBuilder", "getValue", new Class<?>[0]);
+		MetaMethod method4 = new MetaMethod(m4, null);
+		String expectedRegex4 = "^(.*)final char\\[\\] getValue\\(( )*\\)(.*)$";
+		assertEquals(expectedRegex4, method4.getSignatureRegEx());
+		String sourceSig4 = "final char[] getValue()";
+		Matcher matcher4 = Pattern.compile(expectedRegex4).matcher(sourceSig4);
+		boolean match4 = matcher4.find();
+		assertTrue(match4);
+
 	}
 
 	@Test

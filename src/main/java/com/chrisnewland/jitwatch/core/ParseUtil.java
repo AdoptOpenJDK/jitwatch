@@ -41,7 +41,7 @@ public class ParseUtil
 	 * [Ljava.lang.Object; => java.lang.Object[]
 	 */
 	public static String expandParameterType(String name)
-	{
+	{		
 		StringBuilder builder = new StringBuilder();
 
 		int arrayDepth = 0;
@@ -106,7 +106,7 @@ public class ParseUtil
 	}
 
 	/*
-	 * Parses a log file signature into a class name and java declaration-stlye
+	 * Parses a log file signature into a class name and java declaration-style
 	 * method signature
 	 * 
 	 * @return String[] 0=className 1=methodSignature

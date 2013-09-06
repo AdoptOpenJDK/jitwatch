@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.chrisnewland.jitwatch.core.ParseUtil;
 import com.chrisnewland.jitwatch.core.StringUtil;
 
 public abstract class AbstractMetaMember implements IMetaMember
@@ -180,6 +181,13 @@ public abstract class AbstractMetaMember implements IMetaMember
 		if (returnType != null)
 		{
 			String rt = returnType.getName();
+
+			if (rt.charAt(0) == '[')
+			{
+				rt = ParseUtil.expandParameterType(rt);
+
+				rt = rt.replace("[", "\\[").replace("]", "\\]");
+			}
 
 			if (rt.contains("."))
 			{
