@@ -104,7 +104,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private int errorCount = 0;
 
 	private boolean repaintTree = false;
-	
+
 	private JITWatchConfig config;
 
 	// Called by JFX
@@ -114,9 +114,9 @@ public class JITWatchUI extends Application implements IJITListener
 		config = new JITWatchConfig(this);
 		logParser = new HotSpotLogParser(model, config, this);
 	}
-	
+
 	public JITWatchUI(String[] args)
-	{		
+	{
 		launch(args);
 	}
 
@@ -129,7 +129,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private void startWatching()
 	{
 		model.reset();
-		
+
 		textArea.clear();
 
 		selectedMember = null;
@@ -541,13 +541,10 @@ public class JITWatchUI extends Application implements IJITListener
 
 		for (Stage s : openPopupStages)
 		{
-			if (s instanceof TextViewerStage)
+			if (s instanceof TextViewerStage && title.equals(s.getTitle()))
 			{
-				if (title.equals(s.getTitle()))
-				{
-					tvs = (TextViewerStage) s;
-					break;
-				}
+				tvs = (TextViewerStage) s;
+				break;
 			}
 		}
 
@@ -557,7 +554,7 @@ public class JITWatchUI extends Application implements IJITListener
 			tvs.show();
 			openPopupStages.add(tvs);
 		}
-		
+
 		tvs.requestFocus();
 
 		tvs.jumpTo(member.getSignatureRegEx());
@@ -802,12 +799,9 @@ public class JITWatchUI extends Application implements IJITListener
 			found = new TreeItem<Object>(value);
 			children.add(placeToInsert, found);
 
-			if (value instanceof MetaClass)
+			if (value instanceof MetaClass && ((MetaClass) value).isMissingDef())
 			{
-				if (((MetaClass) value).isMissingDef())
-				{
-
-				}
+				// indicate missing class definition?
 			}
 		}
 

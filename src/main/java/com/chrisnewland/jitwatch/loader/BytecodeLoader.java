@@ -11,7 +11,7 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 public class BytecodeLoader
 {
-    public static Map<String, String> fetchByteCodeForClass(List<String> classLocations, String fqClassName)
+	public static Map<String, String> fetchByteCodeForClass(List<String> classLocations, String fqClassName)
 	{
 		String[] args;
 
@@ -29,7 +29,7 @@ public class BytecodeLoader
 			}
 
 			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
-			
+
 			args = new String[] { "-c", "-p", "-classpath", classPathBuilder.toString(), fqClassName };
 		}
 
@@ -44,7 +44,7 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.out.println("Could not obtain bytcode for class: "+ fqClassName);
+			System.out.println("Could not obtain bytcode for class: " + fqClassName);
 		}
 
 		String result = new String(baos.toByteArray());
@@ -84,14 +84,11 @@ public class BytecodeLoader
 			}
 			else
 			{
-				if (line.startsWith("Code:"))
+				if (line.startsWith("Code:") && pos > 0)
 				{
-					if (pos > 0)
-					{
-						signature = lines[pos - 1].trim();
-						signature = signature.substring(0, signature.length() - 1);
-						inMethod = true;
-					}
+					signature = lines[pos - 1].trim();
+					signature = signature.substring(0, signature.length() - 1);
+					inMethod = true;
 				}
 			}
 
@@ -123,7 +120,7 @@ public class BytecodeLoader
 					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
 				}
 			}
-			
+
 			bytecodeMap.put(signature, builder.toString());
 			builder.delete(0, builder.length());
 		}
