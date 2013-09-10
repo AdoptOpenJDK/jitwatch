@@ -5,44 +5,58 @@ import java.io.IOException;
 
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITWatch;
+import com.chrisnewland.jitwatch.core.HotSpotLogParser;
+import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.model.JITDataModel;
 
-public class LaunchHeadless
+public class LaunchHeadless implements IJITListener
 {
-    public static void main(String[] args) throws IOException
-    {
-        if (args.length < 1)
-        {
-            System.err.println("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
-            System.exit(-1);
-        }
-        
-        final boolean showErrors = args.length == 2 && Boolean.valueOf(args[1]) == true;
-    	
-        JITWatch jw = new JITWatch(new IJITListener()
-        {
-            @Override
-            public void handleLogEntry(String entry)
-            {
-                System.out.println(entry);
-            }
-            
-            @Override
-            public void handleErrorEntry(String entry)
-            {
-            	if (showErrors)
-            	{
-            		System.err.println(entry);
-            	}
-            }
+	private boolean showErrors;
 
-			@Override
-			public void handleJITEvent(JITEvent event)
-			{
-                System.out.println(event.toString());				
-			}
-        }, false);
-        
-        jw.watch(new File(args[0]));
-    }
+	public LaunchHeadless(String filename, boolean showErrors) throws IOException
+	{
+		this.showErrors = showErrors;
+
+		JITDataModel model = new JITDataModel();
+
+		JITWatchConfig config = new JITWatchConfig(this);
+
+		HotSpotLogParser parser = new HotSpotLogParser(model, config, this);
+
+		parser.watch(new File(filename));
+	}
+
+	@Override
+	public void handleLogEntry(String entry)
+	{
+		System.out.println(entry);
+	}
+
+	@Override
+	public void handleErrorEntry(String entry)
+	{
+		if (showErrors)
+		{
+			System.err.println(entry);
+		}
+	}
+
+	@Override
+	public void handleJITEvent(JITEvent event)
+	{
+		System.out.println(event.toString());
+	}
+
+	public static void main(String[] args) throws IOException
+	{
+		if (args.length < 1)
+		{
+			System.err.println("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
+			System.exit(-1);
+		}
+
+		final boolean showErrors = args.length == 2 && Boolean.valueOf(args[1]) == true;
+
+		new LaunchHeadless(args[0], showErrors);
+	}
 }

@@ -2,10 +2,10 @@ package com.chrisnewland.jitwatch.histo;
 
 import java.util.List;
 
-import com.chrisnewland.jitwatch.meta.IMetaMember;
-import com.chrisnewland.jitwatch.meta.MetaClass;
-import com.chrisnewland.jitwatch.meta.MetaPackage;
-import com.chrisnewland.jitwatch.meta.PackageManager;
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.MetaPackage;
+import com.chrisnewland.jitwatch.model.PackageManager;
 
 public class HistoTreeWalker
 {

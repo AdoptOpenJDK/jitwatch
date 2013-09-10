@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 public class JITWatchConfig
 {
 	private static final String PROPERTIES_FILENAME = "jitwatch.properties";
@@ -18,17 +20,14 @@ public class JITWatchConfig
 	private static final String KEY_SOURCE_LOCATIONS = "Sources";
 	private static final String KEY_CLASS_LOCATIONS = "Classes";
 
-	private boolean mountSourcesAndClasses;
-
 	private IJITListener logListener;
 
 	private List<String> allowedPackages = new ArrayList<>();
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
 
-	public JITWatchConfig(boolean mountSrcAndClasses, IJITListener logListener)
+	public JITWatchConfig(IJITListener logListener)
 	{
-		mountSourcesAndClasses = mountSrcAndClasses;
 		this.logListener = logListener;
 		loadConfig();
 	}
@@ -52,14 +51,8 @@ public class JITWatchConfig
 
 		String confPackages = (String) loadProps.get(KEY_ALLOWED_PACKAGES);
 
-		String confClasses = null;
-		String confSources = null;
-
-		if (mountSourcesAndClasses)
-		{
-			confClasses = (String) loadProps.get(KEY_CLASS_LOCATIONS);
-			confSources = (String) loadProps.get(KEY_SOURCE_LOCATIONS);
-		}
+		String confClasses = (String) loadProps.get(KEY_CLASS_LOCATIONS);
+		String confSources = (String) loadProps.get(KEY_SOURCE_LOCATIONS);
 
 		if (confPackages != null && confPackages.trim().length() > 0)
 		{
@@ -71,7 +64,7 @@ public class JITWatchConfig
 			classLocations = StringUtil.textToList(confClasses, ",");
 		}
 
-		if (confClasses != null && confClasses.trim().length() > 0)
+		if (confSources != null && confSources.trim().length() > 0)
 		{
 			sourceLocations = StringUtil.textToList(confSources, ",");
 		}

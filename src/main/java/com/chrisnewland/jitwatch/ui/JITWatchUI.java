@@ -9,12 +9,14 @@ import java.util.Map;
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
-import com.chrisnewland.jitwatch.core.JITWatch;
+import com.chrisnewland.jitwatch.core.HotSpotLogParser;
+import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
-import com.chrisnewland.jitwatch.meta.IMetaMember;
-import com.chrisnewland.jitwatch.meta.MetaClass;
-import com.chrisnewland.jitwatch.meta.MetaPackage;
-import com.chrisnewland.jitwatch.meta.PackageManager;
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.MetaPackage;
+import com.chrisnewland.jitwatch.model.PackageManager;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -56,7 +58,8 @@ public class JITWatchUI extends Application implements IJITListener
 {
 	private Stage stage;
 
-	private JITWatch jw;
+	private JITDataModel model;
+	private HotSpotLogParser logParser;
 
 	private TreeItem<Object> rootItem;
 
@@ -82,7 +85,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnStats;
 	private Button btnHisto;
 	private Button btnErrorLog;
-	
+
 	private Label lblHeap;
 
 	private ConfigStage configStage;
@@ -91,24 +94,29 @@ public class JITWatchUI extends Application implements IJITListener
 	private HistoStage histoStage;
 
 	private IMetaMember selectedMember;
-	
+
 	private Runtime runtime = Runtime.getRuntime();
 
-	// needs to be synchronized as buffer drained async on GUI thread
+	// synchronized as buffer is drained async on GUI thread
 	private StringBuffer logBuffer = new StringBuffer();
 
-	// not synchronized
 	private StringBuilder errorLog = new StringBuilder();
 	private int errorCount = 0;
 
 	private boolean repaintTree = false;
+	
+	private JITWatchConfig config;
 
+	// Called by JFX
 	public JITWatchUI()
 	{
+		model = new JITDataModel();
+		config = new JITWatchConfig(this);
+		logParser = new HotSpotLogParser(model, config, this);
 	}
-
+	
 	public JITWatchUI(String[] args)
-	{
+	{		
 		launch(args);
 	}
 
@@ -120,6 +128,8 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void startWatching()
 	{
+		model.reset();
+		
 		textArea.clear();
 
 		selectedMember = null;
@@ -142,7 +152,7 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				try
 				{
-					jw.watch(watchFile);
+					logParser.watch(watchFile);
 				}
 				catch (IOException ioe)
 				{
@@ -158,7 +168,7 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 		if (isWatching)
 		{
-			jw.stop();
+			logParser.stop();
 			isWatching = false;
 			updateButtons();
 
@@ -278,7 +288,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				configStage = new ConfigStage(JITWatchUI.this, jw.getConfig());
+				configStage = new ConfigStage(JITWatchUI.this, config);
 				configStage.show();
 
 				openPopupStages.add(configStage);
@@ -346,7 +356,7 @@ public class JITWatchUI extends Application implements IJITListener
 		});
 
 		lblHeap = new Label();
-		
+
 		int topHeight = 50;
 		int bottomHeight = 100;
 
@@ -387,7 +397,7 @@ public class JITWatchUI extends Application implements IJITListener
 		contextMenuCompiled.getItems().add(menuItemSource);
 		contextMenuCompiled.getItems().add(menuItemBytecode);
 		contextMenuCompiled.getItems().add(menuItemNative);
-		
+
 		contextMenuNotCompiled.getItems().add(menuItemSource);
 		contextMenuNotCompiled.getItems().add(menuItemBytecode);
 
@@ -463,9 +473,6 @@ public class JITWatchUI extends Application implements IJITListener
 		textArea.setPrefHeight(bottomHeight);
 		textArea.setText("Welcome to JITWatch\n");
 
-		// so that additional classpaths are logged
-		jw = new JITWatch(this, true);
-
 		if (watchFile == null)
 		{
 			log("Please choose a HotSpot log file");
@@ -505,7 +512,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 	public JITStats getJITStats()
 	{
-		return jw.getJITStats();
+		return model.getJITStats();
 	}
 
 	private void updateButtons()
@@ -516,7 +523,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 	public List<JITEvent> getJITEvents()
 	{
-		return jw.getEventListCopy();
+		return model.getEventListCopy();
 	}
 
 	private void openSource(IMetaMember member)
@@ -527,25 +534,42 @@ public class JITWatchUI extends Application implements IJITListener
 
 		fqName = fqName.replace(".", "/") + ".java";
 
-		String source = ResourceLoader.getSource(jw.getConfig().getSourceLocations(), fqName);
+		String source = ResourceLoader.getSource(config.getSourceLocations(), fqName);
 
-		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Source code for " + fqName, source, true);
-		tvs.show();
+		TextViewerStage tvs = null;
+		String title = "Source code for " + fqName;
 
-		openPopupStages.add(tvs);
+		for (Stage s : openPopupStages)
+		{
+			if (s instanceof TextViewerStage)
+			{
+				if (title.equals(s.getTitle()))
+				{
+					tvs = (TextViewerStage) s;
+					break;
+				}
+			}
+		}
+
+		if (tvs == null)
+		{
+			tvs = new TextViewerStage(JITWatchUI.this, title, source, true);
+			tvs.show();
+			openPopupStages.add(tvs);
+		}
 		
-		//TODO if source already open then re-use
+		tvs.requestFocus();
 
 		tvs.jumpTo(member.getSignatureRegEx());
 	}
 
 	private void openBytecode(IMetaMember member)
-	{		
+	{
 		String searchMethod = member.getSignatureForBytecode();
 
 		MetaClass methodClass = member.getMetaClass();
 
-		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(jw.getConfig().getClassLocations());
+		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(config.getClassLocations());
 
 		String bc = bytecodeCache.get(searchMethod);
 
@@ -646,17 +670,17 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			refreshLog();
 		}
-		
+
 		long totalMemory = runtime.totalMemory();
 		long freeMemory = runtime.freeMemory();
 		long usedMemory = totalMemory - freeMemory;
-		
-		long megabyte = 1024*1024;
-		
-		String heapString = "Heap: " + (usedMemory/megabyte) + "/" + (totalMemory/megabyte) + "M";
+
+		long megabyte = 1024 * 1024;
+
+		String heapString = "Heap: " + (usedMemory / megabyte) + "/" + (totalMemory / megabyte) + "M";
 
 		lblHeap.setText(heapString);
-		
+
 		btnErrorLog.setText("Errors (" + errorCount + ")");
 	}
 
@@ -863,12 +887,12 @@ public class JITWatchUI extends Application implements IJITListener
 
 	public PackageManager getPackageManager()
 	{
-		return jw.getPackageManager();
+		return model.getPackageManager();
 	}
-	
+
 	private void showTree()
 	{
-		List<MetaPackage> roots = jw.getPackageManager().getRootPackages();
+		List<MetaPackage> roots = model.getPackageManager().getRootPackages();
 
 		for (MetaPackage mp : roots)
 		{

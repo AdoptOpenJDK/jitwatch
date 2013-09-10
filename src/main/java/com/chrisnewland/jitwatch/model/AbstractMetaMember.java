@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.meta;
+package com.chrisnewland.jitwatch.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.chrisnewland.jitwatch.core.ParseUtil;
-import com.chrisnewland.jitwatch.core.StringUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 public abstract class AbstractMetaMember implements IMetaMember
 {
@@ -25,6 +25,12 @@ public abstract class AbstractMetaMember implements IMetaMember
 	protected String memberName;
 	protected Class<?> returnType;
 	protected Class<?>[] paramTypes;
+
+	private static final String anyChars = "(.*)";
+	private static final String spaceZeroOrMore = "( )*";
+	private static final String spaceOneOrMore = "( )+";
+	private static final String paramName = "([0-9a-zA-Z_]+)";
+	private static final String regexPackage = "([0-9a-zA-Z_\\.]*)";
 
 	@Override
 	public List<String> getQueuedAttributes()
@@ -109,7 +115,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 		if (returnType != null)
 		{
-			builder.append(returnType.getName()).append(' ');
+			builder.append(expandParam(returnType.getName())).append(' ');
 		}
 
 		builder.append(memberName);
@@ -119,7 +125,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
-				builder.append(paramClass.getName()).append(',');
+				builder.append(expandParam(paramClass.getName())).append(',');
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
@@ -159,13 +165,6 @@ public abstract class AbstractMetaMember implements IMetaMember
 	@Override
 	public String getSignatureRegEx()
 	{
-
-		String anyChars = "(.*)";
-		String spaceZeroOrMore = "( )*";
-		String spaceOneOrMore = "( )+";
-		String paramName = "([0-9a-zA-Z_]+)";
-		String regexPackage = "([0-9a-zA-Z_\\.]*)";
-
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("^");
@@ -180,19 +179,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 		if (returnType != null)
 		{
-			String rt = returnType.getName();
-
-			if (rt.charAt(0) == '[')
-			{
-				rt = ParseUtil.expandParameterType(rt);
-
-				rt = rt.replace("[", "\\[").replace("]", "\\]");
-			}
-
-			if (rt.contains("."))
-			{
-				rt = regexPackage + StringUtil.makeUnqualified(rt);
-			}
+			String rt = expandParamRegEx(returnType.getName());
 
 			builder.append(rt);
 			builder.append(' ');
@@ -216,12 +203,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 			{
 				builder.append(spaceZeroOrMore);
 
-				String paramType = paramClass.getName();
-
-				if (paramType.contains("."))
-				{
-					paramType = regexPackage + StringUtil.makeUnqualified(paramType);
-				}
+				String paramType = expandParamRegEx(paramClass.getName());
 
 				builder.append(paramType);
 				builder.append(spaceOneOrMore);
@@ -236,7 +218,39 @@ public abstract class AbstractMetaMember implements IMetaMember
 		builder.append("\\)");
 		builder.append(anyChars);
 		builder.append("$");
-
+		
 		return builder.toString();
+	}
+
+	public static String expandParam(String paramType)
+	{
+		if (paramType.charAt(0) == '[')
+		{
+			paramType = ParseUtil.expandParameterType(paramType);
+		}
+
+		if (paramType.contains("."))
+		{
+			paramType = StringUtil.makeUnqualified(paramType);
+		}
+
+		return paramType;
+	}
+	
+	public static String expandParamRegEx(String paramType)
+	{
+		if (paramType.charAt(0) == '[')
+		{
+			paramType = ParseUtil.expandParameterType(paramType);
+
+			paramType = paramType.replace("[", "\\[").replace("]", "\\]");
+		}
+
+		if (paramType.contains("."))
+		{
+			paramType = regexPackage + StringUtil.makeUnqualified(paramType);
+		}
+
+		return paramType;
 	}
 }

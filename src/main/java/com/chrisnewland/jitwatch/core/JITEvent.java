@@ -1,5 +1,7 @@
 package com.chrisnewland.jitwatch.core;
 
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 public class JITEvent
 {
     private long stamp;

@@ -1,7 +1,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.core.StringUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

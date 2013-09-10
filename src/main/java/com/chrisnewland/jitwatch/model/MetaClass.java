@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.meta;
+package com.chrisnewland.jitwatch.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;

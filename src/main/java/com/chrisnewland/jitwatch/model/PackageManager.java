@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.meta;
+package com.chrisnewland.jitwatch.model;
 
 import java.util.List;
 import java.util.Map;

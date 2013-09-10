@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
-import com.chrisnewland.jitwatch.core.StringUtil;
-import com.chrisnewland.jitwatch.meta.IMetaMember;
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

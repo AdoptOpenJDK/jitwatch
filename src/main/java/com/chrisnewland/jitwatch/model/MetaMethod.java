@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.meta;
+package com.chrisnewland.jitwatch.model;
 
 import java.lang.reflect.Method;
 

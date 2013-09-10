@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.core;
+package com.chrisnewland.jitwatch.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

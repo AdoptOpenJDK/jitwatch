@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.core;
+package com.chrisnewland.jitwatch.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -243,7 +243,7 @@ public class ParseUtil
 							pos++;
 						}
 
-						Class<?> arrayClass = loadClassWithoutInitialising(builder.toString());
+						Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
 						classes.add(arrayClass);
 						builder.delete(0, builder.length());
 						break;
@@ -262,7 +262,7 @@ public class ParseUtil
 
 							builder.append(c);
 						}
-						Class<?> refClass = loadClassWithoutInitialising(builder.toString());
+						Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
 						classes.add(refClass);
 						builder.delete(0, builder.length());
 						break;
@@ -297,17 +297,5 @@ public class ParseUtil
 		} // end if empty
 
 		return classes.toArray(new Class<?>[classes.size()]);
-	}
-
-	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
-	{
-		try
-		{
-			return Class.forName(fqClassName, false, ClassLoader.getSystemClassLoader());
-		}
-		catch (Throwable t)
-		{
-			throw t;
-		}
 	}
 }

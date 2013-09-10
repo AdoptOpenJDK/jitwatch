@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.chrisnewland.jitwatch.core.StringUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 public class TestStringUtil
 {
