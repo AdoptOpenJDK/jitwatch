@@ -2,6 +2,7 @@ package com.chrisnewland.jitwatch.loader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,24 +34,38 @@ public class BytecodeLoader
 			args = new String[] { "-c", "-p", "-classpath", classPathBuilder.toString(), fqClassName };
 		}
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String byteCode = null;
 
-		try
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream())
 		{
 			JavapTask task = new JavapTask();
 			task.setLog(baos);
 			task.handleOptions(args);
 			task.call();
+
+			byteCode = new String(baos.toByteArray());
 		}
 		catch (BadArgs ba)
 		{
 			System.out.println("Could not obtain bytcode for class: " + fqClassName);
 		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
 
-		String result = new String(baos.toByteArray());
+		Map<String, String> result;
 
-		return parse(result);
-
+		if (byteCode != null)
+		{
+			result = parse(byteCode);
+		}
+		else
+		{
+			result = new HashMap<>();
+		}
+		
+		return result;
 	}
 
 	private static Map<String, String> parse(String result)
