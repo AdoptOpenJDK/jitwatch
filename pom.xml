@@ -18,8 +18,8 @@
 
     <licenses>
         <license>
-            <id>Simplified BSD License</id>
-            <description>Simplified BSD License</description>
+            <name>Simplified BSD License</name>
+            <comments>Simplified BSD License</comments>
         </license>
     </licenses>
 
