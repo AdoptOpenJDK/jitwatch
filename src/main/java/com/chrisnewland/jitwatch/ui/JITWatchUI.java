@@ -24,6 +24,7 @@ import javafx.animation.TimelineBuilder;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -39,6 +40,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
@@ -48,6 +50,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -64,7 +67,9 @@ public class JITWatchUI extends Application implements IJITListener
 	private TreeItem<Object> rootItem;
 
 	private ListView<IMetaMember> memberList;
-	private ListView<Label> memberInfoList;
+
+	private TableView<AttributeTableRow> attributeTableView;
+	private ObservableList<AttributeTableRow> memberAttrList;
 
 	private boolean showOnlyCompiled = true;
 	private boolean hideInterfaces = true;
@@ -84,6 +89,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnTimeLine;
 	private Button btnStats;
 	private Button btnHisto;
+	private Button btnTopList;
 	private Button btnErrorLog;
 
 	private Label lblHeap;
@@ -92,6 +98,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private TimeLineStage timeLineStage;
 	private StatsStage statsStage;
 	private HistoStage histoStage;
+	private TopListStage topListStage;
 
 	private IMetaMember selectedMember;
 
@@ -342,6 +349,21 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
+		btnTopList = new Button("TopList");
+		btnTopList.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				topListStage = new TopListStage(JITWatchUI.this);
+				topListStage.show();
+
+				openPopupStages.add(topListStage);
+
+				btnTopList.setDisable(true);
+			}
+		});
+
 		btnErrorLog = new Button("Errors (0)");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -370,6 +392,7 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnTimeLine);
 		hboxTop.getChildren().add(btnStats);
 		hboxTop.getChildren().add(btnHisto);
+		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnErrorLog);
 		hboxTop.getChildren().add(cbOnlyCompiled);
 		hboxTop.getChildren().add(cbHideInterfaces);
@@ -447,16 +470,18 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		memberInfoList = new ListView<Label>();
+		memberAttrList = FXCollections.observableArrayList();
+		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
+		attributeTableView.setPlaceholder(new Text("Select a method to view HotSpot attributes."));
 
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
 		spMethodInfo.getItems().add(memberList);
-		spMethodInfo.getItems().add(memberInfoList);
+		spMethodInfo.getItems().add(attributeTableView);
 
 		memberList.prefHeightProperty().bind(scene.heightProperty());
-		memberInfoList.prefHeightProperty().bind(scene.heightProperty());
+		attributeTableView.prefHeightProperty().bind(scene.heightProperty());
 
 		treeView.prefWidthProperty().bind(scene.widthProperty());
 
@@ -608,7 +633,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void showMemberInfo(IMetaMember member)
 	{
-		memberInfoList.getItems().clear();
+		memberAttrList.clear();
 
 		if (member == null)
 		{
@@ -621,22 +646,14 @@ public class JITWatchUI extends Application implements IJITListener
 
 		for (String key : queuedAttrKeys)
 		{
-			if (member.isQueued() || member.isCompiled())
-			{
-				Label l = new Label("Queued: " + key + " = " + member.getQueuedAttribute(key));
-				memberInfoList.getItems().add(l);
-			}
+			memberAttrList.add(new AttributeTableRow("Queued", key, member.getQueuedAttribute(key)));
 		}
 
 		List<String> compiledAttrKeys = member.getCompiledAttributes();
 
 		for (String key : compiledAttrKeys)
 		{
-			if (member.isCompiled())
-			{
-				Label l = new Label("Compiled: " + key + " = " + member.getCompiledAttribute(key));
-				memberInfoList.getItems().add(l);
-			}
+			memberAttrList.add(new AttributeTableRow("Compiled", key, member.getCompiledAttribute(key)));
 		}
 	}
 
@@ -661,6 +678,11 @@ public class JITWatchUI extends Application implements IJITListener
 		if (histoStage != null)
 		{
 			histoStage.redraw();
+		}
+
+		if (topListStage != null)
+		{
+			topListStage.redraw();
 		}
 
 		if (logBuffer.length() > 0)
@@ -722,6 +744,11 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			btnConfigure.setDisable(false);
 			configStage = null;
+		}
+		else if (stage instanceof TopListStage)
+		{
+			btnTopList.setDisable(false);
+			topListStage = null;
 		}
 	}
 
