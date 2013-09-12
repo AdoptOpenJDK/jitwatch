@@ -10,7 +10,6 @@ public class MetaPackage implements Comparable<MetaPackage>
 	private String packageName;
 
 	private List<MetaPackage> childPackages = new CopyOnWriteArrayList<>();
-
 	private List<MetaClass> packageClasses = new CopyOnWriteArrayList<>();
 
 	public MetaPackage(String packageName)
@@ -48,6 +47,22 @@ public class MetaPackage implements Comparable<MetaPackage>
 		MetaClass[] asArray = packageClasses.toArray(new MetaClass[packageClasses.size()]);
 		Arrays.sort(asArray);
 		return new ArrayList<>(Arrays.asList(asArray));
+	}
+	
+	public List<String> getPackageComponents()
+	{
+	    List<String> components = new ArrayList<>();
+	    
+	    if (packageName.indexOf('.') == -1)
+	    {
+	        components.add(packageName);
+	    }
+	    else
+	    {
+	        components.addAll(Arrays.asList(packageName.split("\\.")));
+	    }
+	    
+	    return components;
 	}
 
 	public void addClass(MetaClass metaClass)

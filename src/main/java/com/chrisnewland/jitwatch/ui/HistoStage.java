@@ -29,253 +29,249 @@ import javafx.stage.WindowEvent;
 
 public class HistoStage extends Stage
 {
-	private Canvas canvas;
-	private GraphicsContext gc;
+    private Canvas canvas;
+    private GraphicsContext gc;
 
-	private Histo histo;
+    private Histo histo;
 
-	private String selectedAttribute;
+    private String selectedAttribute;
 
-	private static final int GRAPH_GAP_LEFT = 60;
-	private static final int GRAPH_GAP_RIGHT = 20;
+    private static final int GRAPH_GAP_LEFT = 60;
+    private static final int GRAPH_GAP_RIGHT = 20;
 
-	private static final int GRAPH_GAP_Y = 20;
+    private static final int GRAPH_GAP_Y = 20;
 
-	private static final long[] Y_SCALE = new long[21];
+    private static final long[] Y_SCALE = new long[21];
 
-	static
-	{
-		int multiplier = 1;
+    static
+    {
+        int multiplier = 1;
 
-		for (int i = 0; i < Y_SCALE.length; i += 3)
-		{
-			Y_SCALE[i + 0] = 1 * multiplier;
-			Y_SCALE[i + 1] = 2 * multiplier;
-			Y_SCALE[i + 2] = 5 * multiplier;
+        for (int i = 0; i < Y_SCALE.length; i += 3)
+        {
+            Y_SCALE[i + 0] = 1 * multiplier;
+            Y_SCALE[i + 1] = 2 * multiplier;
+            Y_SCALE[i + 2] = 5 * multiplier;
 
-			multiplier *= 10;
-		}
-	}
+            multiplier *= 10;
+        }
+    }
 
-	public HistoStage(final JITWatchUI parent)
-	{
-		initStyle(StageStyle.DECORATED);
+    public HistoStage(final JITWatchUI parent)
+    {
+        initStyle(StageStyle.DECORATED);
 
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(HistoStage.this);
-			}
-		});
+        setOnCloseRequest(new EventHandler<WindowEvent>()
+        {
+            @Override
+            public void handle(WindowEvent arg0)
+            {
+                parent.handleStageClosed(HistoStage.this);
+            }
+        });
 
-		int width = 640;
-		int height = 480;
+        int width = 640;
+        int height = 480;
 
-		canvas = new Canvas(width, height);
-		gc = canvas.getGraphicsContext2D();
+        canvas = new Canvas(width, height);
+        gc = canvas.getGraphicsContext2D();
 
-		final Map<String, String> attrMap = new HashMap<>();
-		attrMap.put("Method JIT-Compilation Times", "compileMillis");
-		attrMap.put("Bytecodes per Compiled Method", "bytes");
-		attrMap.put("Native Bytes per Compiled Method", "nmsize");
+        final Map<String, String> attrMap = new HashMap<>();
+        attrMap.put("Method JIT-Compilation Times", "compileMillis");
+        attrMap.put("Bytecodes per Compiled Method", "bytes");
+        attrMap.put("Native Bytes per Compiled Method", "nmsize");
 
-		VBox vbox = new VBox();
+        VBox vbox = new VBox();
 
-		ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
+        ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
 
-		selectedAttribute = attrMap.get(options.get(0));
+        selectedAttribute = attrMap.get(options.get(0));
 
-		final ComboBox<String> comboBox = new ComboBox<>(options);
-		comboBox.setValue(options.get(0));
+        final ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.setValue(options.get(0));
 
-		Button btnGo = new Button("Go");
+        comboBox.valueProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+            {
+                selectedAttribute = attrMap.get(newVal);
+                histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
+                redraw();
+            }
+        });
 
-		btnGo.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				selectedAttribute = attrMap.get(comboBox.getValue());
-				histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
-				redraw();
-			}
-		});
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(4, 0, 0, GRAPH_GAP_LEFT));
+        hbox.getChildren().add(comboBox);
 
-		HBox hbox = new HBox();
-		hbox.setPadding(new Insets(4,0,0,GRAPH_GAP_LEFT));
-		hbox.setSpacing(10);
-		hbox.getChildren().add(comboBox);
-		hbox.getChildren().add(btnGo);
+        vbox.getChildren().add(hbox);
+        vbox.getChildren().add(canvas);
 
-		vbox.getChildren().add(hbox);
-		vbox.getChildren().add(canvas);
+        Scene scene = new Scene(vbox, width, height);
 
-		Scene scene = new Scene(vbox, width, height);
+        canvas.widthProperty().bind(scene.widthProperty());
+        canvas.heightProperty().bind(scene.heightProperty().subtract(30));
 
-		canvas.widthProperty().bind(scene.widthProperty());
-		canvas.heightProperty().bind(scene.heightProperty().subtract(30));
+        class SceneResizeListener implements ChangeListener<Number>
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
+            {
+                redraw();
+            }
+        }
 
-		class SceneResizeListener implements ChangeListener<Number>
-		{
-			@Override
-			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
-			{
-				redraw();
-			}
-		}
+        SceneResizeListener rl = new SceneResizeListener();
 
-		SceneResizeListener rl = new SceneResizeListener();
+        canvas.widthProperty().addListener(rl);
+        canvas.heightProperty().addListener(rl);
 
-		canvas.widthProperty().addListener(rl);
-		canvas.heightProperty().addListener(rl);
+        setTitle("JITWatch Histogram");
 
-		setTitle("JITWatch Histogram");
-		
-		histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
+        histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
 
-		setScene(scene);
-		show();
+        setScene(scene);
+        show();
 
-		redraw();
-	}
+        redraw();
+    }
 
-	public void redraw()
-	{
-		List<Map.Entry<Long, Integer>> result = histo.getSortedData();
+    public void redraw()
+    {
+        List<Map.Entry<Long, Integer>> result = histo.getSortedData();
 
-		double width = canvas.getWidth();
-		double height = canvas.getHeight();
-		double chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
-		double chartHeight = height - GRAPH_GAP_Y * 2;
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        double chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
+        double chartHeight = height - GRAPH_GAP_Y * 2;
 
-		gc.setFill(Color.WHITE);
-		gc.fillRect(0, 0, width, height);
-		gc.setFill(Color.BEIGE);
-		gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-		gc.setStroke(Color.BLACK);
-		gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-		
-		if (result.size() > 0)
-		{
-			double minStamp = 0;
-			double maxStamp = histo.getLastTime();
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, width, height);
+        gc.setFill(Color.BEIGE);
+        gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
 
-			int maxEvents = histo.getMaxCount();
+        if (result.size() > 0)
+        {
+            double minStamp = 0;
+            double maxStamp = histo.getLastTime();
 
-			gc.setStroke(Color.BLACK);
-			gc.setFont(new Font("monospace", 10));
+            int maxEvents = histo.getMaxCount();
 
-			// ============
-			// Draw X axis
-			// ============
-			double xInc = findScale((long) maxStamp);
+            gc.setStroke(Color.BLACK);
+            gc.setFont(new Font("monospace", 10));
 
-			int gridX = 0;
+            // ============
+            // Draw X axis
+            // ============
+            double xInc = findScale((long) maxStamp);
 
-			while (gridX < maxStamp)
-			{
+            int gridX = 0;
 
-				double x = GRAPH_GAP_LEFT + normalise(gridX, 0, maxStamp, chartWidth, false);
-				gc.strokeLine(x, GRAPH_GAP_Y, x, GRAPH_GAP_Y + chartHeight);
-				gc.strokeText(Integer.toString(gridX), x, GRAPH_GAP_Y + chartHeight + 12);
+            while (gridX < maxStamp)
+            {
 
-				gridX += xInc;
-			}
+                double x = GRAPH_GAP_LEFT + normalise(gridX, 0, maxStamp, chartWidth, false);
+                gc.strokeLine(x, GRAPH_GAP_Y, x, GRAPH_GAP_Y + chartHeight);
+                gc.strokeText(Integer.toString(gridX), x, GRAPH_GAP_Y + chartHeight + 12);
 
-			// ============
-			// Draw Y axis
-			// ============
-			long yInc = findScale(maxEvents);
+                gridX += xInc;
+            }
 
-			int gridY = 0;
+            // ============
+            // Draw Y axis
+            // ============
+            long yInc = findScale(maxEvents);
 
-			while (gridY < maxEvents)
-			{
+            int gridY = 0;
 
-				double y = GRAPH_GAP_Y + normalise(gridY, 0, maxEvents, chartHeight, true);
-				gc.strokeLine(GRAPH_GAP_LEFT, y, GRAPH_GAP_LEFT + chartWidth, y);
-				gc.strokeText(Integer.toString(gridY), 2, y + 2);
+            while (gridY < maxEvents)
+            {
 
-				gridY += yInc;
-			}
+                double y = GRAPH_GAP_Y + normalise(gridY, 0, maxEvents, chartHeight, true);
+                gc.strokeLine(GRAPH_GAP_LEFT, y, GRAPH_GAP_LEFT + chartWidth, y);
+                gc.strokeText(Integer.toString(gridY), 2, y + 2);
 
-			Color colourLine = Color.RED;
+                gridY += yInc;
+            }
 
-			for (Map.Entry<Long, Integer> entry : result)
-			{
-				long key = entry.getKey();
-				int value = entry.getValue();
+            Color colourLine = Color.RED;
 
-				double x = GRAPH_GAP_LEFT + normalise(key, minStamp, maxStamp, chartWidth, false);
+            for (Map.Entry<Long, Integer> entry : result)
+            {
+                long key = entry.getKey();
+                int value = entry.getValue();
 
-				gc.setStroke(colourLine);
+                double x = GRAPH_GAP_LEFT + normalise(key, minStamp, maxStamp, chartWidth, false);
 
-				double y = GRAPH_GAP_Y + normalise(value, 0, maxEvents, chartHeight, true);
-				gc.strokeLine(x, GRAPH_GAP_Y + chartHeight, x, y);
+                gc.setStroke(colourLine);
 
-			}
+                double y = GRAPH_GAP_Y + normalise(value, 0, maxEvents, chartHeight, true);
+                gc.strokeLine(x, GRAPH_GAP_Y + chartHeight, x, y);
 
-			double legendWidth = 100;
-			double legendHeight = 185;
-			double xPos = canvas.getWidth() - GRAPH_GAP_RIGHT - legendWidth - 5;
-			double yPos = GRAPH_GAP_Y + 5;
+            }
 
-			gc.setFill(Color.WHITE);
-			gc.setStroke(Color.BLACK);
+            double legendWidth = 100;
+            double legendHeight = 185;
+            double xPos = canvas.getWidth() - GRAPH_GAP_RIGHT - legendWidth - 5;
+            double yPos = GRAPH_GAP_Y + 5;
 
-			gc.fillRect(xPos, yPos, legendWidth, legendHeight);
-			gc.strokeRect(xPos, yPos, legendWidth, legendHeight);
+            gc.setFill(Color.WHITE);
+            gc.setStroke(Color.BLACK);
 
-			xPos += 5;
-			yPos += 15;
+            gc.fillRect(xPos, yPos, legendWidth, legendHeight);
+            gc.strokeRect(xPos, yPos, legendWidth, legendHeight);
 
-			for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99, 100 })
-			{
-				gc.strokeText(percent + "% : " + histo.getPercentile(percent), xPos, yPos);
-				yPos += 20;
-			}
-		}
-	}
+            xPos += 5;
+            yPos += 15;
 
-	private long findScale(long max)
-	{
-		long requiredLines = 10;
+            for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99, 100 })
+            {
+                gc.strokeText(percent + "% : " + histo.getPercentile(percent), xPos, yPos);
+                yPos += 20;
+            }
+        }
+    }
 
-		for (int i = 0; i < Y_SCALE.length; i++)
-		{
-			if (max / Y_SCALE[i] < requiredLines)
-			{
-				return Y_SCALE[i];
-			}
-		}
+    private long findScale(long max)
+    {
+        long requiredLines = 10;
 
-		return max / requiredLines;
-	}
+        for (int i = 0; i < Y_SCALE.length; i++)
+        {
+            if (max / Y_SCALE[i] < requiredLines)
+            {
+                return Y_SCALE[i];
+            }
+        }
 
-	private double normalise(double value, double min, double max, double size, boolean invert)
-	{
-		double range = max - min;
-		double result = 0;
+        return max / requiredLines;
+    }
 
-		if (range == 0)
-		{
-			result = 0;
-		}
-		else
-		{
-			result = (value - min) / range;
-		}
+    private double normalise(double value, double min, double max, double size, boolean invert)
+    {
+        double range = max - min;
+        double result = 0;
 
-		result *= size;
+        if (range == 0)
+        {
+            result = 0;
+        }
+        else
+        {
+            result = (value - min) / range;
+        }
 
-		if (invert)
-		{
-			result = size - result;
-		}
+        result *= size;
 
-		return result;
-	}
+        if (invert)
+        {
+            result = size - result;
+        }
+
+        return result;
+    }
 
 }

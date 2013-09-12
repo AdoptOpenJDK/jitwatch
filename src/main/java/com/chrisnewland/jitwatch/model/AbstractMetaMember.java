@@ -253,4 +253,15 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 		return paramType;
 	}
+	
+	public List<String> getTreePath()
+	{
+        MetaClass metaClass = getMetaClass();
+        MetaPackage metaPackage = metaClass.getPackage();
+        
+        List<String> path = metaPackage.getPackageComponents();
+        path.add(metaClass.getName());
+        
+        return path;
+	}
 }

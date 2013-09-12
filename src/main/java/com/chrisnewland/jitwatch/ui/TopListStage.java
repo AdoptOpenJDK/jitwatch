@@ -7,6 +7,8 @@ import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
 import com.chrisnewland.jitwatch.toplist.ToplistTreeWalker;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -24,90 +26,96 @@ import javafx.stage.WindowEvent;
 
 public class TopListStage extends Stage
 {
-	private ObservableList<MemberScore> topList = FXCollections.observableArrayList();
+    private ObservableList<MemberScore> topList = FXCollections.observableArrayList();
 
-	private TableView<MemberScore> tableView;
+    private TableView<MemberScore> tableView;
 
-	private String selectedAttribute;
+    private String selectedAttribute;
 
-	private PackageManager pm;
+    private PackageManager pm;
 
-	public TopListStage(final JITWatchUI parent)
-	{
-		initStyle(StageStyle.DECORATED);
+    public TopListStage(final JITWatchUI parent)
+    {
+        initStyle(StageStyle.DECORATED);
 
-		pm = parent.getPackageManager();
+        pm = parent.getPackageManager();
 
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(TopListStage.this);
-			}
-		});
+        setOnCloseRequest(new EventHandler<WindowEvent>()
+        {
+            @Override
+            public void handle(WindowEvent arg0)
+            {
+                parent.handleStageClosed(TopListStage.this);
+            }
+        });
 
-		int width = 640;
-		int height = 480;
+        int width = 640;
+        int height = 480;
 
-		final Map<String, String> attrMap = new HashMap<>();
-		attrMap.put("Largest Native Methods", "nmsize");
-		attrMap.put("Largest Bytecode Methods", "bytes");
-		attrMap.put("Slowest Compilation Times", "compileMillis");
+        final Map<String, String> attrMap = new HashMap<>();
+        attrMap.put("Largest Native Methods", "nmsize");
+        attrMap.put("Largest Bytecode Methods", "bytes");
+        attrMap.put("Slowest Compilation Times", "compileMillis");
 
-		VBox vbox = new VBox();
-		vbox.setPadding(new Insets(8));
-		vbox.setSpacing(8);
+        VBox vbox = new VBox();
+        vbox.setPadding(new Insets(8));
+        vbox.setSpacing(8);
 
-		ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
+        ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
 
-		selectedAttribute = attrMap.get(options.get(0));
+        selectedAttribute = attrMap.get(options.get(0));
 
-		final ComboBox<String> comboBox = new ComboBox<>(options);
-		comboBox.setValue(options.get(0));
+        final ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.setValue(options.get(0));
 
-		Button btnGo = new Button("Go");
+        comboBox.valueProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+            {
+                selectedAttribute = attrMap.get(newVal);
+                buildTableView(selectedAttribute);
+            }
+        });
 
-		btnGo.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				selectedAttribute = attrMap.get(comboBox.getValue());
-				buildTableView(selectedAttribute);
-			}
-		});
+        Scene scene = new Scene(vbox, width, height);
 
-		HBox hbox = new HBox();
-		hbox.getChildren().add(comboBox);
-		hbox.getChildren().add(btnGo);
+        setTitle("JITWatch TopLists");
 
-		Scene scene = new Scene(vbox, width, height);
+        buildTableView(selectedAttribute);
+        tableView = TableUtil.buildTableMemberScore(topList);
 
-		setTitle("JITWatch TopLists");
+        tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends MemberScore> arg0, MemberScore oldVal, MemberScore newVal)
+            {
+                if (newVal != null)
+                {
+                    parent.openTreeAtMember(newVal.getMember());
+                }
+            }
+        });
 
-		buildTableView(selectedAttribute);
-		tableView = TableUtil.buildTableMemberScore(topList);
+        vbox.getChildren().add(comboBox);
+        vbox.getChildren().add(tableView);
 
-		vbox.getChildren().add(hbox);
-		vbox.getChildren().add(tableView);
+        tableView.prefHeightProperty().bind(scene.heightProperty());
 
-		tableView.prefHeightProperty().bind(scene.heightProperty());
+        setScene(scene);
+        show();
 
-		setScene(scene);
-		show();
+        redraw();
+    }
 
-		redraw();
-	}
+    private void buildTableView(String attribute)
+    {
+        topList.clear();
+        topList.addAll(ToplistTreeWalker.buildTopListForAttribute(pm, true, selectedAttribute));
+    }
 
-	private void buildTableView(String attribute)
-	{
-		topList.clear();
-		topList.addAll(ToplistTreeWalker.buildTopListForAttribute(pm, true, selectedAttribute));
-	}
+    public void redraw()
+    {
 
-	public void redraw()
-	{
-
-	}
+    }
 }

@@ -10,61 +10,64 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class TableUtil
 {
-	public static TableView<MemberScore> buildTableMemberScore(ObservableList<MemberScore> scores)
-	{
-		TableView<MemberScore> tv = new TableView<>();
+    public static TableView<MemberScore> buildTableMemberScore(ObservableList<MemberScore> scores)
+    {
+        TableView<MemberScore> tv = new TableView<>();
 
-		TableColumn<MemberScore, Long> colScore = new TableColumn<MemberScore, Long>("Value");
-		colScore.setCellValueFactory(new PropertyValueFactory<MemberScore, Long>("score"));
-		
-		TableColumn<MemberScore, IMetaMember> colMember = new TableColumn<MemberScore, IMetaMember>("Method");
-		colMember.setCellValueFactory(new PropertyValueFactory<MemberScore, IMetaMember>("member"));
+        TableColumn<MemberScore, Long> colScore = new TableColumn<MemberScore, Long>("Value");
+        colScore.setCellValueFactory(new PropertyValueFactory<MemberScore, Long>("score"));
 
-		tv.getColumns().add(colScore);
-		tv.getColumns().add(colMember);
+        TableColumn<MemberScore, IMetaMember> colMember = new TableColumn<MemberScore, IMetaMember>("Method");
+        colMember.setCellValueFactory(new PropertyValueFactory<MemberScore, IMetaMember>("member"));
 
-		tv.setItems(scores);
+        tv.getColumns().add(colScore);
+        tv.getColumns().add(colMember);
 
-		return tv;
-	}
-	
-	public static TableView<AttributeTableRow3Col> buildTableMemberAttributes(ObservableList<AttributeTableRow3Col> rows)
-	{
-		TableView<AttributeTableRow3Col> tv = new TableView<>();
+        tv.setItems(scores);
 
-		TableColumn<AttributeTableRow3Col, String> colType = new TableColumn<AttributeTableRow3Col, String>("Type");
-		colType.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("type"));
-		
-		TableColumn<AttributeTableRow3Col, String> colName = new TableColumn<AttributeTableRow3Col, String>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("name"));
-		
-		TableColumn<AttributeTableRow3Col, String> colValue = new TableColumn<AttributeTableRow3Col, String>("Value");
-		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("value"));
-				
-		tv.getColumns().add(colType);
-		tv.getColumns().add(colName);
-		tv.getColumns().add(colValue);
+        return tv;
+    }
 
-		tv.setItems(rows);
+    public static TableView<AttributeTableRow3Col> buildTableMemberAttributes(ObservableList<AttributeTableRow3Col> rows)
+    {
+        TableView<AttributeTableRow3Col> tv = new TableView<>();
 
-		return tv;
-	}
-	
-	public static TableView<AttributeTableRow2Col> buildTableStats(ObservableList<AttributeTableRow2Col> rows)
-	{
-		TableView<AttributeTableRow2Col> tv = new TableView<>();
+        TableColumn<AttributeTableRow3Col, String> colType = new TableColumn<AttributeTableRow3Col, String>("Type");
+        colType.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("type"));
+        colType.prefWidthProperty().bind(tv.widthProperty().divide(3));
 
-		TableColumn<AttributeTableRow2Col, String> colName = new TableColumn<AttributeTableRow2Col, String>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, String>("name"));
-		
-		TableColumn<AttributeTableRow2Col, Long> colValue = new TableColumn<AttributeTableRow2Col, Long>("Value");
-		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, Long>("value"));
-				
-		tv.getColumns().add(colName);
-		tv.getColumns().add(colValue);
+        TableColumn<AttributeTableRow3Col, String> colName = new TableColumn<AttributeTableRow3Col, String>("Name");
+        colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("name"));
+        colName.prefWidthProperty().bind(tv.widthProperty().divide(3));
 
-		tv.setItems(rows);
+        TableColumn<AttributeTableRow3Col, String> colValue = new TableColumn<AttributeTableRow3Col, String>("Value");
+        colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("value"));
+        colValue.prefWidthProperty().bind(tv.widthProperty().divide(3));
 
-		return tv;
-	}
+        tv.getColumns().add(colType);
+        tv.getColumns().add(colName);
+        tv.getColumns().add(colValue);
+
+        tv.setItems(rows);
+
+        return tv;
+    }
+
+    public static TableView<AttributeTableRow2Col> buildTableStats(ObservableList<AttributeTableRow2Col> rows)
+    {
+        TableView<AttributeTableRow2Col> tv = new TableView<>();
+
+        TableColumn<AttributeTableRow2Col, String> colName = new TableColumn<AttributeTableRow2Col, String>("Name");
+        colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, String>("name"));
+
+        TableColumn<AttributeTableRow2Col, Long> colValue = new TableColumn<AttributeTableRow2Col, Long>("Value");
+        colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, Long>("value"));
+
+        tv.getColumns().add(colName);
+        tv.getColumns().add(colValue);
+
+        tv.setItems(rows);
+
+        return tv;
+    }
 }
