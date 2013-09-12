@@ -68,8 +68,8 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private ListView<IMetaMember> memberList;
 
-	private TableView<AttributeTableRow> attributeTableView;
-	private ObservableList<AttributeTableRow> memberAttrList;
+	private TableView<AttributeTableRow3Col> attributeTableView;
+	private ObservableList<AttributeTableRow3Col> memberAttrList;
 
 	private boolean showOnlyCompiled = true;
 	private boolean hideInterfaces = true;
@@ -232,7 +232,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		Scene scene = new Scene(borderPane, width, height);
 
-		CheckBox cbOnlyCompiled = new CheckBox("Compiled Only");
+		CheckBox cbOnlyCompiled = new CheckBox("JIT Only");
 		cbOnlyCompiled.setTooltip(new Tooltip("Show only compiled methods in the class methods list"));
 		cbOnlyCompiled.setSelected(showOnlyCompiled);
 
@@ -646,14 +646,14 @@ public class JITWatchUI extends Application implements IJITListener
 
 		for (String key : queuedAttrKeys)
 		{
-			memberAttrList.add(new AttributeTableRow("Queued", key, member.getQueuedAttribute(key)));
+			memberAttrList.add(new AttributeTableRow3Col("Queued", key, member.getQueuedAttribute(key)));
 		}
 
 		List<String> compiledAttrKeys = member.getCompiledAttributes();
 
 		for (String key : compiledAttrKeys)
 		{
-			memberAttrList.add(new AttributeTableRow("Compiled", key, member.getCompiledAttribute(key)));
+			memberAttrList.add(new AttributeTableRow3Col("Compiled", key, member.getCompiledAttribute(key)));
 		}
 	}
 

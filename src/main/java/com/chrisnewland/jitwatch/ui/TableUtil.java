@@ -28,20 +28,38 @@ public class TableUtil
 		return tv;
 	}
 	
-	public static TableView<AttributeTableRow> buildTableMemberAttributes(ObservableList<AttributeTableRow> rows)
+	public static TableView<AttributeTableRow3Col> buildTableMemberAttributes(ObservableList<AttributeTableRow3Col> rows)
 	{
-		TableView<AttributeTableRow> tv = new TableView<>();
+		TableView<AttributeTableRow3Col> tv = new TableView<>();
 
-		TableColumn<AttributeTableRow, String> colType = new TableColumn<AttributeTableRow, String>("Type");
-		colType.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("type"));
+		TableColumn<AttributeTableRow3Col, String> colType = new TableColumn<AttributeTableRow3Col, String>("Type");
+		colType.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("type"));
 		
-		TableColumn<AttributeTableRow, String> colName = new TableColumn<AttributeTableRow, String>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("name"));
+		TableColumn<AttributeTableRow3Col, String> colName = new TableColumn<AttributeTableRow3Col, String>("Name");
+		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("name"));
 		
-		TableColumn<AttributeTableRow, String> colValue = new TableColumn<AttributeTableRow, String>("Value");
-		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("value"));
+		TableColumn<AttributeTableRow3Col, String> colValue = new TableColumn<AttributeTableRow3Col, String>("Value");
+		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow3Col, String>("value"));
 				
 		tv.getColumns().add(colType);
+		tv.getColumns().add(colName);
+		tv.getColumns().add(colValue);
+
+		tv.setItems(rows);
+
+		return tv;
+	}
+	
+	public static TableView<AttributeTableRow2Col> buildTableStats(ObservableList<AttributeTableRow2Col> rows)
+	{
+		TableView<AttributeTableRow2Col> tv = new TableView<>();
+
+		TableColumn<AttributeTableRow2Col, String> colName = new TableColumn<AttributeTableRow2Col, String>("Name");
+		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, String>("name"));
+		
+		TableColumn<AttributeTableRow2Col, Long> colValue = new TableColumn<AttributeTableRow2Col, Long>("Value");
+		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, Long>("value"));
+				
 		tv.getColumns().add(colName);
 		tv.getColumns().add(colValue);
 
