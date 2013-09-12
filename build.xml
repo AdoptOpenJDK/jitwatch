@@ -1,6 +1,6 @@
 <project name="jitwatch" default="all" basedir=".">
 	<property name="src" value="src/main/java" />
-	<property name="bin" value="bin" />
+	<property name="bin" value="target/classes" />
 	<property name="lib" value="lib" />
 	<property environment="env"/>
 	
