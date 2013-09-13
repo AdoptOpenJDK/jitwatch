@@ -1,24 +1,36 @@
 <project name="jitwatch" default="all" basedir=".">
 	<property name="src" value="src/main/java" />
-	<property name="bin" value="target/classes" />
+	<property name="target" value="target" />
+	<property name="classes" value="${target}/classes" />
 	<property name="lib" value="lib" />
-	<property environment="env"/>
-	
+	<property environment="env" />
+
 	<target name="init">
-		<delete dir="${bin}" />
-		<mkdir dir="${bin}" />
+		<delete dir="${classes}" />
+		<mkdir dir="${classes}" />
 	</target>
 
 	<path id="classpath">
 		<filelist>
-		      	<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar"/>
-			<file name="${env.JAVA_HOME}/lib/tools.jar"/>			
+			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
+			<file name="${env.JAVA_HOME}/lib/tools.jar" />
 		</filelist>
-        </path>
+	</path>
 
 	<target name="compile" depends="init">
-		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" />
+		<javac srcdir="${src}" destdir="${classes}" classpathref="classpath" includeantruntime="false" />
 	</target>
 
-	<target name="all" depends="compile" />
+	<target name="jar" depends="compile">
+		<jar destfile="${target}/jitwatch-1.0.0-SNAPSHOT.jar">
+			<fileset dir="${classes}">
+				<include name="**/*.class" />
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="com.chrisnewland.jitwatch.launch.LaunchUI" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="all" depends="jar" />
 </project>
