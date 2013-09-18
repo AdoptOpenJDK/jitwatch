@@ -13,7 +13,7 @@ To generate the log file used by JITWatch run your program with JVM switches
 
 <pre>-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly</pre>
 
-If you want to use the -XX:+PrintAssembly switch to view the assembly language (disassembled JIT-compiled native code) then you need the to use a debug JVM build or have built the hsdis (HotSpot disassembler) binary.
+If you want to use the -XX:+PrintAssembly switch to view the assembly language (disassembled JIT-compiled native code) then you need to use a debug JVM build or have built the hsdis (HotSpot disassembler) binary.
 
 Instructions for building hsdis are here: http://dropzone.nfshost.com/hsdis.htm
 <h1>Building JITWatch</h1>
