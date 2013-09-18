@@ -3,6 +3,8 @@ JITWatch
 
 Log analyser for the Java HotSpot JIT compiler.
 
+For more information and screenshots see: http://www.chrisnewland.com/jitwatch
+
 Processes a completed hotspot.log or tails a live one.
 
 Easily view which methods are JIT-compiled and plot a timeline of JIT compilations.
