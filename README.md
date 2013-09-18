@@ -18,23 +18,34 @@ If you want to use the -XX:+PrintAssembly switch to view the assembly language (
 
 <pre>Instructions for building hsdis are here
 http://dropzone.nfshost.com/hsdis.htm</pre>
---------------------------
-How to build:
-
+<hr>
+<h1>Building JITWatch</h1>
+<h2>Build with ant</h2>
 <pre>ant</pre>
 
 If you get compile errors relating to external dependencies (JDK lib/tools.jar and jre/lib/jfxrt.jar) then set your JAVA_HOME environment variable to point to a JDK
 
 <pre>export JAVA_HOME=/path/to/jdk
+ant clean
 ant</pre>
---------------------------
-How to run with (GUI version)
 
-<pre>./launchUI.sh</pre>
+<h2>Build with maven</h2>
+<pre>mvn package</pre>
+<hr>
+<h1>Running JITWatch</h1>
+<h2>Run with launch scripts</h2>
 
-How to run (Console version - simplified output)
+<pre>#GUI Version
+./launchUI.sh</pre>
 
-<pre>./launchHeadless.sh</pre>
+<pre>#Simplifed Text Version
+./launchHeadless.sh</pre>
 
 If required, edit the launch scripts to set up your JDK_HOME variable by uncommenting and completing the line
 <pre>#export JDK_HOME=</pre>
+
+<h2>Run with ant</h2>
+<pre>ant run</pre>
+
+<h2>Run with maven</h2>
+<pre>mvn exec:java</pre>
