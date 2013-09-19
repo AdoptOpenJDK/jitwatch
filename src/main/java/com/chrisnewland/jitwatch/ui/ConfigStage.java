@@ -86,8 +86,9 @@ public class ConfigStage extends Stage
         chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.33));
         hboxButtons.setPrefHeight(30);
 
+	setTitle("JITWatch Configuration");
 
-        Scene scene = new Scene(vbox, 512, 480);
+        Scene scene = new Scene(vbox, 640, 480);
 
         setScene(scene);
 

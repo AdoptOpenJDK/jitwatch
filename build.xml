@@ -5,7 +5,7 @@
 	<property name="lib" value="lib" />
 	<property environment="env" />
 
-	<target name="init">
+	<target name="clean">
 		<delete dir="${classes}" />
 		<mkdir dir="${classes}" />
 	</target>
@@ -17,7 +17,7 @@
 		</filelist>
 	</path>
 
-	<target name="compile" depends="init">
+	<target name="compile">
 		<javac srcdir="${src}" destdir="${classes}" classpathref="classpath" includeantruntime="false" />
 	</target>
 
@@ -30,6 +30,14 @@
 				<attribute name="Main-Class" value="com.chrisnewland.jitwatch.launch.LaunchUI" />
 			</manifest>
 		</jar>
+	</target>
+
+	<target name="run" depends="jar">
+		<java classname="com.chrisnewland.jitwatch.launch.LaunchUI" classpathref="classpath">
+			<classpath>
+				<pathelement location="${target}/jitwatch-1.0.0-SNAPSHOT.jar"/>
+			</classpath>
+		</java>
 	</target>
 
 	<target name="all" depends="jar" />

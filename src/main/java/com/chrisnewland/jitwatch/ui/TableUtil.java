@@ -16,9 +16,11 @@ public class TableUtil
 
         TableColumn<MemberScore, Long> colScore = new TableColumn<MemberScore, Long>("Value");
         colScore.setCellValueFactory(new PropertyValueFactory<MemberScore, Long>("score"));
+        colScore.prefWidthProperty().bind(tv.widthProperty().divide(8));
 
         TableColumn<MemberScore, IMetaMember> colMember = new TableColumn<MemberScore, IMetaMember>("Method");
         colMember.setCellValueFactory(new PropertyValueFactory<MemberScore, IMetaMember>("member"));
+        colMember.prefWidthProperty().bind(tv.widthProperty().divide(8).multiply(7));
 
         tv.getColumns().add(colScore);
         tv.getColumns().add(colMember);
@@ -59,9 +61,11 @@ public class TableUtil
 
         TableColumn<AttributeTableRow2Col, String> colName = new TableColumn<AttributeTableRow2Col, String>("Name");
         colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, String>("name"));
+        colName.prefWidthProperty().bind(tv.widthProperty().divide(2));
 
         TableColumn<AttributeTableRow2Col, Long> colValue = new TableColumn<AttributeTableRow2Col, Long>("Value");
         colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, Long>("value"));
+        colValue.prefWidthProperty().bind(tv.widthProperty().divide(2));
 
         tv.getColumns().add(colName);
         tv.getColumns().add(colValue);

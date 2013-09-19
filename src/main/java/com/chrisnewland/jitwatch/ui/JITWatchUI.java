@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.tree.TreeNode;
-
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
@@ -516,7 +514,7 @@ public class JITWatchUI extends Application implements IJITListener
         borderPane.setTop(hboxTop);
         borderPane.setCenter(spMain);
 
-        stage.setTitle("JITWatch - HotSpot Compilation Inspector - by Chris Newland (@chriswhocodes)");
+        stage.setTitle("JITWatch - HotSpot Compilation Inspector");
         stage.setScene(scene);
         stage.show();
 
