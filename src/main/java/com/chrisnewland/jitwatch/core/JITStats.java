@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/LICENSE-BSD
+ * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
  * http://www.chrisnewland.com/jitwatch
  */
 package com.chrisnewland.jitwatch.core;
