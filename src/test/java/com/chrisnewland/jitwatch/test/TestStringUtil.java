@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013 Chris Newland. All rights reserved.
+ * Licensed under https://github.com/chriswhocodes/jitwatch/LICENSE-BSD
+ * http://www.chrisnewland.com/jitwatch
+ */
 package com.chrisnewland.jitwatch.test;
 
 import static org.junit.Assert.*;

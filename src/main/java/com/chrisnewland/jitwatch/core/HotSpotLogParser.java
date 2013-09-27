@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013 Chris Newland. All rights reserved.
+ * Licensed under https://github.com/chriswhocodes/jitwatch/LICENSE-BSD
+ * http://www.chrisnewland.com/jitwatch
+ */
 package com.chrisnewland.jitwatch.core;
 
 import java.io.BufferedReader;
@@ -13,13 +18,6 @@ import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
-/**
- * To generate the log file used by JITWatch run your program with JRE switches
- * <code>-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:+PrintAssembly</code>
- * 
- * http://dropzone.nfshost.com/hsdis.htm
- * https://wikis.oracle.com/display/HotSpotInternals/LogCompilation+overview
- */
 public class HotSpotLogParser
 {
     enum EventType
