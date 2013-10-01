@@ -3,7 +3,7 @@ JITWatch
 
 Log analyser for the Java HotSpot JIT compiler.
 
-For more information and screenshots see: http://www.chrisnewland.com/jitwatch
+For more information and screenshots see the wiki https://github.com/AdoptOpenJDK/jitwatch/wiki
 
 Processes a completed hotspot.log or tails a live one.
 
