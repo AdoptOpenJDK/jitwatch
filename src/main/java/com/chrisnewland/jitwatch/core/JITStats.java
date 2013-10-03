@@ -25,6 +25,7 @@ public class JITStats
 	private long countC2N = 0;
 	private long totalCompileTime = 0;
 	private long nativeBytes = 0;
+	private long countCompilerThreads = 0;
 
 	private long countClass = 0;
 	private long countMethod = 0;
@@ -48,6 +49,7 @@ public class JITStats
 		countC2N = 0;
 		totalCompileTime = 0;
 		nativeBytes = 0;
+		countCompilerThreads = 0;
 
 		countClass = 0;
 		countMethod = 0;
@@ -97,6 +99,11 @@ public class JITStats
 	public void incCountNative()
 	{
 		countNative++;
+	}
+	
+	public void incCompilerThreads()
+	{
+		countCompilerThreads++;
 	}
 
 	public void incCountAbstract()
@@ -182,6 +189,11 @@ public class JITStats
 	public long getCountNative()
 	{
 		return countNative;
+	}
+	
+	public long getCountCompilerThreads()
+	{
+		return countCompilerThreads;
 	}
 
 	public long getCountAbstract()

@@ -29,6 +29,7 @@ public class HotSpotLogParser
     private static final String TAG_NMETHOD = "<nmethod";
     private static final String TAG_TASK = "<task compile_id";
     private static final String TAG_TASK_DONE = "<task_done";
+    private static final String TAG_START_COMPILE_THREAD = "<start_compile_thread";
 
     private static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 
@@ -139,6 +140,7 @@ public class HotSpotLogParser
 
         try
         {
+            // ok this is starting to get ugly, find a better way!
             if (currentLine.startsWith(TAG_TASK_QUEUED))
             {
                 if (inNativeCode)
@@ -179,6 +181,14 @@ public class HotSpotLogParser
                 }
                 handleLoaded(currentLine);
             }
+            else if (currentLine.startsWith(TAG_START_COMPILE_THREAD))
+            {
+                if (inNativeCode)
+                {
+                    completeNativeCode();
+                }
+                handleStartCompileThread();
+            }
             else if (currentLine.contains(NATIVE_CODE_METHOD_MARK))
             {
                 String sig = convertNativeCodeMethodName(currentLine);
@@ -218,6 +228,11 @@ public class HotSpotLogParser
         }
 
         nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
+    }
+
+    private void handleStartCompileThread()
+    {
+        model.getJITStats().incCompilerThreads();
     }
 
     private void handleMethod(String currentLine, EventType eventType)
@@ -361,14 +376,24 @@ public class HotSpotLogParser
                 }
                 catch (ClassNotFoundException cnf)
                 {
-                    logError("ClassNotFoundException: " + fqClassName);
+                    logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
                 }
                 catch (NoClassDefFoundError ncdf)
                 {
-                    logError("NoClassDefFoundError: " + fqClassName);
+                    logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
                 }
 
-                model.buildMetaClass(packageName, className, clazz);
+                try
+                {
+                    // can throw NCDFE from clazz.getDeclaredMethods()
+                    model.buildMetaClass(packageName, className, clazz);
+                }
+                catch (NoClassDefFoundError ncdf)
+                {
+                    // missing class is from a method declaration in fqClassName
+                    // so look in getMessage()
+                    logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
+                }
             }
         }
     }

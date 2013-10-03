@@ -32,7 +32,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 		
-		Scene scene = new Scene(vbox, 512, 450);
+		Scene scene = new Scene(vbox, 512, 480);
 	
 		tableView = TableUtil.buildTableStats(obList);
 		
@@ -75,7 +75,8 @@ public class StatsStage extends Stage
 		obList.add(makeRow("C1 Compiled", stats.getCountC1()));
 		obList.add(makeRow("C2 Compiled", stats.getCountC2()));
 		obList.add(makeRow("OSR Compiled", stats.getCountOSR()));
-		obList.add(makeRow("C2N Compiled", stats.getCountC2N()));	
+		obList.add(makeRow("C2N Compiled", stats.getCountC2N()));
+		obList.add(makeRow("Compiler Threads", stats.getCountCompilerThreads()));
 		
 		
 		// * = Only have the queued timestamp and compiled timestamp
