@@ -193,7 +193,6 @@ public class JITDataModel
 		}
 		else
 		{
-
 			if (clazz.isInterface())
 			{
 				metaClass.setInterface(true);

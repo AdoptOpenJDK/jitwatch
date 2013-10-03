@@ -40,4 +40,24 @@ public class ClassUtil
 			t.printStackTrace();
 		}
 	}
+	
+	public static URL[] getClassLoaderURLs()
+	{
+		try
+		{
+			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+			Class<?> urlClass = URLClassLoader.class;
+			Method method = urlClass.getDeclaredMethod("getURLs", new Class<?>[] {});
+			method.setAccessible(true);
+			Object result = method.invoke(urlClassLoader, new Object[] {});
+			
+			return (URL[])result;
+		}
+		catch (Throwable t)
+		{
+			t.printStackTrace();
+		}
+		
+		return null;
+	}
 }
