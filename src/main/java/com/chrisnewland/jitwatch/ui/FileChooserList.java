@@ -42,7 +42,7 @@ public class FileChooserList extends VBox
             fileList.getItems().add(new Label(item));
         }
 
-        Button btnOpenFileDialog = new Button("Add File");
+        Button btnOpenFileDialog = new Button("Add File(s)");
         btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
         {
             @Override
@@ -88,8 +88,8 @@ public class FileChooserList extends VBox
         hbox.getChildren().add(fileList);
         hbox.getChildren().add(vboxButtons);
 
-        fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.75));
-        vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.25));
+        fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.85));
+        vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.15));
 
         Label titleLabel = new Label(title);
 

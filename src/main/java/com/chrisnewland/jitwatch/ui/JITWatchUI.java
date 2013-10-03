@@ -20,15 +20,12 @@ import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.PackageManager;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -37,29 +34,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 import javafx.util.Duration;
 
 public class JITWatchUI extends Application implements IJITListener
@@ -69,22 +54,15 @@ public class JITWatchUI extends Application implements IJITListener
     private JITDataModel model;
     private HotSpotLogParser logParser;
 
-    private TreeView<Object> treeView;
-    private TreeItem<Object> rootItem;
-
-    private ListView<IMetaMember> memberList;
+    private ClassTree classTree;
+    private ClassMemberList classMemberList;
 
     private TableView<AttributeTableRow3Col> attributeTableView;
     private ObservableList<AttributeTableRow3Col> memberAttrList;
 
-    private boolean showOnlyCompiled = true;
-    private boolean hideInterfaces = true;
-
-    private TreeItem<Object> selectedNode;
-
     private List<Stage> openPopupStages = new ArrayList<>();
 
-    private TextArea textArea;
+    private TextArea textAreaLog;
 
     private File watchFile = null;
     private boolean isWatching = false;
@@ -143,16 +121,15 @@ public class JITWatchUI extends Application implements IJITListener
     {
         model.reset();
 
-        textArea.clear();
+        textAreaLog.clear();
 
         selectedMember = null;
 
         errorCount = 0;
         errorLog.delete(0, errorLog.length());
 
-        refreshSelectedTreeNode();
-
-        rootItem.getChildren().clear();
+        classTree.clear();
+        refreshSelectedTreeNode(null);
 
         isWatching = true;
 
@@ -211,59 +188,12 @@ public class JITWatchUI extends Application implements IJITListener
             }
         });
 
-        rootItem = new TreeItem<Object>("Packages");
-
-        rootItem.setExpanded(true);
-
-        treeView = new TreeView<Object>(rootItem);
-
-        treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
-        treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<Object>>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends TreeItem<Object>> observableValue, TreeItem<Object> oldItem,
-                    TreeItem<Object> newItem)
-            {
-                selectedNode = newItem;
-
-                refreshSelectedTreeNode();
-            }
-        });
-
         int width = 1024;
         int height = 592;
 
         BorderPane borderPane = new BorderPane();
 
         Scene scene = new Scene(borderPane, width, height);
-
-        CheckBox cbOnlyCompiled = new CheckBox("JIT Only");
-        cbOnlyCompiled.setTooltip(new Tooltip("Show only compiled methods in the class methods list"));
-        cbOnlyCompiled.setSelected(showOnlyCompiled);
-
-        cbOnlyCompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                showOnlyCompiled = newVal;
-                refreshSelectedTreeNode();
-            }
-        });
-
-        CheckBox cbHideInterfaces = new CheckBox("Hide Interfaces");
-        cbHideInterfaces.setTooltip(new Tooltip("Hide Interfaces from the Class Tree"));
-        cbHideInterfaces.setSelected(hideInterfaces);
-        cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                hideInterfaces = newVal;
-                clearAndRefresh();
-            }
-        });
 
         Button btnChooseWatchFile = new Button("Open Log");
         btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
@@ -400,109 +330,40 @@ public class JITWatchUI extends Application implements IJITListener
         hboxTop.getChildren().add(btnHisto);
         hboxTop.getChildren().add(btnTopList);
         hboxTop.getChildren().add(btnErrorLog);
-        hboxTop.getChildren().add(cbOnlyCompiled);
-        hboxTop.getChildren().add(cbHideInterfaces);
         hboxTop.getChildren().add(lblHeap);
         hboxTop.setPrefHeight(topHeight);
         hboxTop.setSpacing(10);
 
-        memberList = new ListView<IMetaMember>();
-        memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
-            {
-                showMemberInfo(newVal);
-            }
-        });
-
-        final ContextMenu contextMenuCompiled = new ContextMenu();
-        final ContextMenu contextMenuNotCompiled = new ContextMenu();
-
-        MenuItem menuItemSource = new MenuItem("Show Source");
-        MenuItem menuItemBytecode = new MenuItem("Show Bytecode");
-        MenuItem menuItemNative = new MenuItem("Show Native Code");
-
-        contextMenuCompiled.getItems().add(menuItemSource);
-        contextMenuCompiled.getItems().add(menuItemBytecode);
-        contextMenuCompiled.getItems().add(menuItemNative);
-
-        contextMenuNotCompiled.getItems().add(menuItemSource);
-        contextMenuNotCompiled.getItems().add(menuItemBytecode);
-
-        memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent e)
-            {
-                if (e.getButton() == MouseButton.SECONDARY)
-                {
-                    if (selectedMember.isCompiled())
-                    {
-                        contextMenuCompiled.show(memberList, e.getScreenX(), e.getScreenY());
-                    }
-                    else
-                    {
-                        contextMenuNotCompiled.show(memberList, e.getScreenX(), e.getScreenY());
-                    }
-                }
-            }
-        });
-
-        menuItemSource.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openSource(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
-
-        menuItemBytecode.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openBytecode(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
-
-        menuItemNative.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openNativeCode(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
-
         memberAttrList = FXCollections.observableArrayList();
         attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
-        attributeTableView.setPlaceholder(new Text("Select a method to view HotSpot attributes."));
+        attributeTableView.setPlaceholder(new Text("Select a JIT-compiled method to view HotSpot attributes."));
 
         SplitPane spMethodInfo = new SplitPane();
         spMethodInfo.setOrientation(Orientation.VERTICAL);
 
-        spMethodInfo.getItems().add(memberList);
+        classMemberList = new ClassMemberList(this, config);
+
+        spMethodInfo.getItems().add(classMemberList);
         spMethodInfo.getItems().add(attributeTableView);
 
-        memberList.prefHeightProperty().bind(scene.heightProperty());
+        classMemberList.prefHeightProperty().bind(scene.heightProperty());
         attributeTableView.prefHeightProperty().bind(scene.heightProperty());
 
-        treeView.prefWidthProperty().bind(scene.widthProperty());
+        classTree = new ClassTree(this, config);
+        classTree.prefWidthProperty().bind(scene.widthProperty());
 
         SplitPane spMain = new SplitPane();
         spMain.setOrientation(Orientation.VERTICAL);
 
         SplitPane spCentre = new SplitPane();
-        spCentre.getItems().add(treeView);
+        spCentre.getItems().add(classTree);
         spCentre.getItems().add(spMethodInfo);
         spCentre.setDividerPositions(0.3, 0.7);
 
-        textArea = new TextArea();
-        textArea.setStyle("-fx-font-family:monospace;");
-        textArea.setPrefHeight(bottomHeight);
-        textArea.setText("Welcome to JITWatch\n");
+        textAreaLog = new TextArea();
+        textAreaLog.setStyle("-fx-font-family:monospace;");
+        textAreaLog.setPrefHeight(bottomHeight);
+        textAreaLog.setText("Welcome to JITWatch\n");
 
         if (watchFile == null)
         {
@@ -513,7 +374,7 @@ public class JITWatchUI extends Application implements IJITListener
             log("Using HotSpot log file: " + watchFile.getAbsolutePath());
         }
         spMain.getItems().add(spCentre);
-        spMain.getItems().add(textArea);
+        spMain.getItems().add(textAreaLog);
         spMain.setDividerPositions(0.7, 0.3);
 
         borderPane.setTop(hboxTop);
@@ -563,8 +424,8 @@ public class JITWatchUI extends Application implements IJITListener
 
         // would be better to identify open nodes and close?
         clearAndRefresh();
-        
-        TreeItem<Object> curNode = rootItem;
+
+        TreeItem<Object> curNode = classTree.getRootItem();
 
         StringBuilder builtPath = new StringBuilder();
 
@@ -572,7 +433,7 @@ public class JITWatchUI extends Application implements IJITListener
         int pos = 0;
 
         int rowsAbove = 0;
-        
+
         boolean found = false;
 
         for (String part : path)
@@ -595,7 +456,7 @@ public class JITWatchUI extends Application implements IJITListener
             for (TreeItem<Object> node : curNode.getChildren())
             {
                 rowsAbove++;
-                
+
                 String nodeText = node.getValue().toString();
 
                 if (matching.equals(nodeText))
@@ -603,7 +464,7 @@ public class JITWatchUI extends Application implements IJITListener
                     builtPath.append('.');
                     curNode = node;
                     curNode.setExpanded(true);
-                    treeView.getSelectionModel().select(curNode);
+                    classTree.select(curNode);
                     found = true;
                     break;
                 }
@@ -612,15 +473,12 @@ public class JITWatchUI extends Application implements IJITListener
 
         if (found)
         {
-            treeView.scrollTo(rowsAbove);
-            
-            memberList.getSelectionModel().select(member);
-            memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
+            classTree.scrollTo(rowsAbove);
+            classMemberList.selectMember(member);
         }
-        
     }
 
-    private void openSource(IMetaMember member)
+    void openSource(IMetaMember member)
     {
         MetaClass methodClass = member.getMetaClass();
 
@@ -654,7 +512,7 @@ public class JITWatchUI extends Application implements IJITListener
         tvs.jumpTo(member.getSignatureRegEx());
     }
 
-    private void openBytecode(IMetaMember member)
+    void openBytecode(IMetaMember member)
     {
         String searchMethod = member.getSignatureForBytecode();
 
@@ -670,7 +528,7 @@ public class JITWatchUI extends Application implements IJITListener
         openPopupStages.add(tvs);
     }
 
-    private void openNativeCode(IMetaMember member)
+    void openNativeCode(IMetaMember member)
     {
         String nativeCode = member.getNativeCode();
         TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, "Native code for " + member.toString(), nativeCode, false);
@@ -700,7 +558,7 @@ public class JITWatchUI extends Application implements IJITListener
         }
     }
 
-    private void showMemberInfo(IMetaMember member)
+    void showMemberInfo(IMetaMember member)
     {
         memberAttrList.clear();
 
@@ -731,7 +589,7 @@ public class JITWatchUI extends Application implements IJITListener
         if (repaintTree)
         {
             repaintTree = false;
-            showTree();
+            classTree.showTree();
         }
 
         if (timeLineStage != null)
@@ -774,7 +632,7 @@ public class JITWatchUI extends Application implements IJITListener
 
     private void refreshLog()
     {
-        textArea.appendText(logBuffer.toString());
+        textAreaLog.appendText(logBuffer.toString());
         logBuffer.delete(0, logBuffer.length());
     }
 
@@ -783,11 +641,11 @@ public class JITWatchUI extends Application implements IJITListener
         return selectedMember;
     }
 
-    private void clearAndRefresh()
+    void clearAndRefresh()
     {
         selectedMember = null;
-        rootItem.getChildren().clear();
-        showTree();
+        classTree.clear();
+        classTree.showTree();
     }
 
     public void handleStageClosed(Stage stage)
@@ -846,169 +704,23 @@ public class JITWatchUI extends Application implements IJITListener
         logBuffer.append(entry + "\n");
     }
 
-    private TreeItem<Object> findOrCreateTreeItem(TreeItem<Object> parent, Object value)
+    void refreshSelectedTreeNode(MetaClass metaClass)
     {
-        ObservableList<TreeItem<Object>> children = parent.getChildren();
-
-        TreeItem<Object> found = null;
-
-        int placeToInsert = 0;
-        boolean foundInsertPos = false;
-
-        for (TreeItem<Object> child : children)
-        {
-            int stringCompare = child.getValue().toString().compareTo(value.toString());
-
-            if (stringCompare == 0)
-            {
-                found = child;
-                break;
-            }
-            else if (!foundInsertPos && stringCompare < 0)
-            {
-                // make sure sub packages listed before classes in this package
-
-                if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
-                {
-
-                }
-                else
-                {
-                    placeToInsert++;
-                }
-            }
-            else
-            {
-                if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
-                {
-                    placeToInsert++;
-                }
-                else
-                {
-                    foundInsertPos = true;
-                }
-            }
-        }
-
-        if (found == null)
-        {
-            found = new TreeItem<Object>(value);
-            children.add(placeToInsert, found);
-
-            if (value instanceof MetaClass && ((MetaClass) value).isMissingDef())
-            {
-                // indicate missing class definition?
-            }
-        }
-
-        return found;
-    }
-
-    private void refreshSelectedTreeNode()
-    {
-        memberList.getItems().clear();
+        classMemberList.clearClassMembers();
 
         showMemberInfo(null);
 
-        if (selectedNode == null)
+        if (metaClass == null)
         {
             // nothing selected
             return;
         }
 
-        Object value = selectedNode.getValue();
-
-        if (value instanceof MetaClass)
-        {
-            MetaClass metaClass = (MetaClass) value;
-
-            List<IMetaMember> metaMembers = metaClass.getMetaMembers();
-
-            for (IMetaMember member : metaMembers)
-            {
-                if (member.isCompiled())
-                {
-                    memberList.getItems().add(member);
-                }
-                else if (!showOnlyCompiled)
-                {
-                    memberList.getItems().add(member);
-                }
-            }
-
-            memberList.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-            {
-                @Override
-                public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-                {
-                    return new MetaMethodCell();
-                }
-            });
-
-        }
-    }
-
-    static class MetaMethodCell extends ListCell<IMetaMember>
-    {
-        @Override
-        public void updateItem(IMetaMember item, boolean empty)
-        {
-            super.updateItem(item, empty);
-
-            if (item != null)
-            {
-                setText(item.toStringUnqualifiedMethodName());
-
-                if (isSelected())
-                {
-                    setTextFill(Color.WHITE);
-                }
-                else if (item.isCompiled())
-                {
-                    setTextFill(Color.RED);
-                }
-                else
-                {
-                    setTextFill(Color.BLACK);
-                }
-            }
-        }
+        classMemberList.setMetaClass(metaClass);
     }
 
     public PackageManager getPackageManager()
     {
         return model.getPackageManager();
-    }
-
-    private void showTree()
-    {
-        List<MetaPackage> roots = model.getPackageManager().getRootPackages();
-
-        for (MetaPackage mp : roots)
-        {
-            showTree(rootItem, mp);
-        }
-    }
-
-    private void showTree(TreeItem<Object> currentNode, MetaPackage mp)
-    {
-        TreeItem<Object> packageItem = findOrCreateTreeItem(currentNode, mp);
-
-        List<MetaPackage> childPackages = mp.getChildPackages();
-
-        for (MetaPackage childPackage : childPackages)
-        {
-            showTree(packageItem, childPackage);
-        }
-
-        List<MetaClass> packageClasses = mp.getPackageClasses();
-
-        for (MetaClass packageClass : packageClasses)
-        {
-            if (!hideInterfaces || !packageClass.isInterface())
-            {
-                findOrCreateTreeItem(packageItem, packageClass);
-            }
-        }
     }
 }

@@ -86,14 +86,14 @@ public class ConfigStage extends Stage
 
         vbox.getChildren().add(hboxButtons);
         
-        taFilter.prefHeightProperty().bind(this.heightProperty().multiply(0.33));
-        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(0.33));
-        chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.33));
+        taFilter.prefHeightProperty().bind(this.heightProperty().multiply(0.20));
+        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(0.3));
+        chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
         hboxButtons.setPrefHeight(30);
 
-	setTitle("JITWatch Configuration");
+        setTitle("JITWatch Configuration");
 
-        Scene scene = new Scene(vbox, 640, 480);
+        Scene scene = new Scene(vbox, 800, 480);
 
         setScene(scene);
 
