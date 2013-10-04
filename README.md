@@ -1,36 +1,33 @@
 JITWatch
 ========
 
-Log analyser for the Java HotSpot JIT compiler.
+Log analyser and visualiser for the HotSpot JIT compiler.
 
 <h3>For instructions and screenshots see the wiki</h3>
 <h3>https://github.com/AdoptOpenJDK/jitwatch/wiki</h3>
 
-<h2>Build with ant</h2>
+JITwatch depends on tools.jar (from JDK_HOME/lib) for javap bytecode display.
+
+JITWatch depends on jfxrt.jar (from JDK_HOME/jre/lib/) for the user interface.
+
+<h2>Using ant</h2>
+<h3>Build</h3>
 <pre>ant clean
 ant</pre>
+<h3>Run</h3>
+<pre>ant run</pre>
 
-If you get compile errors relating to external dependencies (JDK lib/tools.jar and jre/lib/jfxrt.jar) then set your JAVA_HOME environment variable to point to a JDK
-
-<pre>export JAVA_HOME=/path/to/jdk
-ant</pre>
-
-<h2>Build with maven</h2>
+<h2>Using maven</h2>
+<h3>Build</h3>
 <pre>mvn package</pre>
+<h3>Run</h3>
+<pre>mvn exec:java</pre>
 
-<h2>Run with launch scripts</h2>
-
+<h2>Using shell</h2>
+<h3>Run</h3>
 <pre>#GUI Version
 ./launchUI.sh</pre>
-
 <pre>#Simplifed Text Version
 ./launchHeadless.sh</pre>
 
-If required, edit the launch scripts to set up your JDK_HOME variable by uncommenting and completing the line
-<pre>#export JDK_HOME=</pre>
 
-<h2>Run with ant</h2>
-<pre>ant run</pre>
-
-<h2>Run with maven</h2>
-<pre>mvn exec:java</pre>
