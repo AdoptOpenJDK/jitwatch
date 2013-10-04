@@ -32,7 +32,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 		
-		Scene scene = new Scene(vbox, 512, 480);
+		Scene scene = new Scene(vbox, 800, 480);
 	
 		tableView = TableUtil.buildTableStats(obList);
 		

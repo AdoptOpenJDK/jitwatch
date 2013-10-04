@@ -66,11 +66,11 @@ public class TableUtil
 
         TableColumn<AttributeTableRow2Col, String> colName = new TableColumn<AttributeTableRow2Col, String>("Name");
         colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, String>("name"));
-        colName.prefWidthProperty().bind(tv.widthProperty().divide(2));
+        colName.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
 
         TableColumn<AttributeTableRow2Col, Long> colValue = new TableColumn<AttributeTableRow2Col, Long>("Value");
         colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow2Col, Long>("value"));
-        colValue.prefWidthProperty().bind(tv.widthProperty().divide(2));
+        colValue.prefWidthProperty().bind(tv.widthProperty().multiply(0.66));
 
         tv.getColumns().add(colName);
         tv.getColumns().add(colValue);
