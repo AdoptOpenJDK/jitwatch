@@ -5,7 +5,10 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.PackageManager;
@@ -51,19 +54,23 @@ public class TopListStage extends Stage
             }
         });
 
-        int width = 640;
+        int width = 800;
         int height = 480;
 
         final Map<String, String> attrMap = new HashMap<>();
         attrMap.put("Largest Native Methods", "nmsize");
         attrMap.put("Largest Bytecode Methods", "bytes");
         attrMap.put("Slowest Compilation Times", "compileMillis");
-
+        attrMap.put("Most Decompiled Methods", "decompiles");
+        
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(8));
         vbox.setSpacing(8);
 
-        ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
+        List<String> keyList = new ArrayList<>(attrMap.keySet());
+        Collections.sort(keyList);
+        
+        ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
         selectedAttribute = attrMap.get(options.get(0));
 
