@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 
 import javafx.beans.value.ChangeListener;
@@ -75,13 +76,16 @@ public class ClassMemberList extends VBox
         MenuItem menuItemSource = new MenuItem("Show Source");
         MenuItem menuItemBytecode = new MenuItem("Show Bytecode");
         MenuItem menuItemNative = new MenuItem("Show Native Code");
+        MenuItem menuItemJournal = new MenuItem("Show JIT Journal");
 
         contextMenuCompiled.getItems().add(menuItemSource);
         contextMenuCompiled.getItems().add(menuItemBytecode);
         contextMenuCompiled.getItems().add(menuItemNative);
+        contextMenuCompiled.getItems().add(menuItemJournal);
 
         contextMenuNotCompiled.getItems().add(menuItemSource);
         contextMenuNotCompiled.getItems().add(menuItemBytecode);
+        contextMenuNotCompiled.getItems().add(menuItemJournal);
 
         memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
         {
@@ -101,7 +105,7 @@ public class ClassMemberList extends VBox
                 }
             }
         });
-
+        
         menuItemSource.setOnAction(new EventHandler<ActionEvent>()
         {
             @Override
@@ -126,6 +130,24 @@ public class ClassMemberList extends VBox
             public void handle(ActionEvent e)
             {
                 parent.openNativeCode(memberList.getSelectionModel().getSelectedItem());
+            }
+        });
+        
+        menuItemJournal.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+            	IMetaMember member = memberList.getSelectionModel().getSelectedItem();
+            	
+            	String compileID = member.getQueuedAttribute("compile_id");
+            	
+            	Journal journal = parent.getJournal(compileID);
+            	
+            	for (String entry : journal.getEntryList())
+            	{
+            		System.out.println(entry);
+            	}
             }
         });
         

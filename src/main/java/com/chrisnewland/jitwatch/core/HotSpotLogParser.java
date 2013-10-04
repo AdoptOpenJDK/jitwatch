@@ -209,6 +209,16 @@ public class HotSpotLogParser
             t.printStackTrace();
         }
 
+        //refactor later to build attrs once
+        Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
+        String compileID = attrs.get("compile_id");
+        
+        if (compileID != null)
+        {
+        	model.addJournalEntry(compileID, currentLine);
+        }
+        
+        
         currentLineNumber++;
 
     }

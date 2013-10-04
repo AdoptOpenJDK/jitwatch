@@ -69,6 +69,9 @@ public class JITDataModel
         journal.addEntry(entry);
     }
 
+    // can we guarantee that IMetaMember will be created before
+    // journal entries are ready? Assume not so store in model
+    // instead of member
     public Journal getJournal(String id)
     {
         Journal journal = journalMap.get(id);

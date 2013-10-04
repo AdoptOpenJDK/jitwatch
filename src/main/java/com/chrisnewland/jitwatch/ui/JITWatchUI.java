@@ -19,6 +19,7 @@ import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 
@@ -722,5 +723,10 @@ public class JITWatchUI extends Application implements IJITListener
     public PackageManager getPackageManager()
     {
         return model.getPackageManager();
+    }
+    
+    public Journal getJournal(String id)
+    {
+    	return model.getJournal(id);
     }
 }
