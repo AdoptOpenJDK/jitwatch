@@ -224,15 +224,15 @@ public class ClassMemberList extends VBox
 
                 if (isSelected())
                 {
-                    setTextFill(Color.WHITE);
+                    setStyle("-fx-background-color: blue; -fx-text-fill: white;");
                 }
                 else if (item.isCompiled())
                 {
-                    setTextFill(Color.RED);
+                    setStyle("-fx-text-fill:red;");
                 }
                 else
                 {
-                    setTextFill(Color.BLACK);
+                    setStyle("-fx-text-fill:black;");
                 }
             }
         }

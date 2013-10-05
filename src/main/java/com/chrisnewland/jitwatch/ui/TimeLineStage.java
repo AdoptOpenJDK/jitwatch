@@ -319,11 +319,7 @@ public class TimeLineStage extends Stage
 		double range = max - min;
 		double result = 0;
 
-		if (range == 0)
-		{
-			result = 0;
-		}
-		else
+		if (range != 0)
 		{
 			result = (value - min) / range;
 		}
