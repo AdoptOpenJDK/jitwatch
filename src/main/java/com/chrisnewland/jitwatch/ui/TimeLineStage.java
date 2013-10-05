@@ -183,7 +183,7 @@ public class TimeLineStage extends Stage
 						gc.setStroke(colourMarker);
 						gc.fillOval(smX - markerDiameter / 2, y - markerDiameter / 2, markerDiameter, markerDiameter);
 
-						String line1 = selectedMember.toStringUnqualifiedMethodName();
+						String line1 = selectedMember.toString();
 
 						String compiler = selectedMember.getCompiledAttribute("compiler");
 

@@ -537,6 +537,13 @@ public class JITWatchUI extends Application implements IJITListener
 
         openPopupStages.add(tvs);
     }
+    
+    void openTextViewer(String title, String content)
+    {
+        TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, title, content, false);
+        tvs.show();
+        openPopupStages.add(tvs);
+    }
 
     private void chooseHotSpotFile()
     {
