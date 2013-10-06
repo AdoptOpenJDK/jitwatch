@@ -209,6 +209,15 @@ public class HotSpotLogParser
             t.printStackTrace();
         }
 
+        // refactor later to build attrs once
+        Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
+        String compileID = attrs.get("compile_id");
+
+        if (compileID != null)
+        {
+            model.addJournalEntry(compileID, currentLine);
+        }
+
         currentLineNumber++;
 
     }
@@ -335,6 +344,10 @@ public class HotSpotLogParser
         if (currentMember != null)
         {
             currentMember.addCompiledAttributes(attrs);
+
+            // prevents attr overwrite by next task_done if next member not
+            // found due to classpath issues
+            currentMember = null;
         }
     }
 

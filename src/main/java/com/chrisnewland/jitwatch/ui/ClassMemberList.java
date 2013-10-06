@@ -4,13 +4,14 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
@@ -27,12 +28,12 @@ public class ClassMemberList extends VBox
     private CheckBox cbOnlyCompiled;
     private ListView<IMetaMember> memberList;
     private MetaClass metaClass = null;
-    private JITWatchConfig config;    
-    
+    private JITWatchConfig config;
+
     public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
     {
         this.config = config;
-        
+
         cbOnlyCompiled = new CheckBox("Show Only JIT-Compiled Members");
         cbOnlyCompiled.setSelected(config.isShowOnlyCompiled());
 
@@ -46,10 +47,10 @@ public class ClassMemberList extends VBox
                 refresh();
             }
         });
-        
+
         cbOnlyCompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
         cbOnlyCompiled.prefWidthProperty().bind(widthProperty());
-        
+
         memberList = new ListView<IMetaMember>();
         memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
         {
@@ -59,7 +60,7 @@ public class ClassMemberList extends VBox
                 parent.showMemberInfo(newVal);
             }
         });
-        
+
         memberList.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
         {
             @Override
@@ -75,13 +76,16 @@ public class ClassMemberList extends VBox
         MenuItem menuItemSource = new MenuItem("Show Source");
         MenuItem menuItemBytecode = new MenuItem("Show Bytecode");
         MenuItem menuItemNative = new MenuItem("Show Native Code");
+        MenuItem menuItemJournal = new MenuItem("Show JIT Journal");
 
         contextMenuCompiled.getItems().add(menuItemSource);
         contextMenuCompiled.getItems().add(menuItemBytecode);
         contextMenuCompiled.getItems().add(menuItemNative);
+        contextMenuCompiled.getItems().add(menuItemJournal);
 
         contextMenuNotCompiled.getItems().add(menuItemSource);
         contextMenuNotCompiled.getItems().add(menuItemBytecode);
+        contextMenuNotCompiled.getItems().add(menuItemJournal);
 
         memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
         {
@@ -128,23 +132,45 @@ public class ClassMemberList extends VBox
                 parent.openNativeCode(memberList.getSelectionModel().getSelectedItem());
             }
         });
-        
+
+        menuItemJournal.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                IMetaMember member = memberList.getSelectionModel().getSelectedItem();
+
+                String compileID = member.getQueuedAttribute("compile_id");
+
+                Journal journal = parent.getJournal(compileID);
+
+                StringBuilder builder = new StringBuilder();
+
+                for (String entry : journal.getEntryList())
+                {
+                    builder.append(entry).append("\n");
+                }
+
+                parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString());
+            }
+        });
+
         getChildren().add(cbOnlyCompiled);
         getChildren().add(memberList);
-        
+
         memberList.prefHeightProperty().bind(heightProperty());
     }
-        
+
     public void setMetaClass(MetaClass metaClass)
     {
         this.metaClass = metaClass;
         refresh();
     }
-    
+
     private void refresh()
     {
         clearClassMembers();
-        
+
         if (metaClass != null)
         {
             List<IMetaMember> metaMembers = metaClass.getMetaMembers();
@@ -158,23 +184,33 @@ public class ClassMemberList extends VBox
             }
         }
     }
-    
+
     private void addMember(IMetaMember member)
     {
-        memberList.getItems().add(member); 
+        memberList.getItems().add(member);
     }
-    
+
     public void clearClassMembers()
     {
-        memberList.getItems().clear(); 
+        memberList.getItems().clear();
     }
 
     public void selectMember(IMetaMember selected)
     {
         memberList.getSelectionModel().select(selected);
-        memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
+
+        // needed as SelectionModel selected index
+        // is not updated instantly on select()
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
+            }
+        });
     }
-    
+
     static class MetaMethodCell extends ListCell<IMetaMember>
     {
         @Override
@@ -188,15 +224,15 @@ public class ClassMemberList extends VBox
 
                 if (isSelected())
                 {
-                    setTextFill(Color.WHITE);
+                    setStyle("-fx-background-color: blue; -fx-text-fill: white;");
                 }
                 else if (item.isCompiled())
                 {
-                    setTextFill(Color.RED);
+                    setStyle("-fx-text-fill:red;");
                 }
                 else
                 {
-                    setTextFill(Color.BLACK);
+                    setStyle("-fx-text-fill:black;");
                 }
             }
         }
