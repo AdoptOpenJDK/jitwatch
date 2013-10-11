@@ -44,6 +44,11 @@ public class MetaClass implements Comparable<MetaClass>
 		compiledMethodCount++;
 	}
 	
+	public boolean hasCompiledMethods()
+	{
+	    return compiledMethodCount > 0;
+	}
+	
 	public void setInterface(boolean isInterface)
 	{
 		this.isInterface = isInterface;

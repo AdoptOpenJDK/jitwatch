@@ -1,6 +1,7 @@
 <project name="jitwatch" default="all" basedir=".">
 	<property name="src" value="src/main/java" />
 	<property name="target" value="target" />
+	<property name="resources" value="src/main/resources" />
 	<property name="classes" value="${target}/classes" />
 	<property name="lib" value="lib" />
 	<property environment="env" />
@@ -25,6 +26,9 @@
 		<jar destfile="${target}/jitwatch-1.0.0-SNAPSHOT.jar">
 			<fileset dir="${classes}">
 				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="${resources}">
+				<include name="images/**" />
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="com.chrisnewland.jitwatch.launch.LaunchUI" />
