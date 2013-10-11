@@ -146,14 +146,7 @@ public class TextViewerStage extends Stage
             {
                 setText(item);
 
-                if (isSelected())
-                {
-                    setStyle("-fx-font-family: monospace; -fx-font-size:12pt; -fx-cell-size:22; -fx-background-color: blue; -fx-text-fill:white;");
-                }
-                else
-                {
-                    setStyle("-fx-font-family: monospace; -fx-font-size:12pt; -fx-cell-size:22; -fx-background-color: white; -fx-text-fill:black;");
-                }
+                setStyle("-fx-font-family: monospace; -fx-font-size:12pt; -fx-cell-size:20; -fx-background-color: white; -fx-text-fill:black;");
             }
         }
     }

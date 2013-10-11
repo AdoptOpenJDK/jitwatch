@@ -25,18 +25,6 @@ public class HotSpotLogParser
         QUEUE, NMETHOD, TASK
     }
 
-    private static final String TAG_TASK_QUEUED = "<task_queued compile_id";
-    private static final String TAG_NMETHOD = "<nmethod";
-    private static final String TAG_TASK = "<task compile_id";
-    private static final String TAG_TASK_DONE = "<task_done";
-    private static final String TAG_START_COMPILE_THREAD = "<start_compile_thread";
-
-    private static final String NATIVE_CODE_METHOD_MARK = "# {method}";
-
-    private static final String LOADED = "[Loaded ";
-
-    private static final String METHOD_START = "method='";
-
     private JITDataModel model;
 
     private boolean watching = false;
@@ -138,34 +126,36 @@ public class HotSpotLogParser
         currentLine = currentLine.replace("&lt;", "<");
         currentLine = currentLine.replace("&gt;", ">");
 
+        Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
+
         try
         {
             // ok this is starting to get ugly, find a better way!
-            if (currentLine.startsWith(TAG_TASK_QUEUED))
+            if (currentLine.startsWith(JITWatchConstants.TAG_TASK_QUEUED))
             {
                 if (inNativeCode)
                 {
                     completeNativeCode();
                 }
-                handleMethod(currentLine, EventType.QUEUE);
+                handleMethodLine(currentLine, attrs, EventType.QUEUE);
             }
-            else if (currentLine.startsWith(TAG_NMETHOD))
+            else if (currentLine.startsWith(JITWatchConstants.TAG_NMETHOD))
             {
                 if (inNativeCode)
                 {
                     completeNativeCode();
                 }
-                handleMethod(currentLine, EventType.NMETHOD);
+                handleMethodLine(currentLine, attrs, EventType.NMETHOD);
             }
-            else if (currentLine.startsWith(TAG_TASK))
+            else if (currentLine.startsWith(JITWatchConstants.TAG_TASK))
             {
                 if (inNativeCode)
                 {
                     completeNativeCode();
                 }
-                handleMethod(currentLine, EventType.TASK);
+                handleMethodLine(currentLine, attrs, EventType.TASK);
             }
-            else if (currentLine.startsWith(TAG_TASK_DONE))
+            else if (currentLine.startsWith(JITWatchConstants.TAG_TASK_DONE))
             {
                 if (inNativeCode)
                 {
@@ -173,7 +163,7 @@ public class HotSpotLogParser
                 }
                 handleTaskDone(currentLine);
             }
-            else if (currentLine.startsWith(LOADED))
+            else if (currentLine.startsWith(JITWatchConstants.LOADED))
             {
                 if (inNativeCode)
                 {
@@ -181,7 +171,7 @@ public class HotSpotLogParser
                 }
                 handleLoaded(currentLine);
             }
-            else if (currentLine.startsWith(TAG_START_COMPILE_THREAD))
+            else if (currentLine.startsWith(JITWatchConstants.TAG_START_COMPILE_THREAD))
             {
                 if (inNativeCode)
                 {
@@ -189,7 +179,7 @@ public class HotSpotLogParser
                 }
                 handleStartCompileThread();
             }
-            else if (currentLine.contains(NATIVE_CODE_METHOD_MARK))
+            else if (currentLine.contains(JITWatchConstants.NATIVE_CODE_METHOD_MARK))
             {
                 String sig = convertNativeCodeMethodName(currentLine);
 
@@ -208,14 +198,25 @@ public class HotSpotLogParser
         {
             t.printStackTrace();
         }
+        
+        String compileID = attrs.get(JITWatchConstants.ATTR_COMPILE_ID);
+        String compileKind = attrs.get(JITWatchConstants.ATTR_COMPILE_KIND);
 
-        // refactor later to build attrs once
-        Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
-        String compileID = attrs.get("compile_id");
+        String journalID;
+        
+        // osr compiles do not have unique compile IDs so concat compile_kind
+        if (compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind))
+        {
+            journalID = compileID + compileKind;
+        }
+        else
+        {
+            journalID = compileID;
+        }
 
         if (compileID != null)
         {
-            model.addJournalEntry(compileID, currentLine);
+            model.addJournalEntry(journalID, currentLine);
         }
 
         currentLineNumber++;
@@ -244,11 +245,9 @@ public class HotSpotLogParser
         model.getJITStats().incCompilerThreads();
     }
 
-    private void handleMethod(String currentLine, EventType eventType)
+    private void handleMethodLine(String currentLine, Map<String, String> attrs, EventType eventType)
     {
-        Map<String, String> attrs = StringUtil.getLineAttributes(currentLine);
-
-        String fqMethodName = StringUtil.getSubstringBetween(currentLine, METHOD_START, "'");
+        String fqMethodName = StringUtil.getSubstringBetween(currentLine, JITWatchConstants.METHOD_START, "'");
 
         if (fqMethodName != null)
         {
@@ -357,7 +356,7 @@ public class HotSpotLogParser
      */
     private void handleLoaded(String currentLine)
     {
-        String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, " ");
+        String fqClassName = StringUtil.getSubstringBetween(currentLine, JITWatchConstants.LOADED, " ");
 
         if (fqClassName != null)
         {
@@ -415,11 +414,11 @@ public class HotSpotLogParser
     {
         name = name.replace("'", "");
 
-        int methodMarkIndex = name.indexOf(NATIVE_CODE_METHOD_MARK);
+        int methodMarkIndex = name.indexOf(JITWatchConstants.NATIVE_CODE_METHOD_MARK);
 
         if (methodMarkIndex != -1)
         {
-            name = name.substring(methodMarkIndex + NATIVE_CODE_METHOD_MARK.length());
+            name = name.substring(methodMarkIndex + JITWatchConstants.NATIVE_CODE_METHOD_MARK.length());
             name = name.trim();
         }
 

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.histo.Histo;
 import com.chrisnewland.jitwatch.histo.HistoTreeWalker;
 
@@ -80,9 +81,9 @@ public class HistoStage extends Stage
         gc = canvas.getGraphicsContext2D();
 
         final Map<String, String> attrMap = new HashMap<>();
-        attrMap.put("Method JIT-Compilation Times", "compileMillis");
-        attrMap.put("Bytecodes per Compiled Method", "bytes");
-        attrMap.put("Native Bytes per Compiled Method", "nmsize");
+        attrMap.put("Method JIT-Compilation Times", JITWatchConstants.ATTR_COMPILE_MILLIS);
+        attrMap.put("Bytecodes per Compiled Method", JITWatchConstants.ATTR_BYTES);
+        attrMap.put("Native Bytes per Compiled Method", JITWatchConstants.ATTR_NMSIZE);
 
         VBox vbox = new VBox();
 
@@ -217,7 +218,7 @@ public class HistoStage extends Stage
             }
 
             double legendWidth = 100;
-            double legendHeight = 185;
+            double legendHeight = 220;
             double xPos = canvas.getWidth() - GRAPH_GAP_RIGHT - legendWidth - 5;
             double yPos = GRAPH_GAP_Y + 5;
 
@@ -230,7 +231,7 @@ public class HistoStage extends Stage
             xPos += 5;
             yPos += 15;
 
-            for (int percent : new int[] { 50, 75, 80, 85, 90, 95, 98, 99, 100 })
+            for (double percent : new double[] { 50, 75, 80, 85, 90, 95, 98, 99, 99.5, 99.9, 100 })
             {
                 gc.strokeText(percent + "% : " + histo.getPercentile(percent), xPos, yPos);
                 yPos += 20;
