@@ -5,12 +5,16 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-public class AttributeTableRow2Col
+import java.text.DecimalFormat;
+
+public class StatsTableRow
 {
 	private final String name;
 	private final long value;
 
-	public AttributeTableRow2Col(String name, long value)
+	private static final DecimalFormat DF = new DecimalFormat("#,###");
+	
+	public StatsTableRow(String name, long value)
 	{
 		this.name = name;
 		this.value = value;
@@ -21,8 +25,8 @@ public class AttributeTableRow2Col
 		return name;
 	}
 
-	public long getValue()
+	public String getValue()
 	{
-		return value;
+		return DF.format(value);
 	}
 }

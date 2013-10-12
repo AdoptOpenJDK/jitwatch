@@ -19,8 +19,8 @@ import javafx.stage.WindowEvent;
 
 public class StatsStage extends Stage
 {
-	private TableView<AttributeTableRow2Col> tableView;
-	private ObservableList<AttributeTableRow2Col> obList = FXCollections.observableArrayList();
+	private TableView<StatsTableRow> tableView;
+	private ObservableList<StatsTableRow> obList = FXCollections.observableArrayList();
 	
 	private JITWatchUI parent;
 	
@@ -91,8 +91,8 @@ public class StatsStage extends Stage
 		obList.add(makeRow("Total Constructors Loaded", stats.getCountConstructor()));		
 	}
 	
-	private AttributeTableRow2Col makeRow(String name, long value)
+	private StatsTableRow makeRow(String name, long value)
 	{
-		return new AttributeTableRow2Col(name, value);
+		return new StatsTableRow(name, value);
 	}
 }

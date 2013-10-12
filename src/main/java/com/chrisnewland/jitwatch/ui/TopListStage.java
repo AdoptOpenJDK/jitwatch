@@ -11,9 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.toplist.CompiledAttributeFilterAdapter;
+import com.chrisnewland.jitwatch.toplist.ITopListFilter;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
-import com.chrisnewland.jitwatch.toplist.ToplistTreeWalker;
+import com.chrisnewland.jitwatch.toplist.TopListTreeWalker;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,7 +39,7 @@ public class TopListStage extends Stage
 
     private TableView<MemberScore> tableView;
 
-    private String selectedAttribute;
+    private ITopListFilter toplistFilter;
 
     private PackageManager pm;
 
@@ -57,22 +61,64 @@ public class TopListStage extends Stage
         int width = 800;
         int height = 480;
 
-        final Map<String, String> attrMap = new HashMap<>();
-        attrMap.put("Largest Native Methods", "nmsize");
-        attrMap.put("Largest Bytecode Methods", "bytes");
-        attrMap.put("Slowest Compilation Times", "compileMillis");
-        attrMap.put("Most Decompiled Methods", "decompiles");
-        
+        final Map<String, ITopListFilter> attrMap = new HashMap<>();
+
+        // Hurry up lambdas !!!
+
+        attrMap.put("Largest Native Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
+        attrMap.put("Largest Bytecode Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_BYTES));
+        attrMap.put("Slowest Compilation Times", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_COMPILE_MILLIS));
+        attrMap.put("Most Decompiled Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_DECOMPILES));
+        attrMap.put("Compilation Order", new ITopListFilter()
+        {
+            // OSR compile_id values overlap non-OSR compile_id values so filter
+            // out
+            @Override
+            public MemberScore getScore(IMetaMember mm)
+            {
+                long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
+                return new MemberScore(mm, value);
+            }
+
+            @Override
+            public boolean acceptMember(IMetaMember mm)
+            {
+                String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
+                String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+                return compileID != null && (compileKind == null || !JITWatchConstants.OSR.equals(compileKind));
+            }
+        });
+
+        attrMap.put("Compilation Order (OSR)", new ITopListFilter()
+        {
+            // OSR compile_id values overlap non-OSR compile_id values so filter
+            // out
+            @Override
+            public MemberScore getScore(IMetaMember mm)
+            {
+                long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
+                return new MemberScore(mm, value);
+            }
+
+            @Override
+            public boolean acceptMember(IMetaMember mm)
+            {
+                String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
+                String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+                return compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind);
+            }
+        });
+
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(8));
         vbox.setSpacing(8);
 
         List<String> keyList = new ArrayList<>(attrMap.keySet());
         Collections.sort(keyList);
-        
+
         ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
-        selectedAttribute = attrMap.get(options.get(0));
+        toplistFilter = attrMap.get(options.get(0));
 
         final ComboBox<String> comboBox = new ComboBox<>(options);
         comboBox.setValue(options.get(0));
@@ -82,8 +128,8 @@ public class TopListStage extends Stage
             @Override
             public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
             {
-                selectedAttribute = attrMap.get(newVal);
-                buildTableView(selectedAttribute);
+                toplistFilter = attrMap.get(newVal);
+                buildTableView(toplistFilter);
             }
         });
 
@@ -91,7 +137,7 @@ public class TopListStage extends Stage
 
         setTitle("JITWatch TopLists");
 
-        buildTableView(selectedAttribute);
+        buildTableView(toplistFilter);
         tableView = TableUtil.buildTableMemberScore(topList);
 
         tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
@@ -117,10 +163,10 @@ public class TopListStage extends Stage
         redraw();
     }
 
-    private void buildTableView(String attribute)
+    private void buildTableView(ITopListFilter filter)
     {
         topList.clear();
-        topList.addAll(ToplistTreeWalker.buildTopListForAttribute(pm, true, selectedAttribute));
+        topList.addAll(TopListTreeWalker.buildTopListForAttribute(pm, filter));
     }
 
     public void redraw()

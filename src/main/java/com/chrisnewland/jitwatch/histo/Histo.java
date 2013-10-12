@@ -98,7 +98,7 @@ public class Histo
 	 * Nearest rank percentile calculation from
 	 * http://en.wikipedia.org/wiki/Percentile
 	 */
-	public long getPercentile(int percentile)
+	public long getPercentile(double percentile)
 	{
 		long result = 0;
 

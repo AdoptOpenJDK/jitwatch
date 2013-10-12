@@ -1,5 +1,6 @@
 package com.chrisnewland.jitwatch.ui;
 
+import java.io.InputStream;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
@@ -13,6 +14,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class ClassTree extends VBox
@@ -22,11 +26,26 @@ public class ClassTree extends VBox
 
     private JITWatchUI parent;
     private JITWatchConfig config;
+    
+    // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
+    private Image imgTick = null;
 
     public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
     {
         this.parent = parent;
         this.config = config;
+        
+        // images directory added to jar with ant and mvn
+        // If you want them to load when launching from IDE then put
+        // src/main/resources on the IDE runtime classpath
+        InputStream is = getClass().getResourceAsStream("/images/tick.png");
+        
+        if (is != null)
+        {
+            imgTick = new Image(is);
+        }
+        
+        HBox hboxOptions = new HBox();
 
         CheckBox cbHideInterfaces = new CheckBox("Hide Interfaces");
         cbHideInterfaces.setSelected(config.isHideInterfaces());
@@ -44,6 +63,23 @@ public class ClassTree extends VBox
 
         cbHideInterfaces.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
         cbHideInterfaces.prefWidthProperty().bind(widthProperty());
+        
+        CheckBox cbHideUncompiled = new CheckBox("Hide Uncompiled");
+        cbHideUncompiled.setSelected(false);
+        cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+            {
+//                config.setHideInterfaces(newVal);
+//                config.saveConfig();
+
+                parent.clearAndRefresh();
+            }
+        });
+
+        cbHideUncompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
+        cbHideUncompiled.prefWidthProperty().bind(widthProperty());
 
         rootItem = new TreeItem<Object>("Packages");
 
@@ -70,8 +106,11 @@ public class ClassTree extends VBox
                 }
             }
         });
+        
+        hboxOptions.getChildren().add(cbHideInterfaces);
+        //hboxOptions.getChildren().add(cbHideUncompiled); // work in progress
 
-        getChildren().add(cbHideInterfaces);
+        getChildren().add(hboxOptions);
         getChildren().add(treeView);
         
         treeView.prefHeightProperty().bind(heightProperty());
@@ -130,6 +169,23 @@ public class ClassTree extends VBox
             {
                 // indicate missing class definition?
             }
+        }
+        
+        
+        boolean hasCompiledChildren = false;
+        
+        if (value instanceof MetaPackage && ((MetaPackage)value).hasCompiledClasses())
+        {
+            hasCompiledChildren = true;
+        }
+        else if (value instanceof MetaClass && ((MetaClass)value).hasCompiledMethods())
+        {
+            hasCompiledChildren = true;
+        }
+        
+        if (imgTick != null && hasCompiledChildren)
+        {
+            found.setGraphic(new ImageView(imgTick));
         }
 
         return found;

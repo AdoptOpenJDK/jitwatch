@@ -98,6 +98,9 @@ public abstract class AbstractMetaMember implements IMetaMember
 		isCompiled = true;
 		isQueued = false;
 		this.compiledAttributes = compiledAttributes;
+		
+		// inform package tree it contains class with a compiled method
+		getMetaClass().getPackage().setHasCompiledClasses();
 	}
 
 	@Override

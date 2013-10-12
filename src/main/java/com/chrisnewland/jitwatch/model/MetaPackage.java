@@ -12,102 +12,137 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MetaPackage implements Comparable<MetaPackage>
 {
-	private String packageName;
+    private String packageName;
 
-	private List<MetaPackage> childPackages = new CopyOnWriteArrayList<>();
-	private List<MetaClass> packageClasses = new CopyOnWriteArrayList<>();
+    private List<MetaPackage> childPackages = new CopyOnWriteArrayList<>();
+    private List<MetaClass> packageClasses = new CopyOnWriteArrayList<>();
 
-	public MetaPackage(String packageName)
-	{
-		this.packageName = packageName;
-	}
+    // support navigating back up the tree
+    private MetaPackage parentPackage = null;
 
-	public List<MetaPackage> getChildPackages()
-	{
-		MetaPackage[] asArray = childPackages.toArray(new MetaPackage[childPackages.size()]);
-		Arrays.sort(asArray);
-		return new ArrayList<>(Arrays.asList(asArray));
-	}
+    private boolean hasCompiledClasses = false;
 
-	public void addChildPackage(MetaPackage child)
-	{
-		childPackages.add(child);
-	}
+    public MetaPackage(String packageName)
+    {
+        this.packageName = packageName;
+    }
 
-	public MetaPackage getChildPackage(String name)
-	{
-		for (MetaPackage mp : childPackages)
-		{
-			if (mp.getName().equals(name))
-			{
-				return mp;
-			}
-		}
+    public List<MetaPackage> getChildPackages()
+    {
+        MetaPackage[] asArray = childPackages.toArray(new MetaPackage[childPackages.size()]);
+        Arrays.sort(asArray);
+        return new ArrayList<>(Arrays.asList(asArray));
+    }
 
-		return null;
-	}
+    public void addChildPackage(MetaPackage child)
+    {
+        child.setParentPackage(this);
+        childPackages.add(child);
+    }
 
-	public List<MetaClass> getPackageClasses()
-	{
-		MetaClass[] asArray = packageClasses.toArray(new MetaClass[packageClasses.size()]);
-		Arrays.sort(asArray);
-		return new ArrayList<>(Arrays.asList(asArray));
-	}
-	
-	public List<String> getPackageComponents()
-	{
-	    List<String> components = new ArrayList<>();
-	    
-	    if (packageName.indexOf('.') == -1)
-	    {
-	        components.add(packageName);
-	    }
-	    else
-	    {
-	        components.addAll(Arrays.asList(packageName.split("\\.")));
-	    }
-	    
-	    return components;
-	}
+    public MetaPackage getChildPackage(String name)
+    {
+        for (MetaPackage mp : childPackages)
+        {
+            if (mp.getName().equals(name))
+            {
+                return mp;
+            }
+        }
 
-	public void addClass(MetaClass metaClass)
-	{
-		packageClasses.add(metaClass);
-	}
+        return null;
+    }
 
-	public String getName()
-	{
-		return packageName;
-	}
+    public List<MetaClass> getPackageClasses()
+    {
+        MetaClass[] asArray = packageClasses.toArray(new MetaClass[packageClasses.size()]);
+        Arrays.sort(asArray);
+        return new ArrayList<>(Arrays.asList(asArray));
+    }
 
-	@Override
-	public String toString()
-	{
-		return getName();
-	}
+    public List<String> getPackageComponents()
+    {
+        List<String> components = new ArrayList<>();
 
-	@Override
-	public int compareTo(MetaPackage other)
-	{
-		return this.getName().compareTo(other.getName());
-	}
+        if (packageName.indexOf('.') == -1)
+        {
+            components.add(packageName);
+        }
+        else
+        {
+            components.addAll(Arrays.asList(packageName.split("\\.")));
+        }
 
-	@Override
-	public int hashCode()
-	{
-		return toString().hashCode();
-	}
+        return components;
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (obj == null)
-		{
-			return false;
-		}
-		else
-		{
-			return toString().equals(obj.toString());
-		}
-	}
+    public void addClass(MetaClass metaClass)
+    {
+        packageClasses.add(metaClass);
+    }
+
+    public String getName()
+    {
+        return packageName;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
+
+    @Override
+    public int compareTo(MetaPackage other)
+    {
+        return this.getName().compareTo(other.getName());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        else
+        {
+            return toString().equals(obj.toString());
+        }
+    }
+
+    public MetaPackage getParentPackage()
+    {
+        return parentPackage;
+    }
+
+    public void setParentPackage(MetaPackage parentPackage)
+    {
+        this.parentPackage = parentPackage;
+    }
+
+    public boolean hasCompiledClasses()
+    {
+        return hasCompiledClasses;
+    }
+
+    public void setHasCompiledClasses()
+    {
+        if (!hasCompiledClasses)
+        {
+            hasCompiledClasses = true;
+
+            // percolate upwards
+            if (parentPackage != null && !parentPackage.hasCompiledClasses)
+            {
+                parentPackage.setHasCompiledClasses();
+            }
+        }
+    }
 }

@@ -18,6 +18,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 
 public class JITDataModel
 {
@@ -133,35 +134,35 @@ public class JITDataModel
             }
         }
 
-        String compiler = meta.getCompiledAttribute("compiler");
+        String compiler = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILER);
 
         if (compiler != null)
         {
-            if ("C1".equalsIgnoreCase(compiler))
+            if (JITWatchConstants.C1.equalsIgnoreCase(compiler))
             {
                 stats.incCountC1();
             }
-            else if ("C2".equalsIgnoreCase(compiler))
+            else if (JITWatchConstants.C2.equalsIgnoreCase(compiler))
             {
                 stats.incCountC2();
             }
         }
 
-        String compileKind = meta.getCompiledAttribute("compile_kind");
+        String compileKind = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
 
         if (compileKind != null)
         {
-            if ("osr".equalsIgnoreCase(compileKind))
+            if (JITWatchConstants.OSR.equalsIgnoreCase(compileKind))
             {
                 stats.incCountOSR();
             }
-            else if ("c2n".equalsIgnoreCase(compileKind))
+            else if (JITWatchConstants.C2N.equalsIgnoreCase(compileKind))
             {
                 stats.incCountC2N();
             }
         }
 
-        String queueStamp = meta.getQueuedAttribute("stamp");
+        String queueStamp = meta.getQueuedAttribute(JITWatchConstants.ATTR_STAMP);
         String compileStamp = meta.getCompiledAttribute("stamp");
 
         if (queueStamp != null && compileStamp != null)

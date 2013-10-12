@@ -17,16 +17,16 @@ public class HistoTreeWalker
 	// Good case for J8 Streams
 	public static Histo buildHistoForAttribute(PackageManager pm, boolean compileAttribute, String attributeName, long resolution)
 	{
-		Histo result = new Histo(resolution);
+		Histo histo = new Histo(resolution);
 
 		List<MetaPackage> roots = pm.getRootPackages();
 
 		for (MetaPackage mp : roots)
 		{
-			walkTree(mp, result, compileAttribute, attributeName);
+			walkTree(mp, histo, compileAttribute, attributeName);
 		}
 
-		return result;
+		return histo;
 	}
 
 	private static void walkTree(MetaPackage mp, Histo histo, boolean isCompileAttribute, String attributeName)

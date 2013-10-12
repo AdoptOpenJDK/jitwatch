@@ -15,10 +15,10 @@ import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.PackageManager;
 
-public class ToplistTreeWalker
+public class TopListTreeWalker
 {
 	// Good case for J8 Streams
-	public static List<MemberScore> buildTopListForAttribute(PackageManager pm, boolean compileAttribute, String attributeName)
+	public static List<MemberScore> buildTopListForAttribute(PackageManager pm, ITopListFilter filter)
 	{
 		List<MemberScore> topList = new ArrayList<>();
 
@@ -26,7 +26,7 @@ public class ToplistTreeWalker
 
 		for (MetaPackage mp : roots)
 		{
-			walkTree(mp, topList, compileAttribute, attributeName);
+			walkTree(mp, topList, filter);
 		}
 		
 		Collections.sort(topList, new Comparator<MemberScore>()
@@ -42,13 +42,13 @@ public class ToplistTreeWalker
 		return topList;
 	}
 
-	private static void walkTree(MetaPackage mp, List<MemberScore> topList, boolean isCompileAttribute, String attributeName)
+	private static void walkTree(MetaPackage mp, List<MemberScore> topList, ITopListFilter filter)
 	{
 		List<MetaPackage> childPackages = mp.getChildPackages();
 
 		for (MetaPackage childPackage : childPackages)
 		{
-			walkTree(childPackage, topList, isCompileAttribute, attributeName);
+			walkTree(childPackage, topList, filter);
 		}
 
 		List<MetaClass> packageClasses = mp.getPackageClasses();
@@ -57,22 +57,9 @@ public class ToplistTreeWalker
 		{
 			for (IMetaMember mm : mc.getMetaMembers())
 			{
-				String attrValue = null;
-
-				if (isCompileAttribute)
+				if (filter.acceptMember(mm))
 				{
-					attrValue = mm.getCompiledAttribute(attributeName);
-				}
-				else
-				{
-					attrValue = mm.getQueuedAttribute(attributeName);
-				}
-
-				if (attrValue != null)
-				{
-					long val = Long.valueOf(attrValue);
-
-					topList.add(new MemberScore(mm, val));
+				    topList.add(filter.getScore(mm));
 				}
 			}
 		}

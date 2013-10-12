@@ -58,8 +58,8 @@ public class JITWatchUI extends Application implements IJITListener
     private ClassTree classTree;
     private ClassMemberList classMemberList;
 
-    private TableView<AttributeTableRow3Col> attributeTableView;
-    private ObservableList<AttributeTableRow3Col> memberAttrList;
+    private TableView<AttributeTableRow> attributeTableView;
+    private ObservableList<AttributeTableRow> memberAttrList;
 
     private List<Stage> openPopupStages = new ArrayList<>();
 
@@ -581,14 +581,14 @@ public class JITWatchUI extends Application implements IJITListener
 
         for (String key : queuedAttrKeys)
         {
-            memberAttrList.add(new AttributeTableRow3Col("Queued", key, member.getQueuedAttribute(key)));
+            memberAttrList.add(new AttributeTableRow("Queued", key, member.getQueuedAttribute(key)));
         }
 
         List<String> compiledAttrKeys = member.getCompiledAttributes();
 
         for (String key : compiledAttrKeys)
         {
-            memberAttrList.add(new AttributeTableRow3Col("Compiled", key, member.getCompiledAttribute(key)));
+            memberAttrList.add(new AttributeTableRow("Compiled", key, member.getCompiledAttribute(key)));
         }
     }
 
