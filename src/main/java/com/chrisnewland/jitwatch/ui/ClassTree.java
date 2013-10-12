@@ -67,7 +67,7 @@ public class ClassTree extends VBox
 
         CheckBox cbHideUncompiled = new CheckBox("Hide uncompiled classes");
         cbHideUncompiled.setTooltip(new Tooltip("Hide classes with no JIT-compiled members from the class tree."));
-        cbHideUncompiled.setSelected(false);
+        cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
         cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
