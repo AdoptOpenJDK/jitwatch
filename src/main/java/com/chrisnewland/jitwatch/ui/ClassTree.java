@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
@@ -26,7 +27,7 @@ public class ClassTree extends VBox
 
     private JITWatchUI parent;
     private JITWatchConfig config;
-    
+
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
     private Image imgTick = null;
 
@@ -34,20 +35,20 @@ public class ClassTree extends VBox
     {
         this.parent = parent;
         this.config = config;
-        
+
         // images directory added to jar with ant and mvn
         // If you want them to load when launching from IDE then put
         // src/main/resources on the IDE runtime classpath
         InputStream is = getClass().getResourceAsStream("/images/tick.png");
-        
+
         if (is != null)
         {
             imgTick = new Image(is);
         }
-        
-        HBox hboxOptions = new HBox();
 
-        CheckBox cbHideInterfaces = new CheckBox("Hide Interfaces");
+        CheckBox cbHideInterfaces = new CheckBox("Hide interfaces");
+        cbHideInterfaces.setMaxWidth(280);
+        cbHideInterfaces.setTooltip(new Tooltip("Hide interfaces from the class tree."));
         cbHideInterfaces.setSelected(config.isHideInterfaces());
         cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
@@ -63,16 +64,17 @@ public class ClassTree extends VBox
 
         cbHideInterfaces.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
         cbHideInterfaces.prefWidthProperty().bind(widthProperty());
-        
-        CheckBox cbHideUncompiled = new CheckBox("Hide Uncompiled");
-        cbHideUncompiled.setSelected(false);
+
+        CheckBox cbHideUncompiled = new CheckBox("Hide uncompiled classes");
+        cbHideUncompiled.setTooltip(new Tooltip("Hide classes with no JIT-compiled members from the class tree."));
+        cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
         cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
             {
-//                config.setHideInterfaces(newVal);
-//                config.saveConfig();
+                config.setShowOnlyCompiledClasses(newVal);
+                config.saveConfig();
 
                 parent.clearAndRefresh();
             }
@@ -107,12 +109,14 @@ public class ClassTree extends VBox
             }
         });
         
+        HBox hboxOptions = new HBox();
+        
         hboxOptions.getChildren().add(cbHideInterfaces);
-        //hboxOptions.getChildren().add(cbHideUncompiled); // work in progress
+        hboxOptions.getChildren().add(cbHideUncompiled);
 
         getChildren().add(hboxOptions);
         getChildren().add(treeView);
-        
+
         treeView.prefHeightProperty().bind(heightProperty());
     }
 
@@ -170,19 +174,18 @@ public class ClassTree extends VBox
                 // indicate missing class definition?
             }
         }
-        
-        
+
         boolean hasCompiledChildren = false;
-        
-        if (value instanceof MetaPackage && ((MetaPackage)value).hasCompiledClasses())
+
+        if (value instanceof MetaPackage && ((MetaPackage) value).hasCompiledClasses())
         {
             hasCompiledChildren = true;
         }
-        else if (value instanceof MetaClass && ((MetaClass)value).hasCompiledMethods())
+        else if (value instanceof MetaClass && ((MetaClass) value).hasCompiledMethods())
         {
             hasCompiledChildren = true;
         }
-        
+
         if (imgTick != null && hasCompiledChildren)
         {
             found.setGraphic(new ImageView(imgTick));
@@ -197,7 +200,17 @@ public class ClassTree extends VBox
 
         for (MetaPackage mp : roots)
         {
-            showTree(rootItem, mp);
+            boolean allowed = true;
+
+            if (!mp.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
+            {
+                allowed = false;
+            }
+
+            if (allowed)
+            {
+                showTree(rootItem, mp);
+            }
         }
     }
 
@@ -209,14 +222,39 @@ public class ClassTree extends VBox
 
         for (MetaPackage childPackage : childPackages)
         {
-            showTree(packageItem, childPackage);
+            boolean allowed = true;
+
+            if (!childPackage.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
+            {
+                allowed = false;
+            }
+
+            if (allowed)
+            {
+                showTree(packageItem, childPackage);
+            }
         }
 
         List<MetaClass> packageClasses = mp.getPackageClasses();
 
         for (MetaClass packageClass : packageClasses)
         {
-            if (!config.isHideInterfaces() || !packageClass.isInterface())
+            boolean allowed = true;
+
+            if (packageClass.isInterface() && config.isHideInterfaces())
+            {
+                allowed = false;
+            }
+
+            if (allowed)
+            {
+                if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
+                {
+                    allowed = false;
+                }
+            }
+
+            if (allowed)
             {
                 findOrCreateTreeItem(packageItem, packageClass);
             }

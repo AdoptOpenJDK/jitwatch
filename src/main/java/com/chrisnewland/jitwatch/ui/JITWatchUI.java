@@ -337,7 +337,7 @@ public class JITWatchUI extends Application implements IJITListener
 
         memberAttrList = FXCollections.observableArrayList();
         attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
-        attributeTableView.setPlaceholder(new Text("Select a JIT-compiled method to view HotSpot attributes."));
+        attributeTableView.setPlaceholder(new Text("Select a JIT-compiled class member to view compilation attributes."));
 
         SplitPane spMethodInfo = new SplitPane();
         spMethodInfo.setOrientation(Orientation.VERTICAL);
@@ -359,7 +359,7 @@ public class JITWatchUI extends Application implements IJITListener
         SplitPane spCentre = new SplitPane();
         spCentre.getItems().add(classTree);
         spCentre.getItems().add(spMethodInfo);
-        spCentre.setDividerPositions(0.3, 0.7);
+        spCentre.setDividerPositions(0.33, 0.67);
 
         textAreaLog = new TextArea();
         textAreaLog.setStyle("-fx-font-family:monospace;");

@@ -17,10 +17,10 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 public class ClassMemberList extends VBox
@@ -34,15 +34,17 @@ public class ClassMemberList extends VBox
     {
         this.config = config;
 
-        cbOnlyCompiled = new CheckBox("Show Only JIT-Compiled Members");
-        cbOnlyCompiled.setSelected(config.isShowOnlyCompiled());
+        cbOnlyCompiled = new CheckBox("Hide non JIT-compiled class members");
+        cbOnlyCompiled.setTooltip(new Tooltip("Hide class members (methods and constructors) that were not JIT-compiled."));
+
+        cbOnlyCompiled.setSelected(config.isShowOnlyCompiledMembers());
 
         cbOnlyCompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
             {
-                config.setShowOnlyCompiled(newVal);
+                config.setShowOnlyCompiledMembers(newVal);
                 config.saveConfig();
                 refresh();
             }
@@ -177,7 +179,7 @@ public class ClassMemberList extends VBox
 
             for (IMetaMember member : metaMembers)
             {
-                if (member.isCompiled() || !config.isShowOnlyCompiled())
+                if (member.isCompiled() || !config.isShowOnlyCompiledMembers())
                 {
                     addMember(member);
                 }
