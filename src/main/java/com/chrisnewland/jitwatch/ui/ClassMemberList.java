@@ -3,6 +3,7 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.Tag;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
@@ -148,9 +149,9 @@ public class ClassMemberList extends VBox
 
                 StringBuilder builder = new StringBuilder();
 
-                for (String entry : journal.getEntryList())
+                for (Tag entry : journal.getEntryList())
                 {
-                    builder.append(entry).append("\n");
+                    builder.append(entry.toString()).append("\n");
                 }
 
                 parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString());

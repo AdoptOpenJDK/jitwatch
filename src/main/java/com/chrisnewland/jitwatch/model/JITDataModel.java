@@ -19,6 +19,7 @@ import java.util.Map;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import com.chrisnewland.jitwatch.core.Tag;
 
 public class JITDataModel
 {
@@ -57,7 +58,7 @@ public class JITDataModel
         return stats;
     }
 
-    public void addJournalEntry(String id, String entry)
+    public void addJournalEntry(String id, Tag entry)
     {
         Journal journal = journalMap.get(id);
 

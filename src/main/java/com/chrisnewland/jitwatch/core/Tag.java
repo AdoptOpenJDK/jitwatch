@@ -29,6 +29,19 @@ public class Tag
 		return children;
 	}
 	
+	public Tag getNamedChild(String name)
+	{
+		for (Tag child : children)
+		{
+			if (child.getName().equals(name))
+			{
+				return child;
+			}
+		}
+		
+		return null;
+	}
+	
 	public Tag getParent()
 	{
 		return parent;

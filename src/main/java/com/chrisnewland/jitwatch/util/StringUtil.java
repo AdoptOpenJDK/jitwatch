@@ -12,6 +12,10 @@ import java.util.Map;
 
 public class StringUtil
 {
+	private static final char QUOTE = '\'';
+	private static final char SPACE = ' ';
+	private static final char EQUALS = '=';
+
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
 		long stampCopy = stamp;
@@ -122,37 +126,81 @@ public class StringUtil
 
 		return result;
 	}
-	
+
 	public static String makeUnqualified(String input)
 	{
 		int lastDot = input.lastIndexOf('.');
-		
+
 		String result = input;
-		
+
 		if (lastDot != -1)
 		{
-			result = input.substring(lastDot+1);
+			result = input.substring(lastDot + 1);
 		}
-				
+
 		return result;
 	}
 
 	public static Map<String, String> getLineAttributes(String line)
 	{
-		String[] spaceSep = line.split(" ");
-
 		Map<String, String> result = new HashMap<>();
 
-		for (String part : spaceSep)
+		if (line != null)
 		{
-			String[] kvParts = part.split("=");
+			int len = line.length();
 
-			if (kvParts.length == 2)
+			StringBuilder key = new StringBuilder();
+			StringBuilder val = new StringBuilder();
+
+			boolean inValue = false;
+
+			for (int i = 0; i < len; i++)
 			{
-				String key = kvParts[0];
-				String value = StringUtil.getSubstringBetween(kvParts[1], "'", "'");
-
-				result.put(key, value);
+				char c = line.charAt(i);
+				
+				switch (c)
+				{
+				case SPACE:
+					if (!inValue)
+					{
+						//space before new key
+						key.delete(0, key.length());
+					}
+					else
+					{
+						val.append(SPACE);
+					}
+					break;
+				case QUOTE:
+					if (inValue)
+					{
+						//finished attr
+						result.put(key.toString(), val.toString());
+						key.delete(0, key.length());
+						val.delete(0, val.length());
+						inValue = false;
+					}
+					else
+					{
+						inValue = true;
+					}
+					break;
+				case EQUALS:
+					if (inValue)
+					{
+						val.append(EQUALS);
+					}
+					break;
+				default:
+					if (inValue)
+					{
+						val.append(c);
+					}
+					else
+					{
+						key.append(c);
+					}
+				}
 			}
 		}
 

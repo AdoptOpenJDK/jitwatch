@@ -59,4 +59,20 @@ public class TestStringUtil
 			}
 		}
 	}
+	
+	@Test
+	public void testGetAttributesRegression()
+	{
+		String line = "<task compile_id='21' method='java/util/Properties loadConvert ([CII[C)Ljava/lang/String;' bytes='505' count='10000' backedge_count='5668' iicount='108' stamp='6.801'>";
+
+		Map<String, String> result = StringUtil.getLineAttributes(line);
+		
+		assertEquals("21", result.get("compile_id"));
+		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", result.get("method"));
+		assertEquals("505", result.get("bytes"));
+		assertEquals("10000", result.get("count"));
+		assertEquals("5668", result.get("backedge_count"));
+		assertEquals("108", result.get("iicount"));
+		assertEquals("6.801", result.get("stamp"));		
+	}
 }
