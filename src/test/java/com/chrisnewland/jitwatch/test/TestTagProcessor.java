@@ -132,9 +132,7 @@ public class TestTagProcessor
 		}
 
 		assertNotNull(tag);
-		
-		System.out.println(tag.toString());
-		
+				
 		assertEquals(7, tag.getAttrs().size());
 		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttrs().get("method"));
 
