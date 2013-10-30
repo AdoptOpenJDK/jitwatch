@@ -27,6 +27,7 @@ public class JITWatchConfig
     private static final String KEY_SHOW_JIT_ONLY_MEMBERS = "JitOnly";
     private static final String KEY_SHOW_JIT_ONLY_CLASSES = "JitOnlyClasses";
     private static final String KEY_SHOW_HIDE_INTERFACES = "HideInterfaces";
+    private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
 
     private IJITListener logListener;
 
@@ -36,8 +37,8 @@ public class JITWatchConfig
 
     private boolean showOnlyCompiledMembers = true;
     private boolean showOnlyCompiledClasses = false;
-
     private boolean hideInterfaces = true;
+    private boolean showNothingMounted = true;
 
     public JITWatchConfig(IJITListener logListener)
     {
@@ -83,8 +84,8 @@ public class JITWatchConfig
 
         showOnlyCompiledMembers = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.TRUE.toString()));
         showOnlyCompiledClasses = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.FALSE.toString()));
-
         hideInterfaces = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_HIDE_INTERFACES, Boolean.TRUE.toString()));
+        showNothingMounted = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_NOTHING_MOUNTED, Boolean.TRUE.toString()));    
     }
 
     public void saveConfig()
@@ -97,7 +98,8 @@ public class JITWatchConfig
         saveProps.put(KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.toString(showOnlyCompiledMembers));
         saveProps.put(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
         saveProps.put(KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
-
+        saveProps.put(KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
+        
         try (FileWriter fw = new FileWriter(getConfigFile()))
         {
             saveProps.store(fw, null);
@@ -189,5 +191,15 @@ public class JITWatchConfig
     public void setHideInterfaces(boolean hideInterfaces)
     {
         this.hideInterfaces = hideInterfaces;
+    }
+    
+    public boolean isShowNothingMounted()
+    {
+    	return showNothingMounted;
+    }
+    
+    public void setShowNothingMounted(boolean showNothingMounted)
+    {
+    	this.showNothingMounted = showNothingMounted;
     }
 }
