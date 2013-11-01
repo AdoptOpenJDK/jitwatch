@@ -247,6 +247,17 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_TASK:
 			handleMethodLine(tag, EventType.TASK);
 			
+			Tag tagCodeCache = tag.getNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+			
+			if (tagCodeCache != null)
+			{
+			    //copy timestamp from parent <task> tag used for graphing code cache
+			    String stamp = tag.getAttrs().get(JITWatchConstants.ATTR_STAMP);
+			    tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+			    
+			    model.addCodeCacheTag(tagCodeCache);
+			}
+			
 			Tag tagTaskDone = tag.getNamedChild(JITWatchConstants.TAG_TASK_DONE);
 			
 			if (tagTaskDone != null)
@@ -365,7 +376,7 @@ public class HotSpotLogParser
 		IMetaMember metaMember = findMemberWithSignature(methodSignature);
 
 		String stampAttr = attrs.get("stamp");
-		long stampTime = (long) (Double.parseDouble(stampAttr) * 1000);
+		long stampTime = ParseUtil.parseStamp(stampAttr);
 
 		if (metaMember != null)
 		{

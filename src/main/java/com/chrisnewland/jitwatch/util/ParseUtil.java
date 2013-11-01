@@ -14,6 +14,11 @@ public class ParseUtil
 {
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
 	
+	public static long parseStamp(String stamp)
+	{
+	    return (long)(Double.parseDouble(stamp) * 1000);
+	}
+	
 	public static Class<?> getPrimitiveClass(char c)
 	{
 		switch (c)

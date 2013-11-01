@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,9 +16,16 @@ public class StringUtil
 	private static final char QUOTE = '\'';
 	private static final char SPACE = ' ';
 	private static final char EQUALS = '=';
+	
+    private static final DecimalFormat DF = new DecimalFormat("#,###");
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
+	    if (showMillis && stamp <= 1000)
+	    {
+	        return "0." + stamp;
+	    }
+	    
 		long stampCopy = stamp;
 
 		long hourMillis = 3600000L;
@@ -206,4 +214,19 @@ public class StringUtil
 
 		return result;
 	}
+	
+	public static String formatThousands(String value)
+	{
+        // see if it can be formatted as a long with commas at thousands
+        try
+        {
+            value = DF.format(Long.parseLong(value));
+        }
+        catch (NumberFormatException nfe)
+        {
+        }
+        
+        return value;
+	}
+
 }
