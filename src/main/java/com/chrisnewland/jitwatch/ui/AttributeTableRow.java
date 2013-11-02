@@ -5,7 +5,7 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.text.DecimalFormat;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 public class AttributeTableRow
 {
@@ -13,24 +13,15 @@ public class AttributeTableRow
     private final String name;
     private final String value;
 
-    private static final DecimalFormat DF = new DecimalFormat("#,###");
-
     public AttributeTableRow(String type, String name, String value)
     {
         this.type = type;
         this.name = name;
 
-        // see if it can be formatted as a long with commas at thousands
-        try
-        {
-            value = DF.format(Long.parseLong(value));
-        }
-        catch (NumberFormatException nfe)
-        {
-        }
-        
+        value = StringUtil.formatThousands(value);
+
         this.value = value;
-    }    
+    }
 
     public String getType()
     {

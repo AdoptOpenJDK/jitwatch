@@ -31,6 +31,9 @@ public class JITDataModel
 
     private Map<String, Journal> journalMap = new HashMap<>();
 
+    // written during parse, make copy for graphing as needs sort
+    private List<Tag> codeCacheTagList = new ArrayList<>();
+
     public JITDataModel()
     {
         pm = new PackageManager();
@@ -67,7 +70,7 @@ public class JITDataModel
             journal = new Journal();
             journalMap.put(id, journal);
         }
-        
+
         journal.addEntry(entry);
     }
 
@@ -83,21 +86,26 @@ public class JITDataModel
             journal = new Journal();
             journalMap.put(id, journal);
         }
-        
+
         return journal;
     }
 
     // ugly but better than using COWAL with so many writes
-    public synchronized void addEvent(JITEvent event)
+    public void addEvent(JITEvent event)
     {
-        jitEvents.add(event);
+        synchronized (jitEvents)
+        {
+            jitEvents.add(event);
+        }
     }
 
     public synchronized List<JITEvent> getEventListCopy()
     {
-        List<JITEvent> copy = new ArrayList<>(jitEvents);
-
-        return copy;
+        synchronized (jitEvents)
+        {
+            List<JITEvent> copy = new ArrayList<>(jitEvents);
+            return copy;
+        }
     }
 
     public void addNativeBytes(long count)
@@ -247,6 +255,23 @@ public class JITDataModel
                 metaClass.addMetaConstructor(metaConstructor);
                 stats.incCountConstructor();
             }
+        }
+    }
+
+    public void addCodeCacheTag(Tag ccTag)
+    {
+        synchronized (codeCacheTagList)
+        {
+            codeCacheTagList.add(ccTag);
+        }
+    }
+
+    public List<Tag> getCodeCacheTags()
+    {
+        synchronized (codeCacheTagList)
+        {
+            List<Tag> copy = new ArrayList<>(codeCacheTagList);
+            return copy;
         }
     }
 }
