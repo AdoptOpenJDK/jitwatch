@@ -28,6 +28,8 @@ public class JITWatchConfig
     private static final String KEY_SHOW_JIT_ONLY_CLASSES = "JitOnlyClasses";
     private static final String KEY_SHOW_HIDE_INTERFACES = "HideInterfaces";
     private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
+    private static final String KEY_LAST_LOG_DIR = "LastLogDir";
+
 
     private IJITListener logListener;
 
@@ -39,6 +41,7 @@ public class JITWatchConfig
     private boolean showOnlyCompiledClasses = false;
     private boolean hideInterfaces = true;
     private boolean showNothingMounted = true;
+    private String lastLogDir = null;
 
     public JITWatchConfig(IJITListener logListener)
     {
@@ -86,6 +89,9 @@ public class JITWatchConfig
         showOnlyCompiledClasses = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.FALSE.toString()));
         hideInterfaces = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_HIDE_INTERFACES, Boolean.TRUE.toString()));
         showNothingMounted = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_NOTHING_MOUNTED, Boolean.TRUE.toString()));    
+        
+        lastLogDir = loadProps.getProperty(KEY_LAST_LOG_DIR);
+
     }
 
     public void saveConfig()
@@ -99,6 +105,11 @@ public class JITWatchConfig
         saveProps.put(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
         saveProps.put(KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
         saveProps.put(KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
+        
+        if (lastLogDir != null)
+        {
+            saveProps.put(KEY_LAST_LOG_DIR, lastLogDir);
+        }
         
         try (FileWriter fw = new FileWriter(getConfigFile()))
         {
@@ -201,5 +212,15 @@ public class JITWatchConfig
     public void setShowNothingMounted(boolean showNothingMounted)
     {
     	this.showNothingMounted = showNothingMounted;
+    }
+
+    public String getLastLogDir()
+    {
+        return lastLogDir;
+    }
+
+    public void setLastLogDir(String lastLogDir)
+    {
+        this.lastLogDir = lastLogDir;
     }
 }
