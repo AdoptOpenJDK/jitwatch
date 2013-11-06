@@ -16,22 +16,34 @@ public class StringUtil
 	private static final char QUOTE = '\'';
 	private static final char SPACE = ' ';
 	private static final char EQUALS = '=';
-	
-    private static final DecimalFormat DF = new DecimalFormat("#,###");
+
+	private static final DecimalFormat DF = new DecimalFormat("#,###");
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
-	    if (showMillis && stamp <= 1000)
-	    {
-	        return "0." + stamp;
-	    }
-	    
+		if (showMillis && stamp <= 1000)
+		{
+			if (stamp == 0)
+			{
+				return "0";
+			}
+			else
+			{
+				return "0." + stamp;
+			}
+		}
+
 		long stampCopy = stamp;
 
-		long hourMillis = 3600000L;
-		long minuteMillis = 60000L;
-		long secondMillis = 1000L;
+		long dayMillis = 24L * 60L * 60_000L;
+		long hourMillis = 60L * 60_000L;
+		long minuteMillis = 60_000L;
+		long secondMillis = 1_000L;
 
+
+		long days = (long) Math.floor(stampCopy / dayMillis);
+		stampCopy -= days * dayMillis;
+		
 		long hours = (long) Math.floor(stampCopy / hourMillis);
 		stampCopy -= hours * hourMillis;
 
@@ -45,6 +57,11 @@ public class StringUtil
 
 		StringBuilder sb = new StringBuilder();
 
+		if (days > 0)
+		{
+			sb.append(days).append("d ");
+		}
+		
 		sb.append(pad(hours, 2)).append(":");
 		sb.append(pad(minutes, 2)).append(":");
 		sb.append(pad(seconds, 2));
@@ -165,13 +182,13 @@ public class StringUtil
 			for (int i = 0; i < len; i++)
 			{
 				char c = line.charAt(i);
-				
+
 				switch (c)
 				{
 				case SPACE:
 					if (!inValue)
 					{
-						//space before new key
+						// space before new key
 						key.delete(0, key.length());
 					}
 					else
@@ -182,7 +199,7 @@ public class StringUtil
 				case QUOTE:
 					if (inValue)
 					{
-						//finished attr
+						// finished attr
 						result.put(key.toString(), val.toString());
 						key.delete(0, key.length());
 						val.delete(0, val.length());
@@ -214,19 +231,19 @@ public class StringUtil
 
 		return result;
 	}
-	
+
 	public static String formatThousands(String value)
 	{
-        // see if it can be formatted as a long with commas at thousands
-        try
-        {
-            value = DF.format(Long.parseLong(value));
-        }
-        catch (NumberFormatException nfe)
-        {
-        }
-        
-        return value;
+		// see if it can be formatted as a long with commas at thousands
+		try
+		{
+			value = DF.format(Long.parseLong(value));
+		}
+		catch (NumberFormatException nfe)
+		{
+		}
+
+		return value;
 	}
 
 }

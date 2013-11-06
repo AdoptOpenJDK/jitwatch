@@ -14,249 +14,254 @@ import javafx.stage.WindowEvent;
 
 public abstract class AbstractGraphStage extends Stage
 {
-    protected Canvas canvas;
-    protected GraphicsContext gc;
-    protected JITWatchUI parent;
+	protected Canvas canvas;
+	protected GraphicsContext gc;
+	protected JITWatchUI parent;
 
-    protected static final double GRAPH_GAP_LEFT = 60.5;
-    protected static final double GRAPH_GAP_RIGHT = 20.5;
-    protected static final double GRAPH_GAP_Y = 20.5;
+	protected static final double GRAPH_GAP_LEFT = 60.5;
+	protected static final double GRAPH_GAP_RIGHT = 20.5;
+	protected static final double GRAPH_GAP_Y = 20.5;
 
-    protected static final int[] Y_SCALE = new int[21];
+	protected static final int[] Y_SCALE = new int[21];
 
-    protected double width;
-    protected double height;
-    protected double chartWidth;
-    protected double chartHeight;
+	protected double width;
+	protected double height;
+	protected double chartWidth;
+	protected double chartHeight;
 
-    protected long minX;
-    protected long maxX;
-    protected long minY;
-    protected long maxY;
+	protected long minX;
+	protected long maxX;
+	protected long minY;
+	protected long maxY;
 
-    private boolean xAxisTime = false;
+	private boolean xAxisTime = false;
 
-    static
-    {
-        int multiplier = 1;
+	static
+	{
+		int multiplier = 1;
 
-        for (int i = 0; i < Y_SCALE.length; i += 3)
-        {
-            Y_SCALE[i + 0] = 1 * multiplier;
-            Y_SCALE[i + 1] = 2 * multiplier;
-            Y_SCALE[i + 2] = 5 * multiplier;
+		for (int i = 0; i < Y_SCALE.length; i += 3)
+		{
+			Y_SCALE[i + 0] = 1 * multiplier;
+			Y_SCALE[i + 1] = 2 * multiplier;
+			Y_SCALE[i + 2] = 5 * multiplier;
 
-            multiplier *= 10;
-        }
-    }
+			multiplier *= 10;
+		}
+	}
 
-    public AbstractGraphStage(final JITWatchUI parent, int width, int height, boolean xAxisTime)
-    {
-        this.parent = parent;
-        this.width = width;
-        this.height = height;
-        this.xAxisTime = xAxisTime;
+	public AbstractGraphStage(final JITWatchUI parent, int width, int height, boolean xAxisTime)
+	{
+		this.parent = parent;
+		this.width = width;
+		this.height = height;
+		this.xAxisTime = xAxisTime;
 
-        canvas = new Canvas(width, height);
-        gc = canvas.getGraphicsContext2D();
+		canvas = new Canvas(width, height);
+		gc = canvas.getGraphicsContext2D();
 
-        initStyle(StageStyle.DECORATED);
+		initStyle(StageStyle.DECORATED);
 
-        setOnCloseRequest(new EventHandler<WindowEvent>()
-        {
-            @Override
-            public void handle(WindowEvent arg0)
-            {
-               parent.handleStageClosed(AbstractGraphStage.this);
-            }
-        });
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(AbstractGraphStage.this);
+			}
+		});
 
-        class SceneResizeListener implements ChangeListener<Number>
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
-            {
-                redraw();
-            }
-        }
+		class SceneResizeListener implements ChangeListener<Number>
+		{
+			@Override
+			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
+			{
+				redraw();
+			}
+		}
 
-        SceneResizeListener rl = new SceneResizeListener();
+		SceneResizeListener rl = new SceneResizeListener();
 
-        canvas.widthProperty().addListener(rl);
-        canvas.heightProperty().addListener(rl);
-    }
+		canvas.widthProperty().addListener(rl);
+		canvas.heightProperty().addListener(rl);
+	}
 
-    public abstract void redraw();
+	public abstract void redraw();
 
-    protected void baseRedraw()
-    {
-        width = canvas.getWidth();
-        height = canvas.getHeight();
-        chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
-        chartHeight = height - GRAPH_GAP_Y * 2;
+	protected void baseRedraw()
+	{
+		width = canvas.getWidth();
+		height = canvas.getHeight();
+		chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
+		chartHeight = height - GRAPH_GAP_Y * 2;
 
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0, 0, width, height);
-        gc.setFill(Color.rgb(235, 255, 255));
-        gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
-    }
+		gc.setFill(Color.WHITE);
+		gc.fillRect(0, 0, width, height);
+		gc.setFill(Color.rgb(210, 255, 255));
+		gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+		gc.setStroke(Color.BLACK);
+		gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+	}
 
-    protected void drawAxes()
-    {
-        //padY(10);
-        
-        if (xAxisTime)
-        {
-            drawXAxisTime();
-        }
-        else
-        {
-            drawXAxis();
-        }
+	protected void drawAxes()
+	{
+		// padY(10);
 
-        drawYAxis();
-    }
+		if (xAxisTime)
+		{
+			drawXAxisTime();
+		}
+		else
+		{
+			drawXAxis();
+		}
 
-    private void drawXAxisTime()
-    {
-        long xInc = getXStepTime();
+		drawYAxis();
+	}
 
-        long gridX = minX;
+	private void drawXAxisTime()
+	{
+		long xInc = getXStepTime();
 
-        while (gridX < maxX)
-        {
-            double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-            gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
+		long gridX = minX;
 
-            boolean showMillis = gridX >= 0 && gridX < 5000;
+		while (gridX < maxX)
+		{
+			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
+			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
 
-            gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+			boolean showMillis = gridX >= 0 && gridX < 5000;
 
-            gridX += xInc;
-        }
-    }
-    
-    private void drawXAxis()
-    {
-        long xInc = findScale(maxX - minX);
+			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
 
-        long gridX = minX;
+			gridX += xInc;
+		}
+	}
 
-        while (gridX < maxX)
-        {
-            double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-            gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
-            gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+	private void drawXAxis()
+	{
+		long xInc = findScale(maxX - minX);
 
-            gridX += xInc;
-        }
-    }
+		long gridX = minX;
 
-    private void drawYAxis()
-    {
-        long yInc = findScale(maxY - minY);
+		while (gridX < maxX)
+		{
+			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
+			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
+			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
 
-        long minYCopy = (minY / yInc) * yInc; // quantise start value
+			gridX += xInc;
+		}
+	}
 
-        long gridY = minYCopy;
+	private void drawYAxis()
+	{
+		long yInc = findScale(maxY - minY);
 
-        while (gridY < maxY)
-        {
-            double y = GRAPH_GAP_Y + normaliseY(gridY);
-            gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
-            gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(2), fix(y + 2));
+		long minYCopy = (minY / yInc) * yInc; // quantise start value
 
-            gridY += yInc;
-        }
-    }
+		long gridY = minYCopy;
 
-    private long getXStepTime()
-    {
-        long rangeMillis = maxX - minX;
+		while (gridY < maxY)
+		{
+			if (gridY >= minY)
+			{
+				double y = GRAPH_GAP_Y + normaliseY(gridY);
+				gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
+				gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(2), fix(y + 2));
+			}
 
-        int requiredLines = 6;
+			gridY += yInc;
+		}
+	}
 
-        long[] gapMillis = new long[] { 120 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000, 2 * 60000,
-                1 * 60000, 30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
+	private long getXStepTime()
+	{
+		long rangeMillis = maxX - minX;
 
-        long incrementMillis = 120 * 60000;
+		int requiredLines = 6;
 
-        for (int i = 0; i < gapMillis.length; i++)
-        {
-            if (rangeMillis / gapMillis[i] >= requiredLines)
-            {
-                incrementMillis = gapMillis[i];
-                break;
-            }
-        }
+		long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
+				2 * 24 * 60 * 60000, 24 * 60 * 60000, 16 * 60 * 60000, 12 * 60 * 60000, 8 * 60 * 60000, 6 * 60 * 60000,
+				4 * 60 * 60000, 2 * 60 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000, 2 * 60000, 1 * 60000,
+				30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
 
-        return incrementMillis;
-    }
+		long incrementMillis = 120 * 60000;
 
-    protected long findScale(long range)
-    {
-        long requiredLines = 10;
+		for (int i = 0; i < gapMillis.length; i++)
+		{
+			if (rangeMillis / gapMillis[i] >= requiredLines)
+			{
+				incrementMillis = gapMillis[i];
+				break;
+			}
+		}
 
-        for (int i = 0; i < Y_SCALE.length; i++)
-        {
-            if (range / Y_SCALE[i] < requiredLines)
-            {
-                return Y_SCALE[i];
-            }
-        }
+		return incrementMillis;
+	}
 
-        return range / requiredLines;
-    }
+	protected long findScale(long range)
+	{
+		long requiredLines = 8;
 
-    protected double normaliseX(double value)
-    {
-        return normalise(value, minX, maxX, chartWidth, false);
-    }
+		for (int i = 0; i < Y_SCALE.length; i++)
+		{
+			if (range / Y_SCALE[i] < requiredLines)
+			{
+				return Y_SCALE[i];
+			}
+		}
 
-    protected double normaliseY(double value)
-    {
-        return normalise(value, minY, maxY, chartHeight, true);
-    }
+		return range / requiredLines;
+	}
 
-    protected double normalise(double value, double min, double max, double size, boolean invert)
-    {
-        double range = max - min;
-        double result = 0;
+	protected double normaliseX(double value)
+	{
+		return normalise(value, minX, maxX, chartWidth, false);
+	}
 
-        if (range == 0)
-        {
-            result = 0;
-        }
-        else
-        {
-            result = (value - min) / range;
-        }
+	protected double normaliseY(double value)
+	{
+		return normalise(value, minY, maxY, chartHeight, true);
+	}
 
-        result *= size;
+	protected double normalise(double value, double min, double max, double size, boolean invert)
+	{
+		double range = max - min;
+		double result = 0;
 
-        if (invert)
-        {
-            result = size - result;
-        }
+		if (range == 0)
+		{
+			result = 0;
+		}
+		else
+		{
+			result = (value - min) / range;
+		}
 
-        return result;
-    }
+		result *= size;
 
-    protected void padY(double percentOfRange)
-    {
-        double rangePercent = ((double) maxY - (double) minY) / (double) maxY * 100;
+		if (invert)
+		{
+			result = size - result;
+		}
 
-        double spacePercent = rangePercent * percentOfRange/100;
+		return result;
+	}
 
-        minY *= (1.0 - spacePercent / 100.0);
-        maxY *= (1.0 + spacePercent / 100.0);
-    }
-    
-    // prevent blurry lines in JavaFX
-    protected double fix(double pixel)
-    {
-        return 0.5 + (int)pixel;
-    }
+	protected void padY(double percentOfRange)
+	{
+		double rangePercent = ((double) maxY - (double) minY) / (double) maxY * 100;
+
+		double spacePercent = rangePercent * percentOfRange / 100;
+
+		minY *= (1.0 - spacePercent / 100.0);
+		maxY *= (1.0 + spacePercent / 100.0);
+	}
+
+	// prevent blurry lines in JavaFX
+	protected double fix(double pixel)
+	{
+		return 0.5 + (int) pixel;
+	}
 }
