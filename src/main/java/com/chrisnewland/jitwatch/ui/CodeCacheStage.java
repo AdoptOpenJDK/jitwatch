@@ -28,6 +28,8 @@ public class CodeCacheStage extends AbstractGraphStage
 
         canvas.widthProperty().bind(root.widthProperty());
         canvas.heightProperty().bind(root.heightProperty());
+        
+        gc.setFont(new Font("monospace", 10));
 
         root.getChildren().add(canvas);
 
@@ -87,11 +89,7 @@ public class CodeCacheStage extends AbstractGraphStage
             double lastCY = GRAPH_GAP_Y + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
             gc.setStroke(Color.BLACK);
-            gc.setFont(new Font("monospace", 10));
-            
-            Color colourLine = Color.RED;
-
-            gc.setStroke(colourLine);
+            gc.setLineWidth(2);
 
             for (Tag ccTag : codeCacheTags)
             {

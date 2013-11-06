@@ -34,6 +34,8 @@ public class TimeLineStage extends AbstractGraphStage
 
         canvas.widthProperty().bind(root.widthProperty());
         canvas.heightProperty().bind(root.heightProperty());
+        
+        gc.setFont(new Font("monospace", 10));
 
         root.getChildren().add(canvas);
 
@@ -80,9 +82,6 @@ public class TimeLineStage extends AbstractGraphStage
             double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
             double lastCY = GRAPH_GAP_Y + normaliseY(0);
 
-            gc.setStroke(Color.BLACK);
-            gc.setFont(new Font("monospace", 10));
-
             drawAxes();
 
             IMetaMember selectedMember = parent.getSelectedMember();
@@ -99,9 +98,9 @@ public class TimeLineStage extends AbstractGraphStage
                 }
             }
 
-            Color colourLine = Color.RED;
+            Color colourLine = Color.BLACK;
             Color colourMarker = Color.BLUE;
-
+            
             int cumC = 0;
             int markerDiameter = 8;
 
@@ -119,8 +118,10 @@ public class TimeLineStage extends AbstractGraphStage
                     cumC++;
 
                     double y = GRAPH_GAP_Y + normaliseY(cumC);
+                    gc.setLineWidth(2);
                     gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-
+                    gc.setLineWidth(1);
+                    
                     lastCX = x;
                     lastCY = y;
 

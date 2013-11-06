@@ -118,10 +118,12 @@ public class TopListStage extends Stage
 
         ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
-        toplistFilter = attrMap.get(options.get(0));
+        String selected = "Largest Native Methods";
+        
+        toplistFilter = attrMap.get(selected);
 
         final ComboBox<String> comboBox = new ComboBox<>(options);
-        comboBox.setValue(options.get(0));
+        comboBox.setValue(selected);
 
         comboBox.valueProperty().addListener(new ChangeListener<String>()
         {
