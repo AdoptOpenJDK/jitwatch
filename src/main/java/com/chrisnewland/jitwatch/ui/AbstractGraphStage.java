@@ -67,7 +67,7 @@ public abstract class AbstractGraphStage extends Stage
             @Override
             public void handle(WindowEvent arg0)
             {
-               parent.handleStageClosed(AbstractGraphStage.this);
+                parent.handleStageClosed(AbstractGraphStage.this);
             }
         });
 
@@ -90,6 +90,8 @@ public abstract class AbstractGraphStage extends Stage
 
     protected void baseRedraw()
     {
+        gc.setLineWidth(1);
+
         width = canvas.getWidth();
         height = canvas.getHeight();
         chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
@@ -97,7 +99,7 @@ public abstract class AbstractGraphStage extends Stage
 
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, width, height);
-        gc.setFill(Color.rgb(235, 255, 255));
+        gc.setFill(Color.rgb(210, 255, 255));
         gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
         gc.setStroke(Color.BLACK);
         gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
@@ -105,7 +107,10 @@ public abstract class AbstractGraphStage extends Stage
 
     protected void drawAxes()
     {
-        //padY(10);
+        // padY(10);
+
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1);
         
         if (xAxisTime)
         {
@@ -123,33 +128,40 @@ public abstract class AbstractGraphStage extends Stage
     {
         long xInc = getXStepTime();
 
-        long gridX = minX;
+        long minXCopy = (minX / xInc) * xInc; // quantise start value
+
+        long gridX = minXCopy;
 
         while (gridX < maxX)
         {
-            double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-            gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
-
-            boolean showMillis = gridX >= 0 && gridX < 5000;
-
-            gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+            if (gridX >= minXCopy)
+            {
+                double x = GRAPH_GAP_LEFT + normaliseX(gridX);
+                gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
+                boolean showMillis = gridX >= 0 && gridX < 5000;
+                gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+            }
 
             gridX += xInc;
         }
     }
-    
+
     private void drawXAxis()
     {
         long xInc = findScale(maxX - minX);
 
-        long gridX = minX;
+        long minXCopy = (minX / xInc) * xInc; // quantise start value
 
+        long gridX = minXCopy;
+        
         while (gridX < maxX)
         {
-            double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-            gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
-            gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
-
+            if (gridX >= minXCopy)
+            {
+                double x = GRAPH_GAP_LEFT + normaliseX(gridX);
+                gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
+                gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+            }
             gridX += xInc;
         }
     }
@@ -164,9 +176,12 @@ public abstract class AbstractGraphStage extends Stage
 
         while (gridY < maxY)
         {
-            double y = GRAPH_GAP_Y + normaliseY(gridY);
-            gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
-            gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(2), fix(y + 2));
+            if (gridY >= minYCopy)
+            {
+                double y = GRAPH_GAP_Y + normaliseY(gridY);
+                gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
+                gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(2), fix(y + 2));
+            }
 
             gridY += yInc;
         }
@@ -176,10 +191,12 @@ public abstract class AbstractGraphStage extends Stage
     {
         long rangeMillis = maxX - minX;
 
-        int requiredLines = 6;
+        int requiredLines = 5;
 
-        long[] gapMillis = new long[] { 120 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000, 2 * 60000,
-                1 * 60000, 30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
+        long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
+                3 * 24 * 60 * 60000, 2 * 24 * 60 * 60000, 24 * 60 * 60000, 16 * 60 * 60000, 12 * 60 * 60000, 8 * 60 * 60000,
+                6 * 60 * 60000, 4 * 60 * 60000, 2 * 60 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000,
+                2 * 60000, 1 * 60000, 30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
 
         long incrementMillis = 120 * 60000;
 
@@ -197,7 +214,7 @@ public abstract class AbstractGraphStage extends Stage
 
     protected long findScale(long range)
     {
-        long requiredLines = 10;
+        long requiredLines = 8;
 
         for (int i = 0; i < Y_SCALE.length; i++)
         {
@@ -248,15 +265,15 @@ public abstract class AbstractGraphStage extends Stage
     {
         double rangePercent = ((double) maxY - (double) minY) / (double) maxY * 100;
 
-        double spacePercent = rangePercent * percentOfRange/100;
+        double spacePercent = rangePercent * percentOfRange / 100;
 
         minY *= (1.0 - spacePercent / 100.0);
         maxY *= (1.0 + spacePercent / 100.0);
     }
-    
+
     // prevent blurry lines in JavaFX
     protected double fix(double pixel)
     {
-        return 0.5 + (int)pixel;
+        return 0.5 + (int) pixel;
     }
 }

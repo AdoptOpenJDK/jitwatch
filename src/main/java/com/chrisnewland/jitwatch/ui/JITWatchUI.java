@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
+open * Copyright (c) 2013 Chris Newland. All rights reserved.
  * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
  * http://www.chrisnewland.com/jitwatch
  */
@@ -610,8 +610,16 @@ public class JITWatchUI extends Application implements IJITListener
     {
         FileChooser fc = new FileChooser();
         fc.setTitle("Choose HotSpot log file");
-        String curDir = System.getProperty("user.dir");
-        File dirFile = new File(curDir);
+        
+        String searchDir = config.getLastLogDir();
+        
+        if (searchDir == null)
+        {
+            searchDir = System.getProperty("user.dir");
+        }
+        
+        File dirFile = new File(searchDir);
+        
         fc.setInitialDirectory(dirFile);
 
         File result = fc.showOpenDialog(stage);
@@ -619,6 +627,10 @@ public class JITWatchUI extends Application implements IJITListener
         if (result != null)
         {
             watchFile = result;
+            
+            config.setLastLogDir(watchFile.getParent());
+            config.saveConfig();
+            
             log("Selected file: " + watchFile.getAbsolutePath());
             log("Click Start button to process or tail the file");
             updateButtons();
