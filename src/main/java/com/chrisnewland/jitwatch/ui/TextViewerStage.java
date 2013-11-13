@@ -13,7 +13,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
@@ -25,6 +24,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -144,9 +144,9 @@ public class TextViewerStage extends Stage
 				{
 					builder.append(lines[i]).append("\n");
 				}
-				
+
 				content.putString(builder.toString());
-				
+
 				clipboard.setContent(content);
 			}
 		});
@@ -196,11 +196,17 @@ public class TextViewerStage extends Stage
 		{
 			super.updateItem(item, empty);
 
-			if (item != null)
+			if (empty)
 			{
-				setText(item);
-
-				setStyle("-fx-font-family: monospace; -fx-font-size:12pt; -fx-cell-size:20; -fx-background-color: white; -fx-text-fill:black;");
+				setText(null);
+			}
+			else
+			{
+				if (item != null)
+				{
+					setText(item);
+					setStyle("-fx-font-family: monospace; -fx-font-size:12px; -fx-background-color: white; -fx-text-fill:black;");
+				}
 			}
 		}
 	}

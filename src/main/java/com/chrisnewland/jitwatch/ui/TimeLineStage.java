@@ -99,7 +99,7 @@ public class TimeLineStage extends AbstractGraphStage
                 }
             }
 
-            Color colourLine = Color.RED;
+            Color colourLine = Color.BLUE;
             Color colourMarker = Color.BLUE;
 
             int cumC = 0;
@@ -107,20 +107,21 @@ public class TimeLineStage extends AbstractGraphStage
 
             for (JITEvent event : events)
             {
-                long stamp = event.getStamp();
-
-                double x = GRAPH_GAP_LEFT + normaliseX(stamp);
-
                 if (event.isCompile())
                 {
-                    gc.setFill(colourLine);
-                    gc.setStroke(colourLine);
-
-                    cumC++;
-
+                    long stamp = event.getStamp();
+                    
+                    cumC++;           
+                    
+                    double x = GRAPH_GAP_LEFT + normaliseX(stamp);
                     double y = GRAPH_GAP_Y + normaliseY(cumC);
-                    gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
 
+                	gc.setFill(colourLine);
+                    gc.setStroke(colourLine);
+                    gc.setLineWidth(2.0);
+                    gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+                    gc.setLineWidth(1.0);
+                    
                     lastCX = x;
                     lastCY = y;
 

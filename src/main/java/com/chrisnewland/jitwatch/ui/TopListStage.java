@@ -64,11 +64,14 @@ public class TopListStage extends Stage
         final Map<String, ITopListFilter> attrMap = new HashMap<>();
 
         // Hurry up lambdas !!!
+        
+        String largestNativeMethods = "Largest Native Methods";
 
-        attrMap.put("Largest Native Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
+        attrMap.put(largestNativeMethods, new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
         attrMap.put("Largest Bytecode Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_BYTES));
         attrMap.put("Slowest Compilation Times", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_COMPILE_MILLIS));
         attrMap.put("Most Decompiled Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_DECOMPILES));
+        
         attrMap.put("Compilation Order", new ITopListFilter()
         {
             // OSR compile_id values overlap non-OSR compile_id values so filter
@@ -108,7 +111,7 @@ public class TopListStage extends Stage
                 return compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind);
             }
         });
-
+        
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(8));
         vbox.setSpacing(8);
@@ -118,10 +121,10 @@ public class TopListStage extends Stage
 
         ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
-        toplistFilter = attrMap.get(options.get(0));
-
         final ComboBox<String> comboBox = new ComboBox<>(options);
-        comboBox.setValue(options.get(0));
+        comboBox.setValue(largestNativeMethods);
+        
+        toplistFilter = attrMap.get(largestNativeMethods);
 
         comboBox.valueProperty().addListener(new ChangeListener<String>()
         {

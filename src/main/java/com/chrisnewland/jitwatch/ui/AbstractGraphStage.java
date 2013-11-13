@@ -130,7 +130,7 @@ public abstract class AbstractGraphStage extends Stage
 			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
 			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
 
-			boolean showMillis = gridX >= 0 && gridX < 5000;
+			boolean showMillis = gridX >= 0 && gridX < 5000 && xInc < 5000;
 
 			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
 
