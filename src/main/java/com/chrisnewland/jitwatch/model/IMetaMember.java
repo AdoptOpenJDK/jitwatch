@@ -57,5 +57,7 @@ public interface IMetaMember
 	String getSignatureForBytecode();
 	
 	List<String> getTreePath();
+	
+	String getJournalID();
 
 }

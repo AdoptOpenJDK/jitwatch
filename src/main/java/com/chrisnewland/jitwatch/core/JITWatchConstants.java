@@ -23,6 +23,11 @@ public class JITWatchConstants
 	public static final String TAG_CODE_CACHE = "code_cache";
 	public static final String TAG_TASK_DONE = "task_done";
 	public static final String TAG_START_COMPILE_THREAD = "start_compile_thread";
+	public static final String TAG_PHASE = "phase";
+	public static final String TAG_KLASS = "klass";
+	public static final String TAG_METHOD = "method";
+	public static final String TAG_INTRINSIC = "intrinsic";
+
 
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 
@@ -38,11 +43,15 @@ public class JITWatchConstants
 	public static final String ATTR_COMPILE_ID = "compile_id";
 	public static final String ATTR_COMPILE_KIND = "compile_kind";
 	public static final String ATTR_STAMP = "stamp";
+	public static final String ATTR_NAME = "name";
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
-
 	public static final String ATTR_NMSIZE = "nmsize";
 	public static final String ATTR_BYTES = "bytes";
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
+	public static final String ATTR_PARSE = "parse";
+	public static final String ATTR_ID = "id";
+
+
 }

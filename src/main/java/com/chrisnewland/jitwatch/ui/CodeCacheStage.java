@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
-import com.chrisnewland.jitwatch.core.Tag;
+import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import javafx.scene.Scene;

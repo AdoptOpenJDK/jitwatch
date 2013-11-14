@@ -1,9 +1,11 @@
 package com.chrisnewland.jitwatch.test;
 
+import java.util.List;
+
 import org.junit.Test;
 
-import com.chrisnewland.jitwatch.core.Tag;
 import com.chrisnewland.jitwatch.core.TagProcessor;
+import com.chrisnewland.jitwatch.model.Tag;
 
 import static org.junit.Assert.*;
 
@@ -135,6 +137,44 @@ public class TestTagProcessor
 				
 		assertEquals(7, tag.getAttrs().size());
 		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttrs().get("method"));
+	}
 
+	@Test
+	public void testGetChildren()
+	{
+		String line1 = "<a foo='1'>";
+		String line2 = "<b foo='2' bar='baz'/>";
+		String line3 = "<b foo='2'/>";
+		String line4 = "<b foo='bar'/>";
+		String line5 = "</a>";
+
+		String[] lines = new String[] { line1, line2, line3, line4, line5 };
+
+		TagProcessor tp = new TagProcessor();
+
+		int count = 0;
+
+		Tag tag = null;
+
+		for (String line : lines)
+		{
+			tag = tp.processLine(line);
+			if (count++ < lines.length - 1)
+			{
+				assertNull(tag);
+			}
+		}
+
+		assertNotNull(tag);
+				
+		List<Tag> children = tag.getNamedChildren("b");
+		assertEquals(3, children.size());
+		
+		Tag firstChild = tag.getFirstNamedChild("b");
+		assertEquals("2", firstChild.getAttrs().get("foo"));
+		assertEquals("baz", firstChild.getAttrs().get("bar"));
+
+		List<Tag> childrenWithAttr = tag.getNamedChildrenWithAttribute("b", "bar", "baz");
+		assertEquals(1, childrenWithAttr.size());		
 	}
 }

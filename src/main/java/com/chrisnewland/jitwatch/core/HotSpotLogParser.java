@@ -14,6 +14,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -247,7 +248,7 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_TASK:
 			handleMethodLine(tag, EventType.TASK);
 			
-			Tag tagCodeCache = tag.getNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+			Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
 			
 			if (tagCodeCache != null)
 			{
@@ -258,7 +259,7 @@ public class HotSpotLogParser
 			    model.addCodeCacheTag(tagCodeCache);
 			}
 			
-			Tag tagTaskDone = tag.getNamedChild(JITWatchConstants.TAG_TASK_DONE);
+			Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
 			
 			if (tagTaskDone != null)
 			{
