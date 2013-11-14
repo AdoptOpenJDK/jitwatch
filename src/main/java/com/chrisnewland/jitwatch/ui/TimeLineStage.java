@@ -23,171 +23,167 @@ import javafx.stage.StageStyle;
 
 public class TimeLineStage extends AbstractGraphStage
 {
-    public TimeLineStage(final JITWatchUI parent)
-    {
-        super(parent, 640, 480, true);
+	public TimeLineStage(final JITWatchUI parent)
+	{
+		super(parent, 640, 480, true);
 
-        initStyle(StageStyle.DECORATED);
+		initStyle(StageStyle.DECORATED);
 
-        StackPane root = new StackPane();
-        Scene scene = new Scene(root, width, height);
+		StackPane root = new StackPane();
+		Scene scene = new Scene(root, width, height);
 
-        canvas.widthProperty().bind(root.widthProperty());
-        canvas.heightProperty().bind(root.heightProperty());
+		canvas.widthProperty().bind(root.widthProperty());
+		canvas.heightProperty().bind(root.heightProperty());
 
-        root.getChildren().add(canvas);
+		gc.setFont(new Font("monospace", 10));
 
-        setTitle("JITWatch Compilations Timeline");
+		root.getChildren().add(canvas);
 
-        setScene(scene);
-        show();
+		setTitle("JITWatch Compilations Timeline");
 
-        redraw();
-    }
+		setScene(scene);
+		show();
 
-    @Override
-    public void redraw()
-    {
-        super.baseRedraw();
+		redraw();
+	}
 
-        List<JITEvent> events = parent.getJITEvents();
+	@Override
+	public void redraw()
+	{
+		super.baseRedraw();
 
-        Collections.sort(events, new Comparator<JITEvent>()
-        {
-            @Override
-            public int compare(JITEvent e1, JITEvent e2)
-            {
-                return Long.compare(e1.getStamp(), e2.getStamp());
-            }
-        });
+		List<JITEvent> events = parent.getJITEvents();
 
-        if (events.size() > 0)
-        {
-            minX = 0;
-            maxX = events.get(events.size() - 1).getStamp();
+		Collections.sort(events, new Comparator<JITEvent>()
+		{
+			@Override
+			public int compare(JITEvent e1, JITEvent e2)
+			{
+				return Long.compare(e1.getStamp(), e2.getStamp());
+			}
+		});
 
-            minY = 0;
-            maxY = 0;
+		if (events.size() > 0)
+		{
+			minX = 0;
+			maxX = events.get(events.size() - 1).getStamp();
 
-            for (JITEvent event : events)
-            {
-                if (event.isCompile())
-                {
-                    maxY++;
-                }
-            }
+			minY = 0;
+			maxY = 0;
 
-            double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
-            double lastCY = GRAPH_GAP_Y + normaliseY(0);
+			for (JITEvent event : events)
+			{
+				if (event.isCompile())
+				{
+					maxY++;
+				}
+			}
 
-            gc.setStroke(Color.BLACK);
-            gc.setFont(new Font("monospace", 10));
+			double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
+			double lastCY = GRAPH_GAP_Y + normaliseY(0);
 
-            drawAxes();
+			drawAxes();
 
-            IMetaMember selectedMember = parent.getSelectedMember();
+			IMetaMember selectedMember = parent.getSelectedMember();
 
-            double compiledStampTime = -1;
+			double compiledStampTime = -1;
 
-            if (selectedMember != null)
-            {
-                String cStamp = selectedMember.getCompiledAttribute("stamp");
+			if (selectedMember != null)
+			{
+				String cStamp = selectedMember.getCompiledAttribute("stamp");
 
-                if (cStamp != null)
-                {
-                    compiledStampTime = 1000 * Double.parseDouble(cStamp);
-                }
-            }
+				if (cStamp != null)
+				{
+					compiledStampTime = 1000 * Double.parseDouble(cStamp);
+				}
+			}
 
-            Color colourLine = Color.BLUE;
-            Color colourMarker = Color.BLUE;
+			Color colourMarker = Color.BLUE;
 
-            int cumC = 0;
-            int markerDiameter = 8;
+			int cumC = 0;
+			int markerDiameter = 8;
 
-            for (JITEvent event : events)
-            {
-                if (event.isCompile())
-                {
-                    long stamp = event.getStamp();
-                    
-                    cumC++;           
-                    
-                    double x = GRAPH_GAP_LEFT + normaliseX(stamp);
-                    double y = GRAPH_GAP_Y + normaliseY(cumC);
+			for (JITEvent event : events)
+			{
+				if (event.isCompile())
+				{
+					long stamp = event.getStamp();
 
-                	gc.setFill(colourLine);
-                    gc.setStroke(colourLine);
-                    gc.setLineWidth(2.0);
-                    gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-                    gc.setLineWidth(1.0);
-                    
-                    lastCX = x;
-                    lastCY = y;
+					cumC++;
 
-                    if (compiledStampTime != -1 && stamp > compiledStampTime)
-                    {
-                        double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
+					double x = GRAPH_GAP_LEFT + normaliseX(stamp);
+					double y = GRAPH_GAP_Y + normaliseY(cumC);
 
-                        gc.setFill(colourMarker);
-                        gc.setStroke(colourMarker);
-                        gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
-                                fix(markerDiameter));
+					gc.setLineWidth(2);
+					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+					gc.setLineWidth(1);
 
-                        String line1 = selectedMember.toString();
+					lastCX = x;
+					lastCY = y;
 
-                        String compiler = selectedMember.getCompiledAttribute("compiler");
+					if (compiledStampTime != -1 && stamp > compiledStampTime)
+					{
+						double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
 
-                        if (compiler == null)
-                        {
-                            compiler = selectedMember.getCompiledAttribute("compile_kind");
+						gc.setFill(colourMarker);
+						gc.setStroke(colourMarker);
+						gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
+								fix(markerDiameter));
 
-                            if (compiler == null)
-                            {
-                                compiler = "unknown!";
-                            }
-                        }
+						String line1 = selectedMember.toString();
 
-                        String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
-                                + compiler;
+						String compiler = selectedMember.getCompiledAttribute("compiler");
 
-                        String compiletime = selectedMember.getCompiledAttribute("compileMillis");
+						if (compiler == null)
+						{
+							compiler = selectedMember.getCompiledAttribute("compile_kind");
 
-                        if (compiletime != null)
-                        {
-                            line2 += " took " + compiletime + "ms";
-                        }
+							if (compiler == null)
+							{
+								compiler = "unknown!";
+							}
+						}
 
-                        double legendY = y;
+						String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
+								+ compiler;
 
-                        if (legendY > GRAPH_GAP_Y + chartHeight - 32)
-                        {
-                            legendY = GRAPH_GAP_Y + chartHeight - 32;
-                        }
+						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
 
-                        gc.strokeText(line1, fix(smX + 10), fix(legendY));
-                        gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
+						if (compiletime != null)
+						{
+							line2 += " took " + compiletime + "ms";
+						}
 
-                        compiledStampTime = -1;
-                    }
-                }
-            }
+						double legendY = y;
 
-            showStatsLegend(gc);
-        }
-    }
+						if (legendY > GRAPH_GAP_Y + chartHeight - 32)
+						{
+							legendY = GRAPH_GAP_Y + chartHeight - 32;
+						}
 
-    private void showStatsLegend(GraphicsContext gc)
-    {
-        JITStats stats = parent.getJITStats();
+						gc.strokeText(line1, fix(smX + 10), fix(legendY));
+						gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
 
-        StringBuilder compiledStatsBuilder = new StringBuilder();
-        compiledStatsBuilder.append("Compiled: ").append(stats.getTotalCompiledMethods());
-        compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(")");
-        compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(")");
-        compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(")");
-        compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(")");
-        gc.setStroke(Color.BLACK);
-        gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(12));
-    }
+						compiledStampTime = -1;
+					}
+				}
+			}
+
+			showStatsLegend(gc);
+		}
+	}
+
+	private void showStatsLegend(GraphicsContext gc)
+	{
+		JITStats stats = parent.getJITStats();
+
+		StringBuilder compiledStatsBuilder = new StringBuilder();
+		compiledStatsBuilder.append("Compiled: ").append(stats.getTotalCompiledMethods());
+		compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(")");
+		compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(")");
+		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(")");
+		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(")");
+		gc.setStroke(Color.BLACK);
+		gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(12));
+	}
 }

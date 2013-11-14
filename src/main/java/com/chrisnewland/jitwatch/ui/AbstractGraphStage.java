@@ -264,4 +264,5 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		return 0.5 + (int) pixel;
 	}
+
 }
