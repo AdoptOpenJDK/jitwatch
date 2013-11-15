@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -31,8 +33,14 @@ public class TextViewerStage extends Stage
 
 	private ScrollPane scrollPane;
 	private VBox vBoxRows;
-	
-	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers)
+
+	private static final String COLOUR_BLACK = "black";
+	private static final String COLOUR_RED = "red";
+	private static final String COLOUR_GREEN = "green";
+	private static final String COLOUR_BLUE = "blue";
+
+	// make this a TextFlow in Java8
+	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers, boolean highlighting)
 	{
 		initStyle(StageStyle.DECORATED);
 
@@ -59,11 +67,12 @@ public class TextViewerStage extends Stage
 		int maxWidth = Integer.toString(lines.length).length();
 
 		scrollPane = new ScrollPane();
+		scrollPane.setStyle("-fx-background-color:white");
 		
 		vBoxRows = new VBox();
-		
+
 		scrollPane.setContent(vBoxRows);
-		
+
 		for (int i = 0; i < lines.length; i++)
 		{
 			String row = lines[i];
@@ -79,10 +88,39 @@ public class TextViewerStage extends Stage
 			{
 				max = rowLen;
 			}
-			
+
 			Text lineText = new Text(lines[i]);
-			lineText.setStyle("-fx-font-family: monospace; -fx-font-size:12px; -fx-background-color: white; -fx-text-fill:black;");
-			
+
+			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
+
+			String colour = null;
+
+			if (highlighting)
+			{
+				if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
+				{
+					colour = COLOUR_RED;
+				}
+				else if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
+				{
+					colour = COLOUR_GREEN;
+				}
+				else if (lines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
+				{
+					colour = COLOUR_BLUE;
+				}
+				else
+				{
+					colour = COLOUR_BLACK;
+				}
+			}
+			else
+			{
+				colour = COLOUR_BLACK;
+			}
+
+			lineText.setStyle(style + colour);
+
 			vBoxRows.getChildren().add(lineText);
 		}
 
@@ -181,8 +219,8 @@ public class TextViewerStage extends Stage
 					pos++;
 				}
 
-				final double scrollPos = (double)pos / (double)lines.length * (scrollPane.getVmax() - scrollPane.getVmin());
-				
+				final double scrollPos = (double) pos / (double) lines.length * (scrollPane.getVmax() - scrollPane.getVmin());
+
 				// needed as SelectionModel selected index
 				// is not updated instantly on select()
 				Platform.runLater(new Runnable()

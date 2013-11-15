@@ -109,7 +109,12 @@ public class CodeCacheStage extends AbstractGraphStage
 				lastCY = y;
 			}
 
-			gc.setLineWidth(2.0);
+			gc.setLineWidth(1.0);
+		}
+		else
+		{
+			gc.strokeText("No code cache information in log", fix(10), fix(10));
+
 		}
 	}
 

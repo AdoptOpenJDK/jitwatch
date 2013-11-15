@@ -164,7 +164,7 @@ public class ClassMemberList extends VBox
 					}
 				}
 
-				parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString());
+				parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString(), false, true);
 			}
 		});
 

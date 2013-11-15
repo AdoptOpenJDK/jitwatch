@@ -99,7 +99,10 @@ public class TimeLineStage extends AbstractGraphStage
 			}
 
 			Color colourMarker = Color.BLUE;
-
+			
+			gc.setFill(colourMarker);
+			gc.setStroke(colourMarker);
+			
 			int cumC = 0;
 			int markerDiameter = 8;
 
@@ -125,8 +128,6 @@ public class TimeLineStage extends AbstractGraphStage
 					{
 						double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
 
-						gc.setFill(colourMarker);
-						gc.setStroke(colourMarker);
 						gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
 								fix(markerDiameter));
 

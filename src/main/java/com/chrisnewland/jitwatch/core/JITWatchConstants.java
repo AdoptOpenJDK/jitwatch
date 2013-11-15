@@ -27,6 +27,9 @@ public class JITWatchConstants
 	public static final String TAG_KLASS = "klass";
 	public static final String TAG_METHOD = "method";
 	public static final String TAG_INTRINSIC = "intrinsic";
+	public static final String TAG_INLINE_FAIL = "inline_fail";
+	public static final String TAG_INLINE_SUCCESS = "inline_success";
+
 
 
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
