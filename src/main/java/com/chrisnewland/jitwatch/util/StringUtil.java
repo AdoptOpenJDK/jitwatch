@@ -21,16 +21,20 @@ public class StringUtil
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
-		if (showMillis && stamp <= 1000)
+		if (stamp == 0)
 		{
-			if (stamp == 0)
+			if (showMillis)
 			{
-				return "0";
+				return "0.000";
 			}
 			else
 			{
-				return "0." + stamp;
+				return "0";
 			}
+		}
+		else if (showMillis && stamp <= 1000)
+		{
+			return "0." + pad(stamp, 3);
 		}
 
 		long stampCopy = stamp;
@@ -40,10 +44,9 @@ public class StringUtil
 		long minuteMillis = 60_000L;
 		long secondMillis = 1_000L;
 
-
 		long days = (long) Math.floor(stampCopy / dayMillis);
 		stampCopy -= days * dayMillis;
-		
+
 		long hours = (long) Math.floor(stampCopy / hourMillis);
 		stampCopy -= hours * hourMillis;
 
@@ -61,7 +64,7 @@ public class StringUtil
 		{
 			sb.append(days).append("d ");
 		}
-		
+
 		sb.append(pad(hours, 2)).append(":");
 		sb.append(pad(minutes, 2)).append(":");
 		sb.append(pad(seconds, 2));

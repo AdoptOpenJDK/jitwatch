@@ -19,14 +19,18 @@ public class TestStringUtil
 	@Test
 	public void testFormatTimestamp()
 	{
-		assertEquals("00:00:00", StringUtil.formatTimestamp(0, false));
-		assertEquals("00:00:00.000", StringUtil.formatTimestamp(0, true));
-		assertEquals("00:01:00", StringUtil.formatTimestamp(60*1000+123, false));
-		assertEquals("00:01:00.123", StringUtil.formatTimestamp(60*1000+123, true));
-		assertEquals("01:00:00", StringUtil.formatTimestamp(60*60*1000+123, false));
-		assertEquals("01:00:00.123", StringUtil.formatTimestamp(60*60*1000+123, true));		
+		assertEquals("0", StringUtil.formatTimestamp(0, false));
+		assertEquals("0.000", StringUtil.formatTimestamp(0, true));
+		assertEquals("00:00:04", StringUtil.formatTimestamp(4000, false));
+		assertEquals("00:00:04.567", StringUtil.formatTimestamp(4567, true));
+		assertEquals("00:01:00", StringUtil.formatTimestamp(60 * 1000 + 123, false));
+		assertEquals("00:01:00.123", StringUtil.formatTimestamp(60 * 1000 + 123, true));
+		assertEquals("01:00:00", StringUtil.formatTimestamp(60 * 60 * 1000 + 123, false));
+		assertEquals("01:00:00.123", StringUtil.formatTimestamp(60 * 60 * 1000 + 123, true));
+		assertEquals("1d 01:00:00.123", StringUtil.formatTimestamp(25*60 * 60 * 1000 + 123, true));
+
 	}
-	
+
 	@Test
 	public void testGetLineAttributes()
 	{
@@ -59,20 +63,20 @@ public class TestStringUtil
 			}
 		}
 	}
-	
+
 	@Test
 	public void testGetAttributesRegression()
 	{
 		String line = "<task compile_id='21' method='java/util/Properties loadConvert ([CII[C)Ljava/lang/String;' bytes='505' count='10000' backedge_count='5668' iicount='108' stamp='6.801'>";
 
 		Map<String, String> result = StringUtil.getLineAttributes(line);
-		
+
 		assertEquals("21", result.get("compile_id"));
 		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", result.get("method"));
 		assertEquals("505", result.get("bytes"));
 		assertEquals("10000", result.get("count"));
 		assertEquals("5668", result.get("backedge_count"));
 		assertEquals("108", result.get("iicount"));
-		assertEquals("6.801", result.get("stamp"));		
+		assertEquals("6.801", result.get("stamp"));
 	}
 }
