@@ -2,6 +2,7 @@ package com.chrisnewland.jitwatch.core;
 
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 public class TagProcessor

@@ -8,34 +8,39 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
+
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 
 public class TextViewerStage extends Stage
 {
 	private String[] lines;
-	private ListView<String> listView;
 
-	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers)
+	private ScrollPane scrollPane;
+	private VBox vBoxRows;
+
+	private static final String COLOUR_BLACK = "black";
+	private static final String COLOUR_RED = "red";
+	private static final String COLOUR_GREEN = "green";
+	private static final String COLOUR_BLUE = "blue";
+
+	// make this a TextFlow in Java8
+	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers, boolean highlighting)
 	{
 		initStyle(StageStyle.DECORATED);
 
@@ -59,13 +64,22 @@ public class TextViewerStage extends Stage
 
 		int max = 0;
 
+		int maxWidth = Integer.toString(lines.length).length();
+
+		scrollPane = new ScrollPane();
+		scrollPane.setStyle("-fx-background-color:white");
+		
+		vBoxRows = new VBox();
+
+		scrollPane.setContent(vBoxRows);
+
 		for (int i = 0; i < lines.length; i++)
 		{
 			String row = lines[i];
 
 			if (showLineNumbers)
 			{
-				lines[i] = (i + 1) + " " + row;
+				lines[i] = padLineNumber(i + 1, maxWidth) + "  " + row;
 			}
 
 			int rowLen = row.length();
@@ -74,18 +88,41 @@ public class TextViewerStage extends Stage
 			{
 				max = rowLen;
 			}
-		}
 
-		listView = new ListView<>(FXCollections.observableArrayList(lines));
+			Text lineText = new Text(lines[i]);
 
-		listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
-		{
-			@Override
-			public ListCell<String> call(ListView<String> arg0)
+			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
+
+			String colour = null;
+
+			if (highlighting)
 			{
-				return new TextCell();
+				if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
+				{
+					colour = COLOUR_RED;
+				}
+				else if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
+				{
+					colour = COLOUR_GREEN;
+				}
+				else if (lines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
+				{
+					colour = COLOUR_BLUE;
+				}
+				else
+				{
+					colour = COLOUR_BLACK;
+				}
 			}
-		});
+			else
+			{
+				colour = COLOUR_BLACK;
+			}
+
+			lineText.setStyle(style + colour);
+
+			vBoxRows.getChildren().add(lineText);
+		}
 
 		int x = Math.min(80, max);
 		int y = Math.min(30, lines.length);
@@ -93,20 +130,29 @@ public class TextViewerStage extends Stage
 		x = Math.max(x, 20);
 		y = Math.max(y, 20);
 
-		VBox vbox = new VBox();
-
-		vbox.setPadding(new Insets(4));
-
-		vbox.getChildren().add(listView);
-		VBox.setVgrow(listView, Priority.ALWAYS);
-
 		setUpContextMenu();
 
 		setTitle(title);
 
-		Scene scene = new Scene(vbox, x * 12, y * 19);
+		Scene scene = new Scene(scrollPane, x * 12, y * 19);
 
 		setScene(scene);
+	}
+
+	private String padLineNumber(int number, int maxWidth)
+	{
+		int len = Integer.toString(number).length();
+
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = len; i < maxWidth; i++)
+		{
+			builder.append(' ');
+		}
+
+		builder.append(number);
+
+		return builder.toString();
 	}
 
 	private void setUpContextMenu()
@@ -118,14 +164,14 @@ public class TextViewerStage extends Stage
 
 		contextMenu.getItems().add(menuItemCopyToClipboard);
 
-		listView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
+		vBoxRows.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent e)
 			{
 				if (e.getButton() == MouseButton.SECONDARY)
 				{
-					contextMenu.show(listView, e.getScreenX(), e.getScreenY());
+					contextMenu.show(vBoxRows, e.getScreenX(), e.getScreenY());
 				}
 			}
 		});
@@ -144,9 +190,9 @@ public class TextViewerStage extends Stage
 				{
 					builder.append(lines[i]).append("\n");
 				}
-				
+
 				content.putString(builder.toString());
-				
+
 				clipboard.setContent(content);
 			}
 		});
@@ -173,7 +219,7 @@ public class TextViewerStage extends Stage
 					pos++;
 				}
 
-				final int posCopy = pos;
+				final double scrollPos = (double) pos / (double) lines.length * (scrollPane.getVmax() - scrollPane.getVmin());
 
 				// needed as SelectionModel selected index
 				// is not updated instantly on select()
@@ -182,26 +228,10 @@ public class TextViewerStage extends Stage
 					@Override
 					public void run()
 					{
-						listView.scrollTo(posCopy);
+						scrollPane.setVvalue(scrollPos);
 					}
 				});
 			}
 		});
-	}
-
-	static class TextCell extends ListCell<String>
-	{
-		@Override
-		public void updateItem(String item, boolean empty)
-		{
-			super.updateItem(item, empty);
-
-			if (item != null)
-			{
-				setText(item);
-
-				setStyle("-fx-font-family: monospace; -fx-font-size:12pt; -fx-cell-size:20; -fx-background-color: white; -fx-text-fill:black;");
-			}
-		}
 	}
 }

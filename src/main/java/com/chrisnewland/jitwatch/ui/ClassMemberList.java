@@ -1,12 +1,14 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.util.List;
+import java.util.Map;
 
+import com.chrisnewland.jitwatch.core.IntrinsicFinder;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.core.Tag;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.Tag;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -26,219 +28,264 @@ import javafx.util.Callback;
 
 public class ClassMemberList extends VBox
 {
-    private CheckBox cbOnlyCompiled;
-    private ListView<IMetaMember> memberList;
-    private MetaClass metaClass = null;
-    private JITWatchConfig config;
+	private CheckBox cbOnlyCompiled;
+	private ListView<IMetaMember> memberList;
+	private MetaClass metaClass = null;
+	private JITWatchConfig config;
 
-    public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
-    {
-        this.config = config;
+	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
+	{
+		this.config = config;
 
-        cbOnlyCompiled = new CheckBox("Hide non JIT-compiled class members");
-        cbOnlyCompiled.setTooltip(new Tooltip("Hide class members (methods and constructors) that were not JIT-compiled."));
+		cbOnlyCompiled = new CheckBox("Hide non JIT-compiled class members");
+		cbOnlyCompiled.setTooltip(new Tooltip("Hide class members (methods and constructors) that were not JIT-compiled."));
 
-        cbOnlyCompiled.setSelected(config.isShowOnlyCompiledMembers());
+		cbOnlyCompiled.setSelected(config.isShowOnlyCompiledMembers());
 
-        cbOnlyCompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                config.setShowOnlyCompiledMembers(newVal);
-                config.saveConfig();
-                refresh();
-            }
-        });
+		cbOnlyCompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				config.setShowOnlyCompiledMembers(newVal);
+				config.saveConfig();
+				refresh();
+			}
+		});
 
-        cbOnlyCompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
-        cbOnlyCompiled.prefWidthProperty().bind(widthProperty());
+		cbOnlyCompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
+		cbOnlyCompiled.prefWidthProperty().bind(widthProperty());
 
-        memberList = new ListView<IMetaMember>();
-        memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
-            {
-                parent.showMemberInfo(newVal);
-            }
-        });
+		memberList = new ListView<IMetaMember>();
+		memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
+			{
+				parent.showMemberInfo(newVal);
+			}
+		});
 
-        memberList.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-        {
-            @Override
-            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-            {
-                return new MetaMethodCell();
-            }
-        });
+		memberList.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+		{
+			@Override
+			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			{
+				return new MetaMethodCell();
+			}
+		});
 
-        final ContextMenu contextMenuCompiled = new ContextMenu();
-        final ContextMenu contextMenuNotCompiled = new ContextMenu();
+		final ContextMenu contextMenuCompiled = new ContextMenu();
+		final ContextMenu contextMenuNotCompiled = new ContextMenu();
 
-        MenuItem menuItemSource = new MenuItem("Show Source");
-        MenuItem menuItemBytecode = new MenuItem("Show Bytecode");
-        MenuItem menuItemNative = new MenuItem("Show Native Code");
-        MenuItem menuItemJournal = new MenuItem("Show JIT Journal");
+		MenuItem menuItemSource = new MenuItem("Show source");
+		MenuItem menuItemBytecode = new MenuItem("Show bytecode");
+		MenuItem menuItemNative = new MenuItem("Show native code");
+		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
+		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
 
-        contextMenuCompiled.getItems().add(menuItemSource);
-        contextMenuCompiled.getItems().add(menuItemBytecode);
-        contextMenuCompiled.getItems().add(menuItemNative);
-        contextMenuCompiled.getItems().add(menuItemJournal);
+		contextMenuCompiled.getItems().add(menuItemSource);
+		contextMenuCompiled.getItems().add(menuItemBytecode);
+		contextMenuCompiled.getItems().add(menuItemNative);
+		contextMenuCompiled.getItems().add(menuItemJournal);
+		contextMenuCompiled.getItems().add(menuItemIntrinsics);
 
-        contextMenuNotCompiled.getItems().add(menuItemSource);
-        contextMenuNotCompiled.getItems().add(menuItemBytecode);
-        contextMenuNotCompiled.getItems().add(menuItemJournal);
+		contextMenuNotCompiled.getItems().add(menuItemSource);
+		contextMenuNotCompiled.getItems().add(menuItemBytecode);
+		contextMenuNotCompiled.getItems().add(menuItemJournal);
 
-        memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent e)
-            {
-                if (e.getButton() == MouseButton.SECONDARY)
-                {
-                    if (memberList.getSelectionModel().getSelectedItem().isCompiled())
-                    {
-                        contextMenuCompiled.show(memberList, e.getScreenX(), e.getScreenY());
-                    }
-                    else
-                    {
-                        contextMenuNotCompiled.show(memberList, e.getScreenX(), e.getScreenY());
-                    }
-                }
-            }
-        });
+		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent e)
+			{
+				if (e.getButton() == MouseButton.SECONDARY)
+				{
+					if (memberList.getSelectionModel().getSelectedItem().isCompiled())
+					{
+						contextMenuCompiled.show(memberList, e.getScreenX(), e.getScreenY());
+					}
+					else
+					{
+						contextMenuNotCompiled.show(memberList, e.getScreenX(), e.getScreenY());
+					}
+				}
+			}
+		});
 
-        menuItemSource.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                parent.openSource(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
+		menuItemSource.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openSource(memberList.getSelectionModel().getSelectedItem());
+			}
+		});
 
-        menuItemBytecode.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                parent.openBytecode(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
+		menuItemBytecode.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openBytecode(memberList.getSelectionModel().getSelectedItem());
+			}
+		});
 
-        menuItemNative.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                parent.openNativeCode(memberList.getSelectionModel().getSelectedItem());
-            }
-        });
+		menuItemNative.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openNativeCode(memberList.getSelectionModel().getSelectedItem());
+			}
+		});
 
-        menuItemJournal.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                IMetaMember member = memberList.getSelectionModel().getSelectedItem();
+		menuItemJournal.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-                String compileID = member.getQueuedAttribute("compile_id");
+				String journalID = member.getJournalID();
 
-                Journal journal = parent.getJournal(compileID);
+				StringBuilder builder = new StringBuilder();
 
-                StringBuilder builder = new StringBuilder();
+				if (journalID != null)
+				{
+					Journal journal = parent.getJournal(journalID);
 
-                for (Tag entry : journal.getEntryList())
-                {
-                    builder.append(entry.toString()).append("\n");
-                }
+					if (journal != null)
+					{
+						for (Tag entry : journal.getEntryList())
+						{
+							builder.append(entry.toString()).append("\n");
+						}
+					}
+				}
 
-                parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString());
-            }
-        });
+				parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString(), false, true);
+			}
+		});
 
-        getChildren().add(cbOnlyCompiled);
-        getChildren().add(memberList);
+		menuItemIntrinsics.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-        memberList.prefHeightProperty().bind(heightProperty());
-    }
+				String journalID = member.getJournalID();
 
-    public void setMetaClass(MetaClass metaClass)
-    {
-        this.metaClass = metaClass;
-        refresh();
-    }
+				StringBuilder builder = new StringBuilder();
 
-    private void refresh()
-    {
-        clearClassMembers();
+				if (journalID != null)
+				{
+					Journal journal = parent.getJournal(journalID);
 
-        if (metaClass != null)
-        {
-            List<IMetaMember> metaMembers = metaClass.getMetaMembers();
+					if (journal != null)
+					{
+						Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
 
-            for (IMetaMember member : metaMembers)
-            {
-                if (member.isCompiled() || !config.isShowOnlyCompiledMembers())
-                {
-                    addMember(member);
-                }
-            }
-        }
-    }
+						if (intrinsics.size() > 0)
+						{
+							for (Map.Entry<String, String> entry : intrinsics.entrySet())
+							{
+								builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
+							}
+						}
+						else
+						{
+							builder.append("No intrinsics used in this method");
+						}
+					}
+				}
 
-    private void addMember(IMetaMember member)
-    {
-        memberList.getItems().add(member);
-    }
+				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
+			}
+		});
 
-    public void clearClassMembers()
-    {
-        memberList.getItems().clear();
-    }
+		getChildren().add(cbOnlyCompiled);
+		getChildren().add(memberList);
 
-    public void selectMember(IMetaMember selected)
-    {
-        memberList.getSelectionModel().select(selected);
+		memberList.prefHeightProperty().bind(heightProperty());
+	}
 
-        // needed as SelectionModel selected index
-        // is not updated instantly on select()
-        Platform.runLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
-            }
-        });
-    }
+	public void setMetaClass(MetaClass metaClass)
+	{
+		this.metaClass = metaClass;
+		refresh();
+	}
 
-    static class MetaMethodCell extends ListCell<IMetaMember>
-    {
-        @Override
-        public void updateItem(IMetaMember item, boolean empty)
-        {
-            super.updateItem(item, empty);
+	private void refresh()
+	{
+		clearClassMembers();
 
-            if (item != null)
-            {
-                setText(item.toStringUnqualifiedMethodName());
+		if (metaClass != null)
+		{
+			List<IMetaMember> metaMembers = metaClass.getMetaMembers();
 
-                if (isSelected())
-                {
-                    setStyle("-fx-background-color: blue; -fx-text-fill: white;");
-                }
-                else if (item.isCompiled())
-                {
-                    setStyle("-fx-text-fill:red;");
-                }
-                else
-                {
-                    setStyle("-fx-text-fill:black;");
-                }
-            }
-        }
-    }
+			for (IMetaMember member : metaMembers)
+			{
+				if (member.isCompiled() || !config.isShowOnlyCompiledMembers())
+				{
+					addMember(member);
+				}
+			}
+		}
+	}
+
+	private void addMember(IMetaMember member)
+	{
+		memberList.getItems().add(member);
+	}
+
+	public void clearClassMembers()
+	{
+		memberList.getItems().clear();
+	}
+
+	public void selectMember(IMetaMember selected)
+	{
+		memberList.getSelectionModel().select(selected);
+
+		// needed as SelectionModel selected index
+		// is not updated instantly on select()
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
+			}
+		});
+	}
+
+	static class MetaMethodCell extends ListCell<IMetaMember>
+	{
+		@Override
+		public void updateItem(IMetaMember item, boolean empty)
+		{
+			super.updateItem(item, empty);
+
+			if (item != null)
+			{
+				setText(item.toStringUnqualifiedMethodName());
+
+				if (isSelected())
+				{
+					setStyle("-fx-background-color: blue; -fx-text-fill: white;");
+				}
+				else if (item.isCompiled())
+				{
+					setStyle("-fx-text-fill:red;");
+				}
+				else
+				{
+					setStyle("-fx-text-fill:black;");
+				}
+			}
+		}
+	}
 
 }

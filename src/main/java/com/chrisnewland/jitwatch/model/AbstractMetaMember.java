@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -98,7 +99,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 		isCompiled = true;
 		isQueued = false;
 		this.compiledAttributes = compiledAttributes;
-		
+
 		// inform package tree it contains class with a compiled method
 		getMetaClass().getPackage().setHasCompiledClasses();
 	}
@@ -226,7 +227,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 		builder.append("\\)");
 		builder.append(anyChars);
 		builder.append("$");
-		
+
 		return builder.toString();
 	}
 
@@ -244,7 +245,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 		return paramType;
 	}
-	
+
 	public static String expandParamRegEx(String paramType)
 	{
 		if (paramType.charAt(0) == '[')
@@ -261,16 +262,22 @@ public abstract class AbstractMetaMember implements IMetaMember
 
 		return paramType;
 	}
-	
+
 	@Override
-    public List<String> getTreePath()
+	public List<String> getTreePath()
 	{
-        MetaClass metaClass = getMetaClass();
-        MetaPackage metaPackage = metaClass.getPackage();
-        
-        List<String> path = metaPackage.getPackageComponents();
-        path.add(metaClass.getName());
-        
-        return path;
+		MetaClass metaClass = getMetaClass();
+		MetaPackage metaPackage = metaClass.getPackage();
+
+		List<String> path = metaPackage.getPackageComponents();
+		path.add(metaClass.getName());
+
+		return path;
+	}
+
+	@Override
+	public String getJournalID()
+	{
+		return queuedAttributes.get(JITWatchConstants.ATTR_COMPILE_ID);
 	}
 }

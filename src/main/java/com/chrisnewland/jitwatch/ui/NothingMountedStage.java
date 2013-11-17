@@ -24,15 +24,11 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 public class NothingMountedStage extends Stage
-{
-	private JITWatchUI parent;
-	
+{	
 	public NothingMountedStage(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		initStyle(StageStyle.DECORATED);
-	
-		this.parent = parent;
-		
+			
 		VBox vbox = new VBox();
 		vbox.setSpacing(20);
 		vbox.setPadding(new Insets(10));

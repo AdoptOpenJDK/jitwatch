@@ -35,144 +35,145 @@ import javafx.stage.WindowEvent;
 
 public class TopListStage extends Stage
 {
-    private ObservableList<MemberScore> topList = FXCollections.observableArrayList();
+	private ObservableList<MemberScore> topList = FXCollections.observableArrayList();
 
-    private TableView<MemberScore> tableView;
+	private TableView<MemberScore> tableView;
 
-    private ITopListFilter toplistFilter;
+	private ITopListFilter toplistFilter;
 
-    private PackageManager pm;
+	private PackageManager pm;
 
-    public TopListStage(final JITWatchUI parent)
-    {
-        initStyle(StageStyle.DECORATED);
+	public TopListStage(final JITWatchUI parent)
+	{
+		initStyle(StageStyle.DECORATED);
 
-        pm = parent.getPackageManager();
+		pm = parent.getPackageManager();
 
-        setOnCloseRequest(new EventHandler<WindowEvent>()
-        {
-            @Override
-            public void handle(WindowEvent arg0)
-            {
-                parent.handleStageClosed(TopListStage.this);
-            }
-        });
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(TopListStage.this);
+			}
+		});
 
-        int width = 800;
-        int height = 480;
+		int width = 800;
+		int height = 480;
 
-        final Map<String, ITopListFilter> attrMap = new HashMap<>();
+		final Map<String, ITopListFilter> attrMap = new HashMap<>();
 
-        // Hurry up lambdas !!!
+		// Hurry up lambdas !!!
 
-        attrMap.put("Largest Native Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
-        attrMap.put("Largest Bytecode Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_BYTES));
-        attrMap.put("Slowest Compilation Times", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_COMPILE_MILLIS));
-        attrMap.put("Most Decompiled Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_DECOMPILES));
-        attrMap.put("Compilation Order", new ITopListFilter()
-        {
-            // OSR compile_id values overlap non-OSR compile_id values so filter
-            // out
-            @Override
-            public MemberScore getScore(IMetaMember mm)
-            {
-                long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
-                return new MemberScore(mm, value);
-            }
+		String largestNativeMethods = "Largest Native Methods";
 
-            @Override
-            public boolean acceptMember(IMetaMember mm)
-            {
-                String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
-                String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
-                return compileID != null && (compileKind == null || !JITWatchConstants.OSR.equals(compileKind));
-            }
-        });
+		attrMap.put(largestNativeMethods, new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
+		attrMap.put("Largest Bytecode Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_BYTES));
+		attrMap.put("Slowest Compilation Times", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_COMPILE_MILLIS));
+		attrMap.put("Most Decompiled Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_DECOMPILES));
 
-        attrMap.put("Compilation Order (OSR)", new ITopListFilter()
-        {
-            // OSR compile_id values overlap non-OSR compile_id values so filter
-            // out
-            @Override
-            public MemberScore getScore(IMetaMember mm)
-            {
-                long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
-                return new MemberScore(mm, value);
-            }
+		attrMap.put("Compilation Order", new ITopListFilter()
+		{
+			// OSR compile_id values overlap non-OSR compile_id values so filter
+			// out
+			@Override
+			public MemberScore getScore(IMetaMember mm)
+			{
+				long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
+				return new MemberScore(mm, value);
+			}
 
-            @Override
-            public boolean acceptMember(IMetaMember mm)
-            {
-                String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
-                String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
-                return compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind);
-            }
-        });
+			@Override
+			public boolean acceptMember(IMetaMember mm)
+			{
+				String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
+				String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+				return compileID != null && (compileKind == null || !JITWatchConstants.OSR.equals(compileKind));
+			}
+		});
 
-        VBox vbox = new VBox();
-        vbox.setPadding(new Insets(8));
-        vbox.setSpacing(8);
+		attrMap.put("Compilation Order (OSR)", new ITopListFilter()
+		{
+			// OSR compile_id values overlap non-OSR compile_id values so filter
+			// out
+			@Override
+			public MemberScore getScore(IMetaMember mm)
+			{
+				long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
+				return new MemberScore(mm, value);
+			}
 
-        List<String> keyList = new ArrayList<>(attrMap.keySet());
-        Collections.sort(keyList);
+			@Override
+			public boolean acceptMember(IMetaMember mm)
+			{
+				String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
+				String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+				return compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind);
+			}
+		});
 
-        ObservableList<String> options = FXCollections.observableArrayList(keyList);
+		VBox vbox = new VBox();
+		vbox.setPadding(new Insets(8));
+		vbox.setSpacing(8);
 
-        String selected = "Largest Native Methods";
-        
-        toplistFilter = attrMap.get(selected);
+		List<String> keyList = new ArrayList<>(attrMap.keySet());
+		Collections.sort(keyList);
 
-        final ComboBox<String> comboBox = new ComboBox<>(options);
-        comboBox.setValue(selected);
+		ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
-        comboBox.valueProperty().addListener(new ChangeListener<String>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
-            {
-                toplistFilter = attrMap.get(newVal);
-                buildTableView(toplistFilter);
-            }
-        });
+		final ComboBox<String> comboBox = new ComboBox<>(options);
+		comboBox.setValue(largestNativeMethods);
 
-        Scene scene = new Scene(vbox, width, height);
+		toplistFilter = attrMap.get(largestNativeMethods);
 
-        setTitle("JITWatch TopLists");
+		comboBox.valueProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+			{
+				toplistFilter = attrMap.get(newVal);
+				buildTableView(toplistFilter);
+			}
+		});
 
-        buildTableView(toplistFilter);
-        tableView = TableUtil.buildTableMemberScore(topList);
+		Scene scene = new Scene(vbox, width, height);
 
-        tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends MemberScore> arg0, MemberScore oldVal, MemberScore newVal)
-            {
-                if (newVal != null)
-                {
-                    parent.openTreeAtMember(newVal.getMember());
-                }
-            }
-        });
+		setTitle("JITWatch TopLists");
 
-        vbox.getChildren().add(comboBox);
-        vbox.getChildren().add(tableView);
+		buildTableView(toplistFilter);
+		tableView = TableUtil.buildTableMemberScore(topList);
 
-        tableView.prefHeightProperty().bind(scene.heightProperty());
+		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends MemberScore> arg0, MemberScore oldVal, MemberScore newVal)
+			{
+				if (newVal != null)
+				{
+					parent.openTreeAtMember(newVal.getMember());
+				}
+			}
+		});
 
-        setScene(scene);
-        show();
+		vbox.getChildren().add(comboBox);
+		vbox.getChildren().add(tableView);
 
-        redraw();
-    }
+		tableView.prefHeightProperty().bind(scene.heightProperty());
 
-    private void buildTableView(ITopListFilter filter)
-    {
-        topList.clear();
-        topList.addAll(TopListTreeWalker.buildTopListForAttribute(pm, filter));
-    }
+		setScene(scene);
+		show();
 
-    public void redraw()
-    {
+		redraw();
+	}
 
-    }
+	private void buildTableView(ITopListFilter filter)
+	{
+		topList.clear();
+		topList.addAll(TopListTreeWalker.buildTopListForAttribute(pm, filter));
+	}
+
+	public void redraw()
+	{
+
+	}
 }
