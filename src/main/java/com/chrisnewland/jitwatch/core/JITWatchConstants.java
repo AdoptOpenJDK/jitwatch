@@ -17,32 +17,32 @@ public class JITWatchConstants
 	public static final Set<String> SKIP_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_TTY, TAG_TTY_CLOSE,
 			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG, TAG_HOTSPOT_LOG_CLOSE }));
 
+	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
+	public static final String LOADED = "[Loaded ";
+	public static final String METHOD = "method";
+	public static final String PARSE = "parse";
+
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
 	public static final String TAG_TASK = "task";
 	public static final String TAG_CODE_CACHE = "code_cache";
 	public static final String TAG_TASK_DONE = "task_done";
 	public static final String TAG_START_COMPILE_THREAD = "start_compile_thread";
+	public static final String TAG_PARSE = PARSE;
 	public static final String TAG_PHASE = "phase";
 	public static final String TAG_KLASS = "klass";
-	public static final String TAG_METHOD = "method";
+	public static final String TAG_TYPE = "type";
+	public static final String TAG_METHOD = METHOD;
 	public static final String TAG_INTRINSIC = "intrinsic";
 	public static final String TAG_INLINE_FAIL = "inline_fail";
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
-
-
-
-	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
-
-	public static final String LOADED = "[Loaded ";
-
-	public static final String METHOD = "method";
 
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";
 	public static final String C1 = "C1";
 	public static final String C2 = "C2";
 
+	public static final String ATTR_METHOD = METHOD;
 	public static final String ATTR_COMPILE_ID = "compile_id";
 	public static final String ATTR_COMPILE_KIND = "compile_kind";
 	public static final String ATTR_STAMP = "stamp";
@@ -53,8 +53,9 @@ public class JITWatchConstants
 	public static final String ATTR_BYTES = "bytes";
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
-	public static final String ATTR_PARSE = "parse";
+	public static final String ATTR_PARSE = PARSE;
 	public static final String ATTR_ID = "id";
-
-
+	public static final String ATTR_HOLDER = "holder";
+	public static final String ATTR_RETURN = "return";
+	public static final String ATTR_ARGUMENTS = "arguments";
 }

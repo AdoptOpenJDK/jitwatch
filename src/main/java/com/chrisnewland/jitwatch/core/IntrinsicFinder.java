@@ -75,9 +75,7 @@ public class IntrinsicFinder
 						}
 					}
 				}
-
 			}
-
 		}
 
 		return result;

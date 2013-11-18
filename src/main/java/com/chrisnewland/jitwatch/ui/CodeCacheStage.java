@@ -44,7 +44,7 @@ public class CodeCacheStage extends AbstractGraphStage
 	{
 		super.baseRedraw();
 
-		List<Tag> codeCacheTags = parent.getCodeCacheTags();
+		List<Tag> codeCacheTags = parent.getJITDataModel().getCodeCacheTags();
 
 		Collections.sort(codeCacheTags, new Comparator<Tag>()
 		{

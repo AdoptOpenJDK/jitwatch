@@ -14,6 +14,7 @@ import java.util.Map;
 public class StringUtil
 {
 	private static final char QUOTE = '\'';
+	private static final char DOUBLE_QUOTE = '"';
 	private static final char SPACE = ' ';
 	private static final char EQUALS = '=';
 
@@ -200,6 +201,72 @@ public class StringUtil
 					}
 					break;
 				case QUOTE:
+					if (inValue)
+					{
+						// finished attr
+						result.put(key.toString(), val.toString());
+						key.delete(0, key.length());
+						val.delete(0, val.length());
+						inValue = false;
+					}
+					else
+					{
+						inValue = true;
+					}
+					break;
+				case EQUALS:
+					if (inValue)
+					{
+						val.append(EQUALS);
+					}
+					break;
+				default:
+					if (inValue)
+					{
+						val.append(c);
+					}
+					else
+					{
+						key.append(c);
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	public static Map<String, String> getLineAttributesDoubleQuote(String line)
+	{
+		Map<String, String> result = new HashMap<>();
+
+		if (line != null)
+		{
+			int len = line.length();
+
+			StringBuilder key = new StringBuilder();
+			StringBuilder val = new StringBuilder();
+
+			boolean inValue = false;
+
+			for (int i = 0; i < len; i++)
+			{
+				char c = line.charAt(i);
+
+				switch (c)
+				{
+				case SPACE:
+					if (!inValue)
+					{
+						// space before new key
+						key.delete(0, key.length());
+					}
+					else
+					{
+						val.append(SPACE);
+					}
+					break;
+				case DOUBLE_QUOTE:
 					if (inValue)
 					{
 						// finished attr

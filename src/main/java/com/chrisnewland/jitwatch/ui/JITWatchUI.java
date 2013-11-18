@@ -18,6 +18,7 @@ import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
@@ -456,25 +457,15 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 	}
 
-	public JITStats getJITStats()
+	public IReadOnlyJITDataModel getJITDataModel()
 	{
-		return model.getJITStats();
+		return (IReadOnlyJITDataModel)model;
 	}
 
 	private void updateButtons()
 	{
 		btnStartWatching.setDisable(watchFile == null || isWatching);
 		btnStopWatching.setDisable(!isWatching);
-	}
-
-	public List<JITEvent> getJITEvents()
-	{
-		return model.getEventListCopy();
-	}
-
-	public List<Tag> getCodeCacheTags()
-	{
-		return model.getCodeCacheTags();
 	}
 
 	public void openTreeAtMember(IMetaMember member)
@@ -597,11 +588,18 @@ public class JITWatchUI extends Application implements IJITListener
 
 	void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
-		TextViewerStage tvs = new TextViewerStage(JITWatchUI.this, title, content, lineNumbers, highlighting);
+		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		tvs.show();
 		openPopupStages.add(tvs);
 	}
 
+	void openJournalViewer(String title, Journal journal)
+	{
+		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
+		jvs.show();
+		openPopupStages.add(jvs);
+	}
+	
 	private void chooseHotSpotFile()
 	{
 		FileChooser fc = new FileChooser();

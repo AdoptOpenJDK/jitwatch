@@ -5,10 +5,10 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -29,15 +29,20 @@ import javafx.stage.WindowEvent;
 
 public class TextViewerStage extends Stage
 {
-	private String[] lines;
+	protected String[] lines;
 
-	private ScrollPane scrollPane;
-	private VBox vBoxRows;
+	protected ScrollPane scrollPane;
+	protected VBox vBoxRows;
 
-	private static final String COLOUR_BLACK = "black";
-	private static final String COLOUR_RED = "red";
-	private static final String COLOUR_GREEN = "green";
-	private static final String COLOUR_BLUE = "blue";
+	protected static final String COLOUR_BLACK = "black";
+	protected static final String COLOUR_RED = "red";
+	protected static final String COLOUR_GREEN = "green";
+	protected static final String COLOUR_BLUE = "blue";
+	
+	public TextViewerStage()
+	{
+		
+	}
 
 	// make this a TextFlow in Java8
 	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers, boolean highlighting)
@@ -68,11 +73,13 @@ public class TextViewerStage extends Stage
 
 		scrollPane = new ScrollPane();
 		scrollPane.setStyle("-fx-background-color:white");
-		
+
 		vBoxRows = new VBox();
 
 		scrollPane.setContent(vBoxRows);
 
+		List<Text> textItems = new ArrayList<>();
+		
 		for (int i = 0; i < lines.length; i++)
 		{
 			String row = lines[i];
@@ -93,36 +100,14 @@ public class TextViewerStage extends Stage
 
 			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
 
-			String colour = null;
-
-			if (highlighting)
-			{
-				if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
-				{
-					colour = COLOUR_RED;
-				}
-				else if (lines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
-				{
-					colour = COLOUR_GREEN;
-				}
-				else if (lines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
-				{
-					colour = COLOUR_BLUE;
-				}
-				else
-				{
-					colour = COLOUR_BLACK;
-				}
-			}
-			else
-			{
-				colour = COLOUR_BLACK;
-			}
+			String colour = COLOUR_BLACK;
 
 			lineText.setStyle(style + colour);
 
-			vBoxRows.getChildren().add(lineText);
+			textItems.add(lineText);
 		}
+
+		vBoxRows.getChildren().addAll(textItems);
 
 		int x = Math.min(80, max);
 		int y = Math.min(30, lines.length);
@@ -155,7 +140,7 @@ public class TextViewerStage extends Stage
 		return builder.toString();
 	}
 
-	private void setUpContextMenu()
+	protected void setUpContextMenu()
 	{
 
 		final ContextMenu contextMenu = new ContextMenu();

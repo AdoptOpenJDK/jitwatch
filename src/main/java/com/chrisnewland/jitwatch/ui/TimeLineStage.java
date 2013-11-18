@@ -52,7 +52,7 @@ public class TimeLineStage extends AbstractGraphStage
 	{
 		super.baseRedraw();
 
-		List<JITEvent> events = parent.getJITEvents();
+		List<JITEvent> events = parent.getJITDataModel().getEventListCopy();
 
 		Collections.sort(events, new Comparator<JITEvent>()
 		{
@@ -176,7 +176,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 	private void showStatsLegend(GraphicsContext gc)
 	{
-		JITStats stats = parent.getJITStats();
+		JITStats stats = parent.getJITDataModel().getJITStats();
 
 		StringBuilder compiledStatsBuilder = new StringBuilder();
 		compiledStatsBuilder.append("Compiled: ").append(stats.getTotalCompiledMethods());

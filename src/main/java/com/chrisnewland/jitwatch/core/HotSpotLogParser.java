@@ -167,7 +167,7 @@ public class HotSpotLogParser
 		currentLine = currentLine.replace("&lt;", "<");
 		currentLine = currentLine.replace("&gt;", ">");
 
-		//System.out.println("*" + currentLine);
+		// System.out.println("*" + currentLine);
 
 		if (currentLine.startsWith("<"))
 		{
@@ -223,7 +223,7 @@ public class HotSpotLogParser
 
 	private void handleTag(Tag tag)
 	{
-		//System.out.println(tag);
+		// System.out.println(tag);
 
 		if (inNativeCode)
 		{
@@ -232,9 +232,9 @@ public class HotSpotLogParser
 		}
 
 		String tagName = tag.getName();
-		
-		//System.out.println("tag: " + tagName);
-		
+
+		// System.out.println("tag: " + tagName);
+
 		switch (tagName)
 		{
 		case JITWatchConstants.TAG_TASK_QUEUED:
@@ -247,25 +247,26 @@ public class HotSpotLogParser
 
 		case JITWatchConstants.TAG_TASK:
 			handleMethodLine(tag, EventType.TASK);
-			
+
 			Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
-			
+
 			if (tagCodeCache != null)
 			{
-			    //copy timestamp from parent <task> tag used for graphing code cache
-			    String stamp = tag.getAttrs().get(JITWatchConstants.ATTR_STAMP);
-			    tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
-			    
-			    model.addCodeCacheTag(tagCodeCache);
+				// copy timestamp from parent <task> tag used for graphing code
+				// cache
+				String stamp = tag.getAttrs().get(JITWatchConstants.ATTR_STAMP);
+				tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+
+				model.addCodeCacheTag(tagCodeCache);
 			}
-			
+
 			Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
-			
+
 			if (tagTaskDone != null)
 			{
 				handleTaskDone(tagTaskDone);
 			}
-			
+
 			break;
 
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
@@ -294,7 +295,6 @@ public class HotSpotLogParser
 		{
 			model.addJournalEntry(journalID, tag);
 		}
-
 	}
 
 	private void appendNativeCode(String line)
@@ -324,7 +324,7 @@ public class HotSpotLogParser
 		Map<String, String> attrs = tag.getAttrs();
 
 		String fqMethodName = attrs.get(JITWatchConstants.METHOD);
-		
+
 		if (fqMethodName != null)
 		{
 			fqMethodName = fqMethodName.replace("/", ".");

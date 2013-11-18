@@ -157,14 +157,16 @@ public class ClassMemberList extends VBox
 
 					if (journal != null)
 					{
-						for (Tag entry : journal.getEntryList())
-						{
-							builder.append(entry.toString()).append("\n");
-						}
+						
+						parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
+//		
+//						for (Tag entry : journal.getEntryList())
+//						{
+//							builder.append(entry.toString()).append("\n");
+//						}
 					}
 				}
 
-				parent.openTextViewer("JIT Journal for " + member.toString(), builder.toString(), false, true);
 			}
 		});
 
