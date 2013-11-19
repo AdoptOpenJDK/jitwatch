@@ -60,7 +60,7 @@ public class StatsStage extends Stage
 	{
 		obList.clear();
 		
-		JITStats stats = parent.getJITStats();
+		JITStats stats = parent.getJITDataModel().getJITStats();
 		
 		obList.add(makeRow("Public methods compiled", stats.getCountPublic()));
 		obList.add(makeRow("Private methods compiled", stats.getCountPrivate()));

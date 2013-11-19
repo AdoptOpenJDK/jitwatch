@@ -20,7 +20,7 @@ import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 
-public class JITDataModel
+public class JITDataModel implements IReadOnlyJITDataModel
 {
     private PackageManager pm;
     private JITStats stats;
@@ -30,9 +30,9 @@ public class JITDataModel
 
     private Map<String, Journal> journalMap = new HashMap<>();
 
-    // written during parse, make copy for graphing as needs sort
+	// written during parse, make copy for graphing as needs sort
     private List<Tag> codeCacheTagList = new ArrayList<>();
-
+        
     public JITDataModel()
     {
         pm = new PackageManager();
@@ -47,15 +47,17 @@ public class JITDataModel
 
         jitEvents.clear();
 
-        journalMap.clear();
+        journalMap.clear();        
     }
 
-    public PackageManager getPackageManager()
+    @Override
+	public PackageManager getPackageManager()
     {
         return pm;
     }
 
-    public JITStats getJITStats()
+    @Override
+	public JITStats getJITStats()
     {
         return stats;
     }
@@ -76,7 +78,8 @@ public class JITDataModel
     // can we guarantee that IMetaMember will be created before
     // journal entries are ready? Assume not so store in model
     // instead of member
-    public Journal getJournal(String id)
+    @Override
+	public Journal getJournal(String id)
     {
         Journal journal = journalMap.get(id);
 
@@ -98,7 +101,8 @@ public class JITDataModel
         }
     }
 
-    public synchronized List<JITEvent> getEventListCopy()
+    @Override
+	public synchronized List<JITEvent> getEventListCopy()
     {
         synchronized (jitEvents)
         {
@@ -265,7 +269,8 @@ public class JITDataModel
         }
     }
 
-    public List<Tag> getCodeCacheTags()
+    @Override
+	public List<Tag> getCodeCacheTags()
     {
         synchronized (codeCacheTagList)
         {

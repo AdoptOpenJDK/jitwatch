@@ -3,12 +3,14 @@ package com.chrisnewland.jitwatch.core;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 public class TagProcessor
 {
 	// feed it lines until it completes a tag
 	private Tag currentTag;
+	private Tag topTag = null;
 
 	private static final char SLASH = '/';
 	private static final char SPACE = ' ';
@@ -62,16 +64,44 @@ public class TagProcessor
 
 					boolean selfClosing = (line.charAt(line.length() - 2) == SLASH);
 
-					Tag t = new Tag(name, attrs, selfClosing);
+					Tag t;
+
+					if (JITWatchConstants.TAG_TASK.equals(name))
+					{
+						t = new Task(name, attrs, selfClosing);
+					}
+					else
+					{
+						t = new Tag(name, attrs, selfClosing);
+					}
 
 					if (currentTag == null)
 					{
 						// new tag at top level
 						currentTag = t;
+						topTag = t;
 					}
 					else
 					{
 						currentTag.addChild(t);
+					}
+
+					if (topTag instanceof Task)
+					{
+						switch (name)
+						{
+						case JITWatchConstants.TAG_TYPE:
+							((Task) topTag).getParseDictionary().setType(attrs.get(JITWatchConstants.ATTR_ID), t);
+							break;
+
+						case JITWatchConstants.TAG_METHOD:
+							((Task) topTag).getParseDictionary().setMethod(attrs.get(JITWatchConstants.ATTR_ID), t);
+							break;
+
+						case JITWatchConstants.TAG_KLASS:
+							((Task) topTag).getParseDictionary().setKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
+							break;
+						}
 					}
 
 					if (selfClosing)
@@ -96,8 +126,10 @@ public class TagProcessor
 		if (result != null)
 		{
 			currentTag = null;
+			topTag = null;
 		}
 
 		return result;
 	}
+
 }
