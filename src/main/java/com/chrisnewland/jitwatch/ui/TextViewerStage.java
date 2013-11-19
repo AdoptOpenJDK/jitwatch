@@ -7,48 +7,17 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-public class TextViewerStage extends Stage
+public class TextViewerStage extends AbstractTextViewerStage
 {
-	protected String[] lines;
-
-	protected ScrollPane scrollPane;
-	protected VBox vBoxRows;
-
-	protected static final String COLOUR_BLACK = "black";
-	protected static final String COLOUR_RED = "red";
-	protected static final String COLOUR_GREEN = "green";
-	protected static final String COLOUR_BLUE = "blue";
-	
-	public TextViewerStage()
-	{
-		
-	}
-
 	// make this a TextFlow in Java8
-	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers, boolean highlighting)
+	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers)
 	{
-		initStyle(StageStyle.DECORATED);
-
+		super(parent, title);
+		
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -65,18 +34,11 @@ public class TextViewerStage extends Stage
 
 		source = source.replace("\t", "    "); // 4 spaces
 
-		lines = source.split("\n");
+		String[] lines = source.split("\n");
 
-		int max = 0;
+		int maxLineLength = 0;
 
 		int maxWidth = Integer.toString(lines.length).length();
-
-		scrollPane = new ScrollPane();
-		scrollPane.setStyle("-fx-background-color:white");
-
-		vBoxRows = new VBox();
-
-		scrollPane.setContent(vBoxRows);
 
 		List<Text> textItems = new ArrayList<>();
 		
@@ -91,9 +53,9 @@ public class TextViewerStage extends Stage
 
 			int rowLen = row.length();
 
-			if (rowLen > max)
+			if (rowLen > maxLineLength)
 			{
-				max = rowLen;
+				maxLineLength = rowLen;
 			}
 
 			Text lineText = new Text(lines[i]);
@@ -106,117 +68,7 @@ public class TextViewerStage extends Stage
 
 			textItems.add(lineText);
 		}
-
-		vBoxRows.getChildren().addAll(textItems);
-
-		int x = Math.min(80, max);
-		int y = Math.min(30, lines.length);
-
-		x = Math.max(x, 20);
-		y = Math.max(y, 20);
-
-		setUpContextMenu();
-
-		setTitle(title);
-
-		Scene scene = new Scene(scrollPane, x * 12, y * 19);
-
-		setScene(scene);
-	}
-
-	private String padLineNumber(int number, int maxWidth)
-	{
-		int len = Integer.toString(number).length();
-
-		StringBuilder builder = new StringBuilder();
-
-		for (int i = len; i < maxWidth; i++)
-		{
-			builder.append(' ');
-		}
-
-		builder.append(number);
-
-		return builder.toString();
-	}
-
-	protected void setUpContextMenu()
-	{
-
-		final ContextMenu contextMenu = new ContextMenu();
-
-		MenuItem menuItemCopyToClipboard = new MenuItem("Copy to Clipboard");
-
-		contextMenu.getItems().add(menuItemCopyToClipboard);
-
-		vBoxRows.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
-		{
-			@Override
-			public void handle(MouseEvent e)
-			{
-				if (e.getButton() == MouseButton.SECONDARY)
-				{
-					contextMenu.show(vBoxRows, e.getScreenX(), e.getScreenY());
-				}
-			}
-		});
-
-		menuItemCopyToClipboard.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				final Clipboard clipboard = Clipboard.getSystemClipboard();
-				final ClipboardContent content = new ClipboardContent();
-
-				StringBuilder builder = new StringBuilder();
-
-				for (int i = 0; i < lines.length; i++)
-				{
-					builder.append(lines[i]).append("\n");
-				}
-
-				content.putString(builder.toString());
-
-				clipboard.setContent(content);
-			}
-		});
-
-	}
-
-	public void jumpTo(final String regex)
-	{
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				int pos = 0;
-
-				for (String line : lines)
-				{
-					Matcher matcher = Pattern.compile(regex).matcher(line);
-					if (matcher.find())
-					{
-						break;
-					}
-
-					pos++;
-				}
-
-				final double scrollPos = (double) pos / (double) lines.length * (scrollPane.getVmax() - scrollPane.getVmin());
-
-				// needed as SelectionModel selected index
-				// is not updated instantly on select()
-				Platform.runLater(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						scrollPane.setVvalue(scrollPos);
-					}
-				});
-			}
-		});
+		
+		setContent(textItems, maxLineLength);
 	}
 }

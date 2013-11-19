@@ -8,7 +8,6 @@ import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.Tag;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -149,21 +148,13 @@ public class ClassMemberList extends VBox
 
 				String journalID = member.getJournalID();
 
-				StringBuilder builder = new StringBuilder();
-
 				if (journalID != null)
 				{
 					Journal journal = parent.getJournal(journalID);
 
 					if (journal != null)
 					{
-						
 						parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
-//		
-//						for (Tag entry : journal.getEntryList())
-//						{
-//							builder.append(entry.toString()).append("\n");
-//						}
 					}
 				}
 

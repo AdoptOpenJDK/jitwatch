@@ -13,7 +13,6 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
@@ -23,7 +22,6 @@ import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.model.Tag;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -350,7 +348,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openTextViewer("Error Log", errorLog.toString(), false, false);
+				openTextViewer("Error Log", errorLog.toString(), false);
 			}
 		});
 
@@ -552,7 +550,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		if (tvs == null)
 		{
-			tvs = new TextViewerStage(JITWatchUI.this, title, source, true, false);
+			tvs = new TextViewerStage(JITWatchUI.this, title, source, true);
 			tvs.show();
 			openPopupStages.add(tvs);
 		}
@@ -572,23 +570,23 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String bc = bytecodeCache.get(searchMethod);
 
-		openTextViewer("Bytecode for " + member.toString(), bc, false, false);
+		openTextViewer("Bytecode for " + member.toString(), bc, false);
 	}
 
 	void openNativeCode(IMetaMember member)
 	{
 		String nativeCode = member.getNativeCode();
-		openTextViewer("Native code for " + member.toString(), nativeCode, false, false);
+		openTextViewer("Native code for " + member.toString(), nativeCode, false);
 	}
 
 	void openTextViewer(String title, String content)
 	{
-		openTextViewer(title, content, false, false);
+		openTextViewer(title, content, false);
 	}
 
-	void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
+	void openTextViewer(String title, String content, boolean lineNumbers)
 	{
-		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
+		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
 		tvs.show();
 		openPopupStages.add(tvs);
 	}
