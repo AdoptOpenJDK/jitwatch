@@ -15,21 +15,16 @@ import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-public class JournalViewerStage extends TextViewerStage
+public class JournalViewerStage extends AbstractTextViewerStage
 {
 	// make this a TextFlow in Java8
 	public JournalViewerStage(final JITWatchUI parent, String title, Journal journal)
 	{
-		initStyle(StageStyle.DECORATED);
-
+		super(parent, title);
+		
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -39,14 +34,7 @@ public class JournalViewerStage extends TextViewerStage
 			}
 		});
 
-		int max = 0;
-
-		scrollPane = new ScrollPane();
-		scrollPane.setStyle("-fx-background-color:white");
-
-		vBoxRows = new VBox();
-
-		scrollPane.setContent(vBoxRows);
+		int maxLineLength = 0;
 
 		List<Text> textItems = new ArrayList<>();
 
@@ -60,9 +48,9 @@ public class JournalViewerStage extends TextViewerStage
 
 				int rowLen = row.length();
 
-				if (rowLen > max)
+				if (rowLen > maxLineLength)
 				{
-					max = rowLen;
+					maxLineLength = rowLen;
 				}
 
 				String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
@@ -102,21 +90,6 @@ public class JournalViewerStage extends TextViewerStage
 			}
 		}
 
-		vBoxRows.getChildren().addAll(textItems);
-
-		int x = Math.min(80, max);
-		int y = Math.min(30, textItems.size());
-
-		x = Math.max(x, 20);
-		y = Math.max(y, 20);
-
-		setUpContextMenu();
-
-		setTitle(title);
-
-		Scene scene = new Scene(scrollPane, x * 12, y * 19);
-
-		setScene(scene);
+		setContent(textItems, maxLineLength);
 	}
-
 }
