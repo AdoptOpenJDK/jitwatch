@@ -403,7 +403,7 @@ public class JITWatchUI extends Application implements IJITListener
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(bottomHeight);
-		textAreaLog.setText("Welcome to JITWatch\n");
+		textAreaLog.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 
 		if (watchFile == null)
 		{
