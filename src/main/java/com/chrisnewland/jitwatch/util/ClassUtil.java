@@ -16,7 +16,7 @@ public class ClassUtil
 	{
 		try
 		{
-			return Class.forName(fqClassName, false, ClassLoader.getSystemClassLoader());
+			return Class.forName(fqClassName, false, getClassLoader());
 		}
 		catch (Throwable t)
 		{
@@ -28,7 +28,7 @@ public class ClassUtil
 	{
 		try
 		{
-			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+			URLClassLoader urlClassLoader = getClassLoader();
 			URL url = uri.toURL();
 			Class<?> urlClass = URLClassLoader.class;
 			Method method = urlClass.getDeclaredMethod("addURL", new Class<?>[] { URL.class });
@@ -45,7 +45,7 @@ public class ClassUtil
 	{
 		try
 		{
-			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+			URLClassLoader urlClassLoader = getClassLoader();
 			Class<?> urlClass = URLClassLoader.class;
 			Method method = urlClass.getDeclaredMethod("getURLs", new Class<?>[] {});
 			method.setAccessible(true);
@@ -59,5 +59,10 @@ public class ClassUtil
 		}
 		
 		return null;
+	}
+	
+	private static URLClassLoader getClassLoader()
+	{
+	    return (URLClassLoader) ClassUtil.class.getClassLoader();
 	}
 }
