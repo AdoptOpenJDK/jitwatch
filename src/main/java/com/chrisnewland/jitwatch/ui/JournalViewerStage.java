@@ -84,7 +84,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 				Text lineText = new Text(tagLines[i]);
 
-				lineText.setStyle(style + colour);
+				lineText.setStyle(style + colour + ";");
 
 				textItems.add(lineText);
 			}

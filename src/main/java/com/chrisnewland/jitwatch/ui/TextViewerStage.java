@@ -64,7 +64,7 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 			String colour = COLOUR_BLACK;
 
-			lineText.setStyle(style + colour);
+			lineText.setStyle(style + colour + ";");
 
 			textItems.add(lineText);
 		}

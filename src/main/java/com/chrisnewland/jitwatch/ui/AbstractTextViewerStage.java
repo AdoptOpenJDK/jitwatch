@@ -67,12 +67,13 @@ public abstract class AbstractTextViewerStage extends Stage
 		setScene(scene);
 	}
 	
-	protected void setContent(List<Text> textItems, int maxLineLength)
+	protected void setContent(List<Text> items, int maxLineLength)
 	{
-		vBoxRows.getChildren().addAll(textItems);
-		
+
+		vBoxRows.getChildren().addAll(items);
+				
 		int x = Math.min(80, maxLineLength);
-		int y = Math.min(30, textItems.size());
+		int y = Math.min(30, items.size());
 
 		x = Math.max(x, 20);
 		y = Math.max(y, 20);
@@ -128,9 +129,9 @@ public abstract class AbstractTextViewerStage extends Stage
 
 				StringBuilder builder = new StringBuilder();
 				
-				ObservableList<Node> textItems = vBoxRows.getChildren();
+				ObservableList<Node> items = vBoxRows.getChildren();
 
-				for (Node text : textItems)
+				for (Node text : items)
 				{
 					String line = ((Text)text).getText();
 					
@@ -153,13 +154,17 @@ public abstract class AbstractTextViewerStage extends Stage
 			{
 				int pos = 0;
 
-				ObservableList<Node> textItems = vBoxRows.getChildren();
+				ObservableList<Node> items = vBoxRows.getChildren();
+								
+				Pattern pattern = Pattern.compile(regex);
 				
-				for (Node text : textItems)
+				for (Node item : items)
 				{
-					String line = ((Text)text).getText();
+					Text text = (Text)item;
 					
-					Matcher matcher = Pattern.compile(regex).matcher(line);
+					String line = text.getText();
+					
+					Matcher matcher = pattern.matcher(line);
 					if (matcher.find())
 					{
 						break;
@@ -167,8 +172,8 @@ public abstract class AbstractTextViewerStage extends Stage
 
 					pos++;
 				}
-				
-				final double scrollPos = (double) pos / (double) textItems.size() * (scrollPane.getVmax() - scrollPane.getVmin());
+												
+				final double scrollPos = (double) pos / (double) items.size() * (scrollPane.getVmax() - scrollPane.getVmin());
 
 				// needed as SelectionModel selected index
 				// is not updated instantly on select()
