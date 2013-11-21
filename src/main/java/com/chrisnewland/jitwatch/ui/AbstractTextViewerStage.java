@@ -155,6 +155,8 @@ public abstract class AbstractTextViewerStage extends Stage
 				int pos = 0;
 
 				ObservableList<Node> items = vBoxRows.getChildren();
+								
+				Pattern pattern = Pattern.compile(regex);
 				
 				for (Node item : items)
 				{
@@ -162,7 +164,7 @@ public abstract class AbstractTextViewerStage extends Stage
 					
 					String line = text.getText();
 					
-					Matcher matcher = Pattern.compile(regex).matcher(line);
+					Matcher matcher = pattern.matcher(line);
 					if (matcher.find())
 					{
 						break;
@@ -170,7 +172,7 @@ public abstract class AbstractTextViewerStage extends Stage
 
 					pos++;
 				}
-				
+												
 				final double scrollPos = (double) pos / (double) items.size() * (scrollPane.getVmax() - scrollPane.getVmin());
 
 				// needed as SelectionModel selected index
