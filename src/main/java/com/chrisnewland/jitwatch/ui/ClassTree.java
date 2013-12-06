@@ -1,11 +1,11 @@
 package com.chrisnewland.jitwatch.ui;
 
-import java.io.InputStream;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
+import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,7 +15,6 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -28,23 +27,10 @@ public class ClassTree extends VBox
     private JITWatchUI parent;
     private JITWatchConfig config;
 
-    // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
-    private Image imgTick = null;
-
     public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
     {
         this.parent = parent;
         this.config = config;
-
-        // images directory added to jar with ant and mvn
-        // If you want them to load when launching from IDE then put
-        // src/main/resources on the IDE runtime classpath
-        InputStream is = getClass().getResourceAsStream("/images/tick.png");
-
-        if (is != null)
-        {
-            imgTick = new Image(is);
-        }
 
         CheckBox cbHideInterfaces = new CheckBox("Hide interfaces");
         cbHideInterfaces.setMaxWidth(280);
@@ -186,9 +172,9 @@ public class ClassTree extends VBox
             hasCompiledChildren = true;
         }
 
-        if (imgTick != null && hasCompiledChildren)
+        if (UserInterfaceUtil.TICK != null && hasCompiledChildren)
         {
-            found.setGraphic(new ImageView(imgTick));
+            found.setGraphic(new ImageView(UserInterfaceUtil.TICK));
         }
 
         return found;

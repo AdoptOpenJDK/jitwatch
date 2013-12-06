@@ -22,6 +22,7 @@ import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.browser.TriView;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -77,6 +78,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnTopList;
 	private Button btnErrorLog;
 	private Button btnCodeCache;
+	private Button btnCodeBrowser;
 
 	private Label lblHeap;
 
@@ -86,6 +88,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private HistoStage histoStage;
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheStage;
+	private TriView triView;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -342,6 +345,27 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
+		btnCodeBrowser = new Button("TriView");
+		btnCodeBrowser.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				triView = new TriView(JITWatchUI.this, config);
+				
+				triView.show();
+
+				openPopupStages.add(triView);
+
+				if (selectedMember != null)
+				{
+					triView.setMember(selectedMember);
+				}
+				
+				btnCodeBrowser.setDisable(true);
+			}
+		});
+
 		btnErrorLog = new Button("Errors (0)");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -369,6 +393,7 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnHisto);
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCache);
+		hboxTop.getChildren().add(btnCodeBrowser);
 		hboxTop.getChildren().add(btnErrorLog);
 		hboxTop.getChildren().add(lblHeap);
 		hboxTop.setPrefHeight(topHeight);
@@ -403,7 +428,8 @@ public class JITWatchUI extends Application implements IJITListener
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(bottomHeight);
-		textAreaLog.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
+		textAreaLog
+				.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 
 		if (watchFile == null)
 		{
@@ -457,7 +483,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 	public IReadOnlyJITDataModel getJITDataModel()
 	{
-		return (IReadOnlyJITDataModel)model;
+		return (IReadOnlyJITDataModel) model;
 	}
 
 	private void updateButtons()
@@ -532,9 +558,9 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String fqName = methodClass.getFullyQualifiedName();
 
-		fqName = fqName.replace(".", "/") + ".java";
+		String sourceFileName = ResourceLoader.getSourceFilename(methodClass);
 
-		String source = ResourceLoader.getSource(config.getSourceLocations(), fqName);
+		String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
 
 		TextViewerStage tvs = null;
 		String title = "Source code for " + fqName;
@@ -573,10 +599,10 @@ public class JITWatchUI extends Application implements IJITListener
 		openTextViewer("Bytecode for " + member.toString(), bc, false);
 	}
 
-	void openNativeCode(IMetaMember member)
+	void openAssembly(IMetaMember member)
 	{
-		String nativeCode = member.getNativeCode();
-		openTextViewer("Native code for " + member.toString(), nativeCode, false);
+		String assembly = member.getAssembly();
+		openTextViewer("Native code for " + member.toString(), assembly, false);
 	}
 
 	void openTextViewer(String title, String content)
@@ -597,7 +623,7 @@ public class JITWatchUI extends Application implements IJITListener
 		jvs.show();
 		openPopupStages.add(jvs);
 	}
-	
+
 	private void chooseHotSpotFile()
 	{
 		FileChooser fc = new FileChooser();
@@ -638,6 +664,11 @@ public class JITWatchUI extends Application implements IJITListener
 		if (member == null)
 		{
 			return;
+		}
+		
+		if (triView != null)
+		{
+			triView.setMember(member);
 		}
 
 		selectedMember = member;
@@ -769,6 +800,11 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			btnCodeCache.setDisable(false);
 			codeCacheStage = null;
+		}
+		else if (stage instanceof TriView)
+		{
+			btnCodeBrowser.setDisable(false);
+			triView = null;
 		}
 	}
 

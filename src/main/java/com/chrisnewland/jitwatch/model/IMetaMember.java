@@ -48,9 +48,9 @@ public interface IMetaMember
 
 	boolean matches(String input);
 
-	String getNativeCode();
+	String getAssembly();
 
-	void setNativeCode(String nativecode);
+	void setAssembly(String assembly);
 
 	String getSignatureRegEx();
 
