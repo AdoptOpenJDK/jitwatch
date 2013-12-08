@@ -308,7 +308,7 @@ public class HotSpotLogParser
 
 		if (currentMember != null)
 		{
-			currentMember.setNativeCode(nativeCodeBuilder.toString());
+			currentMember.setAssembly(nativeCodeBuilder.toString());
 		}
 
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());

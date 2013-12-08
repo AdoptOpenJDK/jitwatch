@@ -135,7 +135,7 @@ public class ClassMemberList extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openNativeCode(memberList.getSelectionModel().getSelectedItem());
+				parent.openAssembly(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 

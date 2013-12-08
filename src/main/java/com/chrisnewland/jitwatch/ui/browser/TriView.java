@@ -1,0 +1,309 @@
+package com.chrisnewland.jitwatch.ui.browser;
+
+import java.util.ArrayList;
+import java.util.Map;
+
+import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.loader.ResourceLoader;
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
+import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
+
+public class TriView extends Stage
+{
+	private IMetaMember currentMember;
+	private JITWatchConfig config;
+
+	private Viewer viewerSource;
+	private Viewer viewerByteCode;
+	private Viewer viewerAssembly;
+
+	private SplitPane splitViewer;
+
+	private VBox colSource;
+	private VBox colBytecode;
+	private VBox colAssembly;
+
+	private CheckBox checkSource;
+	private CheckBox checkBytecode;
+	private CheckBox checkAssembly;
+
+	private TextField tfSearchClass;
+	private ComboBox<IMetaMember> comboMember;
+
+	private ObservableList<IMetaMember> options;
+
+	public TriView(final JITWatchUI parent, final JITWatchConfig config)
+	{
+		this.config = config;
+
+		setTitle("JITWatch TriView Source, Bytecode, Assembly Viewer");
+
+		VBox vBox = new VBox();
+
+		HBox hBoxToolBarClass = new HBox();
+		hBoxToolBarClass.setSpacing(10);
+		hBoxToolBarClass.setPadding(new Insets(10));
+
+		HBox hBoxToolBarButtons = new HBox();
+		hBoxToolBarButtons.setSpacing(10);
+		hBoxToolBarButtons.setPadding(new Insets(10));
+
+		checkSource = new CheckBox("Source");
+		checkBytecode = new CheckBox("Bytecode");
+		checkAssembly = new CheckBox("Assembly");
+
+		checkSource.setSelected(true);
+		checkBytecode.setSelected(true);
+		checkAssembly.setSelected(true);
+
+		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				checkColumns();
+			}
+		};
+
+		checkSource.selectedProperty().addListener(checkListener);
+		checkBytecode.selectedProperty().addListener(checkListener);
+		checkAssembly.selectedProperty().addListener(checkListener);
+
+		hBoxToolBarButtons.getChildren().add(checkSource);
+		hBoxToolBarButtons.getChildren().add(checkBytecode);
+		hBoxToolBarButtons.getChildren().add(checkAssembly);
+
+		Label lblClass = new Label("Class:");
+		tfSearchClass = new TextField();
+		tfSearchClass.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		tfSearchClass.setEditable(false); // TODO implement search
+
+		Label lblMember = new Label("Member:");
+
+		options = FXCollections.observableList(new ArrayList<IMetaMember>());
+
+		comboMember = new ComboBox<>(options);
+		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
+
+		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
+			{
+				TriView.this.setMember(newVal);
+			}
+		});
+
+		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+		{
+			@Override
+			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			{
+				return new ListCell<IMetaMember>()
+				{
+					@Override
+					protected void updateItem(IMetaMember item, boolean empty)
+					{
+						super.updateItem(item, empty);
+
+						if (item == null || empty)
+						{
+							setText("");
+						}
+						else
+						{
+							setText(item.toStringUnqualifiedMethodName());
+
+							if (item.isCompiled() && UserInterfaceUtil.TICK != null)
+							{
+								setGraphic(new ImageView(UserInterfaceUtil.TICK));
+							}
+						}
+					}
+				};
+			}
+		});
+		
+		comboMember.setConverter(new StringConverter<IMetaMember>()
+		{
+			
+			@Override
+			public String toString(IMetaMember mm)
+			{
+				return mm.toStringUnqualifiedMethodName();
+			}
+			
+			@Override
+			public IMetaMember fromString(String arg0)
+			{
+				System.out.println("XXX: " + arg0);
+				return null;
+			}
+		});
+
+		hBoxToolBarClass.getChildren().add(lblClass);
+		hBoxToolBarClass.getChildren().add(tfSearchClass);
+
+		hBoxToolBarClass.getChildren().add(lblMember);
+		hBoxToolBarClass.getChildren().add(comboMember);
+
+		splitViewer = new SplitPane();
+		splitViewer.setOrientation(Orientation.HORIZONTAL);
+
+		colSource = new VBox();
+		colBytecode = new VBox();
+		colAssembly = new VBox();
+
+		Label lblSource = new Label("Source");
+		Label lblBytecode = new Label("Bytecode");
+		Label lblAssembly = new Label("Assembly");
+
+		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		lblBytecode.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		lblAssembly.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+
+		lblSource.prefWidthProperty().bind(colSource.widthProperty());
+		lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
+		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
+
+		viewerSource = new Viewer();
+		viewerByteCode = new Viewer();
+		viewerAssembly = new Viewer();
+		
+		colSource.getChildren().add(lblSource);
+		colSource.getChildren().add(viewerSource);
+
+		colBytecode.getChildren().add(lblBytecode);
+		colBytecode.getChildren().add(viewerByteCode);
+
+		colAssembly.getChildren().add(lblAssembly);
+		colAssembly.getChildren().add(viewerAssembly);
+						
+		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
+
+		viewerSource.prefWidthProperty().bind(colSource.widthProperty());
+		viewerSource.prefHeightProperty().bind(colSource.heightProperty());
+		
+		viewerByteCode.prefWidthProperty().bind(colBytecode.widthProperty());
+		viewerByteCode.prefHeightProperty().bind(colBytecode.heightProperty());
+		
+		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
+		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
+
+		vBox.getChildren().add(hBoxToolBarClass);
+		vBox.getChildren().add(hBoxToolBarButtons);
+		vBox.getChildren().add(splitViewer);
+		
+		Scene scene = new Scene(vBox, 800, 480);
+
+		setScene(scene);
+
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(TriView.this);
+			}
+		});
+
+		checkColumns();		
+	}
+
+	private void checkColumns()
+	{
+		splitViewer.getItems().clear();
+
+		int colCount = 0;
+
+		if (checkSource.isSelected())
+		{
+			splitViewer.getItems().add(colSource);
+			colCount++;
+		}
+		if (checkBytecode.isSelected())
+		{
+			splitViewer.getItems().add(colBytecode);
+			colCount++;
+		}
+		if (checkAssembly.isSelected())
+		{
+			splitViewer.getItems().add(colAssembly);
+			colCount++;
+		}
+
+		switch (colCount)
+		{
+		case 0:
+			splitViewer.setDividerPositions(0);
+			break;
+		case 1:
+			splitViewer.setDividerPositions(1);
+			break;
+		case 2:
+			splitViewer.setDividerPositions(0.5);
+			break;
+		case 3:
+			splitViewer.setDividerPositions(0.333, 0.666);
+		}
+	}
+
+	public void setMember(IMetaMember member)
+	{
+		currentMember = member;
+
+		MetaClass memberClass = member.getMetaClass();
+
+		options.clear();
+		options.addAll(memberClass.getMetaMembers());
+		
+		comboMember.setValue(currentMember);
+
+		String fqName = memberClass.getFullyQualifiedName();
+
+		tfSearchClass.setText(fqName);
+
+		String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
+
+		String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+
+		String searchMethod = currentMember.getSignatureForBytecode();
+
+		Map<String, String> bytecodeCache = memberClass.getBytecodeCache(config.getClassLocations());
+
+		String bc = bytecodeCache.get(searchMethod);
+
+		String assembly = currentMember.isCompiled() ? currentMember.getAssembly() : "Not JIT-compiled";
+
+		viewerSource.setContent(source, true);
+		viewerSource.jumpTo(currentMember.getSignatureRegEx());
+		viewerByteCode.setContent(bc, false);
+		viewerAssembly.setContent(assembly, false);
+	}
+}

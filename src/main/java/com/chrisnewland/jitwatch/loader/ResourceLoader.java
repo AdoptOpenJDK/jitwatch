@@ -15,8 +15,26 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.chrisnewland.jitwatch.model.MetaClass;
+
 public class ResourceLoader
 {
+	public static String getSourceFilename(MetaClass metaClass)
+	{
+		String fqName = metaClass.getFullyQualifiedName();
+		
+		int dollarPos = fqName.indexOf("$");
+
+		if (dollarPos != -1)
+		{
+			fqName = fqName.substring(0, dollarPos);
+		}
+
+		fqName = fqName.replace(".", File.separator) + ".java";
+				
+		return fqName;
+	}
+	
 	public static String getSource(List<String> locations, String fileName)
 	{
 		String source = null;

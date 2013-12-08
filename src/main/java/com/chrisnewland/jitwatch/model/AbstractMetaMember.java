@@ -120,8 +120,12 @@ public abstract class AbstractMetaMember implements IMetaMember
 	public String toStringUnqualifiedMethodName()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append(Modifier.toString(modifier)).append(' ');
-
+		
+		if (modifier != 0)
+		{
+			builder.append(Modifier.toString(modifier)).append(' ');
+		}
+		
 		if (returnType != null)
 		{
 			builder.append(expandParam(returnType.getName())).append(' ');
@@ -160,13 +164,13 @@ public abstract class AbstractMetaMember implements IMetaMember
 	}
 
 	@Override
-	public String getNativeCode()
+	public String getAssembly()
 	{
 		return nativeCode;
 	}
 
 	@Override
-	public void setNativeCode(String nativecode)
+	public void setAssembly(String nativecode)
 	{
 		this.nativeCode = nativecode;
 	}
