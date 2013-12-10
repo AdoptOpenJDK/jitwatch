@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.ui.browser;
+package com.chrisnewland.jitwatch.ui.triview;
 
 import javafx.scene.layout.VBox;
 

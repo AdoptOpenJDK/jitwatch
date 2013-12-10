@@ -1,6 +1,7 @@
-package com.chrisnewland.jitwatch.ui.browser;
+package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
@@ -26,7 +27,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -53,7 +53,7 @@ public class TriView extends Stage
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
 
-	private TextField tfSearchClass;
+	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
 
 	private ObservableList<IMetaMember> options;
@@ -100,9 +100,8 @@ public class TriView extends Stage
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 
 		Label lblClass = new Label("Class:");
-		tfSearchClass = new TextField();
-		tfSearchClass.prefWidthProperty().bind(widthProperty().multiply(0.4));
-		tfSearchClass.setEditable(false); // TODO implement search
+		classSearch = new ClassSearch(this, parent.getPackageManager());
+		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
 		Label lblMember = new Label("Member:");
 
@@ -162,13 +161,12 @@ public class TriView extends Stage
 			@Override
 			public IMetaMember fromString(String arg0)
 			{
-				System.out.println("XXX: " + arg0);
 				return null;
 			}
 		});
 
 		hBoxToolBarClass.getChildren().add(lblClass);
-		hBoxToolBarClass.getChildren().add(tfSearchClass);
+		hBoxToolBarClass.getChildren().add(classSearch);
 
 		hBoxToolBarClass.getChildren().add(lblMember);
 		hBoxToolBarClass.getChildren().add(comboMember);
@@ -274,6 +272,22 @@ public class TriView extends Stage
 		}
 	}
 
+	public void setMetaClass(MetaClass metaClass)
+	{
+		String fqName = metaClass.getFullyQualifiedName();
+
+		classSearch.setText(fqName);
+		
+		List<IMetaMember> members = metaClass.getMetaMembers();
+		
+		System.out.println("metaclass has members " + members.size());
+		
+		if (members.size() > 0)
+		{
+			setMember(members.get(0));
+		}
+	}
+	
 	public void setMember(IMetaMember member)
 	{
 		currentMember = member;
@@ -287,7 +301,7 @@ public class TriView extends Stage
 
 		String fqName = memberClass.getFullyQualifiedName();
 
-		tfSearchClass.setText(fqName);
+		classSearch.setText(fqName);
 
 		String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
 
@@ -298,6 +312,9 @@ public class TriView extends Stage
 		Map<String, String> bytecodeCache = memberClass.getBytecodeCache(config.getClassLocations());
 
 		String bc = bytecodeCache.get(searchMethod);
+		
+		//reduce comment spacing
+		bc = bc.replace("             //", "//");
 
 		String assembly = currentMember.isCompiled() ? currentMember.getAssembly() : "Not JIT-compiled";
 

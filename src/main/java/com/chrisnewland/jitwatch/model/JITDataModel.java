@@ -47,7 +47,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
         jitEvents.clear();
 
-        journalMap.clear();        
+        journalMap.clear();  
+        
+        codeCacheTagList.clear();
     }
 
     @Override
