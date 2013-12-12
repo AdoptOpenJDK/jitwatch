@@ -1,9 +1,7 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
@@ -27,8 +25,10 @@ public class ClassSearch extends Region
 	private ContextMenu dropMenu = new ContextMenu();
 	private PackageManager pm;
 	private TriView triView;
-	
-	private static final int MAX_SEARCH_RESULTS=20;
+
+	private static final int MAX_SEARCH_RESULTS = 20;
+
+	private boolean ignoreChanges = false;
 
 	public ClassSearch(TriView triView, PackageManager pm)
 	{
@@ -36,7 +36,7 @@ public class ClassSearch extends Region
 		this.pm = pm;
 
 		tfSearch = new TextField();
-		tfSearch.setPromptText("Search");
+		tfSearch.setPromptText("Enter class name");
 		tfSearch.prefWidthProperty().bind(widthProperty());
 
 		getChildren().add(tfSearch);
@@ -58,29 +58,32 @@ public class ClassSearch extends Region
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
 			{
-				if (tfSearch.getText().length() == 0)
+				if (!ignoreChanges)
 				{
-					if (dropMenu != null)
+					if (tfSearch.getText().length() == 0)
 					{
-						dropMenu.hide();
-					}
-				}
-				else
-				{
-					List<String> results = search(tfSearch.getText());
-
-					if (results.size() > 0)
-					{
-						buildResultsMenu(results);
-
-						if (!dropMenu.isShowing())
+						if (dropMenu != null)
 						{
-							dropMenu.show(ClassSearch.this, Side.BOTTOM, 10, -5);
+							dropMenu.hide();
 						}
 					}
 					else
 					{
-						dropMenu.hide();
+						List<String> results = search(tfSearch.getText());
+
+						if (results.size() > 0)
+						{
+							buildResultsMenu(results);
+
+							if (!dropMenu.isShowing())
+							{
+								dropMenu.show(ClassSearch.this, Side.BOTTOM, 10, -5);
+							}
+						}
+						else
+						{
+							dropMenu.hide();
+						}
 					}
 				}
 			}
@@ -89,40 +92,45 @@ public class ClassSearch extends Region
 
 	public void setText(String text)
 	{
+		// yuck
+		ignoreChanges = true;
+
 		tfSearch.setText(text);
+
+		ignoreChanges = false;
 	}
 
 	private List<String> search(String term)
 	{
 		List<String> results = new ArrayList<>();
-		
+
 		List<MetaPackage> roots = pm.getRootPackages();
 
 		for (MetaPackage mp : roots)
 		{
 			walkTree(mp, results, term.toLowerCase());
-			
+
 			if (results.size() >= MAX_SEARCH_RESULTS)
 			{
 				break;
 			}
 		}
-		
+
 		return results;
 	}
 
 	private void walkTree(MetaPackage mp, List<String> results, String term)
 	{
+		if (results.size() >= MAX_SEARCH_RESULTS)
+		{
+			return;
+		}
+
 		List<MetaPackage> childPackages = mp.getChildPackages();
 
 		for (MetaPackage childPackage : childPackages)
 		{
 			walkTree(childPackage, results, term);
-			
-			if (results.size() >= MAX_SEARCH_RESULTS)
-			{
-				return;
-			}
 		}
 
 		List<MetaClass> packageClasses = mp.getPackageClasses();
@@ -132,10 +140,10 @@ public class ClassSearch extends Region
 			if (mc.getFullyQualifiedName().toLowerCase().contains(term))
 			{
 				results.add(mc.getFullyQualifiedName());
-				
+
 				if (results.size() >= MAX_SEARCH_RESULTS)
 				{
-					return;
+					break;
 				}
 			}
 		}
@@ -153,6 +161,8 @@ public class ClassSearch extends Region
 				@Override
 				public void handle(ActionEvent e)
 				{
+					dropMenu.hide();
+
 					MetaClass metaClass = pm.getMetaClass(mi.getText());
 					triView.setMetaClass(metaClass);
 				}

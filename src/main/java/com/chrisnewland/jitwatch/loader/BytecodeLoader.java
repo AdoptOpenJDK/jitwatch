@@ -41,14 +41,14 @@ public class BytecodeLoader
 
 		String byteCode = null;
 
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream())
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
 		{
 			JavapTask task = new JavapTask();
 			task.setLog(baos);
 			task.handleOptions(args);
 			task.call();
 
-			byteCode = new String(baos.toByteArray());
+			byteCode = baos.toString();
 		}
 		catch (BadArgs ba)
 		{

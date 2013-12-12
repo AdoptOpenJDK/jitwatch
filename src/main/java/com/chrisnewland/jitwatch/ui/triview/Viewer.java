@@ -36,11 +36,11 @@ public class Viewer extends VBox
 		vBoxRows = new VBox();
 
 		scrollPane = new ScrollPane();
-		scrollPane.setContent(vBoxRows);		
+		scrollPane.setContent(vBoxRows);
 		scrollPane.setStyle("-fx-background-color:white");
-		
+
 		scrollPane.prefHeightProperty().bind(heightProperty());
-		
+
 		getChildren().add(scrollPane);
 
 		setUpContextMenu();
@@ -152,44 +152,37 @@ public class Viewer extends VBox
 
 	public void jumpTo(final String regex)
 	{
+		int pos = 0;
+
+		ObservableList<Node> items = vBoxRows.getChildren();
+
+		Pattern pattern = Pattern.compile(regex);
+
+		for (Node item : items)
+		{
+			Text text = (Text) item;
+
+			String line = text.getText();
+
+			Matcher matcher = pattern.matcher(line);
+			if (matcher.find())
+			{
+				break;
+			}
+
+			pos++;
+		}
+
+		final double scrollPos = (double) pos / (double) items.size() * (scrollPane.getVmax() - scrollPane.getVmin());
+
+		// needed as SelectionModel selected index
+		// is not updated instantly on select()
 		Platform.runLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				int pos = 0;
-
-				ObservableList<Node> items = vBoxRows.getChildren();
-
-				Pattern pattern = Pattern.compile(regex);
-
-				for (Node item : items)
-				{
-					Text text = (Text) item;
-
-					String line = text.getText();
-
-					Matcher matcher = pattern.matcher(line);
-					if (matcher.find())
-					{
-						break;
-					}
-
-					pos++;
-				}
-
-				final double scrollPos = (double) pos / (double) items.size() * (scrollPane.getVmax() - scrollPane.getVmin());
-
-				// needed as SelectionModel selected index
-				// is not updated instantly on select()
-				Platform.runLater(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						scrollPane.setVvalue(scrollPos);
-					}
-				});
+				scrollPane.setVvalue(scrollPos);
 			}
 		});
 	}
