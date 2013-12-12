@@ -214,6 +214,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
+			    stopWatching();
 				chooseHotSpotFile();
 			}
 		});

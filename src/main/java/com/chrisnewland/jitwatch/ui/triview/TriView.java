@@ -297,8 +297,6 @@ public class TriView extends Stage
 
 	public void setMember(IMetaMember member)
 	{
-		long start = System.currentTimeMillis();
-
 		boolean sameClass = false;
 
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
@@ -348,7 +346,22 @@ public class TriView extends Stage
 
 		viewerByteCode.setContent(bc, false);
 		
-		String assembly = currentMember.isCompiled() ? currentMember.getAssembly() : "Not JIT-compiled";
+		String assembly;
+		
+		if (currentMember.isCompiled())
+		{
+		    assembly = currentMember.getAssembly();
+		    
+		    if (assembly == null)
+		    {
+		        assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
+		    }
+		}
+		else
+		{
+		    assembly = "Not JIT-compiled";
+		}
+		    
 		viewerAssembly.setContent(assembly, false);		
 	}
 }
