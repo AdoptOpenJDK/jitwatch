@@ -6,85 +6,89 @@
 package com.chrisnewland.jitwatch.model;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMethod>
 {
-	private String methodToString;
+    private String methodToString;
 
-	public MetaMethod(Method method, MetaClass methodClass)
-	{
-		this.methodToString = method.toString();
-		this.methodClass = methodClass;
-		
-		memberName = method.getName();
-		returnType = method.getReturnType();		
-		paramTypes = method.getParameterTypes();
-		modifier = method.getModifiers();
-	}
+    public MetaMethod(Method method, MetaClass methodClass)
+    {
+        this.methodToString = method.toString();
+        this.methodClass = methodClass;
 
-	@Override
-	public String toString()
-	{
-		String methodSigWithoutThrows = methodToString;
+        memberName = method.getName();
+        returnType = method.getReturnType();
+        paramTypes = method.getParameterTypes();
 
-		int closingParentheses = methodSigWithoutThrows.indexOf(')');
+        // Can include non-method modifiers such as volatile so AND with
+        // acceptable values
+        modifier = method.getModifiers() & Modifier.methodModifiers();
+    }
 
-		if (closingParentheses != methodSigWithoutThrows.length() - 1)
-		{
-			methodSigWithoutThrows = methodSigWithoutThrows.substring(0, closingParentheses + 1);
-		}
+    @Override
+    public String toString()
+    {
+        String methodSigWithoutThrows = methodToString;
 
-		return methodSigWithoutThrows;
-	}
+        int closingParentheses = methodSigWithoutThrows.indexOf(')');
 
-	@Override
-	public String getSignatureForBytecode()
-	{
-		String ts = methodToString;
+        if (closingParentheses != methodSigWithoutThrows.length() - 1)
+        {
+            methodSigWithoutThrows = methodSigWithoutThrows.substring(0, closingParentheses + 1);
+        }
 
-		int openParams = ts.lastIndexOf('(');
+        return methodSigWithoutThrows;
+    }
 
-		if (openParams != -1)
-		{
-			int pos = openParams;
+    @Override
+    public String getSignatureForBytecode()
+    {
+        String ts = methodToString;
 
-			int lastDot = -1;
+        int openParams = ts.lastIndexOf('(');
 
-			while (pos-- > 0)
-			{
-				if (ts.charAt(pos) == '.' && lastDot == -1)
-				{
-					lastDot = pos;
-				}
+        if (openParams != -1)
+        {
+            int pos = openParams;
 
-				if (ts.charAt(pos) == ' ')
-				{
-					break;
-				}
-			}
+            int lastDot = -1;
 
-			StringBuilder builder = new StringBuilder(ts);
-			if (lastDot != -1)
-			{
-				builder.delete(pos + 1, lastDot + 1);
-			}
-			ts = builder.toString();
+            while (pos-- > 0)
+            {
+                if (ts.charAt(pos) == '.' && lastDot == -1)
+                {
+                    lastDot = pos;
+                }
 
-		}
+                if (ts.charAt(pos) == ' ')
+                {
+                    break;
+                }
+            }
 
-		return ts;
-	}
+            StringBuilder builder = new StringBuilder(ts);
+            if (lastDot != -1)
+            {
+                builder.delete(pos + 1, lastDot + 1);
+            }
+            ts = builder.toString();
 
-	@Override
-	public int compareTo(MetaMethod o)
-	{
-		if (o == null)
-		{
-			return -1;
-		}
-		else
-		{
-			return toString().compareTo(o.toString());
-		}
-	}
+        }
+
+        return ts;
+    }
+
+    @Override
+    public int compareTo(MetaMethod o)
+    {
+        if (o == null)
+        {
+            return -1;
+        }
+        else
+        {
+            return toString().compareTo(o.toString());
+        }
+    }
 }

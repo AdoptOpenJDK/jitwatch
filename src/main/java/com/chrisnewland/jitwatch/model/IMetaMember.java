@@ -10,6 +10,9 @@ import java.util.Map;
 
 public interface IMetaMember
 {
+    //===================================
+    // This is dumb. Use modifier class
+    //===================================
 	String PUBLIC = "public";
 	String PRIVATE = "private";
 	String PROTECTED = "protected";
@@ -21,6 +24,7 @@ public interface IMetaMember
 	String ABSTRACT = "abstract";
 
 	String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP, NATIVE, ABSTRACT };
+	//===================================
 
 	List<String> getQueuedAttributes();
 
