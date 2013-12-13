@@ -1,6 +1,7 @@
-package com.chrisnewland.jitwatch.ui.browser;
+package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
@@ -26,7 +27,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -53,10 +53,11 @@ public class TriView extends Stage
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
 
-	private TextField tfSearchClass;
+	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
 
 	private ObservableList<IMetaMember> options;
+	private boolean ignoreComboChanged = false;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -100,9 +101,8 @@ public class TriView extends Stage
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 
 		Label lblClass = new Label("Class:");
-		tfSearchClass = new TextField();
-		tfSearchClass.prefWidthProperty().bind(widthProperty().multiply(0.4));
-		tfSearchClass.setEditable(false); // TODO implement search
+		classSearch = new ClassSearch(this, parent.getPackageManager());
+		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
 		Label lblMember = new Label("Member:");
 
@@ -116,7 +116,10 @@ public class TriView extends Stage
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
 			{
-				TriView.this.setMember(newVal);
+				if (!ignoreComboChanged)
+				{
+					TriView.this.setMember(newVal);
+				}
 			}
 		});
 
@@ -149,26 +152,25 @@ public class TriView extends Stage
 				};
 			}
 		});
-		
+
 		comboMember.setConverter(new StringConverter<IMetaMember>()
 		{
-			
+
 			@Override
 			public String toString(IMetaMember mm)
 			{
 				return mm.toStringUnqualifiedMethodName();
 			}
-			
+
 			@Override
 			public IMetaMember fromString(String arg0)
 			{
-				System.out.println("XXX: " + arg0);
 				return null;
 			}
 		});
 
 		hBoxToolBarClass.getChildren().add(lblClass);
-		hBoxToolBarClass.getChildren().add(tfSearchClass);
+		hBoxToolBarClass.getChildren().add(classSearch);
 
 		hBoxToolBarClass.getChildren().add(lblMember);
 		hBoxToolBarClass.getChildren().add(comboMember);
@@ -195,7 +197,7 @@ public class TriView extends Stage
 		viewerSource = new Viewer();
 		viewerByteCode = new Viewer();
 		viewerAssembly = new Viewer();
-		
+
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
 
@@ -204,22 +206,22 @@ public class TriView extends Stage
 
 		colAssembly.getChildren().add(lblAssembly);
 		colAssembly.getChildren().add(viewerAssembly);
-						
+
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
 		viewerSource.prefWidthProperty().bind(colSource.widthProperty());
 		viewerSource.prefHeightProperty().bind(colSource.heightProperty());
-		
+
 		viewerByteCode.prefWidthProperty().bind(colBytecode.widthProperty());
 		viewerByteCode.prefHeightProperty().bind(colBytecode.heightProperty());
-		
+
 		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);
 		vBox.getChildren().add(splitViewer);
-		
+
 		Scene scene = new Scene(vBox, 800, 480);
 
 		setScene(scene);
@@ -233,7 +235,7 @@ public class TriView extends Stage
 			}
 		});
 
-		checkColumns();		
+		checkColumns();
 	}
 
 	private void checkColumns()
@@ -274,36 +276,92 @@ public class TriView extends Stage
 		}
 	}
 
+	public void setMetaClass(MetaClass metaClass)
+	{
+		String fqName = metaClass.getFullyQualifiedName();
+
+		classSearch.setText(fqName);
+
+		List<IMetaMember> members = metaClass.getMetaMembers();
+
+		if (members.size() > 0)
+		{
+			setMember(members.get(0));
+		}
+		else
+		{
+			// unlikely but if no members then clear the combo
+			options.clear();
+		}
+	}
+
 	public void setMember(IMetaMember member)
 	{
+		boolean sameClass = false;
+
+		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
+
 		currentMember = member;
 
-		MetaClass memberClass = member.getMetaClass();
+		final MetaClass memberClass = currentMember.getMetaClass();
 
-		options.clear();
-		options.addAll(memberClass.getMetaMembers());
-		
+		if (previousClass != null && previousClass == memberClass)
+		{
+			sameClass = true;
+		}
+
+		if (!sameClass)
+		{
+			options.clear();
+			options.addAll(memberClass.getMetaMembers());
+			
+			String fqName = memberClass.getFullyQualifiedName();
+			classSearch.setText(fqName);
+		}
+				
+		ignoreComboChanged = true;
 		comboMember.setValue(currentMember);
+		ignoreComboChanged = false;
 
-		String fqName = memberClass.getFullyQualifiedName();
-
-		tfSearchClass.setText(fqName);
-
-		String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
-
-		String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+		if (!sameClass)
+		{
+			String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
+			String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+			viewerSource.setContent(source, true);
+		}
+		
+		viewerSource.jumpTo(currentMember.getSignatureRegEx());
 
 		String searchMethod = currentMember.getSignatureForBytecode();
-
 		Map<String, String> bytecodeCache = memberClass.getBytecodeCache(config.getClassLocations());
-
 		String bc = bytecodeCache.get(searchMethod);
+		
+		if (bc == null)
+		{
+			bc = "No bytcode found, native method?";
+		}
 
-		String assembly = currentMember.isCompiled() ? currentMember.getAssembly() : "Not JIT-compiled";
+		// reduce comment spacing
+		bc = bc.replace("             //", "//");
 
-		viewerSource.setContent(source, true);
-		viewerSource.jumpTo(currentMember.getSignatureRegEx());
 		viewerByteCode.setContent(bc, false);
-		viewerAssembly.setContent(assembly, false);
+		
+		String assembly;
+		
+		if (currentMember.isCompiled())
+		{
+		    assembly = currentMember.getAssembly();
+		    
+		    if (assembly == null)
+		    {
+		        assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
+		    }
+		}
+		else
+		{
+		    assembly = "Not JIT-compiled";
+		}
+		    
+		viewerAssembly.setContent(assembly, false);		
 	}
 }

@@ -3,7 +3,7 @@
  * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
  * http://www.chrisnewland.com/jitwatch
  */
-package com.chrisnewland.jitwatch.ui.browser;
+package com.chrisnewland.jitwatch.ui.triview;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

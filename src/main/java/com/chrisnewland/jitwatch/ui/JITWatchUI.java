@@ -22,7 +22,7 @@ import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.ui.browser.TriView;
+import com.chrisnewland.jitwatch.ui.triview.TriView;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -214,6 +214,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
+			    stopWatching();
 				chooseHotSpotFile();
 			}
 		});
