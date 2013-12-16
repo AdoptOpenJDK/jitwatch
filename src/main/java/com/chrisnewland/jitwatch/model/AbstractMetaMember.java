@@ -120,7 +120,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 	public String toStringUnqualifiedMethodName()
 	{
 		StringBuilder builder = new StringBuilder();
-		
+				
 		if (modifier != 0)
 		{
 			builder.append(Modifier.toString(modifier)).append(' ');
