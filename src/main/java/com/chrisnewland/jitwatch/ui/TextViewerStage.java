@@ -7,6 +7,9 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
+
 import javafx.event.EventHandler;
 import javafx.scene.text.Text;
 import javafx.stage.WindowEvent;
@@ -42,6 +45,8 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 		List<Text> textItems = new ArrayList<>();
 		
+		String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill: " + Viewer.COLOUR_BLACK + ";";
+		
 		for (int i = 0; i < lines.length; i++)
 		{
 			String row = lines[i];
@@ -60,11 +65,7 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 			Text lineText = new Text(lines[i]);
 
-			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
-
-			String colour = COLOUR_BLACK;
-
-			lineText.setStyle(style + colour + ";");
+			lineText.setStyle(style);
 
 			textItems.add(lineText);
 		}

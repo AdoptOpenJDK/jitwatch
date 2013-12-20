@@ -26,10 +26,10 @@ public class Viewer extends VBox
 	private ScrollPane scrollPane;
 	private VBox vBoxRows;
 
-	protected static final String COLOUR_BLACK = "black";
-	protected static final String COLOUR_RED = "red";
-	protected static final String COLOUR_GREEN = "green";
-	protected static final String COLOUR_BLUE = "blue";
+	public static final String COLOUR_BLACK = "black";
+	public static final String COLOUR_RED = "red";
+	public static final String COLOUR_GREEN = "green";
+	public static final String COLOUR_BLUE = "blue";
 
 	public Viewer()
 	{
@@ -82,7 +82,7 @@ public class Viewer extends VBox
 		setContent(textItems);
 	}
 
-	private void setContent(List<Text> items)
+	public void setContent(List<Text> items)
 	{
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
