@@ -12,6 +12,7 @@ import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.event.EventHandler;
@@ -55,19 +56,19 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 				String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
 
-				String colour = COLOUR_BLACK;
+				String colour = Viewer.COLOUR_BLACK;
 
 				if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
 				{
-					colour = COLOUR_RED;
+					colour = Viewer.COLOUR_RED;
 				}
 				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
 				{
-					colour = COLOUR_GREEN;
+					colour = Viewer.COLOUR_GREEN;
 				}
 				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
 				{
-					colour = COLOUR_BLUE;
+					colour = Viewer.COLOUR_BLUE;
 				}
 				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_PARSE + " "))
 				{
