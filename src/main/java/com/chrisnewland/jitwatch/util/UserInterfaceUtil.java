@@ -8,10 +8,10 @@ public class UserInterfaceUtil
 {
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
     public static Image TICK = null;
-    
+
     static
     {
-        // images directory added to jar with ant and mvn
+        // images directory added to jar by ant and mvn
         // If you want them to load when launching from IDE then put
         // src/main/resources on the IDE runtime classpath
         InputStream is = UserInterfaceUtil.class.getResourceAsStream("/images/tick.png");
@@ -19,6 +19,10 @@ public class UserInterfaceUtil
         if (is != null)
         {
             TICK = new Image(is);
+        }
+        else
+        {
+            System.err.println("If running in an IDE please add src/main/resources to your classpath");
         }
     }
 }
