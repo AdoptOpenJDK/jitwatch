@@ -207,6 +207,8 @@ public abstract class AbstractMetaMember implements IMetaMember
 		{
 			builder.append(memberName);
 		}
+		
+		builder.append(spaceZeroOrMore);
 
 		builder.append("\\(");
 

@@ -355,7 +355,7 @@ public class JITWatchUI extends Application implements IJITListener
 				triView = new TriView(JITWatchUI.this, config);
 				
 				triView.show();
-
+				
 				openPopupStages.add(triView);
 
 				if (selectedMember != null)

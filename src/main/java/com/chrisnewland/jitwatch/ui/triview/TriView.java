@@ -294,7 +294,7 @@ public class TriView extends Stage
     }
 
     public void setMember(IMetaMember member)
-    {
+    {    	
         boolean sameClass = false;
 
         MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
@@ -328,7 +328,7 @@ public class TriView extends Stage
             String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
             viewerSource.setContent(source, true);
         }
-
+        
         viewerSource.jumpTo(currentMember.getSignatureRegEx());
 
         String searchMethod = currentMember.getSignatureForBytecode();

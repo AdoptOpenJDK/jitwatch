@@ -107,9 +107,21 @@ public class TestParser
         Matcher matcher5 = Pattern.compile(method5.getSignatureRegEx()).matcher(sourceSig5);
         boolean match5 = matcher5.find();
         assertTrue(match5);
-
     }
+    
 
+    @Test
+    public void testRegressionJavaUtilPropertiesLoadConvert()
+    {
+        Method m = getMethod("java.util.Properties", "loadConvert", new Class<?>[] { char[].class, int.class, int.class, char[].class });
+        MetaMethod method = new MetaMethod(m, null);
+                
+        String sourceSig = "private String loadConvert (char[] in, int off, int len, char[] convtBuf) {";
+        Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+        boolean match = matcher.find();
+        assertTrue(match);
+    }
+    
     @Test
     public void testBuildMethodSignature()
     {
@@ -209,8 +221,6 @@ public class TestParser
 
         String uqToString = method.toStringUnqualifiedMethodName();
         
-        System.out.println(uqToString);
-
         assertEquals(-1, uqToString.indexOf("volatile"));
     }
 }

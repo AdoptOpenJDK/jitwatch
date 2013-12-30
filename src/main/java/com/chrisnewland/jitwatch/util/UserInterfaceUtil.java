@@ -22,6 +22,7 @@ public class UserInterfaceUtil
         }
         else
         {
+        	//TODO make this a dialog, println too easy to miss in an IDE
             System.err.println("If running in an IDE please add src/main/resources to your classpath");
         }
     }

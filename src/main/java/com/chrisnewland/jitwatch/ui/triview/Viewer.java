@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -31,9 +32,20 @@ public class Viewer extends VBox
 	public static final String COLOUR_GREEN = "green";
 	public static final String COLOUR_BLUE = "blue";
 
+	private int scrollIndex = 0;
+
 	public Viewer()
 	{
 		vBoxRows = new VBox();
+
+		vBoxRows.heightProperty().addListener(new ChangeListener<Number>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Number> arg0, Number oldValue, Number newValue)
+			{
+				setScrollBar();
+			}
+		});
 
 		scrollPane = new ScrollPane();
 		scrollPane.setContent(vBoxRows);
@@ -152,7 +164,7 @@ public class Viewer extends VBox
 
 	public void jumpTo(final String regex)
 	{
-		int pos = 0;
+		scrollIndex = 0;
 
 		ObservableList<Node> items = vBoxRows.getChildren();
 
@@ -170,20 +182,16 @@ public class Viewer extends VBox
 				break;
 			}
 
-			pos++;
+			scrollIndex++;
 		}
 
-		final double scrollPos = (double) pos / (double) items.size() * (scrollPane.getVmax() - scrollPane.getVmin());
+		setScrollBar();
+	}
 
-		// needed as SelectionModel selected index
-		// is not updated instantly on select()
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				scrollPane.setVvalue(scrollPos);
-			}
-		});
+	private void setScrollBar()
+	{
+		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()
+				* (scrollPane.getVmax() - scrollPane.getVmin());
+		scrollPane.setVvalue(scrollPos);
 	}
 }
