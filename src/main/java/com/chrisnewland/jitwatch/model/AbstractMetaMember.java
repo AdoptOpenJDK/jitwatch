@@ -16,7 +16,7 @@ import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
-public abstract class AbstractMetaMember implements IMetaMember
+public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
 	protected MetaClass methodClass;
 	protected String nativeCode = null;
@@ -53,7 +53,7 @@ public abstract class AbstractMetaMember implements IMetaMember
 	@Override
 	public String getReturnTypeName()
 	{
-		return StringUtil.makeUnqualified(returnType.getName());
+		return (returnType == null) ? "" : StringUtil.makeUnqualified(returnType.getName());
 	}
 
 	@Override
@@ -317,4 +317,17 @@ public abstract class AbstractMetaMember implements IMetaMember
 	{
 		return queuedAttributes.get(JITWatchConstants.ATTR_COMPILE_ID);
 	}
+	
+    @Override
+    public int compareTo(IMetaMember other)
+    {
+        if (other == null)
+        {
+            return -1;
+        }
+        else
+        {
+            return getMemberName().compareTo(other.getMemberName());
+        }
+    }
 }

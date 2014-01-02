@@ -337,7 +337,7 @@ public class TriView extends Stage
 
         if (bc == null)
         {
-            bc = "No bytcode found, native method?";
+            bc = "No bytecode found, native method?";
         }
 
         // reduce comment spacing

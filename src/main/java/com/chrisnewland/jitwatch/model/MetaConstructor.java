@@ -7,7 +7,7 @@ package com.chrisnewland.jitwatch.model;
 
 import java.lang.reflect.Constructor;
 
-public class MetaConstructor extends AbstractMetaMember implements Comparable<MetaConstructor>
+public class MetaConstructor extends AbstractMetaMember
 {
 	private String constructorToString;
 
@@ -40,18 +40,5 @@ public class MetaConstructor extends AbstractMetaMember implements Comparable<Me
 	public String getSignatureForBytecode()
 	{
 		return constructorToString;
-	}
-
-	@Override
-	public int compareTo(MetaConstructor o)
-	{
-		if (o == null)
-		{
-			return -1;
-		}
-		else
-		{
-			return toString().compareTo(o.toString());
-		}
 	}
 }
