@@ -49,6 +49,11 @@ public interface IMetaMember
 	boolean isCompiled();
 
 	String toStringUnqualifiedMethodName();
+	
+	String getMemberName();
+	String getModifier();
+	String getReturnTypeName();
+	String[] getParamTypeNames();
 
 	boolean matches(String input);
 

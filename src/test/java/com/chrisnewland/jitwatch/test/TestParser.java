@@ -9,13 +9,16 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaConstructor;
 import com.chrisnewland.jitwatch.model.MetaMethod;
 import com.chrisnewland.jitwatch.util.ClassUtil;
@@ -107,9 +110,73 @@ public class TestParser
         Matcher matcher5 = Pattern.compile(method5.getSignatureRegEx()).matcher(sourceSig5);
         boolean match5 = matcher5.find();
         assertTrue(match5);
-
     }
+    
 
+    @Test
+    public void testRegressionJavaUtilPropertiesLoadConvert() // space before parentheses
+    {
+        Method m = getMethod("java.util.Properties", "loadConvert", new Class<?>[] { char[].class, int.class, int.class, char[].class });
+        MetaMethod method = new MetaMethod(m, null);
+                
+        String sourceSig = "private String loadConvert (char[] in, int off, int len, char[] convtBuf) {";
+        Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+        boolean match = matcher.find();
+        assertTrue(match);
+    }
+    
+    @Test
+    public void testSignatureMatchFailWithGenerics()
+    {
+    	// java.util.Arrays
+    	// public static <U,T> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {
+    	
+        Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+        MetaMethod method = new MetaMethod(m, null);
+                
+        // test for failure on matching internal (type erased) representation against generics signature
+        String sourceSig = "public static <U,T> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {";
+        Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+        boolean match = matcher.find();
+        assertFalse(match);   	
+    }
+    
+    @Test
+    public void testFindBestLineMatchForMemberSignature()
+    {
+        Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+        IMetaMember member = new MetaMethod(m, null);
+    	
+    	List<String> srcLinesList = new ArrayList<>();
+    	
+    	srcLinesList.add("public static <T> T[] copyOf(T[] original, int newLength) {");
+    	srcLinesList.add("	return (T[]) copyOf(original, newLength, original.getClass());");
+    	srcLinesList.add("}");
+    	srcLinesList.add("public static byte[] copyOf(byte[] original, int newLength) {");
+    	srcLinesList.add("public static short[] copyOf(short[] original, int newLength) {");
+    	srcLinesList.add("public static int[] copyOf(int[] original, int newLength) {");
+    	srcLinesList.add("public static long[] copyOf(long[] original, int newLength) {");
+    	srcLinesList.add("public static char[] copyOf(char[] original, int newLength) {");
+    	srcLinesList.add("public static <T,U> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {"); // best
+    	srcLinesList.add("T[] copy = ((Object)newType == (Object)Object[].class)");
+    	srcLinesList.add("? (T[]) new Object[newLength]");
+    	srcLinesList.add(": (T[]) Array.newInstance(newType.getComponentType(), newLength);");
+    	srcLinesList.add("System.arraycopy(original, 0, copy, 0,");
+    	srcLinesList.add("Math.min(original.length, newLength));");
+    	srcLinesList.add("return copy;");
+    	srcLinesList.add("}");
+    	srcLinesList.add("public static float[] copyOf(float[] original, int newLength) {");
+    	srcLinesList.add("public static double[] copyOf(double[] original, int newLength) {");
+    	srcLinesList.add("public static boolean[] copyOf(boolean[] original, int newLength) {");
+    	srcLinesList.add("public static <T> T[] copyOfRange(T[] original, int from, int to) {");
+    	srcLinesList.add("public static <T,U> T[] copyOfRange(U[] original, int from, int to, Class<? extends T[]> newType) {");
+    	srcLinesList.add("public static byte[] copyOfRange(byte[] original, int from, int to) {");
+    	
+    	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
+    	
+    	assertEquals(8, bestMatchPos);
+    }
+    
     @Test
     public void testBuildMethodSignature()
     {
@@ -209,8 +276,6 @@ public class TestParser
 
         String uqToString = method.toStringUnqualifiedMethodName();
         
-        System.out.println(uqToString);
-
         assertEquals(-1, uqToString.indexOf("volatile"));
     }
 }

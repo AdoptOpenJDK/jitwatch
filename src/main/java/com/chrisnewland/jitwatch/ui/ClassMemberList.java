@@ -8,10 +8,11 @@ import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
@@ -20,6 +21,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -62,6 +64,16 @@ public class ClassMemberList extends VBox
 			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
 			{
 				parent.showMemberInfo(newVal);
+			}
+		});
+		
+		memberList.getItems().addListener(new ListChangeListener<IMetaMember>()
+		{
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IMetaMember> arg0)
+			{
+				setScrollBar();		
 			}
 		});
 
@@ -242,16 +254,14 @@ public class ClassMemberList extends VBox
 	{
 		memberList.getSelectionModel().select(selected);
 
-		// needed as SelectionModel selected index
-		// is not updated instantly on select()
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				memberList.scrollTo(memberList.getSelectionModel().getSelectedIndex());
-			}
-		});
+		setScrollBar();
+	}
+	
+	private void setScrollBar()
+	{
+		int index = memberList.getSelectionModel().getSelectedIndex();
+		
+		memberList.scrollTo(index);
 	}
 
 	static class MetaMethodCell extends ListCell<IMetaMember>
@@ -263,19 +273,20 @@ public class ClassMemberList extends VBox
 
 			if (item != null)
 			{
-				setText(item.toStringUnqualifiedMethodName());
-
 				if (isSelected())
 				{
-					setStyle("-fx-background-color: blue; -fx-text-fill: white;");
+					// TODO make appearance same as if selected with mouse click
 				}
-				else if (item.isCompiled())
+
+				setText(item.toStringUnqualifiedMethodName());
+
+				if (item.isCompiled())
 				{
-					setStyle("-fx-text-fill:red;");
+					setGraphic(new ImageView(UserInterfaceUtil.TICK));
 				}
 				else
 				{
-					setStyle("-fx-text-fill:black;");
+					setGraphic(null);
 				}
 			}
 		}

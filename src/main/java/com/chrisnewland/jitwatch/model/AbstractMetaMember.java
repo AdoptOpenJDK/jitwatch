@@ -37,6 +37,37 @@ public abstract class AbstractMetaMember implements IMetaMember
 	private static final String spaceOneOrMore = "( )+";
 	private static final String paramName = "([0-9a-zA-Z_]+)";
 	private static final String regexPackage = "([0-9a-zA-Z_\\.]*)";
+	
+	@Override
+	public String getMemberName()
+	{
+		return memberName;
+	}
+
+	@Override
+	public String getModifier()
+	{
+		return Modifier.toString(modifier);
+	}
+	
+	@Override
+	public String getReturnTypeName()
+	{
+		return StringUtil.makeUnqualified(returnType.getName());
+	}
+
+	@Override
+	public String[] getParamTypeNames()
+	{
+		List<String> typeNames = new ArrayList<>();
+
+		for (Class<?> paramClass : paramTypes)
+		{
+			typeNames.add(StringUtil.makeUnqualified(paramClass.getName()));
+		}
+		
+		return typeNames.toArray(new String[typeNames.size()]);
+	}
 
 	@Override
 	public List<String> getQueuedAttributes()
@@ -207,6 +238,8 @@ public abstract class AbstractMetaMember implements IMetaMember
 		{
 			builder.append(memberName);
 		}
+		
+		builder.append(spaceZeroOrMore);
 
 		builder.append("\\(");
 
