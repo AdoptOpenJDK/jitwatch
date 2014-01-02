@@ -6,6 +6,8 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.util.List;
+
+import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
@@ -72,8 +74,8 @@ public abstract class AbstractTextViewerStage extends Stage
 		return builder.toString();
 	}
 
-	public void jumpTo(final String regex)
+	public void jumpTo(IMetaMember member)
 	{
-		viewer.jumpTo(regex);
+		viewer.jumpTo(member);
 	}
 }

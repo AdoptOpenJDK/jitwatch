@@ -329,7 +329,7 @@ public class TriView extends Stage
             viewerSource.setContent(source, true);
         }
         
-        viewerSource.jumpTo(currentMember.getSignatureRegEx());
+        viewerSource.jumpTo(currentMember);
 
         String searchMethod = currentMember.getSignatureForBytecode();
         Map<String, String> bytecodeCache = memberClass.getBytecodeCache(config.getClassLocations());

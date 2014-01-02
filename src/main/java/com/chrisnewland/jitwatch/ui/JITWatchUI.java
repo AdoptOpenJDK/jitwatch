@@ -584,7 +584,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		tvs.requestFocus();
 
-		tvs.jumpTo(member.getSignatureRegEx());
+		tvs.jumpTo(member);
 	}
 
 	void openBytecode(IMetaMember member)

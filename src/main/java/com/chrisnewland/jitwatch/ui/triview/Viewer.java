@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -152,7 +155,7 @@ public class Viewer extends VBox
 				{
 					String line = ((Text) text).getText();
 
-					builder.append(line.toString()).append("\n");
+					builder.append(line).append("\n");
 				}
 
 				content.putString(builder.toString());
@@ -162,14 +165,44 @@ public class Viewer extends VBox
 		});
 	}
 
-	public void jumpTo(final String regex)
+	public void jumpTo(IMetaMember member)
 	{
 		scrollIndex = 0;
 
+		int regexPos = findPosForRegex(member.getSignatureRegEx());
+		
+		if (regexPos == -1)
+		{
+			ObservableList<Node> items = vBoxRows.getChildren();
+
+			List<String> lines = new ArrayList<>();
+			
+			for (Node text : items)
+			{
+				String line = ((Text) text).getText();
+				lines.add(line);
+			}			
+			
+			scrollIndex = ParseUtil.findBestLineMatchForMemberSignature(member, lines);
+		}
+		else
+		{
+			scrollIndex = regexPos;
+		}
+
+		setScrollBar();
+	}
+	
+	private int findPosForRegex(String regex)
+	{
+		int result = -1;
+		
 		ObservableList<Node> items = vBoxRows.getChildren();
 
 		Pattern pattern = Pattern.compile(regex);
 
+		int index = 0;
+		
 		for (Node item : items)
 		{
 			Text text = (Text) item;
@@ -179,15 +212,16 @@ public class Viewer extends VBox
 			Matcher matcher = pattern.matcher(line);
 			if (matcher.find())
 			{
+				result = index;
 				break;
 			}
 
-			scrollIndex++;
+			index++;
 		}
-
-		setScrollBar();
+		
+		return result;		
 	}
-
+	
 	private void setScrollBar()
 	{
 		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()
