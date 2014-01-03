@@ -8,7 +8,7 @@ package com.chrisnewland.jitwatch.model;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMethod>
+public class MetaMethod extends AbstractMetaMember
 {
     private String methodToString;
 
@@ -77,18 +77,5 @@ public class MetaMethod extends AbstractMetaMember implements Comparable<MetaMet
         }
 
         return ts;
-    }
-
-    @Override
-    public int compareTo(MetaMethod o)
-    {
-        if (o == null)
-        {
-            return -1;
-        }
-        else
-        {
-            return toString().compareTo(o.toString());
-        }
     }
 }

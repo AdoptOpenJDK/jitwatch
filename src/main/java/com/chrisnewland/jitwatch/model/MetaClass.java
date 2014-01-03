@@ -114,6 +114,7 @@ public class MetaClass implements Comparable<MetaClass>
 		classConstructors.add(constructor);
 	}
 
+	//alpha
 	public List<IMetaMember> getMetaMembers()
 	{
 		List<IMetaMember> result = new ArrayList<>();
