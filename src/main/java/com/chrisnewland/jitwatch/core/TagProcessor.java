@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package com.chrisnewland.jitwatch.core;
 
 import java.util.Map;
@@ -16,11 +21,6 @@ public class TagProcessor
 	private static final char SPACE = ' ';
 	private static final char OPEN_BRACKET = '<';
 	private static final char CLOSE_BRACKET = '>';
-
-	public TagProcessor()
-	{
-
-	}
 
 	public Tag processLine(String line)
 	{

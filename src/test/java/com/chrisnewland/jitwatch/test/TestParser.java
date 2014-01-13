@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
- * http://www.chrisnewland.com/jitwatch
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package com.chrisnewland.jitwatch.test;
 
@@ -146,7 +146,7 @@ public class TestParser
     {
         Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
         IMetaMember member = new MetaMethod(m, null);
-    	
+            	
     	List<String> srcLinesList = new ArrayList<>();
     	
     	srcLinesList.add("public static <T> T[] copyOf(T[] original, int newLength) {");
@@ -175,6 +175,43 @@ public class TestParser
     	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
     	
     	assertEquals(8, bestMatchPos);
+    }
+    
+    @Test
+    public void testFindBestLineMatchForMemberSignatureBytecode()
+    {
+        Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+        IMetaMember member = new MetaMethod(m, null);
+    	
+    	List<String> srcLinesList = new ArrayList<>();
+    	
+    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);");
+    	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
+    	srcLinesList.add("public static byte[] copyOf(byte[], int);");
+    	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
+        	
+    	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
+    	
+    	assertEquals(1, bestMatchPos);
+    }
+    
+    @Test
+    public void testFindBestLineMatchForMemberSignatureBytecodeRegression()
+    {
+        Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class});
+        IMetaMember member = new MetaMethod(m, null);
+    	
+    	List<String> srcLinesList = new ArrayList<>();
+    	
+    	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
+    	srcLinesList.add("public static byte[] copyOf(byte[], int);");
+    	srcLinesList.add("public static byte[] copyOf(float[], int);");
+    	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
+    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);"); //TODO build table of T extends             
+        	
+    	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
+    	
+    	assertEquals(4, bestMatchPos);
     }
     
     @Test

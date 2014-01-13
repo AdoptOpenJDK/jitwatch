@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
- * http://www.chrisnewland.com/jitwatch
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package com.chrisnewland.jitwatch.loader;
 
@@ -52,7 +52,7 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.out.println("Could not obtain bytcode for class: " + fqClassName);
+			System.err.println("Could not obtain bytcode for class: " + fqClassName);
 		}
 		catch (IOException ioe)
 		{
@@ -74,7 +74,7 @@ public class BytecodeLoader
 	}
 
 	private static Map<String, String> parse(String result)
-	{
+	{		
 		String[] lines = result.split("\n");
 
 		int pos = 0;

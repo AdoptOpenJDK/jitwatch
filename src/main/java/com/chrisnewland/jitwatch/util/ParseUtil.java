@@ -1,62 +1,67 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
- * http://www.chrisnewland.com/jitwatch
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package com.chrisnewland.jitwatch.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.MemberSignatureParts;
 
 public class ParseUtil
 {
-	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
-	
-	private static final String S_OPEN_PARENTHESES = "(";
-	private static final String S_CLOSE_PARENTHESES = ")";
-	private static final String S_AT = "@";
-	private static final String S_HASH = "#";
-	private static final String S_SPACE = " ";
-	private static final String S_EMPTY = "";
-	private static final String S_SEMICOLON = ";";
-	
-	private static final String SQUARE_BRACKET_PAIR = "[]";
-	private static final String CONSTRUCTOR_INIT = "<init>";
-	
-	private static final String NAME_SHORT = "short";
-	private static final String NAME_CHARACTER = "char";
-	private static final String NAME_BYTE = "byte";
-	private static final String NAME_LONG = "long";
-	private static final String NAME_DOUBLE = "double";
-	private static final String NAME_BOOLEAN = "boolean";
-	private static final String NAME_INTEGER = "int";
-	private static final String NAME_FLOAT = "float";
+	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
+			.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
 
-	private static final char C_COMMA = ',';
-	private static final char C_DOT = '.';
-	private static final char C_OBJECT_REF = 'L';
-	private static final char C_SEMICOLON = ';';
-	private static final char C_OPEN_SQUARE_BRACKET = '[';
-	
-	private static final char TYPE_SHORT = 'S';
-	private static final char TYPE_CHARACTER = 'C';
-	private static final char TYPE_BYTE = 'B';
-	private static final char TYPE_VOID = 'V';
-	private static final char TYPE_LONG = 'J';
-	private static final char TYPE_DOUBLE = 'D';
-	private static final char TYPE_BOOLEAN = 'Z';
-	private static final char TYPE_INTEGER = 'I';
-	private static final char TYPE_FLOAT = 'F';
+	public static final String S_OPEN_PARENTHESES = "(";
+	public static final String S_CLOSE_PARENTHESES = ")";
+	public static final String S_AT = "@";
+	public static final String S_HASH = "#";
+	public static final String S_SPACE = " ";
+	public static final String S_EMPTY = "";
+	public static final String S_SEMICOLON = ";";
+
+	public static final String SQUARE_BRACKET_PAIR = "[]";
+	public static final String CONSTRUCTOR_INIT = "<init>";
+
+	public static final String NAME_SHORT = "short";
+	public static final String NAME_CHARACTER = "char";
+	public static final String NAME_BYTE = "byte";
+	public static final String NAME_LONG = "long";
+	public static final String NAME_DOUBLE = "double";
+	public static final String NAME_BOOLEAN = "boolean";
+	public static final String NAME_INTEGER = "int";
+	public static final String NAME_FLOAT = "float";
+
+	public static final char C_SPACE = ' ';
+	public static final char C_COMMA = ',';
+	public static final char C_DOT = '.';
+	public static final char C_OBJECT_REF = 'L';
+	public static final char C_SEMICOLON = ';';
+	public static final char C_OPEN_SQUARE_BRACKET = '[';
+	public static final char C_QUESTION = '?';
+
+	public static final char TYPE_SHORT = 'S';
+	public static final char TYPE_CHARACTER = 'C';
+	public static final char TYPE_BYTE = 'B';
+	public static final char TYPE_VOID = 'V';
+	public static final char TYPE_LONG = 'J';
+	public static final char TYPE_DOUBLE = 'D';
+	public static final char TYPE_BOOLEAN = 'Z';
+	public static final char TYPE_INTEGER = 'I';
+	public static final char TYPE_FLOAT = 'F';
 
 	public static long parseStamp(String stamp)
 	{
-	    return (long)(Double.parseDouble(stamp) * 1000);
+		return (long) (Double.parseDouble(stamp) * 1000);
 	}
-	
+
 	public static Class<?> getPrimitiveClass(char c)
 	{
 		switch (c)
@@ -85,11 +90,10 @@ public class ParseUtil
 	}
 
 	/*
-	 * [C => char[] [[I => int[][]
-	 * [Ljava.lang.Object; => java.lang.Object[]
+	 * [C => char[] [[I => int[][] [Ljava.lang.Object; => java.lang.Object[]
 	 */
 	public static String expandParameterType(String name)
-	{		
+	{
 		StringBuilder builder = new StringBuilder();
 
 		int arrayDepth = 0;
@@ -173,7 +177,8 @@ public class ParseUtil
 			String returnType = matcher.group(4);
 
 			Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
-			Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType); // length 1
+			Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType); // length
+																			// 1
 
 			Class<?> returnClass;
 
@@ -185,7 +190,7 @@ public class ParseUtil
 			{
 				returnClass = returnClasses[0];
 			}
-			
+
 			String signature = ParseUtil.buildMethodSignature(className, methodName, paramClasses, returnClass);
 
 			result = new String[] { className, signature };
@@ -346,82 +351,121 @@ public class ParseUtil
 
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
-	
+
+	public static String findBestMatchForMemberSignature(IMetaMember member, List<String> lines)
+	{
+		int index = findBestLineMatchForMemberSignature(member, lines);
+
+		return lines.get(index);
+	}
+
 	public static int findBestLineMatchForMemberSignature(IMetaMember member, List<String> lines)
-	{	
-		String methodName = member.getMemberName();
-		String modifier = member.getModifier();
+	{
+		String memberName = member.getMemberName();
+		int modifier = member.getModifier();
 		String returnTypeName = member.getReturnTypeName();
 		String[] paramTypeNames = member.getParamTypeNames();
-		
-		int index = 0;
+
 		int bestScoreLine = 0;
 		int bestScore = 0;
-		
-		for (String line : lines)
+
+		for (int i = 0; i < lines.size(); i++)
 		{
+
+			String line = lines.get(i);
+
 			int score = 0;
-			
-			// method name match
-			if (line.contains(methodName+S_OPEN_PARENTHESES) || line.contains(methodName+S_SPACE))
-			{								
-				if (line.contains(S_AT) || line.contains(S_HASH))
+
+			if (line.contains(memberName))
+			{
+				MemberSignatureParts msp = new MemberSignatureParts(line);
+
+				if (!memberName.equals(msp.getMemberName()))
 				{
-					// possibly a Javadoc reference to the method
 					continue;
 				}
 				
 				// modifiers matched
-				if (line.contains(modifier))
+				if (msp.getModifier() != modifier)
 				{
-					score++;
+					continue;
 				}
-				
-				int commaCount = 0;
-				int expectedCommas = paramTypeNames.length == 0 ? 0 : paramTypeNames.length - 1;
-				
-				String betweenParentheses = StringUtil.getSubstringBetween(line, S_OPEN_PARENTHESES, S_CLOSE_PARENTHESES);
-				
-				if (betweenParentheses != null)
+
+				List<String> mspParamTypes = msp.getParamTypes();
+
+				if (mspParamTypes.size() != paramTypeNames.length)
 				{
-					for (int i = 0; i < betweenParentheses.length(); i++)
-					{
-						if (betweenParentheses.charAt(i) == C_COMMA)
-						{
-							commaCount++;
-						}
-					}
-									
-					// correct number of parameters
-					if (commaCount == expectedCommas)
-					{
-						for (String paramType : paramTypeNames)
-						{
-							if (betweenParentheses.contains(paramType))
-							{
-								score++;
-							}
-						}
-					}				
-					
-					// return type matched
-					if (line.contains(returnTypeName))
+					continue;
+				}
+
+				int pos = 0;
+
+				for (String memberParamType : paramTypeNames)
+				{
+					String mspParamType = msp.getParamTypes().get(pos++);
+
+					if (compareTypeEquality(memberParamType, mspParamType, msp.getGenerics()))
 					{
 						score++;
 					}
-					
-					if (score > bestScore)
-					{
-						bestScoreLine = index;
-						bestScore = score;
-					}
 				}
-				
-			}
 
-			index++;
+				// return type matched
+				if (compareTypeEquality(returnTypeName, msp.getReturnType(), msp.getGenerics()))
+				{
+					score++;
+				}
+
+				if (score > bestScore)
+				{
+					bestScoreLine = i;
+					bestScore = score;
+				}
+			}
 		}
-		
-		return bestScoreLine;	
+
+		return bestScoreLine;
+	}
+
+	private static boolean compareTypeEquality(String memberTypeName, String mspTypeName, Map<String, String> genericsMap)
+	{
+		if (memberTypeName != null && memberTypeName.equals(mspTypeName))
+		{
+			return true;
+		}
+		else
+		{
+			// Substitute generics to match with non-generic signature
+			// public static <T extends java.lang.Object, U extends java.lang.Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>)";
+			// U[] -> java.lang.Object[]
+			String mspTypeNameWithoutArray = getParamTypeWithoutArrayBrackets(mspTypeName);
+			String genericSubstitution = genericsMap.get(mspTypeNameWithoutArray);
+
+			if (genericSubstitution != null)
+			{
+				mspTypeName = mspTypeName.replace(mspTypeNameWithoutArray, genericSubstitution);
+
+				if (memberTypeName != null && memberTypeName.equals(mspTypeName))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static String getParamTypeWithoutArrayBrackets(String paramType)
+	{
+		int bracketsIndex = paramType.indexOf(SQUARE_BRACKET_PAIR);
+
+		if (bracketsIndex != -1)
+		{
+			return paramType.substring(0, bracketsIndex);
+		}
+		else
+		{
+			return paramType;
+		}
 	}
 }
