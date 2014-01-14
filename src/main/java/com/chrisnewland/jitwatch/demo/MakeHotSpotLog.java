@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
+// Demo class to generate a simple hotspot.log
 // run with VM arguments
 // -XX:+UnlockDiagnosticVMOptions
 // -XX:+TraceClassLoading 
@@ -16,7 +17,6 @@ public class MakeHotSpotLog
 	{
 		addVariable(iterations);
 		addConstant(iterations);
-
 	}
 
 	public void addVariable(int iterations)
@@ -37,7 +37,7 @@ public class MakeHotSpotLog
 
 		for (int i = 0; i < iterations; i++)
 		{
-			count = add(count, i);
+			count = add(count, 1);
 		}
 
 		System.out.println("addConstant: " + count);
