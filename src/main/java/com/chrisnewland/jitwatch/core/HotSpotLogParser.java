@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
- * http://www.chrisnewland.com/jitwatch
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package com.chrisnewland.jitwatch.core;
 
@@ -167,8 +167,6 @@ public class HotSpotLogParser
 		currentLine = currentLine.replace("&lt;", "<");
 		currentLine = currentLine.replace("&gt;", ">");
 
-		// System.out.println("*" + currentLine);
-
 		if (currentLine.startsWith("<"))
 		{
 			boolean isSkip = false;
@@ -223,17 +221,13 @@ public class HotSpotLogParser
 
 	private void handleTag(Tag tag)
 	{
-		// System.out.println(tag);
-
 		if (inNativeCode)
 		{
-			// TODO: handle when tag occurs before assembly code dump completed
+			// TODO: file a bug report for mangled hotspot output
 			completeNativeCode();
 		}
 
 		String tagName = tag.getName();
-
-		// System.out.println("tag: " + tagName);
 
 		switch (tagName)
 		{

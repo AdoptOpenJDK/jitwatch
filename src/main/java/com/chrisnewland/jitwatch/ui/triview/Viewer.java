@@ -1,8 +1,14 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package com.chrisnewland.jitwatch.ui.triview;
 
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +42,7 @@ public class Viewer extends VBox
 	public static final String COLOUR_BLUE = "blue";
 
 	private int scrollIndex = 0;
+	private String originalSource;
 
 	public Viewer()
 	{
@@ -67,6 +74,8 @@ public class Viewer extends VBox
 		{
 			source = "Empty";
 		}
+		
+		originalSource = source;
 
 		source = source.replace("\t", "  "); // 2 spaces
 
@@ -172,16 +181,8 @@ public class Viewer extends VBox
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
 		
 		if (regexPos == -1)
-		{
-			ObservableList<Node> items = vBoxRows.getChildren();
-
-			List<String> lines = new ArrayList<>();
-			
-			for (Node text : items)
-			{
-				String line = ((Text) text).getText();
-				lines.add(line);
-			}			
+		{			
+			List<String> lines = Arrays.asList(originalSource.split("\n"));
 			
 			scrollIndex = ParseUtil.findBestLineMatchForMemberSignature(member, lines);
 		}

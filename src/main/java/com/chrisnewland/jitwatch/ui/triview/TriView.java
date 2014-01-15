@@ -1,13 +1,18 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
-import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
+import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import javafx.beans.value.ChangeListener;
@@ -17,7 +22,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
-
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -330,10 +334,8 @@ public class TriView extends Stage
         }
         
         viewerSource.jumpTo(currentMember);
-
-        String searchMethod = currentMember.getSignatureForBytecode();
-        Map<String, String> bytecodeCache = memberClass.getBytecodeCache(config.getClassLocations());
-        String bc = bytecodeCache.get(searchMethod);
+        
+        String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
 
         if (bc == null)
         {

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2013 Chris Newland. All rights reserved.
- * Licensed under https://github.com/chriswhocodes/jitwatch/blob/master/LICENSE-BSD
- * http://www.chrisnewland.com/jitwatch
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package com.chrisnewland.jitwatch.model;
 
@@ -43,9 +43,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		return memberName;
 	}
+	
+	@Override
+	public int getModifier()
+	{
+		return modifier;
+	}
 
 	@Override
-	public String getModifier()
+	public String getModifierString()
 	{
 		return Modifier.toString(modifier);
 	}
@@ -53,7 +59,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getReturnTypeName()
 	{
-		return (returnType == null) ? "" : StringUtil.makeUnqualified(returnType.getName());
+		return (returnType == null) ? "" : ParseUtil.expandParameterType(returnType.getName());
 	}
 
 	@Override
@@ -63,7 +69,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		for (Class<?> paramClass : paramTypes)
 		{
-			typeNames.add(StringUtil.makeUnqualified(paramClass.getName()));
+			typeNames.add(ParseUtil.expandParameterType(paramClass.getName()));
 		}
 		
 		return typeNames.toArray(new String[typeNames.size()]);
