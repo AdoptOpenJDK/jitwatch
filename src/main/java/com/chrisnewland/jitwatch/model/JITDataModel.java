@@ -83,15 +83,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     @Override
 	public Journal getJournal(String id)
     {
-        Journal journal = journalMap.get(id);
-
-        if (journal == null)
-        {
-            journal = new Journal();
-            journalMap.put(id, journal);
-        }
-
-        return journal;
+    	return journalMap.get(id);
     }
 
     // ugly but better than using COWAL with so many writes

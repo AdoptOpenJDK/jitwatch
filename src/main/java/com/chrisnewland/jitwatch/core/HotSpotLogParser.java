@@ -285,7 +285,7 @@ public class HotSpotLogParser
 			journalID = compileID;
 		}
 
-		if (compileID != null)
+		if (journalID != null)
 		{
 			model.addJournalEntry(journalID, tag);
 		}

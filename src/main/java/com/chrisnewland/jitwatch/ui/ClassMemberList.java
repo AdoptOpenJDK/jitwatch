@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.IntrinsicFinder;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
@@ -71,14 +72,14 @@ public class ClassMemberList extends VBox
 				parent.showMemberInfo(newVal);
 			}
 		});
-		
+
 		memberList.getItems().addListener(new ListChangeListener<IMetaMember>()
 		{
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IMetaMember> arg0)
 			{
-				setScrollBar();		
+				setScrollBar();
 			}
 		});
 
@@ -168,6 +169,13 @@ public class ClassMemberList extends VBox
 				if (journalID != null)
 				{
 					Journal journal = parent.getJournal(journalID);
+
+					if (journal == null)
+					{
+						// try appending compile_kind as OSR does not generate a
+						// unique compile_id
+						journal = parent.getJournal(journalID + JITWatchConstants.OSR);
+					}
 
 					if (journal != null)
 					{
@@ -261,11 +269,11 @@ public class ClassMemberList extends VBox
 
 		setScrollBar();
 	}
-	
+
 	private void setScrollBar()
 	{
 		int index = memberList.getSelectionModel().getSelectedIndex();
-		
+
 		memberList.scrollTo(index);
 	}
 
