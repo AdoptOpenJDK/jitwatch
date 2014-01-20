@@ -6,6 +6,7 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
@@ -42,6 +44,7 @@ public class Viewer extends VBox
 	public static final String COLOUR_BLUE = "blue";
 
 	private int scrollIndex = 0;
+	private int lastScrollIndex = -1;
 	private String originalSource;
 
 	public Viewer()
@@ -74,7 +77,7 @@ public class Viewer extends VBox
 		{
 			source = "Empty";
 		}
-		
+
 		originalSource = source;
 
 		source = source.replace("\t", "  "); // 2 spaces
@@ -160,11 +163,27 @@ public class Viewer extends VBox
 
 				ObservableList<Node> items = vBoxRows.getChildren();
 
-				for (Node text : items)
+				for (Node item : items)
 				{
-					String line = ((Text) text).getText();
+					String line = null;
 
-					builder.append(line).append("\n");
+					if (item instanceof Text)
+					{
+						Text text = (Text) item;
+
+						line = text.getText();
+					}
+					else if (item instanceof Label)
+					{
+						Label label = (Label) item;
+
+						line = label.getText();
+					}
+
+					if (line != null)
+					{
+						builder.append(line).append("\n");
+					}
 				}
 
 				content.putString(builder.toString());
@@ -173,17 +192,20 @@ public class Viewer extends VBox
 			}
 		});
 	}
+	
+	//TODO new idea - branch prediction stats using bci bytecode index
+	// and taken / not taken from Journal :)
 
 	public void jumpTo(IMetaMember member)
 	{
 		scrollIndex = 0;
 
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
-		
+
 		if (regexPos == -1)
-		{			
+		{
 			List<String> lines = Arrays.asList(originalSource.split("\n"));
-			
+
 			scrollIndex = ParseUtil.findBestLineMatchForMemberSignature(member, lines);
 		}
 		else
@@ -191,40 +213,85 @@ public class Viewer extends VBox
 			scrollIndex = regexPos;
 		}
 
-		setScrollBar();
+		highlightLine(scrollIndex);
 	}
-	
+
+	// ugh! dirty hack for highlighting
+	private void highlightLine(int pos)
+	{
+		System.out.println("highlightLine: " + pos);
+		
+		if (pos != 0)
+		{
+			if (lastScrollIndex != -1)
+			{
+				// revert to black Text
+				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
+				Text text = new Text(label.getText());
+				text.setFill(Color.BLACK);
+				vBoxRows.getChildren().set(lastScrollIndex, text);
+			}
+
+			// replace new selected Text with background coloured label
+			Text text = (Text) vBoxRows.getChildren().get(pos);
+			Label label = new Label(text.getText());
+			label.prefWidthProperty().bind(vBoxRows.widthProperty());
+			label.setStyle("-fx-background-color:red");
+			vBoxRows.getChildren().set(pos, label);
+
+			lastScrollIndex = pos;
+
+			setScrollBar();
+		}
+	}
+
 	private int findPosForRegex(String regex)
 	{
 		int result = -1;
-		
+
 		ObservableList<Node> items = vBoxRows.getChildren();
 
 		Pattern pattern = Pattern.compile(regex);
 
 		int index = 0;
-		
+
 		for (Node item : items)
 		{
-			Text text = (Text) item;
+			String line = null;
 
-			String line = text.getText();
-
-			Matcher matcher = pattern.matcher(line);
-			if (matcher.find())
+			if (item instanceof Text)
 			{
-				result = index;
-				break;
+				Text text = (Text) item;
+
+				line = text.getText();
+			}
+			else if (item instanceof Label)
+			{
+				Label label = (Label) item;
+
+				line = label.getText();
+			}
+
+			if (line != null)
+			{
+				Matcher matcher = pattern.matcher(line);
+				if (matcher.find())
+				{
+					result = index;
+					break;
+				}
 			}
 
 			index++;
 		}
-		
-		return result;		
+
+		return result;
 	}
-	
+
 	private void setScrollBar()
 	{
+		System.out.println("setScrollBar:");
+
 		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()
 				* (scrollPane.getVmax() - scrollPane.getVmin());
 		scrollPane.setVvalue(scrollPos);
