@@ -218,9 +218,7 @@ public class Viewer extends VBox
 
 	// ugh! dirty hack for highlighting
 	private void highlightLine(int pos)
-	{
-		System.out.println("highlightLine: " + pos);
-		
+	{	
 		if (pos != 0)
 		{
 			if (lastScrollIndex != -1)
@@ -290,8 +288,6 @@ public class Viewer extends VBox
 
 	private void setScrollBar()
 	{
-		System.out.println("setScrollBar:");
-
 		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()
 				* (scrollPane.getVmax() - scrollPane.getVmin());
 		scrollPane.setVvalue(scrollPos);
