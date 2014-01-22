@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MemberSignatureParts;
 
@@ -18,14 +19,6 @@ public class ParseUtil
 {
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
-
-	public static final String S_OPEN_PARENTHESES = "(";
-	public static final String S_CLOSE_PARENTHESES = ")";
-	public static final String S_AT = "@";
-	public static final String S_HASH = "#";
-	public static final String S_SPACE = " ";
-	public static final String S_EMPTY = "";
-	public static final String S_SEMICOLON = ";";
 
 	public static final String SQUARE_BRACKET_PAIR = "[]";
 	public static final String CONSTRUCTOR_INIT = "<init>";
@@ -38,14 +31,6 @@ public class ParseUtil
 	public static final String NAME_BOOLEAN = "boolean";
 	public static final String NAME_INTEGER = "int";
 	public static final String NAME_FLOAT = "float";
-
-	public static final char C_SPACE = ' ';
-	public static final char C_COMMA = ',';
-	public static final char C_DOT = '.';
-	public static final char C_OBJECT_REF = 'L';
-	public static final char C_SEMICOLON = ';';
-	public static final char C_OPEN_SQUARE_BRACKET = '[';
-	public static final char C_QUESTION = '?';
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';

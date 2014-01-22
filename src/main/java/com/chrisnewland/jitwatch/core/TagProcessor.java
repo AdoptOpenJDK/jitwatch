@@ -10,6 +10,7 @@ import java.util.Map;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
@@ -17,21 +18,16 @@ public class TagProcessor
 	private Tag currentTag;
 	private Tag topTag = null;
 
-	private static final char SLASH = '/';
-	private static final char SPACE = ' ';
-	private static final char OPEN_BRACKET = '<';
-	private static final char CLOSE_BRACKET = '>';
-
 	public Tag processLine(String line)
 	{
 		Tag result = null;
 
 		if (line != null && line.length() > 3)
 		{
-			if (line.charAt(0) == OPEN_BRACKET)
+			if (line.charAt(0) == C_OPEN_BRACKET)
 			{
 				// closing tag
-				if (line.charAt(1) == SLASH)
+				if (line.charAt(1) == C_SLASH)
 				{
 					String closeName = line.substring(2, line.length() - 1);
 
@@ -49,11 +45,11 @@ public class TagProcessor
 				}
 				else
 				{
-					int indexEndName = line.indexOf(SPACE);
+					int indexEndName = line.indexOf(C_SPACE);
 
 					if (indexEndName == -1)
 					{
-						indexEndName = line.indexOf(CLOSE_BRACKET);
+						indexEndName = line.indexOf(C_CLOSE_BRACKET);
 					}
 
 					String name = line.substring(1, indexEndName);
@@ -62,7 +58,7 @@ public class TagProcessor
 
 					Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
 
-					boolean selfClosing = (line.charAt(line.length() - 2) == SLASH);
+					boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
 
 					Tag t;
 

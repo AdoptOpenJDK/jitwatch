@@ -5,7 +5,7 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
-// Demo class to generate a simple hotspot.log
+// Demo class to generate an example hotspot.log
 // run with VM arguments
 // -XX:+UnlockDiagnosticVMOptions
 // -XX:+TraceClassLoading 
@@ -17,6 +17,7 @@ public class MakeHotSpotLog
 	{
 		addVariable(iterations);
 		addConstant(iterations);
+		randomBranchTest(iterations);
 	}
 
 	public void addVariable(int iterations)
@@ -43,9 +44,37 @@ public class MakeHotSpotLog
 		System.out.println("addConstant: " + count);
 	}
 
+	private void randomBranchTest(int iterations)
+	{
+		long count = 0;
+		int adds = 0;
+		int subs = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			if (Math.random() < 0.5)
+			{
+				count = add(count, 1);
+				adds++;
+			}
+			else
+			{
+				count = sub(count, 1);
+				subs++;
+			}
+		}
+
+		System.out.println("addBranchPredictionChange: " + count  + " " + adds + " " + subs);
+	}
+
 	private long add(long a, long b)
 	{
 		return a + b;
+	}
+	
+	private long sub(long a, long b)
+	{
+		return a - b;
 	}
 
 	public static void main(String[] args)

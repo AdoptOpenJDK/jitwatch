@@ -8,10 +8,8 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.chrisnewland.jitwatch.ui.triview.Viewer;
-
 import javafx.event.EventHandler;
-import javafx.scene.text.Text;
+import javafx.scene.control.Label;
 import javafx.stage.WindowEvent;
 
 public class TextViewerStage extends AbstractTextViewerStage
@@ -43,10 +41,8 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 		int maxWidth = Integer.toString(lines.length).length();
 
-		List<Text> textItems = new ArrayList<>();
-		
-		String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill: " + Viewer.COLOUR_BLACK + ";";
-		
+		List<Label> labels = new ArrayList<>();
+				
 		for (int i = 0; i < lines.length; i++)
 		{
 			String row = lines[i];
@@ -63,13 +59,11 @@ public class TextViewerStage extends AbstractTextViewerStage
 				maxLineLength = rowLen;
 			}
 
-			Text lineText = new Text(lines[i]);
+			Label lblLine = new Label(lines[i]);
 
-			lineText.setStyle(style);
-
-			textItems.add(lineText);
+			labels.add(lblLine);
 		}
 		
-		setContent(textItems, maxLineLength);
+		setContent(labels, maxLineLength);
 	}
 }

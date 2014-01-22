@@ -10,7 +10,6 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.IntrinsicFinder;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
@@ -164,25 +163,12 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				String journalID = member.getJournalID();
+				Journal journal = parent.getJournal(member);
 
-				if (journalID != null)
+				if (journal != null)
 				{
-					Journal journal = parent.getJournal(journalID);
-
-					if (journal == null)
-					{
-						// try appending compile_kind as OSR does not generate a
-						// unique compile_id
-						journal = parent.getJournal(journalID + JITWatchConstants.OSR);
-					}
-
-					if (journal != null)
-					{
-						parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
-					}
+					parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
 				}
-
 			}
 		});
 
@@ -193,30 +179,26 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				String journalID = member.getJournalID();
+				Journal journal = parent.getJournal(member);
 
 				StringBuilder builder = new StringBuilder();
 
-				if (journalID != null)
+				if (journal != null)
 				{
-					Journal journal = parent.getJournal(journalID);
+					Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
 
-					if (journal != null)
+					if (intrinsics.size() > 0)
 					{
-						Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
-
-						if (intrinsics.size() > 0)
+						for (Map.Entry<String, String> entry : intrinsics.entrySet())
 						{
-							for (Map.Entry<String, String> entry : intrinsics.entrySet())
-							{
-								builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-							}
-						}
-						else
-						{
-							builder.append("No intrinsics used in this method");
+							builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
 						}
 					}
+					else
+					{
+						builder.append("No intrinsics used in this method");
+					}
+
 				}
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());

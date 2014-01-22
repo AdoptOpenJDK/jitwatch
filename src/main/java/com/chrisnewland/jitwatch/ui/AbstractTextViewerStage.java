@@ -12,7 +12,7 @@ import com.chrisnewland.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.text.Text;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -44,7 +44,7 @@ public abstract class AbstractTextViewerStage extends Stage
 		setScene(scene);
 	}
 
-	protected void setContent(List<Text> items, int maxLineLength)
+	protected void setContent(List<Label> items, int maxLineLength)
 	{
 		viewer.setContent(items);
 
