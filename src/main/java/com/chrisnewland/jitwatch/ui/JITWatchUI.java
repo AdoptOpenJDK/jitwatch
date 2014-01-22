@@ -15,6 +15,7 @@ import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
@@ -859,8 +860,24 @@ public class JITWatchUI extends Application implements IJITListener
 		return model.getPackageManager();
 	}
 
-	public Journal getJournal(String id)
+	public Journal getJournal(IMetaMember member)
 	{
-		return model.getJournal(id);
+		Journal journal = null;
+		
+		String journalID = member.getJournalID();
+
+		if (journalID != null)
+		{
+			journal = model.getJournal(journalID);
+
+			if (journal == null)
+			{
+				// try appending compile_kind as OSR does not generate a
+				// unique compile_id
+				journal = model.getJournal(journalID + JITWatchConstants.OSR);
+			}
+		}
+		
+		return journal;
 	}
 }

@@ -10,11 +10,14 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import javafx.beans.value.ChangeListener;
@@ -27,11 +30,13 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.text.Text;
+
+//import javafx.scene.text.Label;
 
 public class Viewer extends VBox
 {
@@ -46,6 +51,11 @@ public class Viewer extends VBox
 	private int scrollIndex = 0;
 	private int lastScrollIndex = -1;
 	private String originalSource;
+
+	private static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+	private static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
+
+	private Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
 	public Viewer()
 	{
@@ -73,6 +83,8 @@ public class Viewer extends VBox
 
 	public void setContent(String source, boolean showLineNumbers)
 	{
+		lineAnnotations.clear();
+
 		if (source == null)
 		{
 			source = "Empty";
@@ -86,7 +98,7 @@ public class Viewer extends VBox
 
 		int maxWidth = Integer.toString(lines.length).length();
 
-		List<Text> textItems = new ArrayList<>();
+		List<Label> labels = new ArrayList<>();
 
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -97,22 +109,74 @@ public class Viewer extends VBox
 				lines[i] = padLineNumber(i + 1, maxWidth) + "  " + row;
 			}
 
-			Text lineText = new Text(lines[i]);
+			Label lblLine = new Label(lines[i]);
 
-			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill: black";
+			lblLine.setStyle(STYLE_UNHIGHLIGHTED);
 
-			lineText.setStyle(style);
-
-			textItems.add(lineText);
+			labels.add(lblLine);
 		}
 
-		setContent(textItems);
+		setContent(labels);
 	}
 
-	public void setContent(List<Text> items)
+	public void setContent(List<Label> items)
 	{
+		lineAnnotations.clear();
+
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
+	}
+
+	public void setLineAnnotations(Map<Integer, LineAnnotation> annotations)
+	{
+		this.lineAnnotations = annotations;
+
+		for (Map.Entry<Integer, LineAnnotation> entry : annotations.entrySet())
+		{
+			int lineReference = entry.getKey();
+			LineAnnotation la = entry.getValue();
+			Color colour = la.getColour();
+
+			Label lblLine = null;
+
+			switch (la.getType())
+			{
+			case SOURCE:
+				lblLine = (Label) vBoxRows.getChildren().get(lineReference);
+				break;
+			case BYTECODE:
+				lblLine = findLineByBytecode(lineReference);
+				break;
+
+			case ASSEMBLY:
+				lblLine = (Label) vBoxRows.getChildren().get(lineReference);
+				break;
+			}
+
+			if (lblLine != null)
+			{
+				lblLine.setTextFill(colour);
+				lblLine.setTooltip(new Tooltip(la.getAnnotation()));
+			}
+		}
+	}
+
+	private Label findLineByBytecode(int reference)
+	{
+		Label label = null;
+
+		for (Node node : vBoxRows.getChildren())
+		{
+			String text = ((Label) node).getText();
+
+			if (text.startsWith(reference + ":"))
+			{
+				label = (Label) node;
+				break;
+			}
+		}
+
+		return label;
 	}
 
 	private String padLineNumber(int number, int maxWidth)
@@ -165,25 +229,8 @@ public class Viewer extends VBox
 
 				for (Node item : items)
 				{
-					String line = null;
-
-					if (item instanceof Text)
-					{
-						Text text = (Text) item;
-
-						line = text.getText();
-					}
-					else if (item instanceof Label)
-					{
-						Label label = (Label) item;
-
-						line = label.getText();
-					}
-
-					if (line != null)
-					{
-						builder.append(line).append("\n");
-					}
+					String line = ((Label) item).getText();
+					builder.append(line).append("\n");
 				}
 
 				content.putString(builder.toString());
@@ -192,9 +239,6 @@ public class Viewer extends VBox
 			}
 		});
 	}
-	
-	//TODO new idea - branch prediction stats using bci bytecode index
-	// and taken / not taken from Journal :)
 
 	public void jumpTo(IMetaMember member)
 	{
@@ -218,24 +262,20 @@ public class Viewer extends VBox
 
 	// ugh! dirty hack for highlighting
 	private void highlightLine(int pos)
-	{	
+	{
 		if (pos != 0)
 		{
 			if (lastScrollIndex != -1)
 			{
-				// revert to black Text
+				// revert to black Label
 				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
-				Text text = new Text(label.getText());
-				text.setFill(Color.BLACK);
-				vBoxRows.getChildren().set(lastScrollIndex, text);
+				label.setStyle(STYLE_UNHIGHLIGHTED);
 			}
 
-			// replace new selected Text with background coloured label
-			Text text = (Text) vBoxRows.getChildren().get(pos);
-			Label label = new Label(text.getText());
+			// replace new selected Label with background coloured label
+			Label label = (Label) vBoxRows.getChildren().get(pos);
 			label.prefWidthProperty().bind(vBoxRows.widthProperty());
-			label.setStyle("-fx-background-color:red");
-			vBoxRows.getChildren().set(pos, label);
+			label.setStyle(STYLE_HIGHLIGHTED);
 
 			lastScrollIndex = pos;
 
@@ -255,29 +295,13 @@ public class Viewer extends VBox
 
 		for (Node item : items)
 		{
-			String line = null;
+			String line = ((Label) item).getText();
 
-			if (item instanceof Text)
+			Matcher matcher = pattern.matcher(line);
+			if (matcher.find())
 			{
-				Text text = (Text) item;
-
-				line = text.getText();
-			}
-			else if (item instanceof Label)
-			{
-				Label label = (Label) item;
-
-				line = label.getText();
-			}
-
-			if (line != null)
-			{
-				Matcher matcher = pattern.matcher(line);
-				if (matcher.find())
-				{
-					result = index;
-					break;
-				}
+				result = index;
+				break;
 			}
 
 			index++;

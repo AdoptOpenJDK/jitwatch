@@ -30,6 +30,7 @@ public class JITWatchConstants
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
 	public static final String TAG_TASK = "task";
+	public static final String TAG_BC = "bc";
 	public static final String TAG_CODE_CACHE = "code_cache";
 	public static final String TAG_TASK_DONE = "task_done";
 	public static final String TAG_START_COMPILE_THREAD = "start_compile_thread";
@@ -41,6 +42,8 @@ public class JITWatchConstants
 	public static final String TAG_INTRINSIC = "intrinsic";
 	public static final String TAG_INLINE_FAIL = "inline_fail";
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
+	public static final String TAG_BRANCH = "branch";
+
 
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";
@@ -52,6 +55,7 @@ public class JITWatchConstants
 	public static final String ATTR_COMPILE_KIND = "compile_kind";
 	public static final String ATTR_STAMP = "stamp";
 	public static final String ATTR_NAME = "name";
+	public static final String ATTR_BCI = "bci";
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
 	public static final String ATTR_NMSIZE = "nmsize";
@@ -62,5 +66,28 @@ public class JITWatchConstants
 	public static final String ATTR_ID = "id";
 	public static final String ATTR_HOLDER = "holder";
 	public static final String ATTR_RETURN = "return";
+	public static final String ATTR_REASON = "reason";
 	public static final String ATTR_ARGUMENTS = "arguments";
+	public static final String ATTR_BRANCH_COUNT = "cnt";
+	public static final String ATTR_BRANCH_TAKEN = "taken";
+	public static final String ATTR_BRANCH_PROB = "prob";
+	
+	public static final String S_OPEN_PARENTHESES = "(";
+	public static final String S_CLOSE_PARENTHESES = ")";
+	public static final String S_AT = "@";
+	public static final String S_HASH = "#";
+	public static final String S_SPACE = " ";
+	public static final String S_EMPTY = "";
+	public static final String S_SEMICOLON = ";";
+	
+	public static final char C_SLASH = '/';
+	public static final char C_OPEN_BRACKET = '<';
+	public static final char C_CLOSE_BRACKET = '>';
+	public static final char C_SPACE = ' ';
+	public static final char C_COMMA = ',';
+	public static final char C_DOT = '.';
+	public static final char C_OBJECT_REF = 'L';
+	public static final char C_SEMICOLON = ';';
+	public static final char C_OPEN_SQUARE_BRACKET = '[';
+	public static final char C_QUESTION = '?';
 }

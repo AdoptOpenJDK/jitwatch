@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.chrisnewland.jitwatch.util.ParseUtil.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MemberSignatureParts
 {

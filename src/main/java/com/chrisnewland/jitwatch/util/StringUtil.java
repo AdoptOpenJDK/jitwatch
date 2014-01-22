@@ -33,10 +33,6 @@ public class StringUtil
 				return "0";
 			}
 		}
-		else if (showMillis && stamp <= 1000)
-		{
-			return "0." + pad(stamp, 3);
-		}
 
 		long stampCopy = stamp;
 
