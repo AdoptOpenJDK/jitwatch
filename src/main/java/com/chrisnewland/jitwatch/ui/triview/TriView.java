@@ -120,7 +120,10 @@ public class TriView extends Stage
 			{
 				if (!ignoreComboChanged)
 				{
-					TriView.this.setMember(newVal);
+				    if (newVal != null)
+				    {
+				        TriView.this.setMember(newVal);
+				    }
 				}
 			}
 		});
