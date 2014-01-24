@@ -12,6 +12,7 @@ import java.util.List;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.scene.Scene;
@@ -94,7 +95,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 				if (cStamp != null)
 				{
-					compiledStampTime = 1000 * Double.parseDouble(cStamp);
+					compiledStampTime = ParseUtil.parseStamp(cStamp);
 				}
 			}
 
