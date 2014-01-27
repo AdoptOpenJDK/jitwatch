@@ -6,8 +6,10 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.util.List;
+import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
@@ -42,6 +44,11 @@ public abstract class AbstractTextViewerStage extends Stage
 		Scene scene = new Scene(viewer, 640, 480);
 
 		setScene(scene);
+	}
+
+	public void setLineAnnotations(Map<Integer, LineAnnotation> annotationMap)
+	{
+		viewer.setLineAnnotations(annotationMap);
 	}
 
 	protected void setContent(List<Label> items, int maxLineLength)

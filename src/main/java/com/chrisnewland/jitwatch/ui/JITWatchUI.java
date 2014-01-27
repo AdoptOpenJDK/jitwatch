@@ -24,6 +24,7 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
+import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -598,7 +599,11 @@ public class JITWatchUI extends Application implements IJITListener
 
 		String bc = bytecodeCache.get(searchMethod);
 
-		openTextViewer("Bytecode for " + member.toString(), bc, false);
+		TextViewerStage tvs = openTextViewer("Bytecode for " + member.toString(), bc, false);
+
+		Journal journal = getJournal(member);
+		
+		tvs.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
 	}
 
 	void openAssembly(IMetaMember member)
@@ -607,16 +612,18 @@ public class JITWatchUI extends Application implements IJITListener
 		openTextViewer("Native code for " + member.toString(), assembly, false);
 	}
 
-	void openTextViewer(String title, String content)
+	TextViewerStage openTextViewer(String title, String content)
 	{
-		openTextViewer(title, content, false);
+		return openTextViewer(title, content, false);
 	}
 
-	void openTextViewer(String title, String content, boolean lineNumbers)
+	TextViewerStage openTextViewer(String title, String content, boolean lineNumbers)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
 		tvs.show();
 		openPopupStages.add(tvs);
+	
+		return tvs;
 	}
 
 	void openJournalViewer(String title, Journal journal)
@@ -630,6 +637,7 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
+		//fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Log Files",  "*.log"), new FileChooser.ExtensionFilter("All Files",  "*.*"));
 
 		String searchDir = config.getLastLogDir();
 
