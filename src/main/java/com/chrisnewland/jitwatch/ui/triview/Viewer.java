@@ -84,6 +84,7 @@ public class Viewer extends VBox
 	public void setContent(String source, boolean showLineNumbers)
 	{
 		lineAnnotations.clear();
+		lastScrollIndex = -1;
 
 		if (source == null)
 		{
@@ -122,6 +123,7 @@ public class Viewer extends VBox
 	public void setContent(List<Label> items)
 	{
 		lineAnnotations.clear();
+		lastScrollIndex = -1;
 
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);

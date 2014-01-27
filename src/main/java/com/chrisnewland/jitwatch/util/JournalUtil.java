@@ -43,19 +43,25 @@ public class JournalUtil
 					switch (name)
 					{
 					case TAG_BC:
+					{
 						String bci = attrs.get(ATTR_BCI);
 						currentBytecode = Integer.parseInt(bci);
+					}
 						break;
 					case TAG_INLINE_SUCCESS:
-						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, "Inlined: " + attrs.get(ATTR_REASON),
-								Color.GREEN));
+					{
+						result.put(currentBytecode,
+								new LineAnnotation(AnnotationType.BYTECODE, "Inlined: " + attrs.get(ATTR_REASON), Color.GREEN));
+					}
 						break;
 					case TAG_INLINE_FAIL:
-						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, "Not Inlined: " + attrs.get(ATTR_REASON),
-								Color.RED));
+					{
+						result.put(currentBytecode,
+								new LineAnnotation(AnnotationType.BYTECODE, "Not Inlined: " + attrs.get(ATTR_REASON), Color.RED));
+					}
 						break;
 					case TAG_BRANCH:
-					
+					{
 						String count = attrs.get(ATTR_BRANCH_COUNT);
 						String taken = attrs.get(ATTR_BRANCH_TAKEN);
 						String prob = attrs.get(ATTR_BRANCH_PROB);
@@ -65,7 +71,16 @@ public class JournalUtil
 								.append(prob);
 
 						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
-					
+					}
+						break;
+					case TAG_INTRINSIC:
+					{
+						StringBuilder reason = new StringBuilder();
+						reason.append("Intrinsic: ").append(attrs.get(ATTR_ID));
+
+						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
+
+					}
 						break;
 					}
 				}
@@ -79,6 +94,8 @@ public class JournalUtil
 	{
 		List<Tag> result = new ArrayList<>();
 
+		// find the latest task tag
+		// this is the most recent compile task for the member
 		Tag lastTaskTag = null;
 
 		for (Tag tag : journal.getEntryList())
