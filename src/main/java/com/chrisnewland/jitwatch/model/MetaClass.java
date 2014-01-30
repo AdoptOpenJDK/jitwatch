@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
@@ -77,8 +78,8 @@ public class MetaClass implements Comparable<MetaClass>
 	public String toString2()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append(classPackage.getName()).append(".").append(className).append(" ").append(compiledMethodCount)
-				.append("/").append(classMethods.size());
+		builder.append(classPackage.getName()).append(S_DOT).append(className).append(C_SPACE).append(compiledMethodCount)
+				.append(S_SLASH).append(classMethods.size());
 
 		return builder.toString();
 	}

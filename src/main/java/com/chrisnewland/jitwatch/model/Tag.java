@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 public class Tag
 {
 	private String name;
@@ -134,8 +136,8 @@ public class Tag
 		{
 			for (Map.Entry<String, String> entry : attrs.entrySet())
 			{
-				builder.append(' ').append(entry.getKey()).append("=\"");
-				builder.append(entry.getValue()).append('"');
+				builder.append(C_SPACE).append(entry.getKey()).append("=\"");
+				builder.append(entry.getValue()).append(C_DOUBLE_QUOTE);
 			}
 		}
 

@@ -18,6 +18,8 @@ import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 
 public class HotSpotLogParser
 {
@@ -163,11 +165,11 @@ public class HotSpotLogParser
 
 	private void handleLine(String currentLine)
 	{
-		currentLine = currentLine.replace("&apos;", "'");
-		currentLine = currentLine.replace("&lt;", "<");
-		currentLine = currentLine.replace("&gt;", ">");
+		currentLine = currentLine.replace("&apos;", S_QUOTE);
+		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
+		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
 
-		if (currentLine.startsWith("<"))
+		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
 			boolean isSkip = false;
 
@@ -270,13 +272,13 @@ public class HotSpotLogParser
 
 		Map<String, String> attrs = tag.getAttrs();
 
-		String compileID = attrs.get(JITWatchConstants.ATTR_COMPILE_ID);
-		String compileKind = attrs.get(JITWatchConstants.ATTR_COMPILE_KIND);
+		String compileID = attrs.get(ATTR_COMPILE_ID);
+		String compileKind = attrs.get(ATTR_COMPILE_KIND);
 
 		String journalID;
 
 		// osr compiles do not have unique compile IDs so concat compile_kind
-		if (compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind))
+		if (compileID != null && compileKind != null && OSR.equals(compileKind))
 		{
 			journalID = compileID + compileKind;
 		}
@@ -317,11 +319,11 @@ public class HotSpotLogParser
 	{
 		Map<String, String> attrs = tag.getAttrs();
 
-		String fqMethodName = attrs.get(JITWatchConstants.METHOD);
+		String fqMethodName = attrs.get(METHOD);
 
 		if (fqMethodName != null)
 		{
-			fqMethodName = fqMethodName.replace("/", ".");
+			fqMethodName = fqMethodName.replace(S_SLASH, S_DOT);
 
 			boolean packageOK = config.isAllowedPackage(fqMethodName);
 
@@ -426,7 +428,7 @@ public class HotSpotLogParser
 	 */
 	private void handleLoaded(String currentLine)
 	{
-		String fqClassName = StringUtil.getSubstringBetween(currentLine, JITWatchConstants.LOADED, " ");
+		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
 		{
@@ -442,7 +444,7 @@ public class HotSpotLogParser
 			}
 			else
 			{
-				packageName = "";
+				packageName = S_EMPTY;
 				className = fqClassName;
 			}
 
@@ -482,13 +484,13 @@ public class HotSpotLogParser
 
 	public String convertNativeCodeMethodName(String name)
 	{
-		name = name.replace("'", "");
+		name = name.replace(S_QUOTE, S_EMPTY);
 
-		int methodMarkIndex = name.indexOf(JITWatchConstants.NATIVE_CODE_METHOD_MARK);
+		int methodMarkIndex = name.indexOf(NATIVE_CODE_METHOD_MARK);
 
 		if (methodMarkIndex != -1)
 		{
-			name = name.substring(methodMarkIndex + JITWatchConstants.NATIVE_CODE_METHOD_MARK.length());
+			name = name.substring(methodMarkIndex + NATIVE_CODE_METHOD_MARK.length());
 			name = name.trim();
 		}
 
@@ -498,10 +500,10 @@ public class HotSpotLogParser
 
 		if (inPos != -1)
 		{
-			name = name.substring(inPos + inToken.length()) + " " + name.substring(0, inPos);
+			name = name.substring(inPos + inToken.length()) + C_SPACE + name.substring(0, inPos);
 		}
 
-		name = name.replaceAll("/", ".");
+		name = name.replaceAll(S_SLASH, S_DOT);
 
 		return name;
 	}

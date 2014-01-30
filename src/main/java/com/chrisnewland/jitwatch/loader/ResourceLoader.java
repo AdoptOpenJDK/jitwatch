@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import com.chrisnewland.jitwatch.model.MetaClass;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ResourceLoader
 {
@@ -30,7 +31,7 @@ public class ResourceLoader
 			fqName = fqName.substring(0, dollarPos);
 		}
 
-		fqName = fqName.replace(".", File.separator) + ".java";
+		fqName = fqName.replace(S_DOT, File.separator) + ".java";
 				
 		return fqName;
 	}

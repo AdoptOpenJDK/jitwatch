@@ -138,11 +138,11 @@ public class MemberSignatureParts
 	private void buildGenerics(String genericsString)
 	{
 		String stripped = genericsString.substring(1, genericsString.length() - 1);
-		String[] substitutions = stripped.split(",");
+		String[] substitutions = stripped.split(S_COMMA);
 
 		for (String sub : substitutions)
 		{
-			sub = sub.replace("/", "."); // in package names
+			sub = sub.replace(S_SLASH, S_DOT); // in package names
 			
 			if (sub.contains(" extends "))
 			{

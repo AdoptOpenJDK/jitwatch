@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITWatchConfig
 {
@@ -72,17 +73,17 @@ public class JITWatchConfig
 
         if (confPackages != null && confPackages.trim().length() > 0)
         {
-            allowedPackages = StringUtil.textToList(confPackages, ",");
+            allowedPackages = StringUtil.textToList(confPackages, S_COMMA);
         }
 
         if (confClasses != null && confClasses.trim().length() > 0)
         {
-            classLocations = StringUtil.textToList(confClasses, ",");
+            classLocations = StringUtil.textToList(confClasses, S_COMMA);
         }
 
         if (confSources != null && confSources.trim().length() > 0)
         {
-            sourceLocations = StringUtil.textToList(confSources, ",");
+            sourceLocations = StringUtil.textToList(confSources, S_COMMA);
         }
 
         showOnlyCompiledMembers = Boolean.parseBoolean(loadProps.getProperty(KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.TRUE.toString()));
@@ -98,9 +99,9 @@ public class JITWatchConfig
     {
         Properties saveProps = new Properties();
 
-        saveProps.put(KEY_ALLOWED_PACKAGES, StringUtil.listToText(allowedPackages, ","));
-        saveProps.put(KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, ","));
-        saveProps.put(KEY_CLASS_LOCATIONS, StringUtil.listToText(classLocations, ","));
+        saveProps.put(KEY_ALLOWED_PACKAGES, StringUtil.listToText(allowedPackages, S_COMMA));
+        saveProps.put(KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
+        saveProps.put(KEY_CLASS_LOCATIONS, StringUtil.listToText(classLocations, S_COMMA));
         saveProps.put(KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.toString(showOnlyCompiledMembers));
         saveProps.put(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
         saveProps.put(KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
@@ -135,7 +136,7 @@ public class JITWatchConfig
     {
         for (String allowedPackage : allowedPackages)
         {
-            if (allowedPackage.equals(packageName) || packageName.startsWith(allowedPackage + "."))
+            if (allowedPackage.equals(packageName) || packageName.startsWith(allowedPackage + S_DOT))
             {
                 return true;
             }

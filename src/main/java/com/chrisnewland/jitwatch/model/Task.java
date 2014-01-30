@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class Task extends Tag
 {
@@ -43,24 +44,24 @@ public class Task extends Tag
 		Tag klassTag = parseDictionary.getKlass(klassId);
 
 		String klassName = klassTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
-		klassName = klassName.replace("/", ".");
+		klassName = klassName.replace(S_SLASH, S_DOT);
 		
 		builder.append(" <!-- ");
 		builder.append(getTypeOrKlass(returnTypeID));
-		builder.append(" ");
+		builder.append(C_SPACE);
 		builder.append(klassName);
-		builder.append(".");
+		builder.append(S_DOT);
 		builder.append(methodName);
-		builder.append("(");
+		builder.append(S_OPEN_PARENTHESES);
 		
 		if (args != null && args.length() > 0)
 		{
-			String[] ids = args.split(" ");
+			String[] ids = args.split(S_SPACE);
 			
 			for(String id : ids)
 			{
 				builder.append(getTypeOrKlass(id));
-				builder.append(",");
+				builder.append(S_COMMA);
 			}
 			
 			builder.deleteCharAt(builder.length()-1);
@@ -84,7 +85,7 @@ public class Task extends Tag
 			if (klassTag != null)
 			{
 				result = klassTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
-				result = result.replace("/", ".");
+				result = result.replace(S_SLASH, S_DOT);
 			}
 		}
 		else

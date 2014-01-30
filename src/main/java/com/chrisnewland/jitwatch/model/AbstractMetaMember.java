@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -59,7 +60,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getReturnTypeName()
 	{
-		return (returnType == null) ? "" : ParseUtil.expandParameterType(returnType.getName());
+		return (returnType == null) ? S_EMPTY : ParseUtil.expandParameterType(returnType.getName());
 	}
 
 	@Override
@@ -194,7 +195,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		for (String mod : MODIFIERS)
 		{
-			nameToMatch = nameToMatch.replace(mod + " ", "");
+			nameToMatch = nameToMatch.replace(mod + S_SPACE, S_EMPTY);
 		}
 
 		return nameToMatch.equals(input);
@@ -260,7 +261,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				builder.append(paramType);
 				builder.append(spaceOneOrMore);
 				builder.append(paramName);
-				builder.append(",");
+				builder.append(S_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
@@ -281,7 +282,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			paramType = ParseUtil.expandParameterType(paramType);
 		}
 
-		if (paramType.contains("."))
+		if (paramType.contains(S_DOT))
 		{
 			paramType = StringUtil.makeUnqualified(paramType);
 		}
@@ -298,7 +299,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			paramType = paramType.replace("[", "\\[").replace("]", "\\]");
 		}
 
-		if (paramType.contains("."))
+		if (paramType.contains(S_DOT))
 		{
 			paramType = regexPackage + StringUtil.makeUnqualified(paramType);
 		}
@@ -321,7 +322,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getJournalID()
 	{
-		return queuedAttributes.get(JITWatchConstants.ATTR_COMPILE_ID);
+		return queuedAttributes.get(ATTR_COMPILE_ID);
 	}
 	
     @Override

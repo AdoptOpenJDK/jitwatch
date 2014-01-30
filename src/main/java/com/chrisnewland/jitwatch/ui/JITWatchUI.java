@@ -15,7 +15,7 @@ import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
@@ -216,7 +216,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-			    stopWatching();
+				stopWatching();
 				chooseHotSpotFile();
 			}
 		});
@@ -355,16 +355,16 @@ public class JITWatchUI extends Application implements IJITListener
 			public void handle(ActionEvent e)
 			{
 				triView = new TriView(JITWatchUI.this, config);
-				
+
 				triView.show();
-				
+
 				openPopupStages.add(triView);
 
 				if (selectedMember != null)
 				{
 					triView.setMember(selectedMember);
 				}
-				
+
 				btnCodeBrowser.setDisable(true);
 			}
 		});
@@ -602,7 +602,7 @@ public class JITWatchUI extends Application implements IJITListener
 		TextViewerStage tvs = openTextViewer("Bytecode for " + member.toString(), bc, false);
 
 		Journal journal = getJournal(member);
-		
+
 		tvs.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
 	}
 
@@ -622,7 +622,7 @@ public class JITWatchUI extends Application implements IJITListener
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
 		tvs.show();
 		openPopupStages.add(tvs);
-	
+
 		return tvs;
 	}
 
@@ -637,7 +637,15 @@ public class JITWatchUI extends Application implements IJITListener
 	{
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
-		//fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Log Files",  "*.log"), new FileChooser.ExtensionFilter("All Files",  "*.*"));
+
+		String osNameProperty = System.getProperty("os.name");
+
+		// don't use ExtensionFilter on OSX due to JavaFX2 missing combo bug
+		if (osNameProperty != null && !osNameProperty.toLowerCase().contains("mac"))
+		{
+			fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"),
+					new FileChooser.ExtensionFilter("All Files", "*.*"));
+		}
 
 		String searchDir = config.getLastLogDir();
 
@@ -647,7 +655,7 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 
 		File dirFile = new File(searchDir);
-		
+
 		if (!dirFile.exists() || !dirFile.isDirectory())
 		{
 			dirFile = new File(System.getProperty("user.dir"));
@@ -680,7 +688,7 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			return;
 		}
-		
+
 		if (triView != null)
 		{
 			triView.setMember(member);
@@ -742,11 +750,11 @@ public class JITWatchUI extends Application implements IJITListener
 
 		long megabyte = 1024 * 1024;
 
-		String heapString = "Heap: " + (usedMemory / megabyte) + "/" + (totalMemory / megabyte) + "M";
+		String heapString = "Heap: " + (usedMemory / megabyte) + S_SLASH + (totalMemory / megabyte) + "M";
 
 		lblHeap.setText(heapString);
 
-		btnErrorLog.setText("Errors (" + errorCount + ")");
+		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
 	}
 
 	private void refreshLog()
@@ -871,7 +879,7 @@ public class JITWatchUI extends Application implements IJITListener
 	public Journal getJournal(IMetaMember member)
 	{
 		Journal journal = null;
-		
+
 		String journalID = member.getJournalID();
 
 		if (journalID != null)
@@ -882,10 +890,10 @@ public class JITWatchUI extends Application implements IJITListener
 			{
 				// try appending compile_kind as OSR does not generate a
 				// unique compile_id
-				journal = model.getJournal(journalID + JITWatchConstants.OSR);
+				journal = model.getJournal(journalID + OSR);
 			}
 		}
-		
+
 		return journal;
 	}
 }

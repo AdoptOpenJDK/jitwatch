@@ -16,6 +16,7 @@ import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -142,7 +143,7 @@ public class TriView extends Stage
 
 						if (item == null || empty)
 						{
-							setText("");
+							setText(S_EMPTY);
 							setGraphic(null);
 						}
 						else

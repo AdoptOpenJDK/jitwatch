@@ -15,6 +15,8 @@ import java.util.Map;
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 public class BytecodeLoader
 {
 	public static Map<String, String> fetchByteCodeForClass(List<String> classLocations, String fqClassName)
@@ -126,16 +128,16 @@ public class BytecodeLoader
 		{
 			// remove spaces between multiple method parameters
 
-			int openParentheses = signature.lastIndexOf("(");
+			int openParentheses = signature.lastIndexOf(S_OPEN_PARENTHESES);
 
 			if (openParentheses != -1)
 			{
-				int closeParentheses = signature.indexOf(")", openParentheses);
+				int closeParentheses = signature.indexOf(S_CLOSE_PARENTHESES, openParentheses);
 
 				if (closeParentheses != -1)
 				{
 					String params = signature.substring(openParentheses, closeParentheses);
-					params = params.replace(" ", "");
+					params = params.replace(S_SPACE, S_EMPTY);
 
 					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
 				}

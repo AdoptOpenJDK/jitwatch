@@ -44,7 +44,6 @@ public class JITWatchConstants
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
 	public static final String TAG_BRANCH = "branch";
 
-
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";
 	public static final String C1 = "C1";
@@ -71,20 +70,32 @@ public class JITWatchConstants
 	public static final String ATTR_BRANCH_COUNT = "cnt";
 	public static final String ATTR_BRANCH_TAKEN = "taken";
 	public static final String ATTR_BRANCH_PROB = "prob";
-	
+
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
+	public static final String S_OPEN_ANGLE = "<";
+	public static final String S_CLOSE_ANGLE= ">";
 	public static final String S_AT = "@";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
 	public static final String S_EMPTY = "";
+	public static final String S_COLON = ":";
 	public static final String S_SEMICOLON = ";";
-	
+	public static final String S_DOT = ".";
+	public static final String S_COMMA = ",";
+	public static final String S_SLASH = "/";
+	public static final String S_QUOTE = "'";
+
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_BRACKET = '<';
 	public static final char C_CLOSE_BRACKET = '>';
 	public static final char C_SPACE = ' ';
 	public static final char C_COMMA = ',';
+	public static final char C_EQUALS = '=';
+	public static final char C_QUOTE = '\'';
+	public static final char C_DOUBLE_QUOTE = '"';
+
+
 	public static final char C_DOT = '.';
 	public static final char C_OBJECT_REF = 'L';
 	public static final char C_SEMICOLON = ';';
