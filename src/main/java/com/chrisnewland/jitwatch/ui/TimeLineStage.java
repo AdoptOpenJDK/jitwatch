@@ -11,6 +11,8 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -181,10 +183,10 @@ public class TimeLineStage extends AbstractGraphStage
 
 		StringBuilder compiledStatsBuilder = new StringBuilder();
 		compiledStatsBuilder.append("Compiled: ").append(stats.getTotalCompiledMethods());
-		compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(")");
-		compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(")");
-		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(")");
-		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(")");
+		compiledStatsBuilder.append(" (C1: ").append(stats.getCountC1()).append(S_CLOSE_PARENTHESES);
+		compiledStatsBuilder.append(" (C2: ").append(stats.getCountC2()).append(S_CLOSE_PARENTHESES);
+		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(S_CLOSE_PARENTHESES);
+		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(S_CLOSE_PARENTHESES);
 		gc.setStroke(Color.BLACK);
 		gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(12));
 	}

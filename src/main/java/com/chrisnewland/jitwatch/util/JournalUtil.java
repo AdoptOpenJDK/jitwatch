@@ -67,7 +67,7 @@ public class JournalUtil
 						String prob = attrs.get(ATTR_BRANCH_PROB);
 
 						StringBuilder reason = new StringBuilder();
-						reason.append("Branch taken ").append(taken).append("/").append(count).append(". Probability:")
+						reason.append("Branch taken ").append(taken).append(S_SLASH).append(count).append(". Probability:")
 								.append(prob);
 
 						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));

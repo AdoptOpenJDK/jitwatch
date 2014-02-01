@@ -11,13 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 public class StringUtil
 {
-	private static final char QUOTE = '\'';
-	private static final char DOUBLE_QUOTE = '"';
-	private static final char SPACE = ' ';
-	private static final char EQUALS = '=';
-
 	private static final DecimalFormat DF = new DecimalFormat("#,###");
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
@@ -62,13 +59,13 @@ public class StringUtil
 			sb.append(days).append("d ");
 		}
 
-		sb.append(pad(hours, 2)).append(":");
-		sb.append(pad(minutes, 2)).append(":");
+		sb.append(pad(hours, 2)).append(S_COLON);
+		sb.append(pad(minutes, 2)).append(S_COLON);
 		sb.append(pad(seconds, 2));
 
 		if (showMillis)
 		{
-			sb.append(".").append(pad(millis, 3));
+			sb.append(S_DOT).append(pad(millis, 3));
 		}
 
 		return sb.toString();
@@ -185,18 +182,18 @@ public class StringUtil
 
 				switch (c)
 				{
-				case SPACE:
+				case C_SPACE:
 					if (!inValue)
 					{
-						// space before new key
+						// C_SPACE before new key
 						key.delete(0, key.length());
 					}
 					else
 					{
-						val.append(SPACE);
+						val.append(C_SPACE);
 					}
 					break;
-				case QUOTE:
+				case C_QUOTE:
 					if (inValue)
 					{
 						// finished attr
@@ -210,10 +207,10 @@ public class StringUtil
 						inValue = true;
 					}
 					break;
-				case EQUALS:
+				case C_EQUALS:
 					if (inValue)
 					{
-						val.append(EQUALS);
+						val.append(C_EQUALS);
 					}
 					break;
 				default:
@@ -251,18 +248,18 @@ public class StringUtil
 
 				switch (c)
 				{
-				case SPACE:
+				case C_SPACE:
 					if (!inValue)
 					{
-						// space before new key
+						// C_SPACE before new key
 						key.delete(0, key.length());
 					}
 					else
 					{
-						val.append(SPACE);
+						val.append(C_SPACE);
 					}
 					break;
-				case DOUBLE_QUOTE:
+				case C_DOUBLE_QUOTE:
 					if (inValue)
 					{
 						// finished attr
@@ -276,10 +273,10 @@ public class StringUtil
 						inValue = true;
 					}
 					break;
-				case EQUALS:
+				case C_EQUALS:
 					if (inValue)
 					{
-						val.append(EQUALS);
+						val.append(C_EQUALS);
 					}
 					break;
 				default:

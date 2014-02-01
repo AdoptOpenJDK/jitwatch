@@ -59,7 +59,7 @@ public class IntrinsicFinder
 						{
 						case TAG_KLASS:
 							klass = childTag.getAttrs().get(ATTR_NAME);
-							klass = klass.replace("/", ".");
+							klass = klass.replace(S_SLASH, S_DOT);
 							break;
 
 						case TAG_METHOD:
@@ -71,7 +71,7 @@ public class IntrinsicFinder
 
 							if (klass != null && method != null)
 							{
-								result.put(klass + "." + method, intrinsic);
+								result.put(klass + S_DOT + method, intrinsic);
 							}
 
 							klass = null;

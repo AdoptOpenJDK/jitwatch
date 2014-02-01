@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
@@ -27,7 +27,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 	public JournalViewerStage(final JITWatchUI parent, String title, Journal journal)
 	{
 		super(parent, title);
-		
+
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -60,28 +60,28 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 				String colour = Viewer.COLOUR_BLACK;
 
-				if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
+				if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INLINE_FAIL))
 				{
 					colour = Viewer.COLOUR_RED;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INLINE_SUCCESS))
 				{
 					colour = Viewer.COLOUR_GREEN;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INTRINSIC))
 				{
 					colour = Viewer.COLOUR_BLUE;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_PARSE + " "))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_PARSE + C_SPACE))
 				{
-					Map<String, String> attrs = StringUtil.getLineAttributesDoubleQuote(tagLines[i]
-							.substring(1 + JITWatchConstants.TAG_PARSE.length()));
+					Map<String, String> attrs = StringUtil.getLineAttributesDoubleQuote(tagLines[i].substring(1 + TAG_PARSE
+							.length()));
 
-					String method = attrs.get(JITWatchConstants.ATTR_METHOD);
+					String method = attrs.get(ATTR_METHOD);
 
 					if (tag instanceof Task)
 					{
-						tagLines[i] += ((Task)tag).decodeParseMethod(method);
+						tagLines[i] += ((Task) tag).decodeParseMethod(method);
 					}
 				}
 

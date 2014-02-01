@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,8 +36,6 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-
-//import javafx.scene.text.Label;
 
 public class Viewer extends VBox
 {
@@ -171,7 +170,7 @@ public class Viewer extends VBox
 		{
 			String text = ((Label) node).getText();
 
-			if (text.startsWith(reference + ":"))
+			if (text.startsWith(reference + S_COLON))
 			{
 				label = (Label) node;
 				break;

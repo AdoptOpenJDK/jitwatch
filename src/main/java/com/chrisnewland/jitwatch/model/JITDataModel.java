@@ -18,7 +18,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
@@ -116,7 +116,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
         for (String modifier : IMetaMember.MODIFIERS)
         {
-            if (fullSignature.contains(modifier + " "))
+            if (fullSignature.contains(modifier + S_SPACE))
             {
                 // use Java7 MethodHandle on JITStats object to increment
                 // correct counter
@@ -140,35 +140,35 @@ public class JITDataModel implements IReadOnlyJITDataModel
             }
         }
 
-        String compiler = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILER);
+        String compiler = meta.getCompiledAttribute(ATTR_COMPILER);
 
         if (compiler != null)
         {
-            if (JITWatchConstants.C1.equalsIgnoreCase(compiler))
+            if (C1.equalsIgnoreCase(compiler))
             {
                 stats.incCountC1();
             }
-            else if (JITWatchConstants.C2.equalsIgnoreCase(compiler))
+            else if (C2.equalsIgnoreCase(compiler))
             {
                 stats.incCountC2();
             }
         }
 
-        String compileKind = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+        String compileKind = meta.getCompiledAttribute(ATTR_COMPILE_KIND);
 
         if (compileKind != null)
         {
-            if (JITWatchConstants.OSR.equalsIgnoreCase(compileKind))
+            if (OSR.equalsIgnoreCase(compileKind))
             {
                 stats.incCountOSR();
             }
-            else if (JITWatchConstants.C2N.equalsIgnoreCase(compileKind))
+            else if (C2N.equalsIgnoreCase(compileKind))
             {
                 stats.incCountC2N();
             }
         }
 
-        String queueStamp = meta.getQueuedAttribute(JITWatchConstants.ATTR_STAMP);
+        String queueStamp = meta.getQueuedAttribute(ATTR_STAMP);
         String compileStamp = meta.getCompiledAttribute("stamp");
 
         if (queueStamp != null && compileStamp != null)
