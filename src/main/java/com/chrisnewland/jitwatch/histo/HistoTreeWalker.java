@@ -10,32 +10,33 @@ import java.util.List;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
-import com.chrisnewland.jitwatch.model.PackageManager;
 
 public class HistoTreeWalker
 {
 	// Good case for J8 Streams
-	public static Histo buildHistoForAttribute(PackageManager pm, boolean compileAttribute, String attributeName, long resolution)
+	public static Histo buildHistogram(IHistoWalker walker)
 	{
-		Histo histo = new Histo(resolution);
+		Histo histo = new Histo(walker.getResolution());
+		
+		walker.reset();
 
-		List<MetaPackage> roots = pm.getRootPackages();
+		List<MetaPackage> roots = walker.getJITDataModel().getPackageManager().getRootPackages();
 
 		for (MetaPackage mp : roots)
 		{
-			walkTree(mp, histo, compileAttribute, attributeName);
+			walkTree(mp, histo, walker);
 		}
 
 		return histo;
 	}
 
-	private static void walkTree(MetaPackage mp, Histo histo, boolean isCompileAttribute, String attributeName)
+	private static void walkTree(MetaPackage mp, Histo histo, IHistoWalker walker)
 	{
 		List<MetaPackage> childPackages = mp.getChildPackages();
 
 		for (MetaPackage childPackage : childPackages)
 		{
-			walkTree(childPackage, histo, isCompileAttribute, attributeName);
+			walkTree(childPackage, histo, walker);
 		}
 
 		List<MetaClass> packageClasses = mp.getPackageClasses();
@@ -44,23 +45,7 @@ public class HistoTreeWalker
 		{
 			for (IMetaMember mm : mc.getMetaMembers())
 			{
-				String attrValue = null;
-
-				if (isCompileAttribute)
-				{
-					attrValue = mm.getCompiledAttribute(attributeName);
-				}
-				else
-				{
-					attrValue = mm.getQueuedAttribute(attributeName);
-				}
-
-				if (attrValue != null)
-				{
-					long val = Long.valueOf(attrValue);
-
-					histo.addValue(val);
-				}
+				walker.processMember(histo, mm);
 			}
 		}
 	}

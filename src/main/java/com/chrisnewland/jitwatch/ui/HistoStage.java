@@ -9,10 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import com.chrisnewland.jitwatch.histo.AttributeNameHistoWalker;
 import com.chrisnewland.jitwatch.histo.Histo;
 import com.chrisnewland.jitwatch.histo.HistoTreeWalker;
+import com.chrisnewland.jitwatch.histo.IHistoWalker;
+import com.chrisnewland.jitwatch.histo.InlineSizeHistoWalker;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -29,22 +33,26 @@ public class HistoStage extends AbstractGraphStage
 {
     private Histo histo;
 
-    private String selectedAttribute;
+    private IHistoWalker selectedWalker;
 
     public HistoStage(final JITWatchUI parent)
     {
         super(parent, 640, 480, false);
+        
+        IReadOnlyJITDataModel model = parent.getJITDataModel();
 
-        final Map<String, String> attrMap = new HashMap<>();
-        attrMap.put("Method JIT-Compilation Times", JITWatchConstants.ATTR_COMPILE_MILLIS);
-        attrMap.put("Bytecodes per Compiled Method", JITWatchConstants.ATTR_BYTES);
-        attrMap.put("Native Bytes per Compiled Method", JITWatchConstants.ATTR_NMSIZE);
+		final Map<String, IHistoWalker> attrMap = new HashMap<>();
+
+		attrMap.put("Method JIT-Compilation Times", new AttributeNameHistoWalker(model, true, ATTR_COMPILE_MILLIS, 10));
+        attrMap.put("Bytecodes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_BYTES, 10));
+        attrMap.put("Native Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_NMSIZE, 10));
+        attrMap.put("Inlined Method Sizes", new InlineSizeHistoWalker(model, 1));
 
         VBox vbox = new VBox();
 
         ObservableList<String> options = FXCollections.observableArrayList(attrMap.keySet());
 
-        selectedAttribute = attrMap.get(options.get(0));
+        selectedWalker = attrMap.get(options.get(0));
 
         final ComboBox<String> comboBox = new ComboBox<>(options);
         comboBox.setValue(options.get(0));
@@ -54,8 +62,9 @@ public class HistoStage extends AbstractGraphStage
             @Override
             public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
             {
-                selectedAttribute = attrMap.get(newVal);
-                histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
+            	selectedWalker = attrMap.get(newVal);
+                                
+                histo = HistoTreeWalker.buildHistogram(selectedWalker);
                 redraw();
             }
         });
@@ -74,8 +83,8 @@ public class HistoStage extends AbstractGraphStage
         canvas.heightProperty().bind(scene.heightProperty().subtract(30));
 
         setTitle("JITWatch Histogram");
-
-        histo = HistoTreeWalker.buildHistoForAttribute(parent.getPackageManager(), true, selectedAttribute, 10);
+        
+        histo = HistoTreeWalker.buildHistogram(selectedWalker);
 
         setScene(scene);
         show();

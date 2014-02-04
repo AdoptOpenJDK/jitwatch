@@ -878,22 +878,6 @@ public class JITWatchUI extends Application implements IJITListener
 
 	public Journal getJournal(IMetaMember member)
 	{
-		Journal journal = null;
-
-		String journalID = member.getJournalID();
-
-		if (journalID != null)
-		{
-			journal = model.getJournal(journalID);
-
-			if (journal == null)
-			{
-				// try appending compile_kind as OSR does not generate a
-				// unique compile_id
-				journal = model.getJournal(journalID + OSR);
-			}
-		}
-
-		return journal;
+		return JournalUtil.getJournal(model, member);
 	}
 }

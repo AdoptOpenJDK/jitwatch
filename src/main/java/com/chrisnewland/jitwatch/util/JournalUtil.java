@@ -14,10 +14,13 @@ import java.util.Map;
 
 import javafx.scene.paint.Color;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.LineAnnotation.AnnotationType;
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
 
 public class JournalUtil
 {
@@ -35,10 +38,12 @@ public class JournalUtil
 
 				int currentBytecode = -1;
 
+				Map<String, String> callAttrs = new HashMap<>();
+				
 				for (Tag child : children)
 				{
 					String name = child.getName();
-					Map<String, String> attrs = child.getAttrs();
+					Map<String, String> attrs = child.getAttrs();					
 
 					switch (name)
 					{
@@ -46,31 +51,75 @@ public class JournalUtil
 					{
 						String bci = attrs.get(ATTR_BCI);
 						currentBytecode = Integer.parseInt(bci);
+						callAttrs.clear();
+					}
+						break;
+					case TAG_CALL:
+					{
+						callAttrs.putAll(attrs);
 					}
 						break;
 					case TAG_INLINE_SUCCESS:
 					{
+						StringBuilder reason = new StringBuilder();
+						reason.append("Inlined: ").append(attrs.get(ATTR_REASON));
+						
+						if (callAttrs.containsKey(ATTR_COUNT))
+						{
+							reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
+						}
+						if (callAttrs.containsKey(ATTR_PROF_FACTOR))
+						{
+							reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
+						}
+						
 						result.put(currentBytecode,
-								new LineAnnotation(AnnotationType.BYTECODE, "Inlined: " + attrs.get(ATTR_REASON), Color.GREEN));
+								new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
 					}
 						break;
 					case TAG_INLINE_FAIL:
 					{
+						StringBuilder reason = new StringBuilder();
+						reason.append("Not inlined: ").append(attrs.get(ATTR_REASON));
+						
+						if (callAttrs.containsKey(ATTR_COUNT))
+						{
+							reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
+						}
+						if (callAttrs.containsKey(ATTR_PROF_FACTOR))
+						{
+							reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
+						}
+						
 						result.put(currentBytecode,
-								new LineAnnotation(AnnotationType.BYTECODE, "Not Inlined: " + attrs.get(ATTR_REASON), Color.RED));
+								new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.RED));
 					}
 						break;
 					case TAG_BRANCH:
 					{
 						String count = attrs.get(ATTR_BRANCH_COUNT);
 						String taken = attrs.get(ATTR_BRANCH_TAKEN);
+						String notTaken = attrs.get(ATTR_BRANCH_NOT_TAKEN);
 						String prob = attrs.get(ATTR_BRANCH_PROB);
 
 						StringBuilder reason = new StringBuilder();
-						reason.append("Branch taken ").append(taken).append(S_SLASH).append(count).append(". Probability:")
-								.append(prob);
 
-						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
+						if (count != null)
+						{
+							reason.append("Count: ").append(count).append("\n");
+						}
+
+						reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
+
+						if (prob != null)
+						{
+							reason.append("\nProbability: ").append(prob);
+						}
+
+						if (!result.containsKey(currentBytecode))
+						{
+							result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
+						}
 					}
 						break;
 					case TAG_INTRINSIC:
@@ -90,25 +139,32 @@ public class JournalUtil
 		return result;
 	}
 
-	private static List<Tag> getParseTags(Journal journal)
+	public static Task getLastTask(Journal journal)
 	{
-		List<Tag> result = new ArrayList<>();
-
 		// find the latest task tag
 		// this is the most recent compile task for the member
-		Tag lastTaskTag = null;
+		Task lastTask = null;
 
 		for (Tag tag : journal.getEntryList())
 		{
-			if (TAG_TASK.equals(tag.getName()))
+			if (tag instanceof Task)
 			{
-				lastTaskTag = tag;
+				lastTask = (Task) tag;
 			}
 		}
 
-		if (lastTaskTag != null)
+		return lastTask;
+	}
+
+	public static List<Tag> getParseTags(Journal journal)
+	{
+		List<Tag> result = new ArrayList<>();
+
+		Task lastTask = getLastTask(journal);
+
+		if (lastTask != null)
 		{
-			List<Tag> parsePhases = lastTaskTag.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
 
 			for (Tag parsePhase : parsePhases)
 			{
@@ -117,6 +173,26 @@ public class JournalUtil
 		}
 
 		return result;
+	}
 
+	public static Journal getJournal(IReadOnlyJITDataModel model, IMetaMember member)
+	{
+		Journal journal = null;
+
+		String journalID = member.getJournalID();
+
+		if (journalID != null)
+		{
+			journal = model.getJournal(journalID);
+
+			if (journal == null)
+			{
+				// try appending compile_kind as OSR does not generate a
+				// unique compile_id
+				journal = model.getJournal(journalID + OSR);
+			}
+		}
+
+		return journal;
 	}
 }

@@ -1,0 +1,131 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
+package com.chrisnewland.jitwatch.histo;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.IParseDictionary;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.model.Journal;
+import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
+{
+	private Set<String> inlinedCounted = new HashSet<>();
+	private IParseDictionary parseDictionary;
+
+	public InlineSizeHistoWalker(IReadOnlyJITDataModel model, long resolution)
+	{
+		super(model, resolution);
+	}
+
+	@Override
+	public void reset()
+	{
+		inlinedCounted.clear();
+		parseDictionary = null;
+	}
+
+	@Override
+	public void processMember(Histo histo, IMetaMember mm)
+	{
+		if (mm.isCompiled())
+		{
+			Journal journal = JournalUtil.getJournal(model, mm);
+
+			if (journal != null)
+			{
+				Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+				if (lastTaskTag != null)
+				{
+					parseDictionary = lastTaskTag.getParseDictionary();
+				}
+
+				List<Tag> parseTags = JournalUtil.getParseTags(journal);
+
+				for (Tag parseTag : parseTags)
+				{
+					processParseTag(histo, parseTag);
+				}
+			}
+		}
+	}
+
+	private void processParseTag(Histo histo, Tag parseTag)
+	{
+		String currentMethod = null;
+		String holder = null;
+		String attrInlineBytes = null;
+
+		for (Tag child : parseTag.getChildren())
+		{
+			String tagName = child.getName();
+			Map<String, String> attrs = child.getAttrs();
+
+			switch (tagName)
+			{
+			case TAG_METHOD:
+			{
+				currentMethod = attrs.get(ATTR_NAME);
+				holder = attrs.get(ATTR_HOLDER);
+				attrInlineBytes = attrs.get(ATTR_BYTES);
+			}
+				break;
+
+			case TAG_INLINE_FAIL:
+			{
+				// clear method to prevent incorrect pickup by next inline success
+				currentMethod = null;
+				holder = null;
+				attrInlineBytes = null;
+			}
+				break;
+
+			case TAG_INLINE_SUCCESS:
+			{
+				if (holder != null && currentMethod != null && attrInlineBytes != null)
+				{
+					Tag klassTag = parseDictionary.getKlass(holder);
+
+					if (klassTag != null)
+					{
+						String fqName = klassTag.getAttrs().get(ATTR_NAME) + C_SLASH + currentMethod;
+
+						if (!inlinedCounted.contains(fqName))
+						{
+							long inlinedByteCount = Long.parseLong(attrInlineBytes);
+							histo.addValue(inlinedByteCount);
+
+							inlinedCounted.add(fqName);
+						}
+					}
+				}
+			}
+				break;
+			case TAG_PARSE:
+			{
+				processParseTag(histo, child);
+			}
+				break;
+			}
+		}
+	}
+
+	@Override
+	public long getResolution()
+	{
+		return resolution;
+	}
+}

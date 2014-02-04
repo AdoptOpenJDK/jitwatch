@@ -31,6 +31,7 @@ public class JITWatchConstants
 	public static final String TAG_NMETHOD = "nmethod";
 	public static final String TAG_TASK = "task";
 	public static final String TAG_BC = "bc";
+	public static final String TAG_CALL = "call";
 	public static final String TAG_CODE_CACHE = "code_cache";
 	public static final String TAG_TASK_DONE = "task_done";
 	public static final String TAG_START_COMPILE_THREAD = "start_compile_thread";
@@ -69,7 +70,10 @@ public class JITWatchConstants
 	public static final String ATTR_ARGUMENTS = "arguments";
 	public static final String ATTR_BRANCH_COUNT = "cnt";
 	public static final String ATTR_BRANCH_TAKEN = "taken";
+	public static final String ATTR_BRANCH_NOT_TAKEN = "not_taken";
 	public static final String ATTR_BRANCH_PROB = "prob";
+	public static final String ATTR_COUNT = "count";
+	public static final String ATTR_PROF_FACTOR = "prof_factor";
 
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
