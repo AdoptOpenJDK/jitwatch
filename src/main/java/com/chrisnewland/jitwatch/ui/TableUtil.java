@@ -5,8 +5,7 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.toplist.MemberScore;
+import com.chrisnewland.jitwatch.toplist.ITopListScore;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
@@ -15,20 +14,20 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class TableUtil
 {
-    public static TableView<MemberScore> buildTableMemberScore(ObservableList<MemberScore> scores)
+    public static TableView<ITopListScore> buildTableTopListScore(ObservableList<ITopListScore> scores)
     {
-        TableView<MemberScore> tv = new TableView<>();
+        TableView<ITopListScore> tv = new TableView<>();
 
-        TableColumn<MemberScore, Long> colScore = new TableColumn<MemberScore, Long>("Value");
-        colScore.setCellValueFactory(new PropertyValueFactory<MemberScore, Long>("score"));
+        TableColumn<ITopListScore, Long> colScore = new TableColumn<ITopListScore, Long>("Value");
+        colScore.setCellValueFactory(new PropertyValueFactory<ITopListScore, Long>("score"));
         colScore.prefWidthProperty().bind(tv.widthProperty().divide(8));
 
-        TableColumn<MemberScore, IMetaMember> colMember = new TableColumn<MemberScore, IMetaMember>("Method");
-        colMember.setCellValueFactory(new PropertyValueFactory<MemberScore, IMetaMember>("member"));
-        colMember.prefWidthProperty().bind(tv.widthProperty().divide(8).multiply(7));
+        TableColumn<ITopListScore, Object> colKey = new TableColumn<ITopListScore, Object>("Item");
+        colKey.setCellValueFactory(new PropertyValueFactory<ITopListScore, Object>("key"));
+        colKey.prefWidthProperty().bind(tv.widthProperty().divide(8).multiply(7));
 
         tv.getColumns().add(colScore);
-        tv.getColumns().add(colMember);
+        tv.getColumns().add(colKey);
 
         tv.setItems(scores);
 

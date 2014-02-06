@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.toplist.CompiledAttributeTopListVisitable;
+import com.chrisnewland.jitwatch.toplist.ITopListScore;
 import com.chrisnewland.jitwatch.toplist.ITopListVisitable;
+import com.chrisnewland.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
 import com.chrisnewland.jitwatch.toplist.AbstractTopListVisitable;
 
@@ -34,9 +37,9 @@ import javafx.stage.WindowEvent;
 
 public class TopListStage extends Stage
 {
-	private ObservableList<MemberScore> topList = FXCollections.observableArrayList();
+	private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
 
-	private TableView<MemberScore> tableView;
+	private TableView<ITopListScore> tableView;
 
 	private ITopListVisitable topListVisitable;
 
@@ -63,6 +66,8 @@ public class TopListStage extends Stage
 		String largestNativeMethods = "Largest Native Methods";
 
 		attrMap.put(largestNativeMethods, new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_NMSIZE, true));
+		attrMap.put("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(parent.getJITDataModel(), true));
+
 		attrMap.put("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_BYTES, true));
 		attrMap.put("Slowest Compilation Times", new CompiledAttributeTopListVisitable(parent.getJITDataModel(),
 				ATTR_COMPILE_MILLIS, true));
@@ -128,16 +133,16 @@ public class TopListStage extends Stage
 		setTitle("JITWatch TopLists");
 
 		buildTableView(topListVisitable);
-		tableView = TableUtil.buildTableMemberScore(topList);
+		tableView = TableUtil.buildTableTopListScore(topList);
 
-		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
+		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ITopListScore>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends MemberScore> arg0, MemberScore oldVal, MemberScore newVal)
+			public void changed(ObservableValue<? extends ITopListScore> arg0, ITopListScore oldVal, ITopListScore newVal)
 			{
-				if (newVal != null)
+				if (newVal != null && newVal instanceof MemberScore)
 				{
-					parent.openTreeAtMember(newVal.getMember());
+					parent.openTreeAtMember((IMetaMember)newVal.getKey());
 				}
 			}
 		});

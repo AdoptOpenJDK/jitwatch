@@ -107,6 +107,7 @@ public class HotSpotLogParser
 				}
 				catch (Throwable t)
 				{
+					System.err.println("Exception handling: '" + currentLine + "'");
 					t.printStackTrace();
 				}
 			}

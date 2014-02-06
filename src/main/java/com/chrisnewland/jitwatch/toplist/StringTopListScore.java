@@ -5,22 +5,20 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-
-public class MemberScore implements ITopListScore
+public class StringTopListScore implements ITopListScore
 {
-	private final IMetaMember member;
+	private final String key;
 	private final long score;
 
-	public MemberScore(IMetaMember member, long score)
+	public StringTopListScore(String key, long score)
 	{
-		this.member = member;
+		this.key = key;
 		this.score = score;
 	}
 	
-	public IMetaMember getKey()
+	public String getKey()
 	{
-		return member;
+		return key;
 	}
 
 	public long getScore()
