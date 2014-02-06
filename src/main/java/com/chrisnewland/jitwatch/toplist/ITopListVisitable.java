@@ -5,11 +5,11 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
+import java.util.List;
 
-public interface ITopListFilter
+import com.chrisnewland.jitwatch.treevisitor.ITreeVisitable;
+
+public interface ITopListVisitable extends ITreeVisitable
 {
-    public boolean acceptMember(IMetaMember mm);
-    
-    public MemberScore getScore(IMetaMember mm);
+	public List<MemberScore> buildTopList();
 }

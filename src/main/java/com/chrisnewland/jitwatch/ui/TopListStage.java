@@ -11,13 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.toplist.CompiledAttributeFilterAdapter;
-import com.chrisnewland.jitwatch.toplist.ITopListFilter;
+import com.chrisnewland.jitwatch.toplist.CompiledAttributeTopListVisitable;
+import com.chrisnewland.jitwatch.toplist.ITopListVisitable;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
-import com.chrisnewland.jitwatch.toplist.TopListTreeWalker;
+import com.chrisnewland.jitwatch.toplist.AbstractTopListVisitable;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,15 +38,11 @@ public class TopListStage extends Stage
 
 	private TableView<MemberScore> tableView;
 
-	private ITopListFilter toplistFilter;
-
-	private PackageManager pm;
+	private ITopListVisitable topListVisitable;
 
 	public TopListStage(final JITWatchUI parent)
 	{
 		initStyle(StageStyle.DECORATED);
-
-		pm = parent.getPackageManager();
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
@@ -61,54 +56,46 @@ public class TopListStage extends Stage
 		int width = 800;
 		int height = 480;
 
-		final Map<String, ITopListFilter> attrMap = new HashMap<>();
+		final Map<String, ITopListVisitable> attrMap = new HashMap<>();
 
 		// Hurry up lambdas !!!
 
 		String largestNativeMethods = "Largest Native Methods";
 
-		attrMap.put(largestNativeMethods, new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_NMSIZE));
-		attrMap.put("Largest Bytecode Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_BYTES));
-		attrMap.put("Slowest Compilation Times", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_COMPILE_MILLIS));
-		attrMap.put("Most Decompiled Methods", new CompiledAttributeFilterAdapter(JITWatchConstants.ATTR_DECOMPILES));
+		attrMap.put(largestNativeMethods, new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_NMSIZE, true));
+		attrMap.put("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_BYTES, true));
+		attrMap.put("Slowest Compilation Times", new CompiledAttributeTopListVisitable(parent.getJITDataModel(),
+				ATTR_COMPILE_MILLIS, true));
+		attrMap.put("Most Decompiled Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_DECOMPILES,
+				true));
 
-		attrMap.put("Compilation Order", new ITopListFilter()
+		attrMap.put("Compilation Order", new AbstractTopListVisitable(parent.getJITDataModel(), false)
 		{
-			// OSR compile_id values overlap non-OSR compile_id values so filter
-			// out
 			@Override
-			public MemberScore getScore(IMetaMember mm)
+			public void visit(IMetaMember mm)
 			{
-				long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
-				return new MemberScore(mm, value);
-			}
-
-			@Override
-			public boolean acceptMember(IMetaMember mm)
-			{
-				String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
-				String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
-				return compileID != null && (compileKind == null || !JITWatchConstants.OSR.equals(compileKind));
+				String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
+				String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
+				if (compileID != null && (compileKind == null || !OSR.equals(compileKind)))
+				{
+					long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
+					topList.add(new MemberScore(mm, value));
+				}
 			}
 		});
 
-		attrMap.put("Compilation Order (OSR)", new ITopListFilter()
+		attrMap.put("Compilation Order (OSR)", new AbstractTopListVisitable(parent.getJITDataModel(), false)
 		{
-			// OSR compile_id values overlap non-OSR compile_id values so filter
-			// out
 			@Override
-			public MemberScore getScore(IMetaMember mm)
+			public void visit(IMetaMember mm)
 			{
-				long value = Long.valueOf(mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID));
-				return new MemberScore(mm, value);
-			}
-
-			@Override
-			public boolean acceptMember(IMetaMember mm)
-			{
-				String compileID = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_ID);
-				String compileKind = mm.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
-				return compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind);
+				String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
+				String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
+				if (compileID != null && compileKind != null && OSR.equals(compileKind))
+				{
+					long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
+					topList.add(new MemberScore(mm, value));
+				}
 			}
 		});
 
@@ -124,15 +111,15 @@ public class TopListStage extends Stage
 		final ComboBox<String> comboBox = new ComboBox<>(options);
 		comboBox.setValue(largestNativeMethods);
 
-		toplistFilter = attrMap.get(largestNativeMethods);
+		topListVisitable = attrMap.get(largestNativeMethods);
 
 		comboBox.valueProperty().addListener(new ChangeListener<String>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
 			{
-				toplistFilter = attrMap.get(newVal);
-				buildTableView(toplistFilter);
+				topListVisitable = attrMap.get(newVal);
+				buildTableView(topListVisitable);
 			}
 		});
 
@@ -140,7 +127,7 @@ public class TopListStage extends Stage
 
 		setTitle("JITWatch TopLists");
 
-		buildTableView(toplistFilter);
+		buildTableView(topListVisitable);
 		tableView = TableUtil.buildTableMemberScore(topList);
 
 		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MemberScore>()
@@ -166,14 +153,13 @@ public class TopListStage extends Stage
 		redraw();
 	}
 
-	private void buildTableView(ITopListFilter filter)
+	private void buildTableView(ITopListVisitable visitable)
 	{
 		topList.clear();
-		topList.addAll(TopListTreeWalker.buildTopListForAttribute(pm, filter));
+		topList.addAll(visitable.buildTopList());
 	}
 
 	public void redraw()
 	{
-
 	}
 }

@@ -8,7 +8,7 @@ package com.chrisnewland.jitwatch.histo;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 
-public class AttributeNameHistoWalker extends AbstractHistoTreeWalker
+public class AttributeNameHistoWalker extends AbstractHistoVisitable
 {
 	private boolean isCompileAttribute;
 	private String attributeName;
@@ -22,7 +22,7 @@ public class AttributeNameHistoWalker extends AbstractHistoTreeWalker
 	}	
 	
 	@Override
-	public void processMember(Histo histo, IMetaMember mm)
+	public void visit(IMetaMember mm)
 	{		
 		String attrValue = null;
 

@@ -3,15 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.histo;
+package com.chrisnewland.jitwatch.treevisitor;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 
-public interface IHistoWalker
+public interface ITreeVisitable
 {
-	public IReadOnlyJITDataModel getJITDataModel();
-	public long getResolution();
-    public void processMember(Histo histo, IMetaMember mm);
+    public void visit(IMetaMember mm);
     public void reset();
 }

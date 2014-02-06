@@ -20,12 +20,12 @@ import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
+public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 {
 	private Set<String> inlinedCounted = new HashSet<>();
 	private IParseDictionary parseDictionary;
 
-	public InlineSizeHistoWalker(IReadOnlyJITDataModel model, long resolution)
+	public InlineSizeHistoVisitable(IReadOnlyJITDataModel model, long resolution)
 	{
 		super(model, resolution);
 	}
@@ -38,14 +38,18 @@ public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
 	}
 
 	@Override
-	public void processMember(Histo histo, IMetaMember mm)
+	public void visit(IMetaMember mm)
 	{
 		if (mm.isCompiled())
 		{
+			System.out.println(mm+" compiled");
+
 			Journal journal = JournalUtil.getJournal(model, mm);
 
 			if (journal != null)
 			{
+				System.out.println("journal");
+
 				Task lastTaskTag = JournalUtil.getLastTask(journal);
 
 				if (lastTaskTag != null)
@@ -69,6 +73,9 @@ public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
 		String holder = null;
 		String attrInlineBytes = null;
 
+		System.out.println("ppt");
+
+		
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();
@@ -86,7 +93,8 @@ public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
 
 			case TAG_INLINE_FAIL:
 			{
-				// clear method to prevent incorrect pickup by next inline success
+				// clear method to prevent incorrect pickup by next inline
+				// success
 				currentMethod = null;
 				holder = null;
 				attrInlineBytes = null;
@@ -121,11 +129,5 @@ public class InlineSizeHistoWalker extends AbstractHistoTreeWalker
 				break;
 			}
 		}
-	}
-
-	@Override
-	public long getResolution()
-	{
-		return resolution;
 	}
 }
