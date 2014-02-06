@@ -122,7 +122,7 @@ public class TriView extends Stage
 				if (!ignoreComboChanged)
 				{
 				    if (newVal != null)
-				    {
+				    {    	
 				        TriView.this.setMember(newVal);
 				    }
 				}
@@ -140,7 +140,7 @@ public class TriView extends Stage
 					protected void updateItem(IMetaMember item, boolean empty)
 					{
 						super.updateItem(item, empty);
-
+						
 						if (item == null || empty)
 						{
 							setText(S_EMPTY);

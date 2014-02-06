@@ -3,13 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.toplist;
+package com.chrisnewland.jitwatch.treevisitor;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
-public interface ITopListFilter
+public interface ITreeVisitable
 {
-    public boolean acceptMember(IMetaMember mm);
-    
-    public MemberScore getScore(IMetaMember mm);
+    public void visit(IMetaMember mm);
+    public void reset();
 }

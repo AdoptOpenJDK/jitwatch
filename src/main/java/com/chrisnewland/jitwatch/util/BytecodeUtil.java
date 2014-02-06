@@ -13,6 +13,8 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public class BytecodeUtil
 {
+	//TODO fetch bytecode descriptions from http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.if_icmp_cond
+	
 	public static String getBytecodeForMember(IMetaMember member, List<String> classLocations)
 	{	
         String bytecodeSignature = member.getSignatureForBytecode();
