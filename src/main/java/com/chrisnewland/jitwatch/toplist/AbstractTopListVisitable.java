@@ -16,7 +16,7 @@ import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
 public abstract class AbstractTopListVisitable implements ITopListVisitable
 {
 	protected IReadOnlyJITDataModel model;
-	protected List<MemberScore> topList;
+	protected List<ITopListScore> topList;
 	protected boolean sortHighToLow;
 
 	public AbstractTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
@@ -29,16 +29,23 @@ public abstract class AbstractTopListVisitable implements ITopListVisitable
 	{
 	}
 
-	public List<MemberScore> buildTopList()
+	//override if necessary
+	public void postProcess()
+	{
+	}
+	
+	public List<ITopListScore> buildTopList()
 	{
 		topList = new ArrayList<>();
 
 		TreeVisitor.walkTree(model, this);
 
-		Collections.sort(topList, new Comparator<MemberScore>()
+		postProcess();
+		
+		Collections.sort(topList, new Comparator<ITopListScore>()
 		{
 			@Override
-			public int compare(MemberScore s1, MemberScore s2)
+			public int compare(ITopListScore s1, ITopListScore s2)
 			{
 				if (sortHighToLow)
 				{

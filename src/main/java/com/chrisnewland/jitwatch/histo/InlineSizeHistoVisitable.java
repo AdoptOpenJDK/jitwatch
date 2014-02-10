@@ -42,14 +42,10 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	{
 		if (mm.isCompiled())
 		{
-			System.out.println(mm+" compiled");
-
 			Journal journal = JournalUtil.getJournal(model, mm);
 
 			if (journal != null)
 			{
-				System.out.println("journal");
-
 				Task lastTaskTag = JournalUtil.getLastTask(journal);
 
 				if (lastTaskTag != null)
@@ -72,9 +68,6 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 		String currentMethod = null;
 		String holder = null;
 		String attrInlineBytes = null;
-
-		System.out.println("ppt");
-
 		
 		for (Tag child : parseTag.getChildren())
 		{
