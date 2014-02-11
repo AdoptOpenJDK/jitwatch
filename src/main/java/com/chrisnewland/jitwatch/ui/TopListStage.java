@@ -20,6 +20,7 @@ import com.chrisnewland.jitwatch.toplist.ITopListVisitable;
 import com.chrisnewland.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
 import com.chrisnewland.jitwatch.toplist.AbstractTopListVisitable;
+import com.chrisnewland.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -67,7 +68,7 @@ public class TopListStage extends Stage
 
 		attrMap.put(largestNativeMethods, new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_NMSIZE, true));
 		attrMap.put("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(parent.getJITDataModel(), true));
-
+		attrMap.put("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(parent.getJITDataModel(), true));
 		attrMap.put("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_BYTES, true));
 		attrMap.put("Slowest Compilation Times", new CompiledAttributeTopListVisitable(parent.getJITDataModel(),
 				ATTR_COMPILE_MILLIS, true));
