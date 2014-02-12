@@ -6,12 +6,14 @@
 package com.chrisnewland.jitwatch.core;
 
 import java.util.HashMap;
-
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.IParseDictionary;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -21,62 +23,73 @@ public class IntrinsicFinder
 	{
 		Map<String, String> result = new HashMap<>();
 
-		Tag lastTaskTag = null;
-
-		for (Tag tag : journal.getEntryList())
+		if (journal != null)
 		{
-			if (TAG_TASK.equals(tag.getName()))
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				lastTaskTag = tag;
-			}
-		}
+				IParseDictionary parseDictionary = lastTaskTag.getParseDictionary();
 
-		if (lastTaskTag != null)
-		{
-			List<Tag> parsePhases = lastTaskTag.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
-
-			if (parsePhases.size() > 0)
-			{
-				Tag lastParsePhase = parsePhases.get(parsePhases.size() - 1);
-
-				List<Tag> parseTags = lastParsePhase.getNamedChildren(ATTR_PARSE);
+				List<Tag> parseTags = JournalUtil.getParseTags(journal);
 
 				for (Tag parseTag : parseTags)
 				{
-					String klass = null;
-					String method = null;
+					String currentMethod = null;
+					String holder = null;
 
-					// <klass>
-					// <method>
-					// <intrinsic>
 					List<Tag> allChildren = parseTag.getChildren();
 
 					for (Tag childTag : allChildren)
 					{
-						String name = childTag.getName();
+						String tagName = childTag.getName();
+						Map<String, String> attrs = childTag.getAttrs();
+						
+						//System.out.println(childTag);
 
-						switch (name)
+						switch (tagName)
 						{
-						case TAG_KLASS:
-							klass = childTag.getAttrs().get(ATTR_NAME);
-							klass = klass.replace(S_SLASH, S_DOT);
+						case TAG_METHOD:
+						{
+							currentMethod = attrs.get(ATTR_NAME);
+							holder = attrs.get(ATTR_HOLDER);
+						}
 							break;
 
-						case TAG_METHOD:
-							method = childTag.getAttrs().get(ATTR_NAME);
+						// changes member context
+						case TAG_CALL:
+						{
+							String methodID = attrs.get(ATTR_METHOD);
+						
+							//System.out.println("call: " + methodID);
+							Tag methodTag = parseDictionary.getMethod(methodID);
+							currentMethod = methodTag.getAttrs().get(ATTR_NAME);
+							holder = methodTag.getAttrs().get(ATTR_HOLDER);
+						}
 							break;
 
 						case TAG_INTRINSIC:
-							String intrinsic = childTag.getAttrs().get(ATTR_ID);
-
-							if (klass != null && method != null)
+						{
+							//System.out.println("intrinsic: " + holder + " " + currentMethod);
+							if (holder != null && currentMethod != null)
 							{
-								result.put(klass + S_DOT + method, intrinsic);
+								Tag klassTag = parseDictionary.getKlass(holder);
+
+								String intrinsic = childTag.getAttrs().get(ATTR_ID);
+
+								if (klassTag != null)
+								{
+									String fqName = klassTag.getAttrs().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
+											+ currentMethod;
+
+									result.put(fqName, intrinsic);
+								}
 							}
 
-							klass = null;
-							method = null;
+							holder = null;
+							currentMethod = null;
 							break;
+						}
 						}
 					}
 				}

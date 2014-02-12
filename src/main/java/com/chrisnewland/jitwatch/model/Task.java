@@ -26,6 +26,24 @@ public class Task extends Tag
 	{
 		return parseDictionary;
 	}
+	
+	public void addDictionaryType(String type, Tag tag)
+	{
+		//System.out.println("type: " + type + " " + tag);
+		parseDictionary.setType(type, tag);
+	}
+	
+	public void addDictionaryMethod(String method, Tag tag)
+	{
+		//System.out.println("method: " + method + " " + tag);
+		parseDictionary.setMethod(method, tag);
+	}
+	
+	public void addDictionaryKlass(String klass, Tag tag)
+	{
+		//System.out.println("klass: " + klass + " " + tag);
+		parseDictionary.setKlass(klass, tag);
+	}
 
 	public String decodeParseMethod(String method)
 	{

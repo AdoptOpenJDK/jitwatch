@@ -68,7 +68,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 		String currentMethod = null;
 		String holder = null;
 		String attrInlineBytes = null;
-		
+
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();

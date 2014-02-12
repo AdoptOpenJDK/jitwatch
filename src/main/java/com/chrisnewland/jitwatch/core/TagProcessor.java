@@ -87,15 +87,15 @@ public class TagProcessor
 						switch (name)
 						{
 						case JITWatchConstants.TAG_TYPE:
-							((Task) topTag).getParseDictionary().setType(attrs.get(JITWatchConstants.ATTR_ID), t);
+							((Task) topTag).addDictionaryType(attrs.get(JITWatchConstants.ATTR_ID), t);
 							break;
 
 						case JITWatchConstants.TAG_METHOD:
-							((Task) topTag).getParseDictionary().setMethod(attrs.get(JITWatchConstants.ATTR_ID), t);
+							((Task) topTag).addDictionaryMethod(attrs.get(JITWatchConstants.ATTR_ID), t);
 							break;
 
 						case JITWatchConstants.TAG_KLASS:
-							((Task) topTag).getParseDictionary().setKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
+							((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
 							break;
 						}
 					}
