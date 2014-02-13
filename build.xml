@@ -7,7 +7,7 @@
 	<property environment="env" />
 
 	<target name="clean">
-		<delete dir="${classes}" />
+		<delete quiet="true" dir="${classes}" />
 		<mkdir dir="${classes}" />
 	</target>
 
@@ -19,6 +19,7 @@
 	</path>
 
 	<target name="compile">
+		<mkdir dir="${classes}" />
 		<javac srcdir="${src}" destdir="${classes}" classpathref="classpath" includeantruntime="false" />
 	</target>
 
