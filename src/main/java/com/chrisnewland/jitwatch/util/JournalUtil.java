@@ -165,6 +165,8 @@ public class JournalUtil
 		if (lastTask != null)
 		{
 			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+			
+			System.out.println("Parse phases: " + parsePhases.size());
 
 			for (Tag parsePhase : parsePhases)
 			{

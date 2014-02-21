@@ -365,7 +365,14 @@ public class ParseUtil
     {
         int index = findBestLineMatchForMemberSignature(member, lines);
 
-        return lines.get(index);
+        String match = null;
+        
+        if (index > 0 && index < lines.size())
+        {
+        	match = lines.get(index);
+        }
+        
+        return match;
     }
 
     public static int findBestLineMatchForMemberSignature(IMetaMember member, List<String> lines)
@@ -442,7 +449,7 @@ public class ParseUtil
         {
             return true;
         }
-        else
+        else if (mspTypeName != null)
         {
             // Substitute generics to match with non-generic signature
             // public static <T extends java.lang.Object, U extends

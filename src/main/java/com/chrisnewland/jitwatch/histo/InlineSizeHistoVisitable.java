@@ -57,13 +57,13 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 
 				for (Tag parseTag : parseTags)
 				{
-					processParseTag(histo, parseTag);
+					processParseTag(parseTag);
 				}
 			}
 		}
 	}
 
-	private void processParseTag(Histo histo, Tag parseTag)
+	private void processParseTag(Tag parseTag)
 	{
 		String currentMethod = null;
 		String holder = null;
@@ -117,7 +117,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 				break;
 			case TAG_PARSE:
 			{
-				processParseTag(histo, child);
+				processParseTag(child);
 			}
 				break;
 			}

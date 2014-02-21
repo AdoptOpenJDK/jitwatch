@@ -78,4 +78,29 @@ public class TableUtil
 
         return tv;
     }
+    
+    public static TableView<SuggestTableRow> buildTableSuggestion(ObservableList<SuggestTableRow> rows)
+    {
+        TableView<SuggestTableRow> tv = new TableView<>();
+
+        TableColumn<SuggestTableRow, String> colMetaClass = new TableColumn<SuggestTableRow, String>("Class");
+        colMetaClass.setCellValueFactory(new PropertyValueFactory<SuggestTableRow, String>("metaClass"));
+        colMetaClass.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
+
+        TableColumn<SuggestTableRow, String> colValue = new TableColumn<SuggestTableRow, String>("Member");
+        colValue.setCellValueFactory(new PropertyValueFactory<SuggestTableRow, String>("member"));
+        colValue.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
+
+        TableColumn<SuggestTableRow, String> colSuggestion = new TableColumn<SuggestTableRow, String>("Suggestion");
+        colSuggestion.setCellValueFactory(new PropertyValueFactory<SuggestTableRow, String>("suggestion"));
+        colSuggestion.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
+        
+        tv.getColumns().add(colMetaClass);
+        tv.getColumns().add(colValue);
+        tv.getColumns().add(colSuggestion);
+
+        tv.setItems(rows);
+
+        return tv;
+    }
 }
