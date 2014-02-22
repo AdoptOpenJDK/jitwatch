@@ -21,45 +21,11 @@ import org.junit.Test;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaConstructor;
 import com.chrisnewland.jitwatch.model.MetaMethod;
-import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.test.TestUtil.*;
 
 public class TestParser
 {
-    private Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)
-    {
-        Method m = null;
-
-        try
-        {
-            Class<?> clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-            m = clazz.getDeclaredMethod(method, paramTypes);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return m;
-    }
-
-    private Constructor<?> getConstructor(String fqClassName, Class<?>[] paramTypes)
-    {
-        Constructor<?> c = null;
-
-        try
-        {
-            Class<?> clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-            c = clazz.getDeclaredConstructor(paramTypes);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return c;
-    }
-
     @Test
     public void testSourceSignatureRegExMatcher()
     {
@@ -112,7 +78,6 @@ public class TestParser
         assertTrue(match5);
     }
     
-
     @Test
     public void testRegressionJavaUtilPropertiesLoadConvert() // space before parentheses
     {
@@ -207,7 +172,7 @@ public class TestParser
     	srcLinesList.add("public static byte[] copyOf(byte[], int);");
     	srcLinesList.add("public static byte[] copyOf(float[], int);");
     	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
-    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);"); //TODO build table of T extends             
+    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);");             
         	
     	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
     	

@@ -21,6 +21,10 @@ import com.chrisnewland.jitwatch.model.MemberSignatureParts;
 
 public class ParseUtil
 {
+	
+	//http://stackoverflow.com/questions/68633/regex-that-will-match-a-java-method-declaration
+	
+	
     private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
             .compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
 

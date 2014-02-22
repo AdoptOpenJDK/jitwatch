@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
@@ -24,15 +25,15 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private List<MetaMethod> classMethods = new CopyOnWriteArrayList<MetaMethod>();
 	private List<MetaConstructor> classConstructors = new CopyOnWriteArrayList<MetaConstructor>();
-	
+
 	private int compiledMethodCount = 0;
-	
+
 	private Map<String, String> bytecodeCache = null;
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;
-		this.className = className;		
+		this.className = className;
 	}
 
 	public boolean isInterface()
@@ -44,17 +45,17 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		compiledMethodCount++;
 	}
-	
+
 	public boolean hasCompiledMethods()
 	{
-	    return compiledMethodCount > 0;
+		return compiledMethodCount > 0;
 	}
-	
+
 	public void setInterface(boolean isInterface)
 	{
 		this.isInterface = isInterface;
 	}
-	
+
 	public boolean isMissingDef()
 	{
 		return missingDef;
@@ -64,14 +65,14 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		this.missingDef = missingDef;
 	}
-	
+
 	public Map<String, String> getBytecodeCache(List<String> classLocations)
 	{
 		if (bytecodeCache == null)
 		{
 			bytecodeCache = BytecodeLoader.fetchByteCodeForClass(classLocations, getFullyQualifiedName());
 		}
-		
+
 		return bytecodeCache;
 	}
 
@@ -109,27 +110,103 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		classMethods.add(method);
 	}
-	
+
 	public void addMetaConstructor(MetaConstructor constructor)
 	{
 		classConstructors.add(constructor);
 	}
 
-	//alpha
 	public List<IMetaMember> getMetaMembers()
 	{
 		List<IMetaMember> result = new ArrayList<>();
-		
+
 		IMetaMember[] constructorsArray = classConstructors.toArray(new MetaConstructor[classConstructors.size()]);
 		Arrays.sort(constructorsArray);
-		
+
 		IMetaMember[] methodsArray = classMethods.toArray(new MetaMethod[classMethods.size()]);
 		Arrays.sort(methodsArray);
 
 		result.addAll(Arrays.asList(constructorsArray));
 		result.addAll(Arrays.asList(methodsArray));
-		
+
 		return result;
+	}
+
+	public IMetaMember getMemberFromSignature(String name, String returnType, String[] paramTypes)
+	{
+		IMetaMember result = null;
+
+		for (IMetaMember member : getMetaMembers())
+		{
+			//System.out.println("checking: " + member);
+			
+			if (memberMatches(member, name, returnType, paramTypes))
+			{
+				//System.out.println("match");
+				result = member;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	private boolean memberMatches(IMetaMember member, String name, String returnType, String[] paramTypes)
+	{
+		boolean match = false;
+
+		boolean nameMatch = member.getMemberName().equals(name);
+
+		//System.out.println("name: " + member.getMemberName() + " / " + name);
+
+		if (nameMatch)
+		{
+			boolean returnMatch = false;
+			boolean paramsMatch = false;
+
+			String memberReturnTypeName = member.getReturnTypeName();
+			String[] memberArgumentTypeNames = member.getParamTypeNames();
+
+			//System.out.println("return: " + memberReturnTypeName + " / " + returnType);
+
+			if (memberReturnTypeName == null && returnType == null)
+			{
+				returnMatch = true;
+			}
+			else if (memberReturnTypeName != null && returnType != null && memberReturnTypeName.equals(returnType))
+			{
+				returnMatch = true;
+			}
+
+			if (memberArgumentTypeNames == null && paramTypes == null)
+			{
+				paramsMatch = true;
+			}
+			else if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
+			{
+				paramsMatch = true;
+
+				for (int i = 0; i < memberArgumentTypeNames.length; i++)
+				{
+					String memberParam = memberArgumentTypeNames[i];
+					String checkParam = paramTypes[i];
+
+					//System.out.println("param: " + memberParam + " / " + checkParam);
+
+					if (!memberParam.equals(checkParam))
+					{
+						paramsMatch = false;
+						break;
+					}
+				}
+			}
+
+			//System.out.println("match: " + returnMatch + " / " + paramsMatch);
+
+			match = returnMatch && paramsMatch;
+		}
+
+		return match;
 	}
 
 	@Override

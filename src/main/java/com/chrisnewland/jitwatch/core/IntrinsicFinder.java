@@ -44,8 +44,8 @@ public class IntrinsicFinder
 					{
 						String tagName = childTag.getName();
 						Map<String, String> attrs = childTag.getAttrs();
-						
-						//System.out.println(childTag);
+
+						// System.out.println(childTag);
 
 						switch (tagName)
 						{
@@ -60,8 +60,8 @@ public class IntrinsicFinder
 						case TAG_CALL:
 						{
 							String methodID = attrs.get(ATTR_METHOD);
-						
-							//System.out.println("call: " + methodID);
+
+							// System.out.println("call: " + methodID);
 							Tag methodTag = parseDictionary.getMethod(methodID);
 							currentMethod = methodTag.getAttrs().get(ATTR_NAME);
 							holder = methodTag.getAttrs().get(ATTR_HOLDER);
@@ -70,7 +70,8 @@ public class IntrinsicFinder
 
 						case TAG_INTRINSIC:
 						{
-							//System.out.println("intrinsic: " + holder + " " + currentMethod);
+							// System.out.println("intrinsic: " + holder + " " +
+							// currentMethod);
 							if (holder != null && currentMethod != null)
 							{
 								Tag klassTag = parseDictionary.getKlass(holder);

@@ -166,7 +166,8 @@ public class JournalUtil
 		{
 			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
 			
-			System.out.println("Parse phases: " + parsePhases.size());
+			//TODO ever more than 1???
+			//System.out.println("Parse phases: " + parsePhases.size());
 
 			for (Tag parsePhase : parsePhases)
 			{
