@@ -21,15 +21,11 @@ public class SuggestStage extends Stage
 {
 	private TableView<SuggestTableRow> tableView;
 	private ObservableList<SuggestTableRow> obList = FXCollections.observableArrayList();
-	
-	private JITWatchUI parent;
-	
+		
 	public SuggestStage(final JITWatchUI parent)
 	{
 		initStyle(StageStyle.DECORATED);
-	
-		this.parent = parent;
-		
+			
 		VBox vbox = new VBox();
 		
 		Scene scene = new Scene(vbox, 800, 480);

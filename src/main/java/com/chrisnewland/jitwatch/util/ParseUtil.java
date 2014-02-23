@@ -21,12 +21,11 @@ import com.chrisnewland.jitwatch.model.MemberSignatureParts;
 
 public class ParseUtil
 {
-	
 	//http://stackoverflow.com/questions/68633/regex-that-will-match-a-java-method-declaration
-	
-	
+	//http://stackoverflow.com/questions/4304928/unicode-equivalents-for-w-and-b-in-java-regular-expressions
+	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
     private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
-            .compile("^([0-9a-zA-Z\\.\\$_]+) ([0-9a-zA-Z<>_\\$]+) (\\(.*\\))(.*)");
+            .compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");
 
     public static final String SQUARE_BRACKET_PAIR = "[]";
     public static final String CONSTRUCTOR_INIT = "<init>";
@@ -169,6 +168,25 @@ public class ParseUtil
 
         return builder.toString();
     }
+    
+    public static String[] splitLogSignatureWithRegex(String logSignature)
+    {
+        Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(logSignature);
+
+        String[] parts = null;
+        
+        if (matcher.find())
+        {
+            String className = matcher.group(1);
+            String methodName = matcher.group(2);
+            String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
+            String returnType = matcher.group(4);
+            
+            parts = new String[]{className, methodName, paramTypes, returnType};
+        }
+        
+        return parts;
+    }
 
     /*
      * Parses a log file signature into a class name and java declaration-style
@@ -179,19 +197,18 @@ public class ParseUtil
     public static String[] parseLogSignature(String logSignature) throws Exception
     {
         String result[] = null;
+        
+        String[] parts = splitLogSignatureWithRegex(logSignature);
 
-        Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(logSignature);
-
-        if (matcher.find())
+        if (parts != null)
         {
-            String className = matcher.group(1);
-            String methodName = matcher.group(2);
-            String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
-            String returnType = matcher.group(4);
+            String className = parts[0];
+            String methodName = parts[1];
+            String paramTypes = parts[2];
+            String returnType = parts[3];
 
             Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
-            Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType); // length
-                                                                            // 1
+            Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
 
             Class<?> returnClass;
 

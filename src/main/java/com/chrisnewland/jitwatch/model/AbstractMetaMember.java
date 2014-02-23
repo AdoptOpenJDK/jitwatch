@@ -36,8 +36,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	private static final String anyChars = "(.*)";
 	private static final String spaceZeroOrMore = "( )*";
 	private static final String spaceOneOrMore = "( )+";
-	private static final String paramName = "([0-9a-zA-Z_]+)";
-	private static final String regexPackage = "([0-9a-zA-Z_\\.]*)";
+	private static final String paramName = "([0-9\\p{L}_]+)";
+	private static final String regexPackage = "([0-9\\p{L}_\\.]*)";
 	
 	@Override
 	public String getMemberName()

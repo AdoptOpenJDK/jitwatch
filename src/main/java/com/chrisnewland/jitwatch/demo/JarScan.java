@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package com.chrisnewland.jitwatch.demo;
 
 import java.io.BufferedWriter;
@@ -16,6 +21,7 @@ public class JarScan
 {
 	private static StringBuilder result = new StringBuilder();
 
+	@SuppressWarnings("unchecked")
 	public static void iterateJar(File jarFile, int maxMethodBytes) throws IOException
 	{
 		ZipFile zip = new ZipFile(jarFile);
@@ -76,6 +82,9 @@ public class JarScan
 			try
 			{
 				int bcSize = Integer.parseInt(bcOffset);
+				
+				// assume final instruction is a return of some kind
+				// for 1 byte
 				bcSize++;
 
 				if (bcSize >= maxMethodBytes && !methodName.equals("static {}"))
