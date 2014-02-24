@@ -99,7 +99,7 @@ public class BytecodeLoader
 					inMethod = false;
 					storeBytecode(bytecodeMap, signature, builder);
 				}
-				else
+				else if (line.indexOf(':') != -1)
 				{
 					builder.append(line).append("\n");
 				}

@@ -60,6 +60,7 @@ public class JITWatchConstants
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
 	public static final String ATTR_NMSIZE = "nmsize";
 	public static final String ATTR_BYTES = "bytes";
+	public static final String ATTR_IICOUNT = "iicount";
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
 	public static final String ATTR_PARSE = PARSE;

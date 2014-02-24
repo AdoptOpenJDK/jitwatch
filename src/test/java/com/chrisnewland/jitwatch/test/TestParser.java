@@ -19,47 +19,17 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaConstructor;
 import com.chrisnewland.jitwatch.model.MetaMethod;
-import com.chrisnewland.jitwatch.util.ClassUtil;
+import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
+import static com.chrisnewland.jitwatch.test.TestUtil.*;
 
 public class TestParser
 {
-    private Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)
-    {
-        Method m = null;
-
-        try
-        {
-            Class<?> clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-            m = clazz.getDeclaredMethod(method, paramTypes);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return m;
-    }
-
-    private Constructor<?> getConstructor(String fqClassName, Class<?>[] paramTypes)
-    {
-        Constructor<?> c = null;
-
-        try
-        {
-            Class<?> clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-            c = clazz.getDeclaredConstructor(paramTypes);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return c;
-    }
-
     @Test
     public void testSourceSignatureRegExMatcher()
     {
@@ -112,7 +82,6 @@ public class TestParser
         assertTrue(match5);
     }
     
-
     @Test
     public void testRegressionJavaUtilPropertiesLoadConvert() // space before parentheses
     {
@@ -207,7 +176,7 @@ public class TestParser
     	srcLinesList.add("public static byte[] copyOf(byte[], int);");
     	srcLinesList.add("public static byte[] copyOf(float[], int);");
     	srcLinesList.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
-    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);"); //TODO build table of T extends             
+    	srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);");             
         	
     	int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
     	
@@ -315,4 +284,79 @@ public class TestParser
         
         assertEquals(-1, uqToString.indexOf("volatile"));
     }
+	
+	public void unicodeMethodNameµµµµµ()
+	{
+	}
+    
+    @Test
+    public void testNonASCIIMethod() throws NoSuchMethodException, SecurityException
+    {
+    	String thisClassName = getClass().getName();
+    	
+    	MetaPackage metaPackage = new MetaPackage(StringUtil.getPackageName(thisClassName));
+    	
+    	MetaClass metaClass = new MetaClass(metaPackage, StringUtil.makeUnqualified(thisClassName));
+    	
+    	String testMethodName = "unicodeMethodNameµµµµµ";
+    	
+    	Method method = getClass().getDeclaredMethod(testMethodName, new Class[0]);
+    	    	
+    	MetaMethod testMethod = new MetaMethod(method, metaClass);
+                
+        String sourceSig = "public void unicodeMethodNameµµµµµ()";
+        
+        Matcher matcher = Pattern.compile(testMethod.getSignatureRegEx()).matcher(sourceSig);
+        boolean match = matcher.find();
+        assertTrue(match);
+    }
+    
+    // tests for the regex used to parse the hotspot.log method signature format
+	// format is 
+	// class method(params)return
+	// e.g.
+	// java.util.ArrayList elementData (I)Ljava.lang.Object;
+    
+    @Test
+    public void testASCIILogSignatures()
+    {
+    	String sig = "java.util.ArrayList elementData (I)Ljava.lang.Object;";
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("java.util.ArrayList", parts[0]);
+    	assertEquals("elementData", parts[1]);
+    	assertEquals("I", parts[2]);
+    	assertEquals("Ljava.lang.Object;", parts[3]);   	
+    }
+    
+    @Test
+    public void testNonASCIILogSignatures()
+    {
+    	String sig = "com.chrisnewland.jitwatch.test.TestParser unicodeMethodNameµµµµµ (V)V";
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("com.chrisnewland.jitwatch.test.TestParser", parts[0]);
+    	assertEquals("unicodeMethodNameµµµµµ", parts[1]);
+    	assertEquals("V", parts[2]);
+    	assertEquals("V", parts[3]);    	
+    }
+    
+    @Test
+    public void testNonASCIILogSignaturesRegression()
+    {
+    	String sig = "frege.compiler.gen.Util layoutXS (Lfrege.lib.PP$TDoc;)Lfrege.prelude.PreludeBase$TList;";
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("frege.compiler.gen.Util", parts[0]);
+    	assertEquals("layoutXS", parts[1]);
+    	assertEquals("Lfrege.lib.PP$TDoc;", parts[2]);
+    	assertEquals("Lfrege.prelude.PreludeBase$TList;", parts[3]);    	
+    }
+    
+    
+    
+    
 }

@@ -149,15 +149,29 @@ public class StringUtil
 		return result;
 	}
 
-	public static String makeUnqualified(String input)
+	public static String makeUnqualified(String fqClassName)
 	{
-		int lastDot = input.lastIndexOf('.');
+		int lastDot = fqClassName.lastIndexOf('.');
 
-		String result = input;
+		String result = fqClassName;
 
 		if (lastDot != -1)
 		{
-			result = input.substring(lastDot + 1);
+			result = fqClassName.substring(lastDot + 1);
+		}
+
+		return result;
+	}
+	
+	public static String getPackageName(String fqClassName)
+	{
+		int lastDot = fqClassName.lastIndexOf('.');
+
+		String result = fqClassName;
+
+		if (lastDot != -1)
+		{
+			result = fqClassName.substring(0, lastDot);
 		}
 
 		return result;

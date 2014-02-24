@@ -46,6 +46,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		}
 	}
 
+	//todo nested parse?
 	private void processParseTag(Tag parseTag)
 	{
 		for (Tag child : parseTag.getChildren())

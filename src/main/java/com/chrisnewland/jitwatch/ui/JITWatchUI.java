@@ -80,7 +80,8 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnTopList;
 	private Button btnErrorLog;
 	private Button btnCodeCache;
-	private Button btnCodeBrowser;
+	private Button btnTriView;
+	private Button btnSuggest;
 
 	private Label lblHeap;
 
@@ -91,6 +92,7 @@ public class JITWatchUI extends Application implements IJITListener
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheStage;
 	private TriView triView;
+	private SuggestStage suggestStage;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -348,8 +350,8 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		btnCodeBrowser = new Button("TriView");
-		btnCodeBrowser.setOnAction(new EventHandler<ActionEvent>()
+		btnTriView = new Button("TriView");
+		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
@@ -365,7 +367,23 @@ public class JITWatchUI extends Application implements IJITListener
 					triView.setMember(selectedMember);
 				}
 
-				btnCodeBrowser.setDisable(true);
+				btnTriView.setDisable(true);
+			}
+		});
+		
+		btnSuggest = new Button("Suggest");
+		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				suggestStage = new SuggestStage(JITWatchUI.this);
+
+				suggestStage.show();
+
+				openPopupStages.add(suggestStage);
+
+				btnSuggest.setDisable(true);
 			}
 		});
 
@@ -396,7 +414,7 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnHisto);
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCache);
-		hboxTop.getChildren().add(btnCodeBrowser);
+		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnErrorLog);
 		hboxTop.getChildren().add(lblHeap);
 		hboxTop.setPrefHeight(topHeight);
@@ -826,8 +844,13 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 		else if (stage instanceof TriView)
 		{
-			btnCodeBrowser.setDisable(false);
+			btnTriView.setDisable(false);
 			triView = null;
+		}
+		else if (stage instanceof SuggestStage)
+		{
+			btnSuggest.setDisable(false);
+			suggestStage = null;
 		}
 	}
 
