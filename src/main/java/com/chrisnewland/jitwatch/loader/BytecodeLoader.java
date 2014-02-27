@@ -8,8 +8,8 @@ package com.chrisnewland.jitwatch.loader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.sun.tools.javap.JavapTask;
@@ -19,7 +19,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class BytecodeLoader
 {
-	public static Map<String, String> fetchByteCodeForClass(List<String> classLocations, String fqClassName)
+	public static Map<String, String> fetchByteCodeForClass(Collection<String> classLocations, String fqClassName)
 	{
 		String[] args;
 
