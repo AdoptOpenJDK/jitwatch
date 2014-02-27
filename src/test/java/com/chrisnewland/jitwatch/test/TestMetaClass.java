@@ -7,12 +7,14 @@ package com.chrisnewland.jitwatch.test;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.MetaConstructor;
 import com.chrisnewland.jitwatch.model.MetaMethod;
 import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -36,9 +38,20 @@ public class TestMetaClass
 	{
 	}
 	
-	public String ObjectReturnObjectParam(String foo)
+	public String objectReturnObjectParam(String foo)
 	{
-		return "When the daylight weighs a ton.";
+		return "When the daylight weighs a ton";
+	}
+	
+	public String[] arrayReturnArrayParam(int[] foo)
+	{
+		return new String[]{"and all my friends are gone"};
+	}
+	
+	// test constructor
+	public TestMetaClass()
+	{
+		
 	}
  
     @Test
@@ -128,7 +141,7 @@ public class TestMetaClass
     	
     	MetaClass metaClass = new MetaClass(metaPackage, StringUtil.makeUnqualified(thisClassName));
     	
-    	String testMethodName = "ObjectReturnObjectParam";
+    	String testMethodName = "objectReturnObjectParam";
     	
     	Method method = getClass().getDeclaredMethod(testMethodName, new Class[]{java.lang.String.class});
     	
@@ -143,5 +156,57 @@ public class TestMetaClass
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
+    }
+    
+    @Test
+    public void testGetMemberFromSignature5() throws NoSuchMethodException, SecurityException
+    {
+    	String thisClassName = getClass().getName();
+    	
+    	MetaPackage metaPackage = new MetaPackage(StringUtil.getPackageName(thisClassName));
+    	
+    	MetaClass metaClass = new MetaClass(metaPackage, StringUtil.makeUnqualified(thisClassName));
+    	
+    	String testMethodName = "arrayReturnArrayParam";
+    	
+    	Method method = getClass().getDeclaredMethod(testMethodName, new Class[]{int[].class});
+    	
+    	MetaMethod testMethod = new MetaMethod(method, metaClass);
+    	
+    	metaClass.addMetaMethod(testMethod);
+    	
+    	String testRetType = "java.lang.String[]";
+    	String[] testParamTypes = new String[]{"int[]"};
+    	
+    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    
+    	assertNotNull(result);
+    	assertEquals(testMethod.toString(), result.toString());
+    }
+    
+    @Test
+    public void testGetMemberFromSignature6() throws NoSuchMethodException, SecurityException
+    {
+    	String thisClassName = getClass().getName();
+    	
+    	MetaPackage metaPackage = new MetaPackage(StringUtil.getPackageName(thisClassName));
+    	
+    	MetaClass metaClass = new MetaClass(metaPackage, StringUtil.makeUnqualified(thisClassName));
+    	
+    	String testMethodName = "<init>";
+    	
+    	Constructor<?> constructor = getClass().getDeclaredConstructor(new Class[0]);
+    	
+    	MetaConstructor testConstructor = new MetaConstructor(constructor, metaClass);
+    	
+    	metaClass.addMetaConstructor(testConstructor);
+    	
+    	String testRetType = getClass().getName();
+    	String[] testParamTypes = new String[0];
+    	
+    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    
+    	assertNotNull(result);
+    	assertEquals(testConstructor.toString(), result.toString());
     }
 }

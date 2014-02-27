@@ -188,7 +188,7 @@ public class Viewer extends VBox
 
 		for (int i = len; i < maxWidth; i++)
 		{
-			builder.append(' ');
+			builder.append(S_SPACE);
 		}
 
 		builder.append(number);

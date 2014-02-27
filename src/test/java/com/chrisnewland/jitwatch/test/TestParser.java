@@ -356,6 +356,19 @@ public class TestParser
     	assertEquals("Lfrege.prelude.PreludeBase$TList;", parts[3]);    	
     }
     
+    @Test
+    public void testASCIILogSignaturesArrayWithArrayParam()
+    {
+    	String sig = "java.util.ComparableTimSort gallopLeft (Ljava.lang.Comparable;[Ljava.lang.Object;III)I";
+    	
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("java.util.ComparableTimSort", parts[0]);
+    	assertEquals("gallopLeft", parts[1]);
+    	assertEquals("Ljava.lang.Comparable;[Ljava.lang.Object;III", parts[2]);
+    	assertEquals("I", parts[3]);   	
+    }
     
     
     

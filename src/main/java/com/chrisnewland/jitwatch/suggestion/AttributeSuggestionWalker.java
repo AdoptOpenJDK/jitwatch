@@ -7,6 +7,7 @@ package com.chrisnewland.jitwatch.suggestion;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,11 +19,52 @@ import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
 import com.chrisnewland.jitwatch.util.JournalUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 
 public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
 	private IParseDictionary parseDictionary;
+
+	private static final Map<String, Double> scoreMap = new HashMap<>();
+	private static final Map<String, String> explanationMap = new HashMap<>();
+
+	// see
+	// https://wikis.oracle.com/display/HotSpotInternals/Server+Compiler+Inlining+Messages
+	private static final String REASON_HOT_METHOD_TOO_BIG = "hot method too big";
+	private static final String REASON_TOO_BIG = "too big";
+	private static final String REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD = "already compiled into a big method";
+	private static final String REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD = "already compiled into a medium method";
+	private static final String REASON_NEVER_EXECUTED = "never executed";
+	private static final String REASON_EXEC_LESS_MIN_INLINING_THRESHOLD = "executed < MinInliningThreshold times";
+	private static final String REASON_CALL_SITE_NOT_REACHED = "call site not reached";
+
+	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
+
+	static
+	{
+		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
+		scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
+		scoreMap.put(REASON_TOO_BIG, 0.5);
+		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
+		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
+		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
+
+		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
+		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
+
+		explanationMap
+				.put(REASON_HOT_METHOD_TOO_BIG,
+						"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
+		explanationMap.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
+		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
+				"The callee method is not 'hot' but is too big to be inlined into the caller method.");
+		explanationMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
+	}
+
+	private static final int MIN_BRANCH_INVOCATIONS = 1000;
+	private static final int MIN_INLINING_INVOCATIONS = 1000;
 
 	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
 	{
@@ -32,8 +74,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	@Override
 	public void visit(IMetaMember mm)
 	{
-		// check journal for inlined member calls
-
 		if (mm.isCompiled())
 		{
 			Journal journal = JournalUtil.getJournal(model, mm);
@@ -46,20 +86,24 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				{
 					parseDictionary = lastTaskTag.getParseDictionary();
 
-					List<Tag> parseTags = JournalUtil.getParseTags(journal);
+					Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
 					for (Tag parseTag : parseTags)
 					{
-						processParseTag(parseTag);
+						processParseTag(parseTag, mm);
 					}
 				}
 			}
 		}
 	}
 
-	private void processParseTag(Tag parseTag)
+	private void processParseTag(Tag parseTag, IMetaMember caller)
 	{
-		String methodId = null;
+		String methodID = null;
+
+		int currentBytecode = -1;
 
 		for (Tag child : parseTag.getChildren())
 		{
@@ -70,84 +114,242 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			{
 			case TAG_METHOD:
 			{
-				methodId = attrs.get(ATTR_ID);
+				methodID = attrs.get(ATTR_ID);
 			}
+				break;
+			case TAG_BC:
+			{
+				String bci = attrs.get(ATTR_BCI);
+				currentBytecode = Integer.parseInt(bci);
+			}
+				break;
+			case TAG_BRANCH:
+				handleBranchTag(attrs, currentBytecode, caller);
 				break;
 
 			case TAG_CALL:
 			{
-				methodId = attrs.get(ATTR_METHOD);
+				methodID = attrs.get(ATTR_METHOD);
 			}
 				break;
 
 			case TAG_INLINE_FAIL:
-			{
-				StringBuilder reason = new StringBuilder(attrs.get(ATTR_REASON));
-
-				Tag methodTag = parseDictionary.getMethod(methodId);
-
-				String methodName = methodTag.getAttrs().get(ATTR_NAME);
-
-				String klassId = methodTag.getAttrs().get(ATTR_HOLDER);
-
-				Tag klassTag = parseDictionary.getKlass(klassId);
-
-				String metaClassName = klassTag.getAttrs().get(ATTR_NAME);
-
-				String returnTypeId = methodTag.getAttrs().get(ATTR_RETURN);
-
-				String argumentsTypeId = methodTag.getAttrs().get(ATTR_ARGUMENTS);
-
-				String returnType = null;
-				String[] argumentTypes = null;
-
-				if (returnTypeId != null)
-				{
-					Tag returnTypeTag = parseDictionary.getType(returnTypeId);
-					returnType = returnTypeTag.getAttrs().get(ATTR_NAME);
-				}
-
-				if (argumentsTypeId != null)
-				{
-					String[] typeIDs = argumentsTypeId.split(S_SPACE);
-
-					argumentTypes = new String[typeIDs.length];
-
-					int pos = 0;
-
-					for (String typeID : typeIDs)
-					{
-						Tag typeTag = parseDictionary.getType(typeID);
-						typeIDs[pos++] = typeTag.getAttrs().get(ATTR_NAME);
-					}
-				}
-
-				String methodBytecodes = methodTag.getAttrs().get(ATTR_BYTES);
-				String invocationCount = methodTag.getAttrs().get(ATTR_IICOUNT);
-				
-				reason.append(" invocation count: ").append(invocationCount);
-				reason.append(" bytecodes: ").append(methodBytecodes).append(".");
-
-				PackageManager pm = model.getPackageManager();
-
-				MetaClass metaClass = pm.getMetaClass(metaClassName);
-
-				IMetaMember member = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
-
-				Suggestion suggestion = new Suggestion(member, reason.toString(), Integer.parseInt(methodBytecodes));
-
-				suggestionList.add(suggestion);
-			}
-
+				handleInlineFailTag(attrs, methodID, caller, currentBytecode);
 				break;
+
 			case TAG_PARSE:
 			{
-				// recurse
-				processParseTag(child);
+				String callerID = attrs.get(ATTR_METHOD);
+				IMetaMember nestedCaller = lookupMember(callerID);
+				processParseTag(child, nestedCaller);
 			}
 				break;
 			}
 		}
+	}
+
+	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode)
+	{
+		IMetaMember callee = lookupMember(methodID);
+
+		if (callee != null)
+		{
+			Tag methodTag = parseDictionary.getMethod(methodID);
+
+			String methodBytecodes = methodTag.getAttrs().get(ATTR_BYTES);
+			String invocations = methodTag.getAttrs().get(ATTR_IICOUNT);
+
+			int invocationCount = Integer.parseInt(invocations);
+
+			if (invocationCount >= MIN_INLINING_INVOCATIONS)
+			{
+				String reason = attrs.get(ATTR_REASON);
+
+				double score = 0;
+
+				if (scoreMap.containsKey(reason))
+				{
+					score = scoreMap.get(reason);
+				}
+				else
+				{
+					System.out.println("No score is set for reason: " + reason);
+				}
+
+				StringBuilder reasonBuilder = new StringBuilder();
+
+				reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to\n");
+				reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append("\n");
+				reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName()).append("\n");
+				reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
+
+				if (explanationMap.containsKey(reason))
+				{
+					reasonBuilder.append(explanationMap.get(reason)).append("\n");
+				}
+
+				reasonBuilder.append("Invocations: ").append(invocationCount).append("\n");
+				reasonBuilder.append("Size of callee bytecode: ").append(methodBytecodes).append("\n");
+
+				score *= invocationCount;
+
+				if (score > 0)
+				{
+					Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.INLINING,
+							(int) Math.ceil(score));
+
+					if (!suggestionList.contains(suggestion))
+					{
+						suggestionList.add(suggestion);
+					}
+				}
+			}
+		}
+	}
+
+	private void handleBranchTag(Map<String, String> attrs, int currentBytecode, IMetaMember caller)
+	{
+		String countStr = attrs.get(ATTR_BRANCH_COUNT);
+		String probStr = attrs.get(ATTR_BRANCH_PROB);
+
+		int count = 0;
+		double probability = 0.0;
+
+		if (countStr != null)
+		{
+			try
+			{
+				count = Integer.parseInt(countStr);
+			}
+			catch (NumberFormatException nfe)
+			{
+			}
+		}
+
+		if (probStr != null)
+		{
+			try
+			{
+				probability = Double.parseDouble(probStr);
+			}
+			catch (NumberFormatException nfe)
+			{
+			}
+		}
+
+		double score = 0;
+
+		if (probability > 0.45 && probability < 0.55 && count >= MIN_BRANCH_INVOCATIONS)
+		{
+			score = scoreMap.get(REASON_UNCERTAIN_BRANCH);
+
+			score *= count;
+		}
+
+		if (score > 0)
+		{
+			StringBuilder reasonBuilder = new StringBuilder();
+
+			reasonBuilder.append("Method contains an unpredictable branch at bytecode ");
+			reasonBuilder.append(currentBytecode);
+			reasonBuilder.append(" that was observed ");
+			reasonBuilder.append(count);
+			reasonBuilder.append(" times and is taken with probability ");
+			reasonBuilder.append(probability);
+			reasonBuilder
+					.append(". It may be possbile to modify the branch (for example by sorting a collection before iterating) to make it more predictable.");
+
+			Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.BRANCH, (int) Math.ceil(score));
+
+			if (!suggestionList.contains(suggestion))
+			{
+				suggestionList.add(suggestion);
+			}
+		}
+
+	}
+
+	private IMetaMember lookupMember(String methodId)
+	{
+		Tag methodTag = parseDictionary.getMethod(methodId);
+
+		String methodName = methodTag.getAttrs().get(ATTR_NAME);
+
+		String klassId = methodTag.getAttrs().get(ATTR_HOLDER);
+
+		Tag klassTag = parseDictionary.getKlass(klassId);
+
+		String metaClassName = klassTag.getAttrs().get(ATTR_NAME);
+		metaClassName = metaClassName.replace(S_SLASH, S_DOT);
+
+		String returnTypeId = methodTag.getAttrs().get(ATTR_RETURN);
+
+		String argumentsTypeId = methodTag.getAttrs().get(ATTR_ARGUMENTS);
+
+		String returnType = lookupType(returnTypeId);
+
+		String[] argumentTypes = new String[0];
+
+		if (argumentsTypeId != null)
+		{
+			String[] typeIDs = argumentsTypeId.split(S_SPACE);
+
+			argumentTypes = new String[typeIDs.length];
+
+			int pos = 0;
+
+			for (String typeID : typeIDs)
+			{
+				argumentTypes[pos++] = lookupType(typeID);
+			}
+		}
+
+		PackageManager pm = model.getPackageManager();
+
+		MetaClass metaClass = pm.getMetaClass(metaClassName);
+
+		IMetaMember member = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+
+		if (member == null)
+		{
+			System.out.println("Could not find callee " + metaClass + " : " + methodName);
+			System.out.println("return: " + returnType);
+
+			if (argumentTypes != null)
+			{
+				for (String type : argumentTypes)
+				{
+					System.out.println("param: " + type);
+				}
+			}
+
+		}
+
+		return member;
+	}
+
+	private String lookupType(String typeOrKlassID)
+	{
+		String result = null;
+
+		if (typeOrKlassID != null)
+		{
+			Tag typeTag = parseDictionary.getType(typeOrKlassID);
+
+			if (typeTag == null)
+			{
+				typeTag = parseDictionary.getKlass(typeOrKlassID);
+			}
+
+			if (typeTag != null)
+			{
+				result = typeTag.getAttrs().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+
+				result = ParseUtil.expandParameterType(result);
+			}
+		}
+
+		return result;
 	}
 
 }

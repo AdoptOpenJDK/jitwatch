@@ -3,10 +3,9 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.suggestion;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.suggestion.Suggestion;
 
 public class SuggestTableRow
@@ -18,18 +17,32 @@ public class SuggestTableRow
 		this.suggestion = suggestion;
 	}
 
-	public MetaClass getMetaClass()
+	public IMetaMember getCaller()
 	{
-		return suggestion.getMember().getMetaClass();
-	}
-
-	public IMetaMember getMember()
-	{
-		return suggestion.getMember();
+		return suggestion.getCaller();
 	}
 
 	public String getSuggestion()
 	{
 		return suggestion.getSuggestion();
+	}
+
+	public int getScore()
+	{
+		return suggestion.getScore();
+	}
+
+	public String getType()
+	{
+
+		switch (suggestion.getType())
+		{
+		case BRANCH:
+			return "Branch";
+		case INLINING:
+			return "Inlinling";
+		default:
+			return "Unknown";
+		}
 	}
 }

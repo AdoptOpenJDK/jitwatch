@@ -15,7 +15,9 @@ import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
@@ -23,6 +25,7 @@ import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
@@ -53,6 +56,9 @@ import javafx.util.Duration;
 
 public class JITWatchUI extends Application implements IJITListener
 {
+	public static final int WINDOW_WIDTH = 1024;
+	public static final int WINDOW_HEIGHT = 592;
+	
 	private Stage stage;
 
 	private JITDataModel model;
@@ -205,12 +211,10 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		int width = 1024;
-		int height = 592;
 
 		BorderPane borderPane = new BorderPane();
 
-		Scene scene = new Scene(borderPane, width, height);
+		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
@@ -399,12 +403,15 @@ public class JITWatchUI extends Application implements IJITListener
 
 		lblHeap = new Label();
 
-		int topHeight = 50;
-		int bottomHeight = 100;
+		int menuBarHeight = 40;
+		int textAreaHeight = 100;
+		int statusBarHeight = 25;
 
 		HBox hboxTop = new HBox();
 
 		hboxTop.setPadding(new Insets(10));
+		hboxTop.setPrefHeight(menuBarHeight);
+		hboxTop.setSpacing(10);
 		hboxTop.getChildren().add(btnChooseWatchFile);
 		hboxTop.getChildren().add(btnStartWatching);
 		hboxTop.getChildren().add(btnStopWatching);
@@ -415,10 +422,8 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
+		hboxTop.getChildren().add(btnSuggest);
 		hboxTop.getChildren().add(btnErrorLog);
-		hboxTop.getChildren().add(lblHeap);
-		hboxTop.setPrefHeight(topHeight);
-		hboxTop.setSpacing(10);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -448,7 +453,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
-		textAreaLog.setPrefHeight(bottomHeight);
+		textAreaLog.setPrefHeight(textAreaHeight);
 		textAreaLog
 				.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 
@@ -464,8 +469,16 @@ public class JITWatchUI extends Application implements IJITListener
 		spMain.getItems().add(textAreaLog);
 		spMain.setDividerPositions(0.7, 0.3);
 
+		HBox hboxBottom = new HBox();
+
+		hboxBottom.setPadding(new Insets(4));
+		hboxBottom.setPrefHeight(statusBarHeight);
+		hboxBottom.setSpacing(0);
+		hboxBottom.getChildren().add(lblHeap);
+		
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
+		borderPane.setBottom(hboxBottom);		
 
 		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
 		stage.setScene(scene);

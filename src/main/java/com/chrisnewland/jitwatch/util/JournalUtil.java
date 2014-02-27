@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.util;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,113 +29,118 @@ public class JournalUtil
 
 		if (journal != null)
 		{
-			List<Tag> parseTags = getParseTags(journal);
+			Tag parsePhase = getParsePhase(journal);
+
+			List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
 			for (Tag parseTag : parseTags)
 			{
-				List<Tag> children = parseTag.getChildren();
-
-				int currentBytecode = -1;
-
-				Map<String, String> callAttrs = new HashMap<>();
-				
-				for (Tag child : children)
-				{
-					String name = child.getName();
-					Map<String, String> attrs = child.getAttrs();					
-
-					switch (name)
-					{
-					case TAG_BC:
-					{
-						String bci = attrs.get(ATTR_BCI);
-						currentBytecode = Integer.parseInt(bci);
-						callAttrs.clear();
-					}
-						break;
-					case TAG_CALL:
-					{
-						callAttrs.putAll(attrs);
-					}
-						break;
-					case TAG_INLINE_SUCCESS:
-					{
-						StringBuilder reason = new StringBuilder();
-						reason.append("Inlined: ").append(attrs.get(ATTR_REASON));
-						
-						if (callAttrs.containsKey(ATTR_COUNT))
-						{
-							reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
-						}
-						if (callAttrs.containsKey(ATTR_PROF_FACTOR))
-						{
-							reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
-						}
-						
-						result.put(currentBytecode,
-								new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
-					}
-						break;
-					case TAG_INLINE_FAIL:
-					{
-						StringBuilder reason = new StringBuilder();
-						reason.append("Not inlined: ").append(attrs.get(ATTR_REASON));
-						
-						if (callAttrs.containsKey(ATTR_COUNT))
-						{
-							reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
-						}
-						if (callAttrs.containsKey(ATTR_PROF_FACTOR))
-						{
-							reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
-						}
-						
-						result.put(currentBytecode,
-								new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.RED));
-					}
-						break;
-					case TAG_BRANCH:
-					{
-						String count = attrs.get(ATTR_BRANCH_COUNT);
-						String taken = attrs.get(ATTR_BRANCH_TAKEN);
-						String notTaken = attrs.get(ATTR_BRANCH_NOT_TAKEN);
-						String prob = attrs.get(ATTR_BRANCH_PROB);
-
-						StringBuilder reason = new StringBuilder();
-
-						if (count != null)
-						{
-							reason.append("Count: ").append(count).append("\n");
-						}
-
-						reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
-
-						if (prob != null)
-						{
-							reason.append("\nProbability: ").append(prob);
-						}
-
-						if (!result.containsKey(currentBytecode))
-						{
-							result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
-						}
-					}
-						break;
-					case TAG_INTRINSIC:
-					{
-						StringBuilder reason = new StringBuilder();
-						reason.append("Intrinsic: ").append(attrs.get(ATTR_ID));
-
-						result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
-
-					}
-						break;
-					}
-				}
+				buildParseTagAnnotations(parseTag, result);
 			}
 		}
 
 		return result;
+	}
+	
+	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result)
+	{
+		List<Tag> children = parseTag.getChildren();
+
+		int currentBytecode = -1;
+
+		Map<String, String> callAttrs = new HashMap<>();
+
+		for (Tag child : children)
+		{
+			String name = child.getName();
+			Map<String, String> attrs = child.getAttrs();
+
+			switch (name)
+			{
+			case TAG_BC:
+			{
+				String bci = attrs.get(ATTR_BCI);
+				currentBytecode = Integer.parseInt(bci);
+				callAttrs.clear();
+			}
+				break;
+			case TAG_CALL:
+			{
+				callAttrs.putAll(attrs);
+			}
+				break;
+			case TAG_INLINE_SUCCESS:
+			{
+				StringBuilder reason = new StringBuilder();
+				reason.append("Inlined: ").append(attrs.get(ATTR_REASON));
+
+				if (callAttrs.containsKey(ATTR_COUNT))
+				{
+					reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
+				}
+				if (callAttrs.containsKey(ATTR_PROF_FACTOR))
+				{
+					reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
+				}
+
+				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
+			}
+				break;
+			case TAG_INLINE_FAIL:
+			{
+				StringBuilder reason = new StringBuilder();
+				reason.append("Not inlined: ").append(attrs.get(ATTR_REASON));
+
+				if (callAttrs.containsKey(ATTR_COUNT))
+				{
+					reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
+				}
+				if (callAttrs.containsKey(ATTR_PROF_FACTOR))
+				{
+					reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
+				}
+
+				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.RED));
+			}
+				break;
+			case TAG_BRANCH:
+			{
+				String count = attrs.get(ATTR_BRANCH_COUNT);
+				String taken = attrs.get(ATTR_BRANCH_TAKEN);
+				String notTaken = attrs.get(ATTR_BRANCH_NOT_TAKEN);
+				String prob = attrs.get(ATTR_BRANCH_PROB);
+
+				StringBuilder reason = new StringBuilder();
+
+				if (count != null)
+				{
+					reason.append("Count: ").append(count).append("\n");
+				}
+
+				reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
+
+				if (prob != null)
+				{
+					reason.append("\nProbability: ").append(prob);
+				}
+
+				if (!result.containsKey(currentBytecode))
+				{
+					result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
+				}
+			}
+				break;
+			case TAG_INTRINSIC:
+			{
+				StringBuilder reason = new StringBuilder();
+				reason.append("Intrinsic: ").append(attrs.get(ATTR_ID));
+
+				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
+
+			}
+				break;
+			}
+		}
 	}
 
 	public static Task getLastTask(Journal journal)
@@ -156,26 +160,29 @@ public class JournalUtil
 		return lastTask;
 	}
 
-	public static List<Tag> getParseTags(Journal journal)
+	public static Tag getParsePhase(Journal journal)
 	{
-		List<Tag> result = new ArrayList<>();
+		Tag parsePhase = null;
 
 		Task lastTask = getLastTask(journal);
 
 		if (lastTask != null)
 		{
 			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
-			
-			//TODO ever more than 1???
-			//System.out.println("Parse phases: " + parsePhases.size());
 
-			for (Tag parsePhase : parsePhases)
+			int count = parsePhases.size();
+
+			if (count != 1)
 			{
-				result.addAll(parsePhase.getNamedChildren(TAG_PARSE));
+				System.out.println("Unexpected parse phase count: " + count);
+			}
+			else
+			{
+				parsePhase = parsePhases.get(0);
 			}
 		}
 
-		return result;
+		return parsePhase;
 	}
 
 	public static Journal getJournal(IReadOnlyJITDataModel model, IMetaMember member)

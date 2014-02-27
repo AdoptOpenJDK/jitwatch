@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -98,7 +99,35 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public String getFullyQualifiedName()
 	{
-		return classPackage.getName() + '.' + className;
+		StringBuilder builder = new StringBuilder();
+		
+		if (classPackage != null && classPackage.getName().length() > 0)
+		{
+			builder.append(classPackage.getName()).append(C_DOT);
+		}
+
+		builder.append(className);
+		
+		return builder.toString();
+	}
+	
+	public String getAbbreviatedFullyQualifiedName()
+	{		
+		StringBuilder builder = new StringBuilder();
+		
+		if (classPackage != null && classPackage.getName().length() > 0)
+		{
+			String[] parts = classPackage.getName().split("\\.");
+
+			for(String part : parts)
+			{
+				builder.append(part.charAt(0)).append(C_DOT);
+			}	
+		}
+		
+		builder.append(className);
+		
+		return builder.toString();
 	}
 
 	public MetaPackage getPackage()
@@ -136,13 +165,17 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		IMetaMember result = null;
 
+		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))
+		{
+			name = getFullyQualifiedName();
+			returnType = name;
+		}
+
 		for (IMetaMember member : getMetaMembers())
 		{
-			//System.out.println("checking: " + member);
-			
 			if (memberMatches(member, name, returnType, paramTypes))
 			{
-				//System.out.println("match");
+				// System.out.println("match");
 				result = member;
 				break;
 			}
@@ -157,17 +190,19 @@ public class MetaClass implements Comparable<MetaClass>
 
 		boolean nameMatch = member.getMemberName().equals(name);
 
-		//System.out.println("name: " + member.getMemberName() + " / " + name);
-
 		if (nameMatch)
 		{
+			// System.out.println("name: " + member.getMemberName() + " / " +
+			// name);
+
 			boolean returnMatch = false;
 			boolean paramsMatch = false;
 
 			String memberReturnTypeName = member.getReturnTypeName();
 			String[] memberArgumentTypeNames = member.getParamTypeNames();
 
-			//System.out.println("return: " + memberReturnTypeName + " / " + returnType);
+			// System.out.println("return: " + memberReturnTypeName + " / " +
+			// returnType);
 
 			if (memberReturnTypeName == null && returnType == null)
 			{
@@ -178,11 +213,7 @@ public class MetaClass implements Comparable<MetaClass>
 				returnMatch = true;
 			}
 
-			if (memberArgumentTypeNames == null && paramTypes == null)
-			{
-				paramsMatch = true;
-			}
-			else if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
+			if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
 			{
 				paramsMatch = true;
 
@@ -191,7 +222,8 @@ public class MetaClass implements Comparable<MetaClass>
 					String memberParam = memberArgumentTypeNames[i];
 					String checkParam = paramTypes[i];
 
-					//System.out.println("param: " + memberParam + " / " + checkParam);
+					// System.out.println("param: " + memberParam + " / " +
+					// checkParam);
 
 					if (!memberParam.equals(checkParam))
 					{
@@ -201,7 +233,8 @@ public class MetaClass implements Comparable<MetaClass>
 				}
 			}
 
-			//System.out.println("match: " + returnMatch + " / " + paramsMatch);
+			// System.out.println("match: " + returnMatch + " / " +
+			// paramsMatch);
 
 			match = returnMatch && paramsMatch;
 		}
