@@ -228,7 +228,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(modifiers).append(' ');
 		}
 
-		if (returnType != null)
+		// return type of constructor is not declared in signature
+		if (!(this instanceof MetaConstructor) && returnType != null)
 		{
 			String rt = expandParamRegEx(returnType.getName());
 

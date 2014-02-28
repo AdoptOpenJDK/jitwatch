@@ -36,7 +36,9 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 
 			if (journal != null)
 			{
-				List<Tag> parseTags = JournalUtil.getParseTags(journal);
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
 				for (Tag parseTag : parseTags)
 				{
@@ -46,7 +48,6 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		}
 	}
 
-	//todo nested parse?
 	private void processParseTag(Tag parseTag)
 	{
 		for (Tag child : parseTag.getChildren())
@@ -54,7 +55,9 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 			String tagName = child.getName();
 			Map<String, String> attrs = child.getAttrs();
 
-			if (TAG_INLINE_FAIL.equals(tagName))
+			switch (tagName)
+			{
+			case TAG_INLINE_FAIL:
 			{
 				String reason = attrs.get(ATTR_REASON);
 
@@ -67,6 +70,11 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				{
 					reasonCountMap.put(reason, 1);
 				}
+			}
+			case TAG_PARSE:
+			{
+				processParseTag(child);
+			}
 			}
 		}
 	}

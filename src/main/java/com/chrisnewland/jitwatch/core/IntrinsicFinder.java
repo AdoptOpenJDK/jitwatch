@@ -31,8 +31,10 @@ public class IntrinsicFinder
 			{
 				IParseDictionary parseDictionary = lastTaskTag.getParseDictionary();
 
-				List<Tag> parseTags = JournalUtil.getParseTags(journal);
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+		
 				for (Tag parseTag : parseTags)
 				{
 					String currentMethod = null;

@@ -52,8 +52,10 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 				{
 					parseDictionary = lastTaskTag.getParseDictionary();
 				}
+				
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				List<Tag> parseTags = JournalUtil.getParseTags(journal);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
 				for (Tag parseTag : parseTags)
 				{

@@ -23,6 +23,7 @@ public class ParseUtil
 {
 	//http://stackoverflow.com/questions/68633/regex-that-will-match-a-java-method-declaration
 	//http://stackoverflow.com/questions/4304928/unicode-equivalents-for-w-and-b-in-java-regular-expressions
+	
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
     private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
             .compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");

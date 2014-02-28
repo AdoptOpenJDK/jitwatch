@@ -82,9 +82,9 @@ public class MakeHotSpotLog
 		int adds = 0;
 		int subs = 0;
 
-		for (int i = 0; i < iterations; i++)
+		for (int i = 0; i < iterations*2; i++)
 		{
-			if (i < iterations/2)
+			if (i < iterations)
 			{
 				count = add(count, 1);
 				adds++;
