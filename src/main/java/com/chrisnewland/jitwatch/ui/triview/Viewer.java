@@ -136,8 +136,8 @@ public class Viewer extends VBox
 		{
 			int lineReference = entry.getKey();
 			LineAnnotation la = entry.getValue();
-			Color colour = la.getColour();
-
+			Color colour = la.getColour();			
+			
 			Label lblLine = null;
 
 			switch (la.getType())

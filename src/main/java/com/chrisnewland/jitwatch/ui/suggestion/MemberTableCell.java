@@ -5,17 +5,29 @@
  */
 package com.chrisnewland.jitwatch.ui.suggestion;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.ui.triview.ITriViewAccessor;
 
 class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 {
 	private VBox vb;
 	private Label lblMetaClass;
 	private Label lblMetaMember;
+	private Button btnTriView;
+
+	private static ITriViewAccessor triViewAccessor;
+
+	public static void setTriViewAccessor(ITriViewAccessor triViewAccessor)
+	{
+		MemberTableCell.triViewAccessor = triViewAccessor;
+	}
 
 	public MemberTableCell()
 	{
@@ -23,18 +35,32 @@ class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 
 		lblMetaClass = new Label();
 		lblMetaMember = new Label();
+		btnTriView = new Button();
+		btnTriView.setText("View");
 
 		vb.getChildren().add(lblMetaClass);
 		vb.getChildren().add(lblMetaMember);
+		vb.getChildren().add(btnTriView);
+		
+		vb.setSpacing(5);
 
 		setGraphic(vb);
 	}
 
 	@Override
-	protected void updateItem(IMetaMember member, boolean empty)
+	protected void updateItem(final IMetaMember member, boolean empty)
 	{
 		if (member != null)
 		{
+			btnTriView.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent e)
+				{
+					triViewAccessor.openTriView(member);
+				}
+			});
+
 			lblMetaClass.setText(member.getMetaClass().getFullyQualifiedName());
 			lblMetaMember.setText(member.toStringUnqualifiedMethodName());
 		}

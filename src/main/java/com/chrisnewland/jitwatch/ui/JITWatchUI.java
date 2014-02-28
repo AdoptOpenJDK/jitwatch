@@ -26,6 +26,7 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
+import com.chrisnewland.jitwatch.ui.triview.ITriViewAccessor;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
@@ -54,11 +55,11 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application implements IJITListener
+public class JITWatchUI extends Application implements IJITListener, ITriViewAccessor
 {
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT = 592;
-	
+
 	private Stage stage;
 
 	private JITDataModel model;
@@ -211,7 +212,6 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-
 		BorderPane borderPane = new BorderPane();
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -360,21 +360,10 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-				triView = new TriView(JITWatchUI.this, config);
-
-				triView.show();
-
-				openPopupStages.add(triView);
-
-				if (selectedMember != null)
-				{
-					triView.setMember(selectedMember);
-				}
-
-				btnTriView.setDisable(true);
+				openTriView(selectedMember);
 			}
 		});
-		
+
 		btnSuggest = new Button("Suggest");
 		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -475,10 +464,10 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(0);
 		hboxBottom.getChildren().add(lblHeap);
-		
+
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
-		borderPane.setBottom(hboxBottom);		
+		borderPane.setBottom(hboxBottom);
 
 		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
 		stage.setScene(scene);
@@ -512,6 +501,25 @@ public class JITWatchUI extends Application implements IJITListener
 			openPopupStages.add(configStage);
 
 			btnConfigure.setDisable(true);
+		}
+	}
+
+	public void openTriView(IMetaMember member)
+	{
+		if (triView == null)
+		{
+			triView = new TriView(JITWatchUI.this, config);
+
+			triView.show();
+		
+			openPopupStages.add(triView);
+
+			btnTriView.setDisable(true);
+		}
+
+		if (member != null)
+		{
+			triView.setMember(member);
 		}
 	}
 
