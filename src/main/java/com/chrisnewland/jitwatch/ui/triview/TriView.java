@@ -140,7 +140,7 @@ public class TriView extends Stage
 					protected void updateItem(IMetaMember item, boolean empty)
 					{
 						super.updateItem(item, empty);
-						
+												
 						if (item == null || empty)
 						{
 							setText(S_EMPTY);
@@ -232,7 +232,7 @@ public class TriView extends Stage
 		vBox.getChildren().add(hBoxToolBarButtons);
 		vBox.getChildren().add(splitViewer);
 
-		Scene scene = new Scene(vBox, 800, 480);
+		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setScene(scene);
 

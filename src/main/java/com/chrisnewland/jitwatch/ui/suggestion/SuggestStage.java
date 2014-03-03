@@ -35,6 +35,8 @@ public class SuggestStage extends Stage
 	public SuggestStage(final JITWatchUI parent)
 	{
 		this.parent = parent;
+		
+		MemberTableCell.setTriViewAccessor(parent);
 
 		initStyle(StageStyle.DECORATED);
 
