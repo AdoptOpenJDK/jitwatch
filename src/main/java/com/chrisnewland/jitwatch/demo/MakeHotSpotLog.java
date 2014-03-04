@@ -27,6 +27,7 @@ public class MakeHotSpotLog
 		intrinsicTest(iterations);
 		tooBigToInline(iterations);
 		testSort();
+		testCallChain(iterations);
 	}
 
 	private void addVariable(int iterations)
@@ -225,6 +226,54 @@ public class MakeHotSpotLog
 		System.out.println("list size: " + list.size());
 	}
 
+	private void testCallChain(long iterations)
+	{
+		long count = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			count = chainA1(count);
+			count = chainB1(count);
+		}
+
+		System.out.println("testCallChain: " + count);
+	}
+	
+	private long chainA1(long count)
+	{
+		return 1 + chainA2(count);
+	}
+	
+	private long chainA2(long count)
+	{
+		return 2 + chainA3(count);
+	}
+	
+	private long chainA3(long count)
+	{
+		return 3 + chainA4(count);
+	}
+	
+	private long chainA4(long count)
+	{
+		return 4 + count;
+	}
+	
+	private long chainB1(long count)
+	{
+		return chainB2(count) - 1;
+	}
+	
+	private long chainB2(long count)
+	{
+		return chainB3(count) - 2;
+	}
+	
+	private long chainB3(long count)
+	{
+		return count - 3;
+	}
+	
 	public static void main(String[] args)
 	{
 		int iterations = 1_000_000;

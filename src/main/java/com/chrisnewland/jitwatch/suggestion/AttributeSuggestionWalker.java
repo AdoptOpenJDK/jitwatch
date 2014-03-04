@@ -140,7 +140,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			case TAG_PARSE:
 			{
 				String callerID = attrs.get(ATTR_METHOD);
-				IMetaMember nestedCaller = lookupMember(callerID);
+				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
 				processParseTag(child, nestedCaller);
 			}
 				break;
@@ -150,7 +150,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode)
 	{
-		IMetaMember callee = lookupMember(methodID);
+		IMetaMember callee = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
 		if (callee != null)
 		{
@@ -266,90 +266,5 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				suggestionList.add(suggestion);
 			}
 		}
-
 	}
-
-	private IMetaMember lookupMember(String methodId)
-	{
-		Tag methodTag = parseDictionary.getMethod(methodId);
-
-		String methodName = methodTag.getAttrs().get(ATTR_NAME);
-
-		String klassId = methodTag.getAttrs().get(ATTR_HOLDER);
-
-		Tag klassTag = parseDictionary.getKlass(klassId);
-
-		String metaClassName = klassTag.getAttrs().get(ATTR_NAME);
-		metaClassName = metaClassName.replace(S_SLASH, S_DOT);
-
-		String returnTypeId = methodTag.getAttrs().get(ATTR_RETURN);
-
-		String argumentsTypeId = methodTag.getAttrs().get(ATTR_ARGUMENTS);
-
-		String returnType = lookupType(returnTypeId);
-
-		String[] argumentTypes = new String[0];
-
-		if (argumentsTypeId != null)
-		{
-			String[] typeIDs = argumentsTypeId.split(S_SPACE);
-
-			argumentTypes = new String[typeIDs.length];
-
-			int pos = 0;
-
-			for (String typeID : typeIDs)
-			{
-				argumentTypes[pos++] = lookupType(typeID);
-			}
-		}
-
-		PackageManager pm = model.getPackageManager();
-
-		MetaClass metaClass = pm.getMetaClass(metaClassName);
-
-		IMetaMember member = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
-
-		if (member == null)
-		{
-			System.out.println("Could not find callee " + metaClass + " : " + methodName);
-			System.out.println("return: " + returnType);
-
-			if (argumentTypes != null)
-			{
-				for (String type : argumentTypes)
-				{
-					System.out.println("param: " + type);
-				}
-			}
-
-		}
-
-		return member;
-	}
-
-	private String lookupType(String typeOrKlassID)
-	{
-		String result = null;
-
-		if (typeOrKlassID != null)
-		{
-			Tag typeTag = parseDictionary.getType(typeOrKlassID);
-
-			if (typeTag == null)
-			{
-				typeTag = parseDictionary.getKlass(typeOrKlassID);
-			}
-
-			if (typeTag != null)
-			{
-				result = typeTag.getAttrs().get(ATTR_NAME).replace(S_SLASH, S_DOT);
-
-				result = ParseUtil.expandParameterType(result);
-			}
-		}
-
-		return result;
-	}
-
 }
