@@ -99,12 +99,14 @@ public class ClassMemberList extends VBox
 		MenuItem menuItemNative = new MenuItem("Show native code");
 		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
+		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
 
 		contextMenuCompiled.getItems().add(menuItemSource);
 		contextMenuCompiled.getItems().add(menuItemBytecode);
 		contextMenuCompiled.getItems().add(menuItemNative);
 		contextMenuCompiled.getItems().add(menuItemJournal);
 		contextMenuCompiled.getItems().add(menuItemIntrinsics);
+		contextMenuCompiled.getItems().add(menuItemCallChain);
 
 		contextMenuNotCompiled.getItems().add(menuItemSource);
 		contextMenuNotCompiled.getItems().add(menuItemBytecode);
@@ -202,6 +204,15 @@ public class ClassMemberList extends VBox
 				}
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
+			}
+		});
+		
+		menuItemCallChain.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openCompileChain(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
