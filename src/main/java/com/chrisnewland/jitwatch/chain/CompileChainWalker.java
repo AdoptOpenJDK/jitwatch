@@ -36,8 +36,6 @@ public class CompileChainWalker
 	{
 		CompileNode root = null;
 
-		System.out.println("buildCallTree " + mm);
-
 		if (mm.isCompiled())
 		{
 			Journal journal = JournalUtil.getJournal(model, mm);
@@ -66,25 +64,26 @@ public class CompileChainWalker
 			}
 		}
 
-		show(root);
-
 		return root;
 	}
 
-	private void show(CompileNode node)
+	public String buildCompileChainTextRepresentation(CompileNode node)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		show(node, builder, 0);
-
-		System.out.println(builder.toString());
+		
+		return builder.toString();
 	}
 
 	private void show(CompileNode node, StringBuilder builder, int depth)
 	{
 		if (depth > 0)
 		{
-			builder.append(depth);
+			for (int i = 0; i < depth; i++)
+			{
+				builder.append("\t");
+			}
 
 			builder.append(" -> ");
 
@@ -130,6 +129,9 @@ public class CompileChainWalker
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
 
+		// TODO - this switch code is appearing a lot
+		// should probably refactor with an interface
+		// or visitor pattern
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();

@@ -6,7 +6,6 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.chain.CompileNode;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -29,12 +28,12 @@ public class CompileChainStage extends Stage
 
 	private CompileNode rootNode;
 
-	private static final double X_OFFSET = 50;
+	private static final double X_OFFSET = 16;
 	private static final double Y_OFFSET = 16;
 
 	private double y = Y_OFFSET;
 
-	private static final double X_GAP = X_OFFSET / 2;
+	private static final double X_GAP = 25;
 
 	private static final int STROKE_WIDTH = 3;
 	private static final double RECT_HEIGHT = 25;
@@ -78,15 +77,11 @@ public class CompileChainStage extends Stage
 	{
 		double lastX = x;
 
-		// don't show root member node
-		if (depth > 0)
-		{
-			lastX = plotNode(node, x, parentY);
+		lastX = plotNode(node, x, parentY, depth);
 
-			y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
-			
-			parentY = y - RECT_Y_GAP;
-		}
+		y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
+
+		parentY = y - RECT_Y_GAP;
 
 		for (CompileNode child : node.getChildren())
 		{
@@ -99,7 +94,7 @@ public class CompileChainStage extends Stage
 		return node.getMember().getMemberName();
 	}
 
-	private double plotNode(final CompileNode node, double x, double parentY)
+	private double plotNode(final CompileNode node, double x, double parentY, int depth)
 	{
 		String labelText = getLabelText(node);
 
@@ -153,17 +148,20 @@ public class CompileChainStage extends Stage
 
 		tipBuilder.append("\n");
 
-		double connectX = x - X_GAP;
-		double connectY = y + RECT_HEIGHT / 2;
-		double upLineY = y + RECT_HEIGHT / 2;
+		if (depth > 0)
+		{
+			double connectX = x - X_GAP;
+			double connectY = y + RECT_HEIGHT / 2;
+			double upLineY = y + RECT_HEIGHT / 2;
 
-		Line lineUp = new Line(connectX, upLineY, connectX, parentY);
-		lineUp.setStrokeWidth(STROKE_WIDTH);
-		pane.getChildren().add(lineUp);
+			Line lineUp = new Line(connectX, upLineY, connectX, parentY);
+			lineUp.setStrokeWidth(STROKE_WIDTH);
+			pane.getChildren().add(lineUp);
 
-		Line lineLeft = new Line(connectX, connectY, x, connectY);
-		lineLeft.setStrokeWidth(STROKE_WIDTH);
-		pane.getChildren().add(lineLeft);
+			Line lineLeft = new Line(connectX, connectY, x, connectY);
+			lineLeft.setStrokeWidth(STROKE_WIDTH);
+			pane.getChildren().add(lineLeft);
+		}
 
 		x += rectWidth / 2;
 
