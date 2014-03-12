@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.chain.CompileChainWalker;
+import com.chrisnewland.jitwatch.chain.CompileNode;
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
@@ -663,6 +665,19 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 		openPopupStages.add(tvs);
 
 		return tvs;
+	}
+	
+	public void openCompileChain(IMetaMember member)
+	{
+		CompileChainWalker walker = new CompileChainWalker(model);
+		
+		CompileNode root = walker.buildCallTree(member);
+		
+		CompileChainStage ccs = new CompileChainStage(this, root);
+		
+		ccs.show();
+		
+		openPopupStages.add(ccs);
 	}
 
 	void openJournalViewer(String title, Journal journal)

@@ -41,74 +41,62 @@ public class JournalUtil
 
 		return result;
 	}
-	
+
 	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result)
 	{
 		List<Tag> children = parseTag.getChildren();
 
 		int currentBytecode = -1;
 
+		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
 
 		for (Tag child : children)
 		{
 			String name = child.getName();
-			Map<String, String> attrs = child.getAttrs();
+			Map<String, String> tagAttrs = child.getAttrs();
 
 			switch (name)
 			{
 			case TAG_BC:
 			{
-				String bci = attrs.get(ATTR_BCI);
+				String bci = tagAttrs.get(ATTR_BCI);
 				currentBytecode = Integer.parseInt(bci);
 				callAttrs.clear();
 			}
 				break;
 			case TAG_CALL:
 			{
-				callAttrs.putAll(attrs);
+				callAttrs.clear();
+				callAttrs.putAll(tagAttrs);
+			}
+				break;
+			case TAG_METHOD:
+			{
+				methodAttrs.clear();
+				methodAttrs.putAll(tagAttrs);
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-				StringBuilder reason = new StringBuilder();
-				reason.append("Inlined: ").append(attrs.get(ATTR_REASON));
-
-				if (callAttrs.containsKey(ATTR_COUNT))
-				{
-					reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
-				}
-				if (callAttrs.containsKey(ATTR_PROF_FACTOR))
-				{
-					reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
-				}
-
-				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
+				String reason = tagAttrs.get(ATTR_REASON);
+				String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
+				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, annotationText, Color.GREEN));
 			}
 				break;
 			case TAG_INLINE_FAIL:
 			{
-				StringBuilder reason = new StringBuilder();
-				reason.append("Not inlined: ").append(attrs.get(ATTR_REASON));
-
-				if (callAttrs.containsKey(ATTR_COUNT))
-				{
-					reason.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
-				}
-				if (callAttrs.containsKey(ATTR_PROF_FACTOR))
-				{
-					reason.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
-				}
-
-				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.RED));
+				String reason = tagAttrs.get(ATTR_REASON);
+				String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, annotationText, Color.RED));
 			}
 				break;
 			case TAG_BRANCH:
 			{
-				String count = attrs.get(ATTR_BRANCH_COUNT);
-				String taken = attrs.get(ATTR_BRANCH_TAKEN);
-				String notTaken = attrs.get(ATTR_BRANCH_NOT_TAKEN);
-				String prob = attrs.get(ATTR_BRANCH_PROB);
+				String count = tagAttrs.get(ATTR_BRANCH_COUNT);
+				String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
+				String notTaken = tagAttrs.get(ATTR_BRANCH_NOT_TAKEN);
+				String prob = tagAttrs.get(ATTR_BRANCH_PROB);
 
 				StringBuilder reason = new StringBuilder();
 
@@ -133,7 +121,7 @@ public class JournalUtil
 			case TAG_INTRINSIC:
 			{
 				StringBuilder reason = new StringBuilder();
-				reason.append("Intrinsic: ").append(attrs.get(ATTR_ID));
+				reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
 				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
 

@@ -16,15 +16,17 @@ import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -61,14 +63,14 @@ public class TriView extends Stage
 	private ComboBox<IMetaMember> comboMember;
 
 	private boolean ignoreComboChanged = false;
-	private JITWatchUI parent;	
-	
+	private JITWatchUI parent;
+
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.parent = parent;
 		this.config = config;
 
-		setTitle("JITWatch TriView Source, Bytecode, Assembly Viewer");
+		setTitle("TriView Source, Bytecode, Assembly Viewer");
 
 		VBox vBox = new VBox();
 
@@ -101,9 +103,23 @@ public class TriView extends Stage
 		checkBytecode.selectedProperty().addListener(checkListener);
 		checkAssembly.selectedProperty().addListener(checkListener);
 
+		Button btnCallChain = new Button("View Compile Chain");
+		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					parent.openCompileChain(currentMember);
+				}
+			}
+		});
+
 		hBoxToolBarButtons.getChildren().add(checkSource);
 		hBoxToolBarButtons.getChildren().add(checkBytecode);
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
+		hBoxToolBarButtons.getChildren().add(btnCallChain);
 
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
@@ -119,12 +135,16 @@ public class TriView extends Stage
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
 			{
+				// TODO possible race condition or JavaFX bug here
+				// sometimes combo contains only selected member
 				if (!ignoreComboChanged)
 				{
-				    if (newVal != null)
-				    {    	
-				        TriView.this.setMember(newVal);
-				    }
+					System.out.println("combo changed. setting member: " + newVal);
+
+					if (newVal != null)
+					{
+						TriView.this.setMember(newVal);
+					}
 				}
 			}
 		});
@@ -140,7 +160,7 @@ public class TriView extends Stage
 					protected void updateItem(IMetaMember item, boolean empty)
 					{
 						super.updateItem(item, empty);
-												
+
 						if (item == null || empty)
 						{
 							setText(S_EMPTY);
@@ -356,7 +376,7 @@ public class TriView extends Stage
 		viewerByteCode.setContent(bc, false);
 
 		Journal journal = parent.getJournal(member);
-		
+
 		viewerByteCode.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
 
 		String assembly;

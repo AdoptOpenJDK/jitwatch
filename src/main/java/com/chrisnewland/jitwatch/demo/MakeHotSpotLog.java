@@ -28,6 +28,8 @@ public class MakeHotSpotLog
 		tooBigToInline(iterations);
 		testSort();
 		testCallChain(iterations);
+		testCallChain2(iterations);
+
 	}
 
 	private void addVariable(int iterations)
@@ -74,7 +76,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("randomBranchTest: " + count  + " " + adds + " " + subs);
+		System.out.println("randomBranchTest: " + count + " " + adds + " " + subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -83,7 +85,7 @@ public class MakeHotSpotLog
 		int adds = 0;
 		int subs = 0;
 
-		for (int i = 0; i < iterations*2; i++)
+		for (int i = 0; i < iterations * 2; i++)
 		{
 			if (i < iterations)
 			{
@@ -97,22 +99,22 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("changingBranchTest: " + count  + " " + adds + " " + subs);
+		System.out.println("changingBranchTest: " + count + " " + adds + " " + subs);
 	}
-	
+
 	private void intrinsicTest(int iterations)
 	{
 
 		long dstSum = 0;
-		int[] src = new int[]{1,2,3,4,5};
+		int[] src = new int[] { 1, 2, 3, 4, 5 };
 		int[] dst = new int[src.length];
 
 		for (int i = 0; i < iterations; i++)
 		{
-			//x86 has intrinsic for System.arrayCopy
+			// x86 has intrinsic for System.arrayCopy
 			System.arraycopy(src, 0, dst, 0, src.length);
-			
-			for(int dstVal : dst)
+
+			for (int dstVal : dst)
 			{
 				dstSum += add(dstSum, dstVal);
 			}
@@ -120,17 +122,17 @@ public class MakeHotSpotLog
 
 		System.out.println("intrinsicTest: " + dstSum);
 	}
-	
+
 	private long add(long a, long b)
 	{
 		return a + b;
 	}
-	
+
 	private long sub(long a, long b)
 	{
 		return a - b;
 	}
-	
+
 	public void tooBigToInline(int iterations)
 	{
 		long count = 0;
@@ -142,11 +144,11 @@ public class MakeHotSpotLog
 
 		System.out.println("tooBigToInline: " + count);
 	}
-	
+
 	private long bigMethod(long count, int i)
 	{
-		long a,b,c,d,e,f,g;
-		
+		long a, b, c, d, e, f, g;
+
 		a = count;
 		b = count;
 		c = count;
@@ -154,7 +156,7 @@ public class MakeHotSpotLog
 		e = count;
 		f = count;
 		g = count;
-		
+
 		a += i;
 		b += i;
 		c += i;
@@ -162,7 +164,7 @@ public class MakeHotSpotLog
 		e += i;
 		f += i;
 		g += i;
-		
+
 		a += 1;
 		b += 2;
 		c += 3;
@@ -170,7 +172,7 @@ public class MakeHotSpotLog
 		e += 5;
 		f += 6;
 		g += 7;
-		
+
 		a += i;
 		b += i;
 		c += i;
@@ -178,7 +180,7 @@ public class MakeHotSpotLog
 		e += i;
 		f += i;
 		g += i;
-		
+
 		a -= 7;
 		b -= 6;
 		c -= 5;
@@ -186,7 +188,7 @@ public class MakeHotSpotLog
 		e -= 3;
 		f -= 2;
 		g -= 1;
-		
+
 		a++;
 		b++;
 		c++;
@@ -194,7 +196,7 @@ public class MakeHotSpotLog
 		e++;
 		f++;
 		g++;
-		
+
 		a /= 2;
 		b /= 2;
 		c /= 2;
@@ -202,28 +204,40 @@ public class MakeHotSpotLog
 		e /= 2;
 		f /= 2;
 		g /= 2;
-		
-		long result = a+b+c+d+e+f+g;
-		
+
+		long result = a + b + c + d + e + f + g;
+
 		return result;
 	}
-	
+
 	private void testSort()
 	{
-		List<Integer> list = new ArrayList<>();
-		
-		int count = 1_000_000;
-		
-		Random seededRandom = new Random(12345678);
-		
-		for (int i = 0; i < count; i++)
+
+		long sum = 0;
+
+		// ensure sort is JIT compiled
+		for (int i = 0; i < 20000; i++)
 		{
-			list.add(seededRandom.nextInt());
+			Random random = new Random();
+
+			int count = 1000;
+			
+			List<Integer> list = new ArrayList<>();
+
+			for (int j = 0; j < count; j++)
+			{
+				list.add(random.nextInt());
+			}
+
+			Collections.sort(list);
+
+			for (int j = 0; j < count; j++)
+			{
+				sum += list.get(j);
+			}
 		}
-		
-		Collections.sort(list);
-		
-		System.out.println("list size: " + list.size());
+
+		System.out.println("list sum: " + sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -238,42 +252,73 @@ public class MakeHotSpotLog
 
 		System.out.println("testCallChain: " + count);
 	}
-	
+
 	private long chainA1(long count)
 	{
 		return 1 + chainA2(count);
 	}
-	
+
 	private long chainA2(long count)
 	{
 		return 2 + chainA3(count);
 	}
-	
+
 	private long chainA3(long count)
 	{
 		return 3 + chainA4(count);
 	}
-	
+
 	private long chainA4(long count)
 	{
-		return 4 + count;
+		// last link will not be inlined
+		return bigMethod(count, 4);
 	}
-	
+
 	private long chainB1(long count)
 	{
 		return chainB2(count) - 1;
 	}
-	
+
 	private long chainB2(long count)
 	{
 		return chainB3(count) - 2;
 	}
-	
+
 	private long chainB3(long count)
 	{
 		return count - 3;
 	}
-	
+
+	private void testCallChain2(long iterations)
+	{
+		long count = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			count = chainC1(count);
+			count = chainC2(count);
+
+		}
+
+		System.out.println("testCallChain2: " + count);
+	}
+
+	private long chainC1(long count)
+	{
+		count += chainC2(count);
+		return chainC3(count);
+	}
+
+	private long chainC2(long count)
+	{
+		return 2 + count;
+	}
+
+	private long chainC3(long count)
+	{
+		return 3 + count;
+	}
+
 	public static void main(String[] args)
 	{
 		int iterations = 1_000_000;
