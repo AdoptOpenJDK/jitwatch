@@ -59,36 +59,67 @@ public class StringUtil
 			sb.append(days).append("d ");
 		}
 
-		sb.append(pad(hours, 2)).append(S_COLON);
-		sb.append(pad(minutes, 2)).append(S_COLON);
-		sb.append(pad(seconds, 2));
+		sb.append(padZero(hours, 2)).append(S_COLON);
+		sb.append(padZero(minutes, 2)).append(S_COLON);
+		sb.append(padZero(seconds, 2));
 
 		if (showMillis)
 		{
-			sb.append(S_DOT).append(pad(millis, 3));
+			sb.append(S_DOT).append(padZero(millis, 3));
 		}
 
 		return sb.toString();
 	}
 
-	public static String pad(long num, int width)
+	public static String padLeft(long num, int width)
 	{
-		String numString = Long.toString(num);
-
+		return pad(Long.toString(num), width, C_SPACE, true);
+	}
+	
+	public static String padLeft(String str, int width)
+	{
+		return pad(str, width, C_SPACE, true);
+	}	
+	
+	public static String padRight(long num, int width)
+	{
+		return pad(Long.toString(num), width, C_SPACE, false);
+	}
+	
+	public static String padRight(String str, int width)
+	{
+		return pad(str, width, C_SPACE, false);
+	}	
+	
+	public static String padZero(long num, int width)
+	{
+		return pad(Long.toString(num), width, '0', true);
+	}	
+	
+	public static String pad(String str, int width, char padding, boolean left)
+	{
 		StringBuilder sb = new StringBuilder();
 
-		int len = numString.length();
+		int len = str.length();
+		
+		if (!left)
+		{
+			sb.append(str);
+		}
 
 		if (len < width)
 		{
 			for (int i = 0; i < width - len; i++)
 			{
-				sb.append("0");
+				sb.append(padding);
 			}
 		}
 
-		sb.append(numString);
-
+		if (left)
+		{
+			sb.append(str);
+		}
+		
 		return sb.toString();
 	}
 
@@ -143,7 +174,6 @@ public class StringUtil
 			{
 				result = input.substring(startPos + start.length(), endPos);
 			}
-
 		}
 
 		return result;
@@ -322,5 +352,4 @@ public class StringUtil
 
 		return value;
 	}
-
 }

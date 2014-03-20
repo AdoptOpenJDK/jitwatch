@@ -28,7 +28,6 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
-import com.chrisnewland.jitwatch.ui.triview.ITriViewAccessor;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
@@ -57,7 +56,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application implements IJITListener, ITriViewAccessor
+public class JITWatchUI extends Application implements IJITListener, IStageAccessProxy
 {
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT = 592;
@@ -101,6 +100,7 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheStage;
 	private TriView triView;
+	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
 
 	private NothingMountedStage nothingMountedStage;
@@ -506,6 +506,7 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 		}
 	}
 
+	@Override
 	public void openTriView(IMetaMember member)
 	{
 		if (triView == null)
@@ -523,6 +524,21 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 		{
 			triView.setMember(member);
 		}
+	}
+	
+	@Override
+	public void openBrowser(String title, String html, String stylesheet)
+	{
+		if (browserStage == null)
+		{
+			browserStage = new BrowserStage(JITWatchUI.this);
+
+			browserStage.show();
+		
+			openPopupStages.add(browserStage);
+		}
+
+		browserStage.setContent(title, html, stylesheet);		
 	}
 
 	public IReadOnlyJITDataModel getJITDataModel()
@@ -888,6 +904,10 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 			btnSuggest.setDisable(false);
 			suggestStage = null;
 		}
+		else if (stage instanceof BrowserStage)
+		{
+			browserStage = null;
+		}
 	}
 
 	@Override
@@ -939,4 +959,6 @@ public class JITWatchUI extends Application implements IJITListener, ITriViewAcc
 	{
 		return JournalUtil.getJournal(model, member);
 	}
+	
+
 }

@@ -83,24 +83,30 @@ public class JITWatchConstants
 	public static final String S_AT = "@";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
+	public static final String S_NEWLINE = "\n";
+	public static final String S_TAB = "\t";
+	public static final String S_DOUBLE_SPACE = "  ";
 	public static final String S_EMPTY = "";
 	public static final String S_COLON = ":";
 	public static final String S_SEMICOLON = ";";
 	public static final String S_DOT = ".";
 	public static final String S_COMMA = ",";
 	public static final String S_SLASH = "/";
+	public static final String S_DOUBLE_SLASH = "//";
 	public static final String S_QUOTE = "'";
+	public static final String S_DOUBLE_QUOTE = "\"";
+	public static final String S_REGEX_WHITESPACE = "\\s+";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_BRACKET = '<';
 	public static final char C_CLOSE_BRACKET = '>';
 	public static final char C_SPACE = ' ';
+	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
+	public static final char C_COLON = ':';
 	public static final char C_EQUALS = '=';
 	public static final char C_QUOTE = '\'';
 	public static final char C_DOUBLE_QUOTE = '"';
-
-
 	public static final char C_DOT = '.';
 	public static final char C_OBJECT_REF = 'L';
 	public static final char C_SEMICOLON = ';';

@@ -37,7 +37,7 @@ public abstract class AbstractTextViewerStage extends Stage
 			}
 		});
 
-		viewer = new Viewer();
+		viewer = new Viewer(parent);
 
 		setTitle(title);
 
