@@ -215,7 +215,7 @@ public class TriView extends Stage
 		colAssembly = new VBox();
 
 		Label lblSource = new Label("Source");
-		Label lblBytecode = new Label("Bytecode (double click for JVMLS)");
+		Label lblBytecode = new Label("Bytecode (double click for JVMS)");
 		Label lblAssembly = new Label("Assembly");
 
 		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
