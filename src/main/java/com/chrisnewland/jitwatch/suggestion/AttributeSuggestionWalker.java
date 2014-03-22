@@ -15,8 +15,6 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IParseDictionary;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;

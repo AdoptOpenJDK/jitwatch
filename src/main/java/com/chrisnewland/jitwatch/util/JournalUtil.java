@@ -17,7 +17,6 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
-import com.chrisnewland.jitwatch.model.LineAnnotation.AnnotationType;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 
@@ -81,14 +80,14 @@ public class JournalUtil
 			{
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
-				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, annotationText, Color.GREEN));
+				result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
 			}
 				break;
 			case TAG_INLINE_FAIL:
 			{
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, annotationText, Color.RED));
+				result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
 			}
 				break;
 			case TAG_BRANCH:
@@ -114,7 +113,7 @@ public class JournalUtil
 
 				if (!result.containsKey(currentBytecode))
 				{
-					result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.BLUE));
+					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
 				}
 			}
 				break;
@@ -123,7 +122,7 @@ public class JournalUtil
 				StringBuilder reason = new StringBuilder();
 				reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
-				result.put(currentBytecode, new LineAnnotation(AnnotationType.BYTECODE, reason.toString(), Color.GREEN));
+				result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
 
 			}
 				break;

@@ -18,9 +18,10 @@ import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
+import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.util.ParseUtil;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -47,17 +48,21 @@ public class Viewer extends VBox
 	public static final String COLOUR_GREEN = "green";
 	public static final String COLOUR_BLUE = "blue";
 
-	private int scrollIndex = 0;
-	private int lastScrollIndex = -1;
-	private String originalSource;
+	protected int scrollIndex = 0;
+	protected int lastScrollIndex = -1;
+	protected String originalSource;
 
-	private static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
-	private static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
+	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
 
-	private Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
+	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
-	public Viewer()
+	protected IStageAccessProxy stageAccessProxy;
+	
+	public Viewer(IStageAccessProxy stageAccessProxy)
 	{
+		this.stageAccessProxy = stageAccessProxy;
+		
 		vBoxRows = new VBox();
 
 		vBoxRows.heightProperty().addListener(new ChangeListener<Number>()
@@ -92,9 +97,9 @@ public class Viewer extends VBox
 
 		originalSource = source;
 
-		source = source.replace("\t", "  "); // 2 spaces
+		source = source.replace(S_TAB, S_DOUBLE_SPACE); // 2 spaces
 
-		String[] lines = source.split("\n");
+		String[] lines = source.split(S_NEWLINE);
 
 		int maxWidth = Integer.toString(lines.length).length();
 
@@ -106,7 +111,7 @@ public class Viewer extends VBox
 
 			if (showLineNumbers)
 			{
-				lines[i] = padLineNumber(i + 1, maxWidth) + "  " + row;
+				lines[i] = padLineNumber(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
 
 			Label lblLine = new Label(lines[i]);
@@ -136,49 +141,15 @@ public class Viewer extends VBox
 		{
 			int lineReference = entry.getKey();
 			LineAnnotation la = entry.getValue();
-			Color colour = la.getColour();			
-			
-			Label lblLine = null;
+			Color colour = la.getColour();
 
-			switch (la.getType())
-			{
-			case SOURCE:
-				lblLine = (Label) vBoxRows.getChildren().get(lineReference);
-				break;
-			case BYTECODE:
-				lblLine = findLineByBytecode(lineReference);
-				break;
-
-			case ASSEMBLY:
-				lblLine = (Label) vBoxRows.getChildren().get(lineReference);
-				break;
-			}
-
-			if (lblLine != null)
-			{
-				lblLine.setTextFill(colour);
-				lblLine.setTooltip(new Tooltip(la.getAnnotation()));
-			}
+			Label lblLine = (Label) vBoxRows.getChildren().get(lineReference);
+			lblLine.setTooltip(new Tooltip(la.getAnnotation()));
+			lblLine.setTextFill(colour);
 		}
 	}
 
-	private Label findLineByBytecode(int reference)
-	{
-		Label label = null;
 
-		for (Node node : vBoxRows.getChildren())
-		{
-			String text = ((Label) node).getText();
-
-			if (text.startsWith(reference + S_COLON))
-			{
-				label = (Label) node;
-				break;
-			}
-		}
-
-		return label;
-	}
 
 	private String padLineNumber(int number, int maxWidth)
 	{
@@ -231,7 +202,7 @@ public class Viewer extends VBox
 				for (Node item : items)
 				{
 					String line = ((Label) item).getText();
-					builder.append(line).append("\n");
+					builder.append(line).append(S_NEWLINE);
 				}
 
 				content.putString(builder.toString());
@@ -249,7 +220,7 @@ public class Viewer extends VBox
 
 		if (regexPos == -1)
 		{
-			List<String> lines = Arrays.asList(originalSource.split("\n"));
+			List<String> lines = Arrays.asList(originalSource.split(S_NEWLINE));
 
 			scrollIndex = ParseUtil.findBestLineMatchForMemberSignature(member, lines);
 		}

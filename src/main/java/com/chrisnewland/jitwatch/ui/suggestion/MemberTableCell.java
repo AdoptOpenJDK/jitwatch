@@ -13,7 +13,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.ui.triview.ITriViewAccessor;
+import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 
 class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 {
@@ -22,9 +22,9 @@ class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 	private Label lblMetaMember;
 	private Button btnTriView;
 
-	private static ITriViewAccessor triViewAccessor;
+	private static IStageAccessProxy triViewAccessor;
 
-	public static void setTriViewAccessor(ITriViewAccessor triViewAccessor)
+	public static void setTriViewAccessor(IStageAccessProxy triViewAccessor)
 	{
 		MemberTableCell.triViewAccessor = triViewAccessor;
 	}

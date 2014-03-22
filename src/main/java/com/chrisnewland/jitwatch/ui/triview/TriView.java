@@ -6,11 +6,13 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
+import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
+import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
@@ -46,7 +48,7 @@ public class TriView extends Stage
 	private JITWatchConfig config;
 
 	private Viewer viewerSource;
-	private Viewer viewerByteCode;
+	private ViewerBytecode viewerByteCode;
 	private Viewer viewerAssembly;
 
 	private SplitPane splitViewer;
@@ -213,7 +215,7 @@ public class TriView extends Stage
 		colAssembly = new VBox();
 
 		Label lblSource = new Label("Source");
-		Label lblBytecode = new Label("Bytecode");
+		Label lblBytecode = new Label("Bytecode (double click for JVMS)");
 		Label lblAssembly = new Label("Assembly");
 
 		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
@@ -224,9 +226,9 @@ public class TriView extends Stage
 		lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
 		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 
-		viewerSource = new Viewer();
-		viewerByteCode = new Viewer();
-		viewerAssembly = new Viewer();
+		viewerSource = new Viewer(parent);
+		viewerByteCode = new ViewerBytecode(parent);
+		viewerAssembly = new Viewer(parent);
 
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
@@ -364,20 +366,17 @@ public class TriView extends Stage
 		viewerSource.jumpTo(currentMember);
 
 		String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
-
+		
 		if (bc == null)
 		{
 			bc = "No bytecode found.\nClasses not mounted or native method?";
 		}
-
-		// reduce comment spacing
-		bc = bc.replace("             //", "//");
-
-		viewerByteCode.setContent(bc, false);
-
+		
 		Journal journal = parent.getJournal(member);
+		
+		Map<Integer, LineAnnotation> annotations = JournalUtil.buildBytecodeAnnotations(journal);
 
-		viewerByteCode.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
+		viewerByteCode.setContent(bc, annotations);
 
 		String assembly;
 
