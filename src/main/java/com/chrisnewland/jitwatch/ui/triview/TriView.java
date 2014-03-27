@@ -48,8 +48,8 @@ public class TriView extends Stage
 	private JITWatchConfig config;
 
 	private Viewer viewerSource;
-	private ViewerBytecode viewerByteCode;
-	private Viewer viewerAssembly;
+	private ViewerBytecode viewerBytecode;
+	private Viewer viewerAssembly; // TODO ref.x86asm.net
 
 	private SplitPane splitViewer;
 
@@ -227,14 +227,14 @@ public class TriView extends Stage
 		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 
 		viewerSource = new Viewer(parent);
-		viewerByteCode = new ViewerBytecode(parent);
+		viewerBytecode = new ViewerBytecode(parent);
 		viewerAssembly = new Viewer(parent);
 
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
 
 		colBytecode.getChildren().add(lblBytecode);
-		colBytecode.getChildren().add(viewerByteCode);
+		colBytecode.getChildren().add(viewerBytecode);
 
 		colAssembly.getChildren().add(lblAssembly);
 		colAssembly.getChildren().add(viewerAssembly);
@@ -244,8 +244,8 @@ public class TriView extends Stage
 		viewerSource.prefWidthProperty().bind(colSource.widthProperty());
 		viewerSource.prefHeightProperty().bind(colSource.heightProperty());
 
-		viewerByteCode.prefWidthProperty().bind(colBytecode.widthProperty());
-		viewerByteCode.prefHeightProperty().bind(colBytecode.heightProperty());
+		viewerBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
+		viewerBytecode.prefHeightProperty().bind(colBytecode.heightProperty());
 
 		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
@@ -376,7 +376,7 @@ public class TriView extends Stage
 		
 		Map<Integer, LineAnnotation> annotations = JournalUtil.buildBytecodeAnnotations(journal);
 
-		viewerByteCode.setContent(bc, annotations);
+		viewerBytecode.setContent(bc, annotations);
 
 		String assembly;
 

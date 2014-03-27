@@ -28,6 +28,7 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
+import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
