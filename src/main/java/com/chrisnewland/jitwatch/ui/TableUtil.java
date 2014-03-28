@@ -11,28 +11,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+// prob better with own caller
 public class TableUtil
 {
-	public static TableView<ITopListScore> buildTableTopListScore(ObservableList<ITopListScore> scores)
-	{
-		TableView<ITopListScore> tv = new TableView<>();
-
-		TableColumn<ITopListScore, Long> colScore = new TableColumn<ITopListScore, Long>("Value");
-		colScore.setCellValueFactory(new PropertyValueFactory<ITopListScore, Long>("score"));
-		colScore.prefWidthProperty().bind(tv.widthProperty().divide(8));
-
-		TableColumn<ITopListScore, Object> colKey = new TableColumn<ITopListScore, Object>("Item");
-		colKey.setCellValueFactory(new PropertyValueFactory<ITopListScore, Object>("key"));
-		colKey.prefWidthProperty().bind(tv.widthProperty().divide(8).multiply(7));
-
-		tv.getColumns().add(colScore);
-		tv.getColumns().add(colKey);
-
-		tv.setItems(scores);
-
-		return tv;
-	}
-
 	public static TableView<AttributeTableRow> buildTableMemberAttributes(ObservableList<AttributeTableRow> rows)
 	{
 		TableView<AttributeTableRow> tv = new TableView<>();

@@ -110,8 +110,6 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected void drawAxes()
 	{
-		// padY(10);
-
 		if (xAxisTime)
 		{
 			drawXAxisTime();

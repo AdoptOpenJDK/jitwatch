@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.toplist;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,11 +16,11 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.toplist.CompiledAttributeTopListVisitable;
 import com.chrisnewland.jitwatch.toplist.ITopListScore;
-import com.chrisnewland.jitwatch.toplist.ITopListVisitable;
 import com.chrisnewland.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import com.chrisnewland.jitwatch.toplist.MemberScore;
 import com.chrisnewland.jitwatch.toplist.AbstractTopListVisitable;
 import com.chrisnewland.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -30,7 +30,9 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -42,7 +44,7 @@ public class TopListStage extends Stage
 
 	private TableView<ITopListScore> tableView;
 
-	private ITopListVisitable topListVisitable;
+	private TopListWrapper topListWrapper;
 
 	public TopListStage(final JITWatchUI parent)
 	{
@@ -60,22 +62,21 @@ public class TopListStage extends Stage
 		int width = 800;
 		int height = 480;
 
-		final Map<String, ITopListVisitable> attrMap = new HashMap<>();
-
-		// Hurry up lambdas !!!
-
-		String largestNativeMethods = "Largest Native Methods";
-
-		attrMap.put(largestNativeMethods, new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_NMSIZE, true));
-		attrMap.put("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(parent.getJITDataModel(), true));
-		attrMap.put("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(parent.getJITDataModel(), true));
-		attrMap.put("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_BYTES, true));
-		attrMap.put("Slowest Compilation Times", new CompiledAttributeTopListVisitable(parent.getJITDataModel(),
-				ATTR_COMPILE_MILLIS, true));
-		attrMap.put("Most Decompiled Methods", new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_DECOMPILES,
-				true));
-
-		attrMap.put("Compilation Order", new AbstractTopListVisitable(parent.getJITDataModel(), false)
+		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new CompiledAttributeTopListVisitable(
+				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", "Member" });
+		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(
+				parent.getJITDataModel(), true), new String[] { "Count", "Reason" });
+		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(
+				parent.getJITDataModel(), true), new String[] { "Count", "Intrinsic" });
+		TopListWrapper tlLargestBytecode = new TopListWrapper("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(
+				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", "Member" });
+		TopListWrapper tlSlowestCompilation = new TopListWrapper("Slowest Compilation Times",
+				new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_COMPILE_MILLIS, true), new String[] {
+						"Milliseconds", "Member" });
+		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods", new CompiledAttributeTopListVisitable(
+				parent.getJITDataModel(), ATTR_DECOMPILES, true), new String[] { "Decompiles", "Member" });
+		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(
+				parent.getJITDataModel(), false)
 		{
 			@Override
 			public void visit(IMetaMember mm)
@@ -88,9 +89,10 @@ public class TopListStage extends Stage
 					topList.add(new MemberScore(mm, value));
 				}
 			}
-		});
+		}, new String[] { "Order", "Member" });
 
-		attrMap.put("Compilation Order (OSR)", new AbstractTopListVisitable(parent.getJITDataModel(), false)
+		TopListWrapper tlCompilationOrderOSR = new TopListWrapper("Compilation Order (OSR)", new AbstractTopListVisitable(
+				parent.getJITDataModel(), false)
 		{
 			@Override
 			public void visit(IMetaMember mm)
@@ -103,7 +105,18 @@ public class TopListStage extends Stage
 					topList.add(new MemberScore(mm, value));
 				}
 			}
-		});
+		}, new String[] { "Order", "Member" });
+
+		final Map<String, TopListWrapper> attrMap = new HashMap<>();
+
+		attrMap.put(tlLargestNative.getTitle(), tlLargestNative);
+		attrMap.put(tlInlineFailReasons.getTitle(), tlInlineFailReasons);
+		attrMap.put(tlIntrinsics.getTitle(), tlIntrinsics);
+		attrMap.put(tlLargestBytecode.getTitle(), tlLargestBytecode);
+		attrMap.put(tlSlowestCompilation.getTitle(), tlSlowestCompilation);
+		attrMap.put(tlMostDecompiled.getTitle(), tlMostDecompiled);
+		attrMap.put(tlCompilationOrder.getTitle(), tlCompilationOrder);
+		attrMap.put(tlCompilationOrderOSR.getTitle(), tlCompilationOrderOSR);
 
 		VBox vbox = new VBox();
 		vbox.setPadding(new Insets(8));
@@ -115,17 +128,16 @@ public class TopListStage extends Stage
 		ObservableList<String> options = FXCollections.observableArrayList(keyList);
 
 		final ComboBox<String> comboBox = new ComboBox<>(options);
-		comboBox.setValue(largestNativeMethods);
-
-		topListVisitable = attrMap.get(largestNativeMethods);
+		comboBox.setValue(tlLargestNative.getTitle());
+		topListWrapper = tlLargestNative;
 
 		comboBox.valueProperty().addListener(new ChangeListener<String>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
 			{
-				topListVisitable = attrMap.get(newVal);
-				buildTableView(topListVisitable);
+				topListWrapper = attrMap.get(newVal);
+				buildTableView(topListWrapper);
 			}
 		});
 
@@ -133,8 +145,18 @@ public class TopListStage extends Stage
 
 		setTitle("JITWatch TopLists");
 
-		buildTableView(topListVisitable);
-		tableView = TableUtil.buildTableTopListScore(topList);
+		tableView = new TableView<>();
+
+		TableColumn<ITopListScore, Long> colScore = new TableColumn<ITopListScore, Long>("");
+		colScore.setCellValueFactory(new PropertyValueFactory<ITopListScore, Long>("score"));
+		colScore.prefWidthProperty().bind(tableView.widthProperty().divide(8));
+
+		TableColumn<ITopListScore, Object> colKey = new TableColumn<ITopListScore, Object>("");
+		colKey.setCellValueFactory(new PropertyValueFactory<ITopListScore, Object>("key"));
+		colKey.prefWidthProperty().bind(tableView.widthProperty().divide(8).multiply(7));
+
+		tableView.getColumns().add(colScore);
+		tableView.getColumns().add(colKey);
 
 		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ITopListScore>()
 		{
@@ -143,10 +165,12 @@ public class TopListStage extends Stage
 			{
 				if (newVal != null && newVal instanceof MemberScore)
 				{
-					parent.openTreeAtMember((IMetaMember)newVal.getKey());
+					parent.openTreeAtMember((IMetaMember) newVal.getKey());
 				}
 			}
 		});
+
+		buildTableView(topListWrapper);
 
 		vbox.getChildren().add(comboBox);
 		vbox.getChildren().add(tableView);
@@ -159,10 +183,19 @@ public class TopListStage extends Stage
 		redraw();
 	}
 
-	private void buildTableView(ITopListVisitable visitable)
+	private void buildTableView(TopListWrapper topListWrapper)
 	{
 		topList.clear();
-		topList.addAll(visitable.buildTopList());
+		topList.addAll(topListWrapper.getVisitable().buildTopList());
+
+		int pos = 0;
+
+		for (TableColumn<ITopListScore, ? extends Object> col : tableView.getColumns())
+		{
+			col.setText(topListWrapper.getColumns()[pos++]);
+		}
+
+		tableView.setItems(topList);
 	}
 
 	public void redraw()

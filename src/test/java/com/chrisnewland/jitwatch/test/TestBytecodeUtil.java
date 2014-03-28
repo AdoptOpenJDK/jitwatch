@@ -5,17 +5,16 @@
  */
 package com.chrisnewland.jitwatch.test;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
+import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
 
@@ -43,9 +42,12 @@ public class TestBytecodeUtil
 		assertEquals(0, i0.getOffset());
 		assertEquals("ldc", i0.getMnemonic());
 		assertEquals(true, i0.hasParameters());
-		assertEquals(1, i0.getParameters().length);
-		assertEquals(224, i0.getParameters()[0]);
-		assertEquals(true, i0.isParamConstant());
+		assertEquals(1, i0.getParameters().size());
+		
+		IBytecodeParam paramI0 = i0.getParameters().get(0);
+		assertTrue(paramI0 instanceof BCParamConstant);		
+		assertEquals(224, paramI0.getValue());
+
 		assertEquals(true, i0.hasComment());
 		assertEquals("// int 1000000", i0.getComment());
 		
@@ -53,18 +55,20 @@ public class TestBytecodeUtil
 		assertEquals(2, i1.getOffset());
 		assertEquals("istore_1", i1.getMnemonic());
 		assertEquals(false, i1.hasParameters());
-		assertEquals(0, i1.getParameters().length);
-		assertEquals(false, i1.isParamConstant());
+		assertEquals(0, i1.getParameters().size());
 		assertEquals(false, i1.hasComment());
 		assertEquals(null, i1.getComment());
 		
 		Instruction i5 = instructions.get(5);
 		assertEquals(6, i5.getOffset());
 		assertEquals("if_icmpne", i5.getMnemonic());
-		assertEquals(1, i5.getParameters().length);
+		assertEquals(1, i5.getParameters().size());
 		assertEquals(true, i5.hasParameters());
-		assertEquals(false, i5.isParamConstant());
-		assertEquals(28, i5.getParameters()[0]);
+		
+		IBytecodeParam paramI5 = i5.getParameters().get(0);
+		assertTrue(paramI5 instanceof BCParamNumeric);		
+		assertEquals(28, paramI5.getValue());
+		
 		assertEquals(false, i5.hasComment());
 		assertEquals(null, i5.getComment());
 	}
@@ -88,10 +92,73 @@ public class TestBytecodeUtil
 		assertEquals(4, i4.getOffset());
 		assertEquals("iinc", i4.getMnemonic());
 		assertEquals(true, i4.hasParameters());
-		assertEquals(2, i4.getParameters().length);
-		assertEquals(4, i4.getParameters()[0]);
-		assertEquals(1, i4.getParameters()[1]);
-		assertEquals(false, i4.isParamConstant());
+		assertEquals(2, i4.getParameters().size());
+		
+		IBytecodeParam paramI4a = i4.getParameters().get(0);
+		IBytecodeParam paramI4b = i4.getParameters().get(1);
+
+		assertTrue(paramI4a instanceof BCParamNumeric);
+		assertTrue(paramI4b instanceof BCParamNumeric);		
+
+		assertEquals(4, paramI4a.getValue());
+		assertEquals(1, paramI4b.getValue());
+
 		assertEquals(false, i4.hasComment());
+	}
+	
+	@Test
+	public void testParseBytecodeRegressionNegativeInc()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("0: lconst_0").append("\n");
+		builder.append("1: lstore_2").append("\n");
+		builder.append("2: iconst_0").append("\n");
+		builder.append("3: lstore    2").append("\n");
+		builder.append("4: iinc      4, -1").append("\n");
+		builder.append("7: goto      47").append("\n");
+
+		List<Instruction> instructions = BytecodeUtil.parseInstructions(builder.toString());
+
+		assertEquals(6, instructions.size());
+		
+		Instruction i4 = instructions.get(4);
+		assertEquals(4, i4.getOffset());
+		assertEquals("iinc", i4.getMnemonic());
+		assertEquals(true, i4.hasParameters());
+		assertEquals(2, i4.getParameters().size());
+		
+		IBytecodeParam paramI4a = i4.getParameters().get(0);
+		IBytecodeParam paramI4b = i4.getParameters().get(1);
+
+		assertTrue(paramI4a instanceof BCParamNumeric);
+		assertTrue(paramI4b instanceof BCParamNumeric);		
+
+		assertEquals(4, paramI4a.getValue());
+		assertEquals(-1, paramI4b.getValue());
+
+		assertEquals(false, i4.hasComment());
+	}
+	
+	@Test
+	public void testParseBytecodeRegressionNewArray()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("3: newarray       int").append("\n");
+	
+		List<Instruction> instructions = BytecodeUtil.parseInstructions(builder.toString());
+
+		assertEquals(1, instructions.size());
+		
+		Instruction i0 = instructions.get(0);
+		assertEquals(3, i0.getOffset());
+		assertEquals("newarray", i0.getMnemonic());
+		assertEquals(true, i0.hasParameters());
+		assertEquals(1, i0.getParameters().size());
+
+		IBytecodeParam paramI0 = i0.getParameters().get(0);
+		assertTrue(paramI0 instanceof BCParamString);		
+		assertEquals("int", paramI0.getValue());
+		
+		assertEquals(false, i0.hasComment());
 	}
 }

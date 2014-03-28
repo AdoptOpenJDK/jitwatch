@@ -19,6 +19,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
+import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 
@@ -59,7 +63,7 @@ public class BytecodeUtil
 
 	public static boolean fetchJVMS()
 	{
-		//System.out.println("fetchJVMS");
+		// System.out.println("fetchJVMS");
 
 		String html = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
 		String css = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/javaspec.css");
@@ -89,7 +93,7 @@ public class BytecodeUtil
 
 	public static void loadJVMS()
 	{
-		//System.out.println("loadJVMS");
+		// System.out.println("loadJVMS");
 		try
 		{
 			Path path = Paths.get(new File(JVMS_HTML_FILENAME).toURI());
@@ -136,8 +140,8 @@ public class BytecodeUtil
 
 		if (title != null)
 		{
-			//System.out.println("store: " + title);
-			
+			// System.out.println("store: " + title);
+
 			bcDescriptionMap.put(title, description);
 		}
 	}
@@ -145,14 +149,14 @@ public class BytecodeUtil
 	public static String getBytecodeDescriptions(Opcode opcode)
 	{
 		String opcodeText = opcode.getText();
-		
-		//System.out.println("lookup: " + opcodeText);
+
+		// System.out.println("lookup: " + opcodeText);
 
 		String desc = bcDescriptionMap.get(opcodeText);
 
 		if (desc == null)
 		{
-			//System.out.println("null: " + opcodeText);
+			// System.out.println("null: " + opcodeText);
 
 			for (Map.Entry<String, String> entry : bcDescriptionMap.entrySet())
 			{
@@ -169,12 +173,13 @@ public class BytecodeUtil
 						String subOpcodeText = opcodeText.substring(0, ltPos);
 						String subKey = key.substring(0, ltPos);
 
-						//System.out.println("checking: " + subOpcodeText + "/" + subKey);
+						// System.out.println("checking: " + subOpcodeText + "/"
+						// + subKey);
 
 						if (subOpcodeText.equals(subKey))
 						{
-							//System.out.println("subs: " + key);
-							
+							// System.out.println("subs: " + key);
+
 							desc = entry.getValue();
 							break;
 						}
@@ -182,11 +187,11 @@ public class BytecodeUtil
 				}
 			}
 		}
-		
-//		if (desc == null)
-//		{
-//			System.out.println("nothing found");
-//		}
+
+		// if (desc == null)
+		// {
+		// System.out.println("nothing found");
+		// }
 
 		return desc;
 	}
@@ -219,64 +224,82 @@ public class BytecodeUtil
 
 		String[] lines = bytecode.split(S_NEWLINE);
 
-		Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9, ]+)?\\s?(//.*)?");
+		Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?(//.*)?");
 
 		for (String line : lines)
 		{
-			Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(line);
-
-			if (matcher.find())
+			try
 			{
-				Instruction instruction = new Instruction();
+				Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(line);
 
-				String offset = matcher.group(1);
-				String mnemonic = matcher.group(2);
-				String paramString = matcher.group(3);
-				String comment = matcher.group(4);
-
-				instruction.setOffset(Integer.parseInt(offset));
-				instruction.setMnemonic(mnemonic);
-
-				if (paramString != null)
+				if (matcher.find())
 				{
-					String[] parts = paramString.split(S_COMMA);
+					Instruction instruction = new Instruction();
 
-					int[] parameters = new int[parts.length];
+					String offset = matcher.group(1);
+					String mnemonic = matcher.group(2);
+					String paramString = matcher.group(3);
+					String comment = matcher.group(4);
 
-					int pos = 0;
+					instruction.setOffset(Integer.parseInt(offset));
+					instruction.setMnemonic(mnemonic);
 
-					for (String part : parts)
+					if (paramString != null)
 					{
-						part = part.trim();
-
-						if (part.charAt(0) == C_HASH)
-						{
-							instruction.setParamConstant(true);
-
-							// remove leading # for constant pool param
-							part = part.substring(1);
-						}
-
-						parameters[pos++] = Integer.parseInt(part);
+						processParameters(paramString, instruction);
 					}
 
-					instruction.setParameters(parameters);
-				}
+					if (comment != null)
+					{
+						instruction.setComment(comment.trim());
+					}
 
-				if (comment != null)
+					result.add(instruction);
+
+				}
+				else
 				{
-					instruction.setComment(comment.trim());
+					System.out.println("could not parse bytecode: " + line);
 				}
-
-				result.add(instruction);
-
 			}
-			else
+			catch (Exception e)
 			{
-				System.out.println("could not parse bytecode: " + line);
+				System.out.println("Error parsing line: " + line);
+				e.printStackTrace();
 			}
 		}
 
 		return result;
+	}
+	
+	private static void processParameters(String paramString, Instruction instruction)
+	{
+		String[] parts = paramString.split(S_COMMA);
+
+		for (String part : parts)
+		{
+			IBytecodeParam parameter;
+			
+			part = part.trim();
+
+			if (part.charAt(0) == C_HASH)
+			{
+				parameter = new BCParamConstant(part);
+			}
+			else
+			{
+				try
+				{
+					int value = Integer.parseInt(part);
+					parameter = new BCParamNumeric(value);
+				}
+				catch(NumberFormatException nfe)
+				{
+					parameter = new BCParamString(part);
+				}
+			}
+			
+			instruction.addParameter(parameter);
+		}
 	}
 }

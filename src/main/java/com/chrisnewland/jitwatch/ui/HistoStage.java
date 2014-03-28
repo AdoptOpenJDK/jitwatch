@@ -42,8 +42,8 @@ public class HistoStage extends AbstractGraphStage
 
 		final Map<String, IHistoVisitable> attrMap = new HashMap<>();
 
-		attrMap.put("Method JIT-Compilation Times", new AttributeNameHistoWalker(model, true, ATTR_COMPILE_MILLIS, 10));
-        attrMap.put("Bytecodes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_BYTES, 10));
+		attrMap.put("JIT Compilation Times", new AttributeNameHistoWalker(model, true, ATTR_COMPILE_MILLIS, 10));
+        attrMap.put("Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_BYTES, 10));
         attrMap.put("Native Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_NMSIZE, 10));
         attrMap.put("Inlined Method Sizes", new InlineSizeHistoVisitable(model, 1));
 
