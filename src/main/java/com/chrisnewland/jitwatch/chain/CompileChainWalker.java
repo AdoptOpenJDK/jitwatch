@@ -50,15 +50,19 @@ public class CompileChainWalker
 
 					Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-					for (Tag parseTag : parseTags)
+					// TODO fix for JDK8
+					if (parsePhase != null)
 					{
-						String id = parseTag.getAttrs().get(ATTR_METHOD);
+						List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-						root = new CompileNode(mm, id);
+						for (Tag parseTag : parseTags)
+						{
+							String id = parseTag.getAttrs().get(ATTR_METHOD);
 
-						processParseTag(parseTag, root);
+							root = new CompileNode(mm, id);
+
+							processParseTag(parseTag, root);
+						}
 					}
 				}
 			}
@@ -72,7 +76,7 @@ public class CompileChainWalker
 		StringBuilder builder = new StringBuilder();
 
 		show(node, builder, 0);
-		
+
 		return builder.toString();
 	}
 

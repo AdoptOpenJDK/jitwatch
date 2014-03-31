@@ -24,4 +24,6 @@ public interface IReadOnlyJITDataModel
 	public List<JITEvent> getEventListCopy();
 
 	public List<Tag> getCodeCacheTags();
+	
+	public String getVmVersionRelease();
 }

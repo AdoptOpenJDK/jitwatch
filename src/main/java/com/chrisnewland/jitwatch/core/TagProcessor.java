@@ -17,43 +17,27 @@ public class TagProcessor
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
+	
+	//TODO replace all this with XPath???
+	// Really include a ton of XML libs?
 
 	public Tag processLine(String line)
 	{
 		Tag result = null;
 
-		if (line != null && line.length() > 3 && line.charAt(0) == C_OPEN_BRACKET)
+		if (line != null)
 		{
-			// closing tag
-			if (line.charAt(1) == C_SLASH)
+			if (line.length() > 3 && line.charAt(0) == C_OPEN_ANGLE)
 			{
-				String closeName = line.substring(2, line.length() - 1);
-
-				if (closeName.equals(currentTag.getName()))
-				{
-					if (currentTag.getParent() == null)
-					{
-						result = currentTag;
-					}
-					else
-					{
-						currentTag = currentTag.getParent();
-					}
-				}
+				result = handleTag(line);
+			}
+			else if (currentTag != null)
+			{
+				currentTag.addTextContent(line);
 			}
 			else
 			{
-				int indexEndName = line.indexOf(C_SPACE);
-
-				if (indexEndName == -1)
-				{
-					indexEndName = line.indexOf(C_CLOSE_BRACKET);
-				}
-
-				if (indexEndName != -1)
-				{
-					result = processValidLine(line, indexEndName);
-				}
+				System.err.println("Did not handle: " + line);
 			}
 		}
 
@@ -61,6 +45,45 @@ public class TagProcessor
 		{
 			currentTag = null;
 			topTag = null;
+		}
+
+		return result;
+	}
+
+	private Tag handleTag(String line)
+	{
+		Tag result = null;
+
+		// closing tag
+		if (line.charAt(1) == C_SLASH)
+		{
+			String closeName = line.substring(2, line.length() - 1);
+
+			if (closeName.equals(currentTag.getName()))
+			{
+				if (currentTag.getParent() == null)
+				{
+					result = currentTag;
+				}
+				else
+				{
+					currentTag = currentTag.getParent();
+				}
+			}
+		}
+		else
+		{
+			int indexEndName = line.indexOf(C_SPACE);
+
+			if (indexEndName == -1)
+			{
+				indexEndName = line.indexOf(C_CLOSE_ANGLE);
+			}
+
+			if (indexEndName != -1)
+			{
+				result = processValidLine(line, indexEndName);
+			}
 		}
 
 		return result;

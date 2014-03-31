@@ -26,12 +26,11 @@ import com.chrisnewland.jitwatch.model.Tag;
 
 public class ParseUtil
 {
-	// http://stackoverflow.com/questions/68633/regex-that-will-match-a-java-method-declaration
-	// http://stackoverflow.com/questions/4304928/unicode-equivalents-for-w-and-b-in-java-regular-expressions
-
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");
+
+	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(.*)'\\sin\\s'(.*)'");
 
 	public static final String SQUARE_BRACKET_PAIR = "[]";
 	public static final String CONSTRUCTOR_INIT = "<init>";
@@ -582,6 +581,31 @@ public class ParseUtil
 
 				result = ParseUtil.expandParameterType(result);
 			}
+		}
+
+		return result;
+	}
+
+	public static String convertNativeCodeMethodName(String line)
+	{
+		line = line.replace(ENTITY_APOS, S_QUOTE);
+
+		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
+
+		String result = null;
+
+		if (matcher.find())
+		{
+			String memberName = matcher.group(2);
+			String params = matcher.group(3).replace(S_SLASH, S_DOT);
+			String className = matcher.group(4).replace(S_SLASH, S_DOT);
+
+			StringBuilder builder = new StringBuilder();
+			builder.append(className).append(C_SPACE);
+			builder.append(memberName).append(C_SPACE);
+			builder.append(params);
+
+			result = builder.toString();
 		}
 
 		return result;

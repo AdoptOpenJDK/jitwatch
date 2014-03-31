@@ -18,6 +18,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
@@ -32,6 +33,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// written during parse, make copy for graphing as needs sort
     private List<Tag> codeCacheTagList = new ArrayList<>();
+    
+    private String vmVersionRelease;
         
     public JITDataModel()
     {
@@ -39,6 +42,16 @@ public class JITDataModel implements IReadOnlyJITDataModel
         stats = new JITStats();
     }
 
+    public void setVmVersionRelease(String release)
+    {
+    	this.vmVersionRelease = release;
+    }
+    
+	public String getVmVersionRelease()
+	{
+		return vmVersionRelease;
+	}
+    
     public void reset()
     {
         pm.clear();
