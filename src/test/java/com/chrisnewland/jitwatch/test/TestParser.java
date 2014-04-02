@@ -370,6 +370,23 @@ public class TestParser
     	assertEquals("I", parts[3]);   	
     }
     
+    @Test
+    public void testJava7DisassemblySignature()
+    {
+    	String sig = "# {method} &apos;chainA2&apos; &apos;(J)J&apos; in &apos;com/chrisnewland/jitwatch/demo/MakeHotSpotLog&apos;";
+    	    	
+    	String name = ParseUtil.convertNativeCodeMethodName(sig);
+    	
+    	assertEquals("com.chrisnewland.jitwatch.demo.MakeHotSpotLog chainA2 (J)J", name);
+    }
     
+    @Test
+    public void testJava8DisassemblySignature()
+    {
+    	String sig = "  # {method} {0x00007fb6a89c4f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;";
     
+    	String name = ParseUtil.convertNativeCodeMethodName(sig);
+
+    	assertEquals("java.lang.String hashCode ()I", name);
+    }    
 }

@@ -38,11 +38,15 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 			{
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-				for (Tag parseTag : parseTags)
+				// TODO fix for JDK8
+				if (parsePhase != null)
 				{
-					processParseTag(parseTag);
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+					for (Tag parseTag : parseTags)
+					{
+						processParseTag(parseTag);
+					}
 				}
 			}
 		}

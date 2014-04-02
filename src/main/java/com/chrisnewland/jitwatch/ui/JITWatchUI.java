@@ -515,7 +515,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 			triView = new TriView(JITWatchUI.this, config);
 
 			triView.show();
-		
+
 			openPopupStages.add(triView);
 
 			btnTriView.setDisable(true);
@@ -526,7 +526,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 			triView.setMember(member);
 		}
 	}
-	
+
 	@Override
 	public void openBrowser(String title, String html, String stylesheet)
 	{
@@ -535,11 +535,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 			browserStage = new BrowserStage(JITWatchUI.this);
 
 			browserStage.show();
-		
+
 			openPopupStages.add(browserStage);
 		}
 
-		browserStage.setContent(title, html, stylesheet);		
+		browserStage.setContent(title, html, stylesheet);
 	}
 
 	public IReadOnlyJITDataModel getJITDataModel()
@@ -683,18 +683,25 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 		return tvs;
 	}
-	
+
 	public void openCompileChain(IMetaMember member)
 	{
 		CompileChainWalker walker = new CompileChainWalker(model);
-		
+
 		CompileNode root = walker.buildCallTree(member);
-		
-		CompileChainStage ccs = new CompileChainStage(this, root);
-		
-		ccs.show();
-		
-		openPopupStages.add(ccs);
+
+		if (root != null)
+		{
+			CompileChainStage ccs = new CompileChainStage(this, root);
+
+			ccs.show();
+
+			openPopupStages.add(ccs);
+		}
+		else
+		{
+			System.err.println("Could not open CompileChain - root node was null");
+		}
 	}
 
 	void openJournalViewer(String title, Journal journal)
@@ -960,6 +967,5 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	{
 		return JournalUtil.getJournal(model, member);
 	}
-	
 
 }

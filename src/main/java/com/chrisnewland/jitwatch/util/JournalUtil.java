@@ -30,11 +30,15 @@ public class JournalUtil
 		{
 			Tag parsePhase = getParsePhase(journal);
 
-			List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-			for (Tag parseTag : parseTags)
+			//TODO fix for JDK8
+			if (parsePhase != null)
 			{
-				buildParseTagAnnotations(parseTag, result);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+				for (Tag parseTag : parseTags)
+				{
+					buildParseTagAnnotations(parseTag, result);
+				}
 			}
 		}
 
@@ -155,6 +159,7 @@ public class JournalUtil
 
 		if (lastTask != null)
 		{
+			//TODO fix for JDK8 structure
 			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
 
 			int count = parsePhases.size();

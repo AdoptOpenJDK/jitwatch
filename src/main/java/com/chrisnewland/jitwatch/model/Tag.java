@@ -19,6 +19,7 @@ public class Tag
 	private List<Tag> children = new ArrayList<>();
 	private Tag parent = null;
 	private boolean selfClosing = false;
+	private String textContent = null;
 
 	private static final String INDENT = "  ";
 
@@ -27,6 +28,23 @@ public class Tag
 		this.name = name;
 		this.attrs = attrs;
 		this.selfClosing = selfClosing;
+	}
+
+	public void addTextContent(String text)
+	{
+		if (textContent == null)
+		{
+			textContent = text;
+		}
+		else
+		{
+			textContent += text;
+		}
+	}
+
+	public String getTextContent()
+	{
+		return textContent;
 	}
 
 	public void addChild(Tag child)
@@ -38,6 +56,11 @@ public class Tag
 	public List<Tag> getChildren()
 	{
 		return children;
+	}
+	
+	public boolean isSelfClosing()
+	{
+		return selfClosing;
 	}
 
 	public Tag getFirstNamedChild(String name)
@@ -130,26 +153,26 @@ public class Tag
 			builder.append(INDENT);
 		}
 
-		builder.append('<').append(name);
+		builder.append(C_OPEN_ANGLE).append(name);
 
 		if (attrs.size() > 0)
 		{
 			for (Map.Entry<String, String> entry : attrs.entrySet())
 			{
-				builder.append(C_SPACE).append(entry.getKey()).append("=\"");
+				builder.append(C_SPACE).append(entry.getKey()).append(C_EQUALS).append(C_DOUBLE_QUOTE);
 				builder.append(entry.getValue()).append(C_DOUBLE_QUOTE);
 			}
 		}
 
 		if (selfClosing)
 		{
-			builder.append("/>\n");
+			builder.append(C_SLASH).append(C_CLOSE_ANGLE).append(C_NEWLINE);
 		}
 		else
 		{
 			if (children.size() > 0)
 			{
-				builder.append(">\n");
+				builder.append(C_CLOSE_ANGLE).append(C_NEWLINE);
 
 				for (Tag child : children)
 				{
@@ -158,7 +181,17 @@ public class Tag
 			}
 			else
 			{
-				builder.append(">\n");
+				builder.append(C_CLOSE_ANGLE).append(C_NEWLINE);
+
+				if (textContent != null)
+				{
+					for (int i = 0; i < myDepth; i++)
+					{
+						builder.append(INDENT);
+					}
+					
+					builder.append(textContent).append(C_NEWLINE);
+				}
 			}
 
 			for (int i = 0; i < myDepth; i++)
@@ -166,7 +199,8 @@ public class Tag
 				builder.append(INDENT);
 			}
 
-			builder.append("</").append(name).append(">\n");
+			builder.append(C_OPEN_ANGLE).append(C_SLASH);
+			builder.append(name).append(C_CLOSE_ANGLE).append(C_NEWLINE);
 		}
 
 		return builder.toString();

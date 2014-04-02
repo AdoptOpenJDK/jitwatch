@@ -27,6 +27,9 @@ public class JITWatchConstants
 	public static final String METHOD = "method";
 	public static final String PARSE = "parse";
 
+	public static final String TAG_VM_VERSION = "vm_version";
+	public static final String TAG_RELEASE = "release";
+
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
 	public static final String TAG_TASK = "task";
@@ -75,6 +78,8 @@ public class JITWatchConstants
 	public static final String ATTR_BRANCH_PROB = "prob";
 	public static final String ATTR_COUNT = "count";
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
+	
+	public static final String ENTITY_APOS = "&apos;";
 
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
@@ -98,8 +103,8 @@ public class JITWatchConstants
 	public static final String S_REGEX_WHITESPACE = "\\s+";
 
 	public static final char C_SLASH = '/';
-	public static final char C_OPEN_BRACKET = '<';
-	public static final char C_CLOSE_BRACKET = '>';
+	public static final char C_OPEN_ANGLE = '<';
+	public static final char C_CLOSE_ANGLE = '>';
 	public static final char C_SPACE = ' ';
 	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
@@ -107,6 +112,7 @@ public class JITWatchConstants
 	public static final char C_EQUALS = '=';
 	public static final char C_QUOTE = '\'';
 	public static final char C_DOUBLE_QUOTE = '"';
+	public static final char C_NEWLINE = '\n';
 	public static final char C_DOT = '.';
 	public static final char C_OBJECT_REF = 'L';
 	public static final char C_SEMICOLON = ';';

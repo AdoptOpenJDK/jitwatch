@@ -162,7 +162,7 @@ public class BytecodeUtil
 			{
 				String key = entry.getKey();
 
-				int ltPos = key.indexOf(C_OPEN_BRACKET);
+				int ltPos = key.indexOf(C_OPEN_ANGLE);
 
 				// ifge => if<cond>
 				// lconst_1 => lconst_<n>

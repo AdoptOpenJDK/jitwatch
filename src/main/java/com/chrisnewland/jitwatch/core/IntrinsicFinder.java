@@ -33,66 +33,71 @@ public class IntrinsicFinder
 
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-		
-				for (Tag parseTag : parseTags)
+				// TODO fix for JDK8, also too deep!
+				if (parsePhase != null)
 				{
-					String currentMethod = null;
-					String holder = null;
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-					List<Tag> allChildren = parseTag.getChildren();
-
-					for (Tag childTag : allChildren)
+					for (Tag parseTag : parseTags)
 					{
-						String tagName = childTag.getName();
-						Map<String, String> attrs = childTag.getAttrs();
+						String currentMethod = null;
+						String holder = null;
 
-						// System.out.println(childTag);
+						List<Tag> allChildren = parseTag.getChildren();
 
-						switch (tagName)
+						for (Tag childTag : allChildren)
 						{
-						case TAG_METHOD:
-						{
-							currentMethod = attrs.get(ATTR_NAME);
-							holder = attrs.get(ATTR_HOLDER);
-						}
-							break;
+							String tagName = childTag.getName();
+							Map<String, String> attrs = childTag.getAttrs();
 
-						// changes member context
-						case TAG_CALL:
-						{
-							String methodID = attrs.get(ATTR_METHOD);
+							// System.out.println(childTag);
 
-							// System.out.println("call: " + methodID);
-							Tag methodTag = parseDictionary.getMethod(methodID);
-							currentMethod = methodTag.getAttrs().get(ATTR_NAME);
-							holder = methodTag.getAttrs().get(ATTR_HOLDER);
-						}
-							break;
-
-						case TAG_INTRINSIC:
-						{
-							// System.out.println("intrinsic: " + holder + " " +
-							// currentMethod);
-							if (holder != null && currentMethod != null)
+							switch (tagName)
 							{
-								Tag klassTag = parseDictionary.getKlass(holder);
-
-								String intrinsic = childTag.getAttrs().get(ATTR_ID);
-
-								if (klassTag != null)
-								{
-									String fqName = klassTag.getAttrs().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
-											+ currentMethod;
-
-									result.put(fqName, intrinsic);
-								}
+							case TAG_METHOD:
+							{
+								currentMethod = attrs.get(ATTR_NAME);
+								holder = attrs.get(ATTR_HOLDER);
 							}
+								break;
 
-							holder = null;
-							currentMethod = null;
-							break;
-						}
+							// changes member context
+							case TAG_CALL:
+							{
+								String methodID = attrs.get(ATTR_METHOD);
+
+								// System.out.println("call: " + methodID);
+								Tag methodTag = parseDictionary.getMethod(methodID);
+								currentMethod = methodTag.getAttrs().get(ATTR_NAME);
+								holder = methodTag.getAttrs().get(ATTR_HOLDER);
+							}
+								break;
+
+							case TAG_INTRINSIC:
+							{
+								// System.out.println("intrinsic: " + holder +
+								// " " +
+								// currentMethod);
+								if (holder != null && currentMethod != null)
+								{
+									Tag klassTag = parseDictionary.getKlass(holder);
+
+									String intrinsic = childTag.getAttrs().get(ATTR_ID);
+
+									if (klassTag != null)
+									{
+										String fqName = klassTag.getAttrs().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
+												+ currentMethod;
+
+										result.put(fqName, intrinsic);
+									}
+								}
+
+								holder = null;
+								currentMethod = null;
+								break;
+							}
+							}
 						}
 					}
 				}

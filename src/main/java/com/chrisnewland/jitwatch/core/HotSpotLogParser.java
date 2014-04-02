@@ -20,19 +20,23 @@ import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-
 public class HotSpotLogParser
 {
 	enum EventType
 	{
 		QUEUE, NMETHOD, TASK
 	}
+	
+	enum ParseState
+	{
+		READY, IN_TAG, IN_NATIVE
+	}
 
 	private JITDataModel model;
 
 	private boolean watching = false;
 
-	private boolean inNativeCode = false;
+	private ParseState parseState = ParseState.READY;
 
 	private StringBuilder nativeCodeBuilder = new StringBuilder();
 
@@ -166,10 +170,9 @@ public class HotSpotLogParser
 
 	private void handleLine(String currentLine)
 	{
-		currentLine = currentLine.replace("&apos;", S_QUOTE);
 		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
 		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
-
+		
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
 			boolean isSkip = false;
@@ -190,32 +193,42 @@ public class HotSpotLogParser
 				if (tag != null)
 				{
 					handleTag(tag);
+					
+					if (tag.isSelfClosing())
+					{
+						parseState = ParseState.READY;
+					}
+				}
+				else
+				{
+					parseState = ParseState.IN_TAG;
 				}
 			}
 		}
 		else if (currentLine.startsWith(JITWatchConstants.LOADED))
 		{
-			if (inNativeCode)
+			if (parseState == ParseState.IN_NATIVE)
 			{
 				completeNativeCode();
 			}
 			handleLoaded(currentLine);
 		}
-		else if (inNativeCode)
+		else if (parseState == ParseState.IN_NATIVE)
 		{
 			appendNativeCode(currentLine);
+		}
+		else if (parseState == ParseState.IN_TAG)
+		{
+			tagProcessor.processLine(currentLine);
 		}
 		else if (currentLine.contains(JITWatchConstants.NATIVE_CODE_METHOD_MARK))
 		{
-			String sig = convertNativeCodeMethodName(currentLine);
+			String sig = ParseUtil.convertNativeCodeMethodName(currentLine);
 
 			currentMember = findMemberWithSignature(sig);
-			inNativeCode = true;
-
-			appendNativeCode(currentLine);
-		}
-		else if (inNativeCode)
-		{
+			
+			parseState = ParseState.IN_NATIVE;
+			
 			appendNativeCode(currentLine);
 		}
 
@@ -224,7 +237,7 @@ public class HotSpotLogParser
 
 	private void handleTag(Tag tag)
 	{
-		if (inNativeCode)
+		if (parseState == ParseState.IN_NATIVE)
 		{
 			// TODO: file a bug report for mangled hotspot output
 			completeNativeCode();
@@ -234,6 +247,10 @@ public class HotSpotLogParser
 
 		switch (tagName)
 		{
+		case JITWatchConstants.TAG_VM_VERSION:
+			handleVmVersion(tag);
+			break;
+		
 		case JITWatchConstants.TAG_TASK_QUEUED:
 			handleMethodLine(tag, EventType.QUEUE);
 			break;
@@ -278,6 +295,7 @@ public class HotSpotLogParser
 
 		String journalID;
 
+		//TODO check this is still true
 		// osr compiles do not have unique compile IDs so concat compile_kind
 		if (compileID != null && compileKind != null && OSR.equals(compileKind))
 		{
@@ -294,6 +312,13 @@ public class HotSpotLogParser
 		}
 	}
 
+	private void handleVmVersion(Tag tag)
+	{
+		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
+		
+		model.setVmVersionRelease(release);		
+	}
+	
 	private void appendNativeCode(String line)
 	{
 		nativeCodeBuilder.append(line).append("\n");
@@ -301,8 +326,8 @@ public class HotSpotLogParser
 
 	private void completeNativeCode()
 	{
-		inNativeCode = false;
-
+		parseState = ParseState.READY;
+		
 		if (currentMember != null)
 		{
 			currentMember.setAssembly(nativeCodeBuilder.toString());
@@ -483,29 +508,5 @@ public class HotSpotLogParser
 		}
 	}
 
-	public String convertNativeCodeMethodName(String name)
-	{
-		name = name.replace(S_QUOTE, S_EMPTY);
 
-		int methodMarkIndex = name.indexOf(NATIVE_CODE_METHOD_MARK);
-
-		if (methodMarkIndex != -1)
-		{
-			name = name.substring(methodMarkIndex + NATIVE_CODE_METHOD_MARK.length());
-			name = name.trim();
-		}
-
-		String inToken = " in ";
-
-		int inPos = name.indexOf(inToken);
-
-		if (inPos != -1)
-		{
-			name = name.substring(inPos + inToken.length()) + C_SPACE + name.substring(0, inPos);
-		}
-
-		name = name.replaceAll(S_SLASH, S_DOT);
-
-		return name;
-	}
 }
