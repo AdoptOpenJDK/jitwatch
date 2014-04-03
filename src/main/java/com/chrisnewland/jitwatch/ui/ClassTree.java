@@ -133,11 +133,7 @@ public class ClassTree extends VBox
             {
                 // make sure sub packages listed before classes in this package
 
-                if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
-                {
-
-                }
-                else
+                if (not(child.getValue() instanceof MetaPackage && value instanceof MetaClass))
                 {
                     placeToInsert++;
                 }
@@ -160,10 +156,7 @@ public class ClassTree extends VBox
             found = new TreeItem<Object>(value);
             children.add(placeToInsert, found);
 
-            if (value instanceof MetaClass && ((MetaClass) value).isMissingDef())
-            {
-                // indicate missing class definition?
-            }
+            //TODO indicate missing class definition?
         }
 
         boolean hasCompiledChildren = false;
@@ -183,6 +176,10 @@ public class ClassTree extends VBox
         }
 
         return found;
+    }
+
+    private boolean not(boolean someCondition) {
+        return !someCondition;
     }
 
     public void showTree()
