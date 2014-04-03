@@ -5,6 +5,13 @@
  */
 package com.chrisnewland.jitwatch.core;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.util.ClassUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,12 +19,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.JITDataModel;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.util.ClassUtil;
-import com.chrisnewland.jitwatch.util.ParseUtil;
-import com.chrisnewland.jitwatch.util.StringUtil;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser
@@ -109,10 +110,10 @@ public class HotSpotLogParser
 				{
 					handleLine(currentLine);
 				}
-				catch (Throwable t)
+				catch (Exception ex)
 				{
 					System.err.println("Exception handling: '" + currentLine + "'");
-					t.printStackTrace();
+                    ex.printStackTrace();
 				}
 			}
 			else

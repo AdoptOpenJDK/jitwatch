@@ -146,9 +146,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
                     mh.invokeExact(stats);
                 }
-                catch (Throwable t)
+                catch (Exception ex)
                 {
-                    t.printStackTrace();
+                    ex.printStackTrace();
                 }
             }
         }
