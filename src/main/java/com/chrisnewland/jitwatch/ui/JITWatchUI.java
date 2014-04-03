@@ -659,7 +659,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 		TextViewerStage tvs = openTextViewer("Bytecode for " + member.toString(), bc, false);
 
-		Journal journal = getJournal(member);
+		Journal journal = member.getJournal();
 
 		tvs.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
 	}
@@ -962,10 +962,4 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	{
 		return model.getPackageManager();
 	}
-
-	public Journal getJournal(IMetaMember member)
-	{
-		return JournalUtil.getJournal(model, member);
-	}
-
 }

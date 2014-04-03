@@ -13,8 +13,7 @@ import java.util.Map;
 
 import javafx.scene.paint.Color;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
@@ -156,11 +155,27 @@ public class JournalUtil
 		Tag parsePhase = null;
 
 		Task lastTask = getLastTask(journal);
+		
+		System.out.println("LAST TASK");
 
 		if (lastTask != null)
 		{
+			CompilerName compilerName = lastTask.getCompiler();
+			
+			System.out.println(compilerName);
+			System.out.println(lastTask);
+						
+			String parseAttributeName = ATTR_PARSE;
+		
+			if (compilerName == CompilerName.C1)
+			{
+				parseAttributeName = ATTR_BUILDIR;
+			}
+			
+			System.out.println("looking for " + parseAttributeName);
+			
 			//TODO fix for JDK8 structure
-			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, parseAttributeName);
 
 			int count = parsePhases.size();
 
@@ -175,26 +190,5 @@ public class JournalUtil
 		}
 
 		return parsePhase;
-	}
-
-	public static Journal getJournal(IReadOnlyJITDataModel model, IMetaMember member)
-	{
-		Journal journal = null;
-
-		String journalID = member.getJournalID();
-
-		if (journalID != null)
-		{
-			journal = model.getJournal(journalID);
-
-			if (journal == null)
-			{
-				// try appending compile_kind as OSR does not generate a
-				// unique compile_id
-				journal = model.getJournal(journalID + OSR);
-			}
-		}
-
-		return journal;
 	}
 }

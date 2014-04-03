@@ -14,12 +14,19 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class Task extends Tag
 {
 	private IParseDictionary parseDictionary;
+	private CompilerName compiler;
 
-	public Task(String name, Map<String, String> attrs, boolean selfClosing)
+	public Task(String name, Map<String, String> attrs, boolean selfClosing, CompilerName compiler)
 	{
 		super(name, attrs, selfClosing);
-
+		
+		this.compiler = compiler;
 		parseDictionary = new ParseDictionary();
+	}
+	
+	public CompilerName getCompiler()
+	{
+		return compiler;
 	}
 
 	public IParseDictionary getParseDictionary()

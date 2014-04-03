@@ -165,12 +165,9 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				Journal journal = parent.getJournal(member);
+				Journal journal = member.getJournal();
 
-				if (journal != null)
-				{
-					parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
-				}
+				parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
 			}
 		});
 
@@ -181,32 +178,28 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				Journal journal = parent.getJournal(member);
+				Journal journal = member.getJournal();
 
 				StringBuilder builder = new StringBuilder();
 
-				if (journal != null)
+				Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+
+				if (intrinsics.size() > 0)
 				{
-					Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
-
-					if (intrinsics.size() > 0)
+					for (Map.Entry<String, String> entry : intrinsics.entrySet())
 					{
-						for (Map.Entry<String, String> entry : intrinsics.entrySet())
-						{
-							builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-						}
+						builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
 					}
-					else
-					{
-						builder.append("No intrinsics used in this method");
-					}
-
+				}
+				else
+				{
+					builder.append("No intrinsics used in this method");
 				}
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
 			}
 		});
-		
+
 		menuItemCallChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

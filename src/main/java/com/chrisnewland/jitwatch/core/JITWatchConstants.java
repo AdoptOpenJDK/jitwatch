@@ -67,6 +67,7 @@ public class JITWatchConstants
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
 	public static final String ATTR_PARSE = PARSE;
+	public static final String ATTR_BUILDIR = "buildIR";
 	public static final String ATTR_ID = "id";
 	public static final String ATTR_HOLDER = "holder";
 	public static final String ATTR_RETURN = "return";

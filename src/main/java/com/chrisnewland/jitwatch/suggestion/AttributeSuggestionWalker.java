@@ -74,27 +74,24 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				Task lastTaskTag = JournalUtil.getLastTask(journal);
+				parseDictionary = lastTaskTag.getParseDictionary();
 
-				if (lastTaskTag != null)
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+				// TODO fix for JDK8
+				if (parsePhase != null)
 				{
-					parseDictionary = lastTaskTag.getParseDictionary();
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-					Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-					// TODO fix for JDK8
-					if (parsePhase != null)
+					for (Tag parseTag : parseTags)
 					{
-						List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-						for (Tag parseTag : parseTags)
-						{
-							processParseTag(parseTag, mm);
-						}
+						processParseTag(parseTag, mm);
 					}
 				}
 			}
@@ -157,6 +154,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		if (callee != null)
 		{
 			Tag methodTag = parseDictionary.getMethod(methodID);
+			
+			System.out.println("handleInlineFailTag: " + methodTag);
 
 			String methodBytecodes = methodTag.getAttrs().get(ATTR_BYTES);
 			String invocations = methodTag.getAttrs().get(ATTR_IICOUNT);

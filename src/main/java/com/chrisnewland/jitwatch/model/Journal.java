@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Journal
-{
+{	
     // writes dominate so not COWAL
     private List<Tag> entryList;
     

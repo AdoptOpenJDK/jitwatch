@@ -42,28 +42,25 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				Task lastTaskTag = JournalUtil.getLastTask(journal);
+				parseDictionary = lastTaskTag.getParseDictionary();
+			}
 
-				if (lastTaskTag != null)
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			// TODO fix for JDK8
+			if (parsePhase != null)
+			{
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+				for (Tag parseTag : parseTags)
 				{
-					parseDictionary = lastTaskTag.getParseDictionary();
-				}
-
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-				// TODO fix for JDK8
-				if (parsePhase != null)
-				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-					for (Tag parseTag : parseTags)
-					{
-						processParseTag(parseTag);
-					}
+					processParseTag(parseTag);
 				}
 			}
 		}

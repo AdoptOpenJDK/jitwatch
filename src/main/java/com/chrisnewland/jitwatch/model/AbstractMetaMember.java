@@ -24,6 +24,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	protected boolean isQueued = false;
 	protected boolean isCompiled = false;
+	
+	protected Journal journal = new Journal();
 
 	protected Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
 	protected Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
@@ -319,12 +321,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		return path;
 	}
-
-	@Override
-	public String getJournalID()
-	{
-		return queuedAttributes.get(ATTR_COMPILE_ID);
-	}
 	
     @Override
     public int compareTo(IMetaMember other)
@@ -337,5 +333,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
         {
             return getMemberName().compareTo(other.getMemberName());
         }
+    }
+    
+    public Journal getJournal()
+    {
+    	return journal;
+    }
+    
+    public void addJournalEntry(Tag entry)
+    {        
+        journal.addEntry(entry);
     }
 }

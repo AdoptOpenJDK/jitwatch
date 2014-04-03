@@ -556,7 +556,14 @@ public class ParseUtil
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
 
-			result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			if (metaClass != null)
+			{
+				result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			}
+			else
+			{
+				System.err.println("metaClass not found: " + metaClassName);
+			}
 		}
 
 		return result;

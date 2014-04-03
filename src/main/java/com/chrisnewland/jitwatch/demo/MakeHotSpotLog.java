@@ -20,16 +20,15 @@ public class MakeHotSpotLog
 {
 	public MakeHotSpotLog(int iterations)
 	{
-//		addVariable(iterations);
-//		addConstant(iterations);
-//		randomBranchTest(iterations);
-//		changingBranchTest(iterations);
-//		intrinsicTest(iterations);
-//		tooBigToInline(iterations);
-//		testSort();
-//		testCallChain(iterations);
+		addVariable(iterations);
+		addConstant(iterations);
+		randomBranchTest(iterations);
+		changingBranchTest(iterations);
+		intrinsicTest(iterations);
+		tooBigToInline(iterations);
+		testSort();
+		testCallChain(iterations);
 		testCallChain2(iterations);
-
 	}
 
 	private void addVariable(int iterations)

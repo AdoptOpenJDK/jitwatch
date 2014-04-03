@@ -77,28 +77,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
         return stats;
     }
     
-    public void addJournalEntry(String id, Tag entry)
-    {
-        Journal journal = journalMap.get(id);
-
-        if (journal == null)
-        {
-            journal = new Journal();
-            journalMap.put(id, journal);
-        }
-
-        journal.addEntry(entry);
-    }
-
-    // can we guarantee that IMetaMember will be created before
-    // journal entries are ready? Assume not so store in model
-    // instead of member
-    @Override
-	public Journal getJournal(String id)
-    {
-    	return journalMap.get(id);
-    }
-
     // ugly but better than using COWAL with so many writes
     public void addEvent(JITEvent event)
     {
@@ -202,13 +180,13 @@ public class JITDataModel implements IReadOnlyJITDataModel
     }
 
     public IMetaMember findMetaMember(String className, String signature)
-    {
+    {    	
         MetaClass metaClass = pm.getMetaClass(className);
 
         IMetaMember result = null;
 
         if (metaClass != null)
-        {
+        {        	
             List<IMetaMember> metaList = metaClass.getMetaMembers();
 
             for (IMetaMember meta : metaList)

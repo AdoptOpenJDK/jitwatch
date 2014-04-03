@@ -372,7 +372,7 @@ public class TriView extends Stage
 			bc = "No bytecode found.\nClasses not mounted or native method?";
 		}
 		
-		Journal journal = parent.getJournal(member);
+		Journal journal = member.getJournal();
 		
 		Map<Integer, LineAnnotation> annotations = JournalUtil.buildBytecodeAnnotations(journal);
 

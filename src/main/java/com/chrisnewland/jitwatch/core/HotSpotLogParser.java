@@ -12,12 +12,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser
@@ -173,6 +175,8 @@ public class HotSpotLogParser
 		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
 		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
 		
+		//System.out.println(parseState + ":" + currentLine);
+		
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
 			boolean isSkip = false;
@@ -194,10 +198,7 @@ public class HotSpotLogParser
 				{
 					handleTag(tag);
 					
-					if (tag.isSelfClosing())
-					{
-						parseState = ParseState.READY;
-					}
+					parseState = ParseState.READY;
 				}
 				else
 				{
@@ -242,9 +243,11 @@ public class HotSpotLogParser
 			// TODO: file a bug report for mangled hotspot output
 			completeNativeCode();
 		}
+		System.out.println("handleTag");
+		System.out.println(tag);		
 
 		String tagName = tag.getName();
-
+		
 		switch (tagName)
 		{
 		case JITWatchConstants.TAG_VM_VERSION:
@@ -284,31 +287,8 @@ public class HotSpotLogParser
 			break;
 
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
-			handleStartCompileThread();
+			handleStartCompileThread(tag);
 			break;
-		}
-
-		Map<String, String> attrs = tag.getAttrs();
-
-		String compileID = attrs.get(ATTR_COMPILE_ID);
-		String compileKind = attrs.get(ATTR_COMPILE_KIND);
-
-		String journalID;
-
-		//TODO check this is still true
-		// osr compiles do not have unique compile IDs so concat compile_kind
-		if (compileID != null && compileKind != null && OSR.equals(compileKind))
-		{
-			journalID = compileID + compileKind;
-		}
-		else
-		{
-			journalID = compileID;
-		}
-
-		if (journalID != null)
-		{
-			model.addJournalEntry(journalID, tag);
 		}
 	}
 
@@ -336,31 +316,25 @@ public class HotSpotLogParser
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
 	}
 
-	private void handleStartCompileThread()
+	private void handleStartCompileThread(Tag tag)
 	{
 		model.getJITStats().incCompilerThreads();
-	}
-
-	private void handleMethodLine(Tag tag, EventType eventType)
-	{
-		Map<String, String> attrs = tag.getAttrs();
-
-		String fqMethodName = attrs.get(METHOD);
-
-		if (fqMethodName != null)
+		String threadName = tag.getAttrs().get(ATTR_NAME);
+				
+		if (threadName.startsWith(C1))
 		{
-			fqMethodName = fqMethodName.replace(S_SLASH, S_DOT);
-
-			boolean packageOK = config.isAllowedPackage(fqMethodName);
-
-			if (packageOK)
-			{
-				attrs.remove("method");
-				handleMethod(fqMethodName, attrs, eventType);
-			}
+			tagProcessor.setCompiler(CompilerName.C1);
+		}
+		else if (threadName.startsWith(C2))
+		{
+			tagProcessor.setCompiler(CompilerName.C2);
+		}
+		else
+		{
+			System.err.println("Unexpected compiler name: " + threadName);
 		}
 	}
-
+	
 	private IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
@@ -393,14 +367,40 @@ public class HotSpotLogParser
 
 		return metaMember;
 	}
+	
 
-	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type)
+	private void handleMethodLine(Tag tag, EventType eventType)
 	{
-		IMetaMember metaMember = findMemberWithSignature(methodSignature);
+		Map<String, String> attrs = tag.getAttrs();
 
-		String stampAttr = attrs.get("stamp");
+		String attrMethod = attrs.get(METHOD);
+
+		if (attrMethod != null)
+		{
+			attrMethod = attrMethod.replace(S_SLASH, S_DOT);
+
+			boolean packageOK = config.isAllowedPackage(attrMethod);
+
+			if (packageOK)
+			{
+				attrs.remove("method");
+				IMetaMember member = handleMember(attrMethod, attrs, eventType);
+			
+				if (member != null)
+				{
+					member.addJournalEntry(tag);
+				}
+			}
+		}
+	}
+
+	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
+	{
+		IMetaMember metaMember = findMemberWithSignature(signature);
+
+		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
-
+		
 		if (metaMember != null)
 		{
 			switch (type)
@@ -426,6 +426,8 @@ public class HotSpotLogParser
 				break;
 			}
 		}
+		
+		return metaMember;
 	}
 
 	private void handleTaskDone(Tag tag)

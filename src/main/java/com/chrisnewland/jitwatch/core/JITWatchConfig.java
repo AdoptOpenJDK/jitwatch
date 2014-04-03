@@ -127,6 +127,7 @@ public class JITWatchConfig
         return new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
     }
 
+    //TODO: this is probably a bad idea - process everything
     public boolean isAllowedPackage(String fqMethodName)
     {
         return allowedPackages.size() == 0 || checkPackage(fqMethodName);

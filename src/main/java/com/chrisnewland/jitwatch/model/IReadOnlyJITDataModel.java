@@ -16,11 +16,6 @@ public interface IReadOnlyJITDataModel
 
 	public JITStats getJITStats();
 
-	// can we guarantee that IMetaMember will be created before
-	// journal entries are ready? Assume not so store in model
-	// instead of member
-	public Journal getJournal(String id);
-
 	public List<JITEvent> getEventListCopy();
 
 	public List<Tag> getCodeCacheTags();
