@@ -5,17 +5,17 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.JournalUtil;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 {
@@ -70,10 +70,12 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				{
 					reasonCountMap.put(reason, 1);
 				}
+                break;
 			}
 			case TAG_PARSE:
 			{
 				processParseTag(child);
+                break;
 			}
 			}
 		}

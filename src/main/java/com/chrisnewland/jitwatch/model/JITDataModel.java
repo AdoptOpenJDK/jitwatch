@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.core.JITEvent;
+import com.chrisnewland.jitwatch.core.JITStats;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -15,9 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 

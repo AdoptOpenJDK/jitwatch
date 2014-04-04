@@ -2,6 +2,8 @@ package com.chrisnewland.jitwatch.ui.toplist;
 
 import com.chrisnewland.jitwatch.toplist.ITopListVisitable;
 
+import java.util.Arrays;
+
 public class TopListWrapper
 {
 	private String title;
@@ -12,7 +14,8 @@ public class TopListWrapper
 	{
 		this.title = title;
 		this.visitable = visitable;
-		this.columns = columns;
+        // Fixed after SonarQube critical warning: Security - Array is stored directly
+		this.columns = Arrays.copyOf(columns, columns.length);
 	}
 
 	public String getTitle()

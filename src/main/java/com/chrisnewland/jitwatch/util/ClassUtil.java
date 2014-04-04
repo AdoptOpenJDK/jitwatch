@@ -18,9 +18,9 @@ public class ClassUtil
 		{
 			return Class.forName(fqClassName, false, getClassLoader());
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			throw t;
+			throw ex;
 		}
 	}
 	
@@ -35,9 +35,9 @@ public class ClassUtil
 			method.setAccessible(true);
 			method.invoke(urlClassLoader, new Object[] { url });
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			t.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 	
@@ -53,9 +53,9 @@ public class ClassUtil
 			
 			return (URL[])result;
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			t.printStackTrace();
+			ex.printStackTrace();
 		}
 		
 		return null;
