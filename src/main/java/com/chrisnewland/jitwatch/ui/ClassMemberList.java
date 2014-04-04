@@ -277,13 +277,10 @@ public class ClassMemberList extends VBox
 		{
 			super.updateItem(item, empty);
 
-			if (item != null)
-			{
-				if (isSelected())
-				{
-					// TODO make appearance same as if selected with mouse click
-				}
+            //TODO make appearance same as if selected with mouse click
 
+            if (item != null)
+			{
 				setText(item.toStringUnqualifiedMethodName());
 
 				if (item.isCompiled())
