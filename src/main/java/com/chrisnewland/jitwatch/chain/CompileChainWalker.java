@@ -5,21 +5,16 @@
  */
 package com.chrisnewland.jitwatch.chain;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.util.InlineUtil;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.model.Task;
-import com.chrisnewland.jitwatch.util.InlineUtil;
-import com.chrisnewland.jitwatch.util.JournalUtil;
-import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class CompileChainWalker
 {
@@ -147,6 +142,8 @@ public class CompileChainWalker
 			{
 				callAttrs.clear();
 			}
+                break;
+
 			case TAG_METHOD:
 			{
 				methodID = tagAttrs.get(ATTR_ID);
