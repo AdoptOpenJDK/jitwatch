@@ -1,0 +1,308 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.chrisnewland.jitwatch</groupId>
+	<artifactId>jitwatch</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<name>jitwatch</name>
+	<description>Visualisation of JIT behaviour</description>
+	<url>https://github.com/chriswhocodes/jitwatch</url>
+	<inceptionYear>2013</inceptionYear>
+
+	<prerequisites>
+		<maven>3.0.5</maven>
+	</prerequisites>
+
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<comments>Simplified BSD License</comments>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Chris Newland</name>
+			<timezone>GMT</timezone>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor>
+			<name>Martijn Verburg</name>
+			<timezone>GMT</timezone>
+		</contributor>
+	</contributors>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/chriswhocodes/jitwatch/issues</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>TBA</system>
+		<url>TBA</url>
+	</ciManagement>
+
+	<!-- TODO -->
+	<!-- <mailingLists> <mailingList> <name></name> <post></post> <unsubscribe></unsubscribe> 
+		</mailingList> </mailingLists> -->
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<jdk.version>1.8</jdk.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>tools.jar</artifactId>
+			<version>1.8</version>
+			<systemPath>${java.home}/../lib/tools.jar</systemPath>
+			<scope>system</scope>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>${jdk.version}</source>
+						<target>${jdk.version}</target>
+						<compilerArgument>-Xlint:unchecked</compilerArgument>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.16</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.4</version>
+					<configuration>
+						<archive>
+							<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+						</archive>
+					</configuration>
+
+
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.4.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.16</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.3</version>
+					<configuration>
+						<reportPlugins>
+							<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-dependency-plugin</artifactId>
+								<version>2.8</version>
+							</plugin>
+							<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-jxr-plugin</artifactId>
+								<version>2.3</version>
+							</plugin>
+							<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-pmd-plugin</artifactId>
+								<version>2.7.1</version>
+								<configuration>
+									<targetJdk>${jdk.version}</targetJdk>
+								</configuration>
+							</plugin>
+							<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-project-info-reports-plugin</artifactId>
+								<version>2.6</version>
+							</plugin>
+							<plugin>
+								<groupId>org.codehaus.mojo</groupId>
+								<artifactId>findbugs-maven-plugin</artifactId>
+								<version>2.5.2</version>
+							</plugin>
+							<plugin>
+								<groupId>org.codehaus.mojo</groupId>
+								<artifactId>jdepend-maven-plugin</artifactId>
+								<version>2.0-beta-2</version>
+							</plugin>
+							<plugin>
+								<groupId>org.codehaus.mojo</groupId>
+								<artifactId>versions-maven-plugin</artifactId>
+								<version>2.0</version>
+								<reportSets>
+									<reportSet>
+										<reports>
+											<report>dependency-updates-report</report>
+											<report>plugin-updates-report</report>
+											<report>property-updates-report</report>
+										</reports>
+									</reportSet>
+								</reportSets>
+							</plugin>
+						</reportPlugins>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.5</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.2.1</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>java</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<includeProjectDependencies>true</includeProjectDependencies>
+						<includePluginDependencies>true</includePluginDependencies>
+						<mainClass>com.chrisnewland.jitwatch.launch.LaunchUI</mainClass>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.oracle</groupId>
+							<artifactId>tools.jar</artifactId>
+							<version>1.8</version>
+							<systemPath>${java.home}/../lib/tools.jar</systemPath>
+							<scope>system</scope>
+						</dependency>
+					</dependencies>
+				</plugin>
+
+				<!-- This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											license-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.5,)
+										</versionRange>
+										<goals>
+											<goal>
+												check-file-header
+											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<!-- TODO Correct license if license plugin someday supports BSD -->
+		<!-- <plugins> <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>license-maven-plugin</artifactId> 
+			<configuration> <licenseName></licenseName> <verbose>false</verbose> </configuration> 
+			<executions> <execution> <id>first</id> <goals> <goal>check-file-header</goal> 
+			</goals> <phase>process-sources</phase> <configuration> <licenseName></licenseName> 
+			<roots> <root>src/main/java</root> <root>src/test/java</root> </roots> <verbose>false</verbose> 
+			</configuration> </execution> </executions> </plugin> </plugins> -->
+	</build>
+
+	<scm>
+		<developerConnection>scm:git:git@github.com:chriswhocodes/jitwatch.git</developerConnection>
+		<url>https://github.com/chriswhocodes/jitwatch</url>
+		<tag>HEAD</tag>
+	</scm>
+
+</project>
