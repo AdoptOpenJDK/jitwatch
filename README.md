@@ -16,7 +16,7 @@ ant</pre>
 <h2>Using maven</h2>
 <h3>Java 7</h3>
 <pre>mvn clean compile test exec:java</pre>
-<h3>Java 8</h3>
+<h3>Java 8 (JavaFX now included in runtime classpath)</h3>
 <pre>mvn -f pom-java8.xml clean compile test exec:java</pre>
 
 <h2>Using shell</h2>
