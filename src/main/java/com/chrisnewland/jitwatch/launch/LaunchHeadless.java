@@ -5,14 +5,14 @@
  */
 package com.chrisnewland.jitwatch.launch;
 
-import java.io.File;
-import java.io.IOException;
-
+import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+
+import java.io.File;
+import java.io.IOException;
 
 public class LaunchHeadless implements IJITListener
 {
@@ -34,7 +34,7 @@ public class LaunchHeadless implements IJITListener
 	@Override
 	public void handleLogEntry(String entry)
 	{
-		System.out.println(entry);
+		System.out.format(entry);
 	}
 
 	@Override
@@ -42,21 +42,21 @@ public class LaunchHeadless implements IJITListener
 	{
 		if (showErrors)
 		{
-			System.err.println(entry);
+			System.err.format(entry);
 		}
 	}
 
 	@Override
 	public void handleJITEvent(JITEvent event)
 	{
-		System.out.println(event.toString());
+		System.out.format(event.toString());
 	}
 
 	public static void main(String[] args) throws IOException
 	{
 		if (args.length < 1)
 		{
-			System.err.println("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
+			System.err.format("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
 			System.exit(-1);
 		}
 

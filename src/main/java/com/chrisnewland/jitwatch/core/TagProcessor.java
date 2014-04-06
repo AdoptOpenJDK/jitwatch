@@ -5,11 +5,12 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
@@ -37,7 +38,7 @@ public class TagProcessor
 			}
 			else
 			{
-				System.err.println("Did not handle: " + line);
+				System.err.format("Did not handle: %s", line);
 			}
 		}
 

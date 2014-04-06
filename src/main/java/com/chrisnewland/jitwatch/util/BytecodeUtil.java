@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.bytecode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,14 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
-import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -259,12 +254,12 @@ public class BytecodeUtil
 				}
 				else
 				{
-					System.out.println("could not parse bytecode: " + line);
+					System.out.format("could not parse bytecode: %s", line);
 				}
 			}
 			catch (Exception e)
 			{
-				System.out.println("Error parsing line: " + line);
+				System.out.format("Error parsing line: %s", line);
 				e.printStackTrace();
 			}
 		}

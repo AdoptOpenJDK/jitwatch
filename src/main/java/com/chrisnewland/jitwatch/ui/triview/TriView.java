@@ -141,7 +141,7 @@ public class TriView extends Stage
 				// sometimes combo contains only selected member
 				if (!ignoreComboChanged)
 				{
-					System.out.println("combo changed. setting member: " + newVal);
+					System.out.format("combo changed. setting member: %s", newVal);
 
 					if (newVal != null)
 					{
