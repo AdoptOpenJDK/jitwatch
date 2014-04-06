@@ -28,7 +28,7 @@ import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class BytecodeUtil
+public final class BytecodeUtil
 {
 	private static Map<String, String> bcDescriptionMap = new HashMap<>();
 

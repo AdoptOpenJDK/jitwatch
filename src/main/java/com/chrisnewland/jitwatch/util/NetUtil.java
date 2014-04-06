@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-public class NetUtil
+public final class NetUtil
 {
 	public static String fetchURL(String toFetch)
 	{

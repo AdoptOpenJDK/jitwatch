@@ -5,19 +5,19 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.IParseDictionary;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class IntrinsicFinder
+public final class IntrinsicFinder
 {
 	public static Map<String, String> findIntrinsics(Journal journal)
 	{

@@ -10,7 +10,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class ClassUtil
+public final class ClassUtil
 {
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{

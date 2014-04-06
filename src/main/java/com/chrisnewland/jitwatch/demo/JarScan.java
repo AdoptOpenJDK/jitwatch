@@ -5,13 +5,19 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 
-public class JarScan {
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+public final class JarScan {
 
     @SuppressWarnings("unchecked")
     public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException {

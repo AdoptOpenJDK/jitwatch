@@ -20,7 +20,7 @@ import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 
-public class JournalUtil
+public final class JournalUtil
 {
 	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal)
 	{
