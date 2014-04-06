@@ -5,15 +5,15 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.IParseDictionary;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.JournalUtil;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -50,8 +50,6 @@ public class IntrinsicFinder
 							String tagName = childTag.getName();
 							Map<String, String> attrs = childTag.getAttrs();
 
-							// System.out.println(childTag);
-
 							switch (tagName)
 							{
 							case TAG_METHOD:
@@ -66,7 +64,6 @@ public class IntrinsicFinder
 							{
 								String methodID = attrs.get(ATTR_METHOD);
 
-								// System.out.println("call: " + methodID);
 								Tag methodTag = parseDictionary.getMethod(methodID);
 								currentMethod = methodTag.getAttrs().get(ATTR_NAME);
 								holder = methodTag.getAttrs().get(ATTR_HOLDER);
@@ -75,9 +72,6 @@ public class IntrinsicFinder
 
 							case TAG_INTRINSIC:
 							{
-								// System.out.println("intrinsic: " + holder +
-								// " " +
-								// currentMethod);
 								if (holder != null && currentMethod != null)
 								{
 									Tag klassTag = parseDictionary.getKlass(holder);

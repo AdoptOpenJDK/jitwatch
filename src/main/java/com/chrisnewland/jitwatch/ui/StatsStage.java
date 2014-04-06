@@ -70,8 +70,7 @@ public class StatsStage extends Stage
 		obList.add(makeRow("Synchronized methods compiled", stats.getCountSynchronized()));
 		obList.add(makeRow("Strictfp methods compiled", stats.getCountStrictfp()));
 		obList.add(makeRow("Native methods compiled", stats.getCountNative()));
-		//obList.add(makeRow("Abstract", stats.getCountAbstract()));
-		
+
 		obList.add(makeRow("C1 Compiled", stats.getCountC1()));
 		obList.add(makeRow("C2 Compiled", stats.getCountC2()));
 		obList.add(makeRow("OSR Compiled", stats.getCountOSR()));

@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.bytecode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,14 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
-import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -63,8 +58,6 @@ public class BytecodeUtil
 
 	public static boolean fetchJVMS()
 	{
-		// System.out.println("fetchJVMS");
-
 		String html = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
 		String css = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/javaspec.css");
 
@@ -93,7 +86,6 @@ public class BytecodeUtil
 
 	public static void loadJVMS()
 	{
-		// System.out.println("loadJVMS");
 		try
 		{
 			Path path = Paths.get(new File(JVMS_HTML_FILENAME).toURI());
@@ -140,8 +132,6 @@ public class BytecodeUtil
 
 		if (title != null)
 		{
-			// System.out.println("store: " + title);
-
 			bcDescriptionMap.put(title, description);
 		}
 	}
@@ -150,14 +140,10 @@ public class BytecodeUtil
 	{
 		String opcodeText = opcode.getText();
 
-		// System.out.println("lookup: " + opcodeText);
-
 		String desc = bcDescriptionMap.get(opcodeText);
 
 		if (desc == null)
 		{
-			// System.out.println("null: " + opcodeText);
-
 			for (Map.Entry<String, String> entry : bcDescriptionMap.entrySet())
 			{
 				String key = entry.getKey();
@@ -173,13 +159,8 @@ public class BytecodeUtil
 						String subOpcodeText = opcodeText.substring(0, ltPos);
 						String subKey = key.substring(0, ltPos);
 
-						// System.out.println("checking: " + subOpcodeText + "/"
-						// + subKey);
-
 						if (subOpcodeText.equals(subKey))
 						{
-							// System.out.println("subs: " + key);
-
 							desc = entry.getValue();
 							break;
 						}
@@ -187,11 +168,6 @@ public class BytecodeUtil
 				}
 			}
 		}
-
-		// if (desc == null)
-		// {
-		// System.out.println("nothing found");
-		// }
 
 		return desc;
 	}
