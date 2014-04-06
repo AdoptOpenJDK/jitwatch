@@ -27,8 +27,9 @@ public class ViewerBytecode extends Viewer
 		super(stageAccessProxy);
 	}
 
-	public void setContent(String bytecode, Map<Integer, LineAnnotation> annotations)
+	public void setContent(String inBytecode, Map<Integer, LineAnnotation> annotations)
 	{
+        String bytecode = inBytecode;
 		instructions = BytecodeUtil.parseInstructions(bytecode);
 
 		lineAnnotations.clear();

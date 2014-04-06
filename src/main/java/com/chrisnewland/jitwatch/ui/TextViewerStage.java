@@ -15,10 +15,11 @@ import javafx.stage.WindowEvent;
 public class TextViewerStage extends AbstractTextViewerStage
 {
 	// make this a TextFlow in Java8
-	public TextViewerStage(final JITWatchUI parent, String title, String source, boolean showLineNumbers)
+	public TextViewerStage(final JITWatchUI parent, String title, String inSource, boolean showLineNumbers)
 	{
 		super(parent, title);
-		
+
+        String source = inSource;
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override

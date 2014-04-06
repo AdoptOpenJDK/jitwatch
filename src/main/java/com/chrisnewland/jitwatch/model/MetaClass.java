@@ -5,14 +5,14 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.chrisnewland.jitwatch.loader.BytecodeLoader;
-import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -161,8 +161,10 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember getMemberFromSignature(String name, String returnType, String[] paramTypes)
+	public IMetaMember getMemberFromSignature(String inName, String inReturnType, String[] paramTypes)
 	{
+	    String returnType = inReturnType;
+        String name = inName;
 		IMetaMember result = null;
 
 		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))

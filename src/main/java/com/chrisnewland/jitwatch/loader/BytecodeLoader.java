@@ -5,15 +5,15 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
+import com.sun.tools.javap.JavapTask;
+import com.sun.tools.javap.JavapTask.BadArgs;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.tools.javap.JavapTask;
-import com.sun.tools.javap.JavapTask.BadArgs;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -122,8 +122,9 @@ public class BytecodeLoader
 		return bytecodeMap;
 	}
 
-	private static void storeBytecode(Map<String, String> bytecodeMap, String signature, StringBuilder builder)
+	private static void storeBytecode(Map<String, String> bytecodeMap, String inSignature, StringBuilder builder)
 	{
+        String signature = inSignature;
 		if (signature != null && builder.length() > 0)
 		{
 			// remove spaces between multiple method parameters

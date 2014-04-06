@@ -169,8 +169,9 @@ public class HotSpotLogParser
 	// <hotspot_log_done stamp='175.381'/>
 	// </hotspot_log>
 
-	private void handleLine(String currentLine)
+	private void handleLine(String inCurrentLine)
 	{
+        String currentLine = inCurrentLine;
 		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
 		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
 		
@@ -453,8 +454,9 @@ public class HotSpotLogParser
 	 * JITWatch needs classloader information so it can show classes which have
 	 * no JIT-compiled methods in the class tree
 	 */
-	private void handleLoaded(String currentLine)
+	private void handleLoaded(String inCurrentLine)
 	{
+        String currentLine = inCurrentLine;
 		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)

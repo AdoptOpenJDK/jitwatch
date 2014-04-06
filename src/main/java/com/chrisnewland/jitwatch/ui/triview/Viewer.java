@@ -85,8 +85,9 @@ public class Viewer extends VBox
 		setUpContextMenu();
 	}
 
-	public void setContent(String source, boolean showLineNumbers)
+	public void setContent(String inSource, boolean showLineNumbers)
 	{
+        String source = inSource;
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
 

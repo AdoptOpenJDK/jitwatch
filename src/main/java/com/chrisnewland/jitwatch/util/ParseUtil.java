@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import com.chrisnewland.jitwatch.model.*;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -15,14 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.MemberSignatureParts;
-import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.model.Tag;
 
 public class ParseUtil
 {
@@ -469,9 +463,10 @@ public class ParseUtil
 		return bestScoreLine;
 	}
 
-	private static boolean compareTypeEquality(String memberTypeName, String mspTypeName, Map<String, String> genericsMap)
+	private static boolean compareTypeEquality(String memberTypeName, String inMspTypeName, Map<String, String> genericsMap)
 	{
-		if (memberTypeName != null && memberTypeName.equals(mspTypeName))
+        String mspTypeName = inMspTypeName;
+        if (memberTypeName != null && memberTypeName.equals(mspTypeName))
 		{
 			return true;
 		}
@@ -586,9 +581,9 @@ public class ParseUtil
 		return result;
 	}
 
-	public static String convertNativeCodeMethodName(String line)
+	public static String convertNativeCodeMethodName(String inLine)
 	{
-		line = line.replace(ENTITY_APOS, S_QUOTE);
+		String line = inLine.replace(ENTITY_APOS, S_QUOTE);
 
 		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
 

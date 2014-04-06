@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,9 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
-import com.chrisnewland.jitwatch.util.ParseUtil;
-import com.chrisnewland.jitwatch.util.StringUtil;
 
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
@@ -276,8 +276,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return builder.toString();
 	}
 
-	public static String expandParam(String paramType)
+	public static String expandParam(String inParamType)
 	{
+        String paramType = inParamType;
 		if (paramType.charAt(0) == '[')
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
@@ -291,8 +292,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return paramType;
 	}
 
-	public static String expandParamRegEx(String paramType)
+	public static String expandParamRegEx(String inParamType)
 	{
+        String paramType = inParamType;
 		if (paramType.charAt(0) == '[')
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
