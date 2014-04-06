@@ -80,7 +80,9 @@ public class Suggestion
 		if (caller == null)
 		{
 			if (other.caller != null)
+            {
 				return false;
+            }
 		}
 		else if (!caller.equals(other.caller))
         {
