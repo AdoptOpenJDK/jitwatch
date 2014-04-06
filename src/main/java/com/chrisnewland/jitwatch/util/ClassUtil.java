@@ -12,7 +12,14 @@ import java.net.URLClassLoader;
 
 public class ClassUtil
 {
-	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ClassUtil() {
+    }
+
+    public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
 		{

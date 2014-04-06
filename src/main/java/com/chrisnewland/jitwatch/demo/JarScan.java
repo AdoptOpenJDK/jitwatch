@@ -5,13 +5,26 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
 public class JarScan {
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private JarScan() {
+    }
 
     @SuppressWarnings("unchecked")
     public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException {

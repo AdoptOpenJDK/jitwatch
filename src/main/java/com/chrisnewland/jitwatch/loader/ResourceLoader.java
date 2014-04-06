@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
+import com.chrisnewland.jitwatch.model.MetaClass;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,12 +17,18 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.chrisnewland.jitwatch.model.MetaClass;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class ResourceLoader
 {
-	public static String getSourceFilename(MetaClass metaClass)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ResourceLoader() {
+    }
+
+    public static String getSourceFilename(MetaClass metaClass)
 	{
 		String fqName = metaClass.getFullyQualifiedName();
 		

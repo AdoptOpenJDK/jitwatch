@@ -1,11 +1,18 @@
 package com.chrisnewland.jitwatch.util;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import java.util.Map;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class InlineUtil
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private InlineUtil() {
+    }
+
 	public static String buildInlineAnnotationText(boolean inlined, String reason, Map<String, String> callAttrs, Map<String, String> methodAttrs)
 	{
 		StringBuilder builder = new StringBuilder();

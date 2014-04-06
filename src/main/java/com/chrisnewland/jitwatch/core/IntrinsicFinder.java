@@ -5,20 +5,27 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.IParseDictionary;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class IntrinsicFinder
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private IntrinsicFinder() {
+    }
+
 	public static Map<String, String> findIntrinsics(Journal journal)
 	{
 		Map<String, String> result = new HashMap<>();

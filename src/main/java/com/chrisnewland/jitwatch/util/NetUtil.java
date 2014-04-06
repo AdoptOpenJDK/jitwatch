@@ -7,6 +7,13 @@ import java.net.URL;
 
 public class NetUtil
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private NetUtil() {
+    }
+
 	public static String fetchURL(String toFetch)
 	{
 		StringBuilder builder = new StringBuilder();

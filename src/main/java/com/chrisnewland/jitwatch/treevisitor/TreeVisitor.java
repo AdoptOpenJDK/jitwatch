@@ -1,15 +1,22 @@
 package com.chrisnewland.jitwatch.treevisitor;
 
-import java.util.List;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
 
+import java.util.List;
+
 public class TreeVisitor
 {
-	public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private TreeVisitor() {
+    }
+
+    public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
 	{
 		visitable.reset();
 		

@@ -14,7 +14,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 // prob better with own caller
 public class TableUtil
 {
-	public static TableView<AttributeTableRow> buildTableMemberAttributes(ObservableList<AttributeTableRow> rows)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private TableUtil() {
+    }
+
+    public static TableView<AttributeTableRow> buildTableMemberAttributes(ObservableList<AttributeTableRow> rows)
 	{
 		TableView<AttributeTableRow> tv = new TableView<>();
 

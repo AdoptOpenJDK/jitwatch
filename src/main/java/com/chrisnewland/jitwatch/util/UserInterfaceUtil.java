@@ -14,6 +14,13 @@ public class UserInterfaceUtil
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
     public static Image TICK = null;
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private UserInterfaceUtil() {
+    }
+
     static
     {
         // images directory added to jar by ant and mvn

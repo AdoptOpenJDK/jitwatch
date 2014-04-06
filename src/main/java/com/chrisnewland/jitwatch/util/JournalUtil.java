@@ -22,6 +22,13 @@ import com.chrisnewland.jitwatch.model.Task;
 
 public class JournalUtil
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private JournalUtil() {
+    }
+
 	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal)
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();

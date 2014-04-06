@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.bytecode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,14 +21,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
-import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.model.bytecode.Opcode;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class BytecodeUtil
@@ -35,7 +30,14 @@ public class BytecodeUtil
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
 
-	public static boolean hasLocalJVMS()
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private BytecodeUtil() {
+    }
+
+    public static boolean hasLocalJVMS()
 	{
 		File file = new File(JVMS_HTML_FILENAME);
 
