@@ -5,18 +5,13 @@
  */
 package com.chrisnewland.jitwatch.histo;
 
+import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.model.Task;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -126,6 +121,9 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 				processParseTag(child);
 			}
 				break;
+
+            default:
+                break;
 			}
 		}
 	}

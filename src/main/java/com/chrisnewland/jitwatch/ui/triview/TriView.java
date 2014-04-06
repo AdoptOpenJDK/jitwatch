@@ -305,6 +305,9 @@ public class TriView extends Stage
 			break;
 		case 3:
 			splitViewer.setDividerPositions(0.333, 0.666);
+            break;
+        default:
+            break;
 		}
 	}
 

@@ -91,6 +91,11 @@ public class IntrinsicFinder
 								currentMethod = null;
 								break;
 							}
+
+                            default:
+                            {
+                                break;
+                            }
 							}
 						}
 					}

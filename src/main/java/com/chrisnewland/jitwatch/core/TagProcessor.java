@@ -5,11 +5,12 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
@@ -138,6 +139,9 @@ public class TagProcessor
 			case JITWatchConstants.TAG_KLASS:
 				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
 				break;
+
+            default:
+                break;
 			}
 		}
 

@@ -287,6 +287,9 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
 			handleStartCompileThread();
 			break;
+
+        default:
+            break;
 		}
 
 		Map<String, String> attrs = tag.getAttrs();
