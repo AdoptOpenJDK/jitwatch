@@ -5,15 +5,15 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
+import com.sun.tools.javap.JavapTask;
+import com.sun.tools.javap.JavapTask.BadArgs;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.tools.javap.JavapTask;
-import com.sun.tools.javap.JavapTask.BadArgs;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -54,7 +54,7 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.err.println("Could not obtain bytcode for class: " + fqClassName);
+			System.err.format("Could not obtain bytcode for class: %s", fqClassName);
 		}
 		catch (IOException ioe)
 		{

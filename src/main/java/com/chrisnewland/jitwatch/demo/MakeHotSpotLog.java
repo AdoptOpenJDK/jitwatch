@@ -41,7 +41,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		System.out.println("addVariable: " + count);
+		System.out.format("addVariable: %d", count);
 	}
 
 	private void addConstant(int iterations)
@@ -53,7 +53,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		System.out.println("addConstant: " + count);
+		System.out.format("addConstant: %d", count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -76,7 +76,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("randomBranchTest: " + count + " " + adds + " " + subs);
+		System.out.format("randomBranchTest: %d %d %d", count, adds, subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -99,7 +99,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("changingBranchTest: " + count + " " + adds + " " + subs);
+		System.out.format("changingBranchTest: %d %d %d", count, adds, subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -120,7 +120,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("intrinsicTest: " + dstSum);
+		System.out.format("intrinsicTest: %d", dstSum);
 	}
 
 	private long add(long a, long b)
@@ -142,7 +142,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		System.out.println("tooBigToInline: " + count);
+		System.out.format("tooBigToInline: %d", count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -237,7 +237,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("list sum: " + sum);
+		System.out.format("list sum: %d", sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -250,7 +250,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		System.out.println("testCallChain: " + count);
+		System.out.format("testCallChain: %d", count);
 	}
 
 	private long chainA1(long count)
@@ -300,7 +300,7 @@ public class MakeHotSpotLog
 
 		}
 
-		System.out.println("testCallChain2: " + count);
+		System.out.format("testCallChain2: %d", count);
 	}
 
 	private long chainC1(long count)
@@ -331,7 +331,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				System.err.println("usage: MakeHotSpotLog [iterations]");
+				System.err.format("usage: MakeHotSpotLog [iterations]");
 			}
 		}
 

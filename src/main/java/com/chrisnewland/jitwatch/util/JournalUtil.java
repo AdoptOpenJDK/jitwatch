@@ -166,7 +166,7 @@ public class JournalUtil
 
 			if (count != 1)
 			{
-				System.out.println("Unexpected parse phase count: " + count);
+				System.out.format("Unexpected parse phase count: %d", count);
 			}
 			else
 			{

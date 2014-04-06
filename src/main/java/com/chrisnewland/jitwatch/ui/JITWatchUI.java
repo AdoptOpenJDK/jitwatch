@@ -700,7 +700,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		}
 		else
 		{
-			System.err.println("Could not open CompileChain - root node was null");
+			System.err.format("Could not open CompileChain - root node was null");
 		}
 	}
 

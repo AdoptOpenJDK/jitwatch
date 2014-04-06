@@ -172,7 +172,7 @@ public class CompileChainStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				System.out.println(node.getMember());
+				System.out.format("%s", node.getMember());
 			}
 		});
 

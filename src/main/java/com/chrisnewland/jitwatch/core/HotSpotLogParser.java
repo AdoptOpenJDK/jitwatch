@@ -112,7 +112,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-					System.err.println("Exception handling: '" + currentLine + "'");
+					System.err.format("Exception handling: '%s'", currentLine);
                     ex.printStackTrace();
 				}
 			}
