@@ -45,7 +45,7 @@ public class CodeCacheStage extends AbstractGraphStage
 	}
 
 	@Override
-	public void redraw()
+	public final void redraw()
 	{
 		super.baseRedraw();
 

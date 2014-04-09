@@ -56,7 +56,7 @@ public class StatsStage extends Stage
 		});
 	}
 	
-	public void redraw()
+	public final void redraw()
 	{
 		obList.clear();
 		

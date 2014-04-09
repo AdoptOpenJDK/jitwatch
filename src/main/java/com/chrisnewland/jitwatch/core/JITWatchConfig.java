@@ -5,18 +5,16 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import com.chrisnewland.jitwatch.util.StringUtil;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_COMMA;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class JITWatchConfig
 {
@@ -111,7 +109,7 @@ public class JITWatchConfig
         {
             saveProps.put(KEY_LAST_LOG_DIR, lastLogDir);
         }
-        
+
         try (FileWriter fw = new FileWriter(getConfigFile()))
         {
             saveProps.store(fw, null);

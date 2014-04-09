@@ -198,7 +198,7 @@ public class TopListStage extends Stage
 		tableView.setItems(topList);
 	}
 
-	public void redraw()
+	public final void redraw()
 	{
 	}
 }
