@@ -30,6 +30,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	// see
 	// https://wikis.oracle.com/display/HotSpotInternals/Server+Compiler+Inlining+Messages
+	
+	// TODO update for Java8
 	private static final String REASON_HOT_METHOD_TOO_BIG = "hot method too big";
 	private static final String REASON_TOO_BIG = "too big";
 	private static final String REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD = "already compiled into a big method";
@@ -155,10 +157,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		{
 			Tag methodTag = parseDictionary.getMethod(methodID);
 			
-			System.out.println("handleInlineFailTag: " + methodTag);
-
-			String methodBytecodes = methodTag.getAttrs().get(ATTR_BYTES);
-			String invocations = methodTag.getAttrs().get(ATTR_IICOUNT);
+			String methodBytecodes = methodTag.getAttribute(ATTR_BYTES);
+			String invocations = methodTag.getAttribute(ATTR_IICOUNT);
 
 			int invocationCount = Integer.parseInt(invocations);
 
@@ -174,7 +174,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				}
 				else
 				{
-					System.out.println("No score is set for reason: " + reason);
+					System.err.println("No score is set for reason: " + reason);
 				}
 
 				StringBuilder reasonBuilder = new StringBuilder();

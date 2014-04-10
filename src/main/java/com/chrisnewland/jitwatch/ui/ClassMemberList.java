@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import java.util.List;
 import java.util.Map;
 
@@ -94,22 +96,17 @@ public class ClassMemberList extends VBox
 		final ContextMenu contextMenuCompiled = new ContextMenu();
 		final ContextMenu contextMenuNotCompiled = new ContextMenu();
 
-		MenuItem menuItemSource = new MenuItem("Show source");
-		MenuItem menuItemBytecode = new MenuItem("Show bytecode");
-		MenuItem menuItemNative = new MenuItem("Show native code");
+		MenuItem menuItemTriView = new MenuItem("Show TriView");
 		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
 		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
 
-		contextMenuCompiled.getItems().add(menuItemSource);
-		contextMenuCompiled.getItems().add(menuItemBytecode);
-		contextMenuCompiled.getItems().add(menuItemNative);
+		contextMenuCompiled.getItems().add(menuItemTriView);
 		contextMenuCompiled.getItems().add(menuItemJournal);
 		contextMenuCompiled.getItems().add(menuItemIntrinsics);
 		contextMenuCompiled.getItems().add(menuItemCallChain);
 
-		contextMenuNotCompiled.getItems().add(menuItemSource);
-		contextMenuNotCompiled.getItems().add(menuItemBytecode);
+		contextMenuNotCompiled.getItems().add(menuItemTriView);
 		contextMenuNotCompiled.getItems().add(menuItemJournal);
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
@@ -131,30 +128,12 @@ public class ClassMemberList extends VBox
 			}
 		});
 
-		menuItemSource.setOnAction(new EventHandler<ActionEvent>()
+		menuItemTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openSource(memberList.getSelectionModel().getSelectedItem());
-			}
-		});
-
-		menuItemBytecode.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.openBytecode(memberList.getSelectionModel().getSelectedItem());
-			}
-		});
-
-		menuItemNative.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.openAssembly(memberList.getSelectionModel().getSelectedItem());
+				parent.openTriView(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -270,10 +249,13 @@ public class ClassMemberList extends VBox
 		{
 			super.updateItem(item, empty);
 
-            //TODO make appearance same as if selected with mouse click
-
-            if (item != null)
+            if (item == null)
 			{
+				setText(S_EMPTY);
+				setGraphic(null);	
+			}
+            else
+            {
 				setText(item.toStringUnqualifiedMethodName());
 
 				if (item.isCompiled())
@@ -287,5 +269,4 @@ public class ClassMemberList extends VBox
 			}
 		}
 	}
-
 }

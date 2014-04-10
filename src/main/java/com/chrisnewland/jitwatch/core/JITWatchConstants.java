@@ -59,6 +59,7 @@ public class JITWatchConstants
 	public static final String ATTR_STAMP = "stamp";
 	public static final String ATTR_NAME = "name";
 	public static final String ATTR_BCI = "bci";
+	public static final String ATTR_CODE = "code";
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
 	public static final String ATTR_NMSIZE = "nmsize";

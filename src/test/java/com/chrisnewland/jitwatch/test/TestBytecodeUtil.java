@@ -16,6 +16,7 @@ import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
 import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
 import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
 
 public class TestBytecodeUtil
@@ -40,7 +41,7 @@ public class TestBytecodeUtil
 		
 		Instruction i0 = instructions.get(0);
 		assertEquals(0, i0.getOffset());
-		assertEquals("ldc", i0.getMnemonic());
+		assertEquals(Opcode.LDC, i0.getOpcode());
 		assertEquals(true, i0.hasParameters());
 		assertEquals(1, i0.getParameters().size());
 		
@@ -53,7 +54,7 @@ public class TestBytecodeUtil
 		
 		Instruction i1 = instructions.get(1);
 		assertEquals(2, i1.getOffset());
-		assertEquals("istore_1", i1.getMnemonic());
+		assertEquals(Opcode.ISTORE_1, i1.getOpcode());
 		assertEquals(false, i1.hasParameters());
 		assertEquals(0, i1.getParameters().size());
 		assertEquals(false, i1.hasComment());
@@ -61,7 +62,7 @@ public class TestBytecodeUtil
 		
 		Instruction i5 = instructions.get(5);
 		assertEquals(6, i5.getOffset());
-		assertEquals("if_icmpne", i5.getMnemonic());
+		assertEquals(Opcode.IF_ICMPNE, i5.getOpcode());
 		assertEquals(1, i5.getParameters().size());
 		assertEquals(true, i5.hasParameters());
 		
@@ -90,7 +91,7 @@ public class TestBytecodeUtil
 		
 		Instruction i4 = instructions.get(4);
 		assertEquals(4, i4.getOffset());
-		assertEquals("iinc", i4.getMnemonic());
+		assertEquals(Opcode.IINC, i4.getOpcode());
 		assertEquals(true, i4.hasParameters());
 		assertEquals(2, i4.getParameters().size());
 		
@@ -123,7 +124,7 @@ public class TestBytecodeUtil
 		
 		Instruction i4 = instructions.get(4);
 		assertEquals(4, i4.getOffset());
-		assertEquals("iinc", i4.getMnemonic());
+		assertEquals(Opcode.IINC, i4.getOpcode());
 		assertEquals(true, i4.hasParameters());
 		assertEquals(2, i4.getParameters().size());
 		
@@ -151,7 +152,7 @@ public class TestBytecodeUtil
 		
 		Instruction i0 = instructions.get(0);
 		assertEquals(3, i0.getOffset());
-		assertEquals("newarray", i0.getMnemonic());
+		assertEquals(Opcode.NEWARRAY, i0.getOpcode());
 		assertEquals(true, i0.hasParameters());
 		assertEquals(1, i0.getParameters().size());
 

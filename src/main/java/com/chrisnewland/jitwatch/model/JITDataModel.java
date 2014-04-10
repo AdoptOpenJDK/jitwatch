@@ -5,9 +5,6 @@
  */
 package com.chrisnewland.jitwatch.model;
 
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -218,7 +215,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
         mp.addClass(metaClass);
 
         stats.incCountClass();
-
+        
         if (clazz == null)
         {
             metaClass.setMissingDef(true);

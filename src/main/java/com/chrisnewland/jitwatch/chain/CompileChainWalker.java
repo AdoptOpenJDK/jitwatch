@@ -50,7 +50,7 @@ public class CompileChainWalker
 
 					for (Tag parseTag : parseTags)
 					{
-						String id = parseTag.getAttrs().get(ATTR_METHOD);
+						String id = parseTag.getAttribute(ATTR_METHOD);
 
 						root = new CompileNode(mm, id);
 

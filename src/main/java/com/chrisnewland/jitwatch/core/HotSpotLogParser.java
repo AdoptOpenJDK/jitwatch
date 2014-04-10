@@ -5,8 +5,10 @@
  */
 package com.chrisnewland.jitwatch.core;
 
+import com.chrisnewland.jitwatch.model.EventType;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
@@ -20,15 +22,11 @@ import java.net.URI;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.CompilerName;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser
 {
-	enum EventType
-	{
-		QUEUE, NMETHOD, TASK
-	}
-	
 	enum ParseState
 	{
 		READY, IN_TAG, IN_NATIVE
@@ -114,7 +112,7 @@ public class HotSpotLogParser
 				catch (Exception ex)
 				{
 					System.err.println("Exception handling: '" + currentLine + "'");
-                    ex.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 			else
@@ -174,9 +172,7 @@ public class HotSpotLogParser
 	{
 		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
 		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
-		
-		//System.out.println(parseState + ":" + currentLine);
-		
+
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
 			boolean isSkip = false;
@@ -197,7 +193,7 @@ public class HotSpotLogParser
 				if (tag != null)
 				{
 					handleTag(tag);
-					
+
 					parseState = ParseState.READY;
 				}
 				else
@@ -227,9 +223,9 @@ public class HotSpotLogParser
 			String sig = ParseUtil.convertNativeCodeMethodName(currentLine);
 
 			currentMember = findMemberWithSignature(sig);
-			
+
 			parseState = ParseState.IN_NATIVE;
-			
+
 			appendNativeCode(currentLine);
 		}
 
@@ -240,50 +236,28 @@ public class HotSpotLogParser
 	{
 		if (parseState == ParseState.IN_NATIVE)
 		{
-			// TODO: file a bug report for mangled hotspot output
+			// TODO: chase up bug report for mangled hotspot output
 			completeNativeCode();
 		}
-		System.out.println("handleTag");
-		System.out.println(tag);		
 
 		String tagName = tag.getName();
-		
+
 		switch (tagName)
 		{
 		case JITWatchConstants.TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
-		
+
 		case JITWatchConstants.TAG_TASK_QUEUED:
-			handleMethodLine(tag, EventType.QUEUE);
+			handleTagQueued(tag);
 			break;
 
 		case JITWatchConstants.TAG_NMETHOD:
-			handleMethodLine(tag, EventType.NMETHOD);
+			handleTagNMethod(tag);
 			break;
 
 		case JITWatchConstants.TAG_TASK:
-			handleMethodLine(tag, EventType.TASK);
-
-			Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
-
-			if (tagCodeCache != null)
-			{
-				// copy timestamp from parent <task> tag used for graphing code
-				// cache
-				String stamp = tag.getAttrs().get(JITWatchConstants.ATTR_STAMP);
-				tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
-
-				model.addCodeCacheTag(tagCodeCache);
-			}
-
-			Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
-
-			if (tagTaskDone != null)
-			{
-				handleTaskDone(tagTaskDone);
-			}
-
+			handleTagTask(tag);
 			break;
 
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
@@ -295,10 +269,10 @@ public class HotSpotLogParser
 	private void handleVmVersion(Tag tag)
 	{
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
-		
-		model.setVmVersionRelease(release);		
+
+		model.setVmVersionRelease(release);
 	}
-	
+
 	private void appendNativeCode(String line)
 	{
 		nativeCodeBuilder.append(line).append("\n");
@@ -307,7 +281,7 @@ public class HotSpotLogParser
 	private void completeNativeCode()
 	{
 		parseState = ParseState.READY;
-		
+
 		if (currentMember != null)
 		{
 			currentMember.setAssembly(nativeCodeBuilder.toString());
@@ -319,8 +293,8 @@ public class HotSpotLogParser
 	private void handleStartCompileThread(Tag tag)
 	{
 		model.getJITStats().incCompilerThreads();
-		String threadName = tag.getAttrs().get(ATTR_NAME);
-				
+		String threadName = tag.getAttribute(ATTR_NAME);
+
 		if (threadName.startsWith(C1))
 		{
 			tagProcessor.setCompiler(CompilerName.C1);
@@ -334,7 +308,7 @@ public class HotSpotLogParser
 			System.err.println("Unexpected compiler name: " + threadName);
 		}
 	}
-	
+
 	private IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
@@ -367,29 +341,86 @@ public class HotSpotLogParser
 
 		return metaMember;
 	}
-	
+
+	private void handleTagQueued(Tag tag)
+	{
+		handleMethodLine(tag, EventType.QUEUE);
+	}
+
+	private void handleTagNMethod(Tag tag)
+	{
+		String attrCompiler = tag.getAttribute(ATTR_COMPILER);
+
+		if (attrCompiler != null)
+		{
+			if (C1.equals(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C1);
+			}
+			else if (C2.equals(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C2);
+			}
+			else
+			{
+				logError("Unexpected Compiler attribute: " + attrCompiler);
+			}
+		}
+		else
+		{
+			String attrCompileKind = tag.getAttribute(ATTR_COMPILE_KIND);
+			
+			if (attrCompileKind != null && C2N.equals(attrCompileKind))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C2N);
+			}
+			else
+			{
+				logError("Missing Compiler attribute " + tag);
+			}
+		}
+	}
+
+	private void handleTagTask(Tag tag)
+	{
+		handleMethodLine(tag, EventType.TASK);
+
+		Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+
+		if (tagCodeCache != null)
+		{
+			// copy timestamp from parent <task> tag used for graphing code
+			// cache
+			String stamp = tag.getAttribute(JITWatchConstants.ATTR_STAMP);
+			tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+
+			model.addCodeCacheTag(tagCodeCache);
+		}
+
+		Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
+
+		if (tagTaskDone != null)
+		{
+			handleTaskDone(tagTaskDone);
+		}
+	}
 
 	private void handleMethodLine(Tag tag, EventType eventType)
 	{
 		Map<String, String> attrs = tag.getAttrs();
 
-		String attrMethod = attrs.get(METHOD);
+		String attrMethod = attrs.get(ATTR_METHOD);
 
 		if (attrMethod != null)
 		{
 			attrMethod = attrMethod.replace(S_SLASH, S_DOT);
+			// attrs.remove(ATTR_METHOD);
 
-			boolean packageOK = config.isAllowedPackage(attrMethod);
+			IMetaMember member = handleMember(attrMethod, attrs, eventType);
 
-			if (packageOK)
+			if (member != null)
 			{
-				attrs.remove("method");
-				IMetaMember member = handleMember(attrMethod, attrs, eventType);
-			
-				if (member != null)
-				{
-					member.addJournalEntry(tag);
-				}
+				member.addJournalEntry(tag);
 			}
 		}
 	}
@@ -400,33 +431,41 @@ public class HotSpotLogParser
 
 		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
-		
+
 		if (metaMember != null)
 		{
 			switch (type)
 			{
 			case QUEUE:
+			{
 				metaMember.setQueuedAttributes(attrs);
-				JITEvent queuedEvent = new JITEvent(stampTime, false, metaMember.toString());
+				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember.toString());
 				model.addEvent(queuedEvent);
 				logEvent(queuedEvent);
+			}
 				break;
-			case NMETHOD:
+			case NMETHOD_C1:
+			case NMETHOD_C2:
+			case NMETHOD_C2N:
+			{
 				metaMember.setCompiledAttributes(attrs);
 				metaMember.getMetaClass().incCompiledMethodCount();
 				model.updateStats(metaMember);
 
-				JITEvent compiledEvent = new JITEvent(stampTime, true, metaMember.toString());
+				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember.toString());
 				model.addEvent(compiledEvent);
 				logEvent(compiledEvent);
+			}
 				break;
 			case TASK:
+			{
 				metaMember.addCompiledAttributes(attrs);
 				currentMember = metaMember;
+			}
 				break;
 			}
 		}
-		
+
 		return metaMember;
 	}
 
@@ -476,39 +515,32 @@ public class HotSpotLogParser
 				className = fqClassName;
 			}
 
-			boolean allowedPackage = config.isAllowedPackage(packageName);
+			Class<?> clazz = null;
 
-			if (allowedPackage)
+			try
 			{
-				Class<?> clazz = null;
+				clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
+			}
+			catch (ClassNotFoundException cnf)
+			{
+				logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
+			}
+			catch (NoClassDefFoundError ncdf)
+			{
+				logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
+			}
 
-				try
-				{
-					clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-				}
-				catch (ClassNotFoundException cnf)
-				{
-					logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
-				}
-				catch (NoClassDefFoundError ncdf)
-				{
-					logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
-				}
-
-				try
-				{
-					// can throw NCDFE from clazz.getDeclaredMethods()
-					model.buildMetaClass(packageName, className, clazz);
-				}
-				catch (NoClassDefFoundError ncdf)
-				{
-					// missing class is from a method declaration in fqClassName
-					// so look in getMessage()
-					logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
-				}
+			try
+			{
+				// can throw NCDFE from clazz.getDeclaredMethods()
+				model.buildMetaClass(packageName, className, clazz);
+			}
+			catch (NoClassDefFoundError ncdf)
+			{
+				// missing class is from a method declaration in fqClassName
+				// so look in getMessage()
+				logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
 			}
 		}
 	}
-
-
 }

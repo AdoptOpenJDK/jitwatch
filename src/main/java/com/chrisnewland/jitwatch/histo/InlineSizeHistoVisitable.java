@@ -105,7 +105,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 
 					if (klassTag != null)
 					{
-						String fqName = klassTag.getAttrs().get(ATTR_NAME) + C_SLASH + currentMethod;
+						String fqName = klassTag.getAttribute(ATTR_NAME) + C_SLASH + currentMethod;
 
 						if (!inlinedCounted.contains(fqName))
 						{

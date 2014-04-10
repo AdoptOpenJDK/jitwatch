@@ -15,7 +15,7 @@ import com.chrisnewland.jitwatch.util.StringUtil;
 public class Instruction
 {
 	private int offset;
-	private String mnemonic;
+	private Opcode opcode;
 
 	private List<IBytecodeParam> parameters = new ArrayList<>();
 
@@ -32,14 +32,14 @@ public class Instruction
 		this.offset = offset;
 	}
 
-	public String getMnemonic()
+	public Opcode getOpcode()
 	{
-		return mnemonic;
+		return opcode;
 	}
 
-	public void setMnemonic(String mnemonic)
+	public void setOpcode(Opcode opcode)
 	{
-		this.mnemonic = mnemonic;
+		this.opcode = opcode;
 	}
 
 	public List<IBytecodeParam> getParameters()
@@ -80,7 +80,7 @@ public class Instruction
 		int offsetWidth = Integer.toString(maxOffset).length();
 
 		builder.append(StringUtil.padLeft(offset, offsetWidth)).append(C_COLON).append(C_SPACE);
-		builder.append(StringUtil.padRight(mnemonic, 16));
+		builder.append(StringUtil.padRight(opcode.getMnemonic(), 16));
 
 		if (hasParameters())
 		{

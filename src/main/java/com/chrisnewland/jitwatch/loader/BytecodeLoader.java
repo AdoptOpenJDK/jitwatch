@@ -38,7 +38,7 @@ public class BytecodeLoader
 
 			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
 
-			args = new String[] { "-c", "-p", "-classpath", classPathBuilder.toString(), fqClassName };
+			args = new String[] { "-c", "-p"/*, "-v"*/, "-classpath", classPathBuilder.toString(), fqClassName };
 		}
 
 		String byteCode = null;
@@ -77,7 +77,7 @@ public class BytecodeLoader
 
 	private static Map<String, String> parse(String result)
 	{		
-		String[] lines = result.split("\n");
+		String[] lines = result.split(S_NEWLINE);
 
 		int pos = 0;
 
@@ -94,14 +94,14 @@ public class BytecodeLoader
 
 			if (inMethod)
 			{
-				if (line.length() == 0)
+				if (line.length() == 0 || "LineNumberTable:".equals(line))
 				{
 					inMethod = false;
 					storeBytecode(bytecodeMap, signature, builder);
 				}
-				else if (line.indexOf(':') != -1)
+				else if (line.indexOf(C_COLON) != -1)
 				{
-					builder.append(line).append("\n");
+					builder.append(line).append(C_NEWLINE);
 				}
 			}
 			else

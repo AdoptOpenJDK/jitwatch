@@ -21,8 +21,7 @@ public class TagProcessor
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
 	
-	//TODO replace all this with XPath???
-	// Really include a ton of XML libs? write own mini XPath?
+	//TODO write own mini XPath?
 	
 	public void setCompiler(CompilerName compiler)
 	{
@@ -37,7 +36,7 @@ public class TagProcessor
 	public Tag processLine(String line)
 	{
 		Tag result = null;
-
+		
 		if (line != null)
 		{
 			if (line.length() > 3 && line.charAt(0) == C_OPEN_ANGLE)
