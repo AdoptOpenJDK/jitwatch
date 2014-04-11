@@ -124,8 +124,16 @@ public class BytecodeLoader
 			{
 				if (line.startsWith("Code:") && pos >= 2)
 				{
-					// signature is 2 lines back
-					signature = lines[pos - 2].trim();
+					for (int i = 1; i <= 3; i++)
+					{
+						signature = lines[pos - i].trim();
+						
+						if (signature.indexOf(C_COLON) == -1)
+						{
+							break;
+						}
+					}
+					
 					signature = signature.substring(0, signature.length() - 1);
 					inMethod = true;
 					pos++; // skip over stack info

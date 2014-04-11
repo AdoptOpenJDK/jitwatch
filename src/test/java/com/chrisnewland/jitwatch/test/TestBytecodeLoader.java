@@ -58,7 +58,7 @@ public class TestBytecodeLoader
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 		
 		List<Instruction> instructions = classBytecode.getMemberBytecode(bcSig);
-		
+				
 		assertNotNull(instructions);		
 	}
 	
