@@ -13,12 +13,12 @@ import org.junit.Test;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.core.TagProcessor;
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static org.junit.Assert.*;
@@ -1623,7 +1623,7 @@ public class TestJournalUtil
 			bytecodeBuilder.append(bcLine.trim()).append(S_NEWLINE);
 		}
 		
-		List<Instruction> instructions = BytecodeUtil.parseInstructions(bytecodeBuilder.toString());
+		List<Instruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
 
 		return JournalUtil.buildBytecodeAnnotations(journal, instructions);		
 	}

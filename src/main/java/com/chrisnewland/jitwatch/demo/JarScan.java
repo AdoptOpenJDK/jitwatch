@@ -10,77 +10,92 @@ import java.util.*;
 import java.util.zip.*;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 
-public class JarScan {
+public class JarScan
+{
+	@SuppressWarnings("unchecked")
+	public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException
+	{
+		List<String> classLocations = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
-    public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException {
-        List<String> classLocations = new ArrayList<>();
+		classLocations.add(jarFile.getPath());
 
-        classLocations.add(jarFile.getPath());
+		try (ZipFile zip = new ZipFile(jarFile))
+		{
+			Enumeration<ZipEntry> list = (Enumeration<ZipEntry>) zip.entries();
+			
+			while (list.hasMoreElements())
+			{
+				ZipEntry entry = list.nextElement();
+				
+				String name = entry.getName();
 
-        try (ZipFile zip = new ZipFile(jarFile)) {
-            Enumeration<ZipEntry> list = (Enumeration<ZipEntry>) zip.entries();
-            while (list.hasMoreElements()) {
-                ZipEntry entry = list.nextElement();
-                String name = entry.getName();
+				if (name.endsWith(".class"))
+				{
+					String fqName = name.replace("/", ".").substring(0, name.length() - 6);
+		
+					process(classLocations, fqName, maxMethodBytes, writer);
+				}
+			}
+		}
+	}
 
-                if (name.endsWith(".class")) {
-                    String fqName = name.replace("/", ".").substring(0, name.length() - 6);
-                    process(classLocations, fqName, maxMethodBytes, writer);
-                }
-            }
-            writer.flush();
-        }
-    }
+	private static void process(List<String> classLocations, String className, int maxMethodBytes, PrintWriter writer)
+	{
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, className);
+				
+		boolean shownClass = false;
 
-    private static void process(List<String> classLocations, String className, int maxMethodBytes, PrintWriter writer) {
-        Map<String, String> methodBytecode = BytecodeLoader.fetchByteCodeForClass(classLocations, className);
+		for (String memberName : classBytecode.getBytecodeMethodSignatures())
+		{
+			List<Instruction> instructions = classBytecode.getMemberBytecode(memberName);
 
-        boolean shownClass = false;
+			if (instructions != null && instructions.size() > 0)
+			{
+				Instruction lastInstruction = instructions.get(instructions.size() - 1);
 
-        for (Map.Entry<String, String> entry : methodBytecode.entrySet()) {
-            String methodName = entry.getKey();
-            String bytecode = entry.getValue();
-            String[] lines = bytecode.split("\n");
-            String lastLine = lines[lines.length - 1];
-            String[] lastLineParts = lastLine.split(" ");
-            String bcOffset = lastLineParts[0].substring(0, lastLineParts[0].length() - 1);
+				// assume final instruction is a return of some kind for 1 byte
+				int bcSize = 1 + lastInstruction.getOffset();
+				
+				if (bcSize >= maxMethodBytes && !memberName.equals("static {}"))
+				{			
+					if (!shownClass)
+					{
+						writer.println(className);
+						shownClass = true;
+					}
 
-            // assume final instruction is a return of some kind for 1 byte
-            int bcSize = 1 + tryParse(bcOffset);
-            if (bcSize >= maxMethodBytes && !methodName.equals("static {}")) {
-                if (!shownClass) {
-                    writer.println(className);
-                    shownClass = true;
-                }
+					writer.print(bcSize);
+					writer.print(" -> ");
+					writer.println(memberName);
+					writer.flush();
+				}
+			}
+		}
+	}
 
-                writer.print(bcSize);
-                writer.print(" -> ");
-                writer.println(methodName);
-            }
+	public static void main(String[] args) throws IOException
+	{
+		int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
 
-        }
+		PrintWriter writer = new PrintWriter(System.out);
 
-    }
+		for (String jar : args)
+		{
+			File jarFile = new File(jar);
 
-    private static int tryParse(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException nfe) {
-            return -1;
-        }
-    }
+			writer.print(jarFile.getAbsolutePath());
 
-    public static void main(String[] args) throws IOException {
-        int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
-        PrintWriter writer = new PrintWriter(System.out);
-        for (String jar : args) {
-            File jarFile = new File(jar);
-            writer.print(jarFile.getAbsolutePath());
-            writer.println(':');
-            iterateJar(jarFile, maxMethodBytes, writer);
-            writer.println();
-        }
-    }
+			writer.println(':');
+
+			iterateJar(jarFile, maxMethodBytes, writer);
+
+			writer.println();
+		}
+		
+		writer.flush();
+		writer.close();
+	}
 }

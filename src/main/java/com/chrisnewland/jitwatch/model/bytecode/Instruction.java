@@ -72,6 +72,12 @@ public class Instruction
 	{
 		return hasComment;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return toString(0);
+	}
 
 	public String toString(int maxOffset)
 	{
