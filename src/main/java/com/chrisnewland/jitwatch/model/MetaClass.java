@@ -175,7 +175,6 @@ public class MetaClass implements Comparable<MetaClass>
 		{
 			if (memberMatches(member, name, returnType, paramTypes))
 			{
-				// System.out.println("match");
 				result = member;
 				break;
 			}
@@ -192,17 +191,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 		if (nameMatch)
 		{
-			// System.out.println("name: " + member.getMemberName() + " / " +
-			// name);
-
 			boolean returnMatch = false;
 			boolean paramsMatch = false;
 
 			String memberReturnTypeName = member.getReturnTypeName();
 			String[] memberArgumentTypeNames = member.getParamTypeNames();
-
-			// System.out.println("return: " + memberReturnTypeName + " / " +
-			// returnType);
 
 			if (memberReturnTypeName == null && returnType == null)
 			{
@@ -222,9 +215,6 @@ public class MetaClass implements Comparable<MetaClass>
 					String memberParam = memberArgumentTypeNames[i];
 					String checkParam = paramTypes[i];
 
-					// System.out.println("param: " + memberParam + " / " +
-					// checkParam);
-
 					if (!memberParam.equals(checkParam))
 					{
 						paramsMatch = false;
@@ -232,9 +222,6 @@ public class MetaClass implements Comparable<MetaClass>
 					}
 				}
 			}
-
-			// System.out.println("match: " + returnMatch + " / " +
-			// paramsMatch);
 
 			match = returnMatch && paramsMatch;
 		}

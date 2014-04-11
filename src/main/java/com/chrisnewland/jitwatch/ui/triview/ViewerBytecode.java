@@ -12,11 +12,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.util.BytecodeUtil;
+import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
 {
@@ -27,23 +30,33 @@ public class ViewerBytecode extends Viewer
 		super(stageAccessProxy);
 	}
 
-	public void setContent(String bytecode, Map<Integer, LineAnnotation> annotations)
+	public void setContent(IMetaMember member, List<String> classLocations)
 	{
-		instructions = BytecodeUtil.parseInstructions(bytecode);
+		String byteCode = BytecodeUtil.getBytecodeForMember(member, classLocations);
+
+		Map<Integer, LineAnnotation> annotations = null;
+
+		if (byteCode == null)
+		{
+			byteCode = "No bytecode found.\nClasses not mounted or native method?";
+		}
+		else
+		{
+			instructions = BytecodeUtil.parseInstructions(byteCode);
+
+			Journal journal = member.getJournal();
+
+			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+		}
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
 
-		if (bytecode == null)
-		{
-			bytecode = "Empty";
-		}
-
-		originalSource = bytecode;
+		originalSource = byteCode;
 
 		List<Label> labels = new ArrayList<>();
 
-		if (instructions.size() > 0)
+		if (instructions != null && instructions.size() > 0)
 		{
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
@@ -51,23 +64,29 @@ public class ViewerBytecode extends Viewer
 			{
 				Label lblLine = new Label(instruction.toString(maxOffset));
 
-				lblLine.setStyle(STYLE_UNHIGHLIGHTED);
-
 				labels.add(lblLine);
 
 				int offset = instruction.getOffset();
 
 				String annotationText = null;
 
-				LineAnnotation annotation = annotations.get(offset);
-
-				if (annotation != null)
+				if (annotations != null)
 				{
-					annotationText = annotation.getAnnotation();
-					Color colour = annotation.getColour();
+					LineAnnotation annotation = annotations.get(offset);
 
-					lblLine.setTextFill(colour);
-					lblLine.setTooltip(new Tooltip(annotationText));
+					if (annotation != null)
+					{
+						annotationText = annotation.getAnnotation();
+						Color colour = annotation.getColour();
+
+						lblLine.setStyle(STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";");
+
+						lblLine.setTooltip(new Tooltip(annotationText));
+					}
+					else
+					{
+						lblLine.setStyle(STYLE_UNHIGHLIGHTED);
+					}
 				}
 
 				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
@@ -79,9 +98,9 @@ public class ViewerBytecode extends Viewer
 						{
 							if (mouseEvent.getClickCount() == 2)
 							{
-								String mnemonic = instruction.getMnemonic();
+								Opcode opcode = instruction.getOpcode();
 
-								browseMnemonic(mnemonic);
+								browseMnemonic(opcode);
 							}
 						}
 					}
@@ -92,10 +111,14 @@ public class ViewerBytecode extends Viewer
 		setContent(labels);
 	}
 
-	private void browseMnemonic(final String mnemonic)
+	private String toRGBCode(Color color)
 	{
-		final Opcode opcode = Opcode.getOpcode(mnemonic);
+		return String.format("#%02X%02X%02X", (int) (color.getRed() * 255), (int) (color.getGreen() * 255),
+				(int) (color.getBlue() * 255));
+	}
 
+	private void browseMnemonic(final Opcode opcode)
+	{
 		if (BytecodeUtil.hasLocalJVMS())
 		{
 			if (!BytecodeUtil.isJVMSLoaded())
@@ -107,7 +130,7 @@ public class ViewerBytecode extends Viewer
 
 			String cssURI = BytecodeUtil.getJVMSCSSURL();
 
-			stageAccessProxy.openBrowser("JMVS Browser - " + mnemonic, html, cssURI);
+			stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
 		}
 		else
 		{
@@ -133,7 +156,7 @@ public class ViewerBytecode extends Viewer
 							@Override
 							public void run()
 							{
-								stageAccessProxy.openBrowser("JMVS Browser - " + mnemonic, html, cssURI);
+								stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
 							}
 						});
 					}

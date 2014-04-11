@@ -63,8 +63,6 @@ public class BytecodeUtil
 
 	public static boolean fetchJVMS()
 	{
-		// System.out.println("fetchJVMS");
-
 		String html = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
 		String css = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/javaspec.css");
 
@@ -93,7 +91,6 @@ public class BytecodeUtil
 
 	public static void loadJVMS()
 	{
-		// System.out.println("loadJVMS");
 		try
 		{
 			Path path = Paths.get(new File(JVMS_HTML_FILENAME).toURI());
@@ -140,24 +137,18 @@ public class BytecodeUtil
 
 		if (title != null)
 		{
-			// System.out.println("store: " + title);
-
 			bcDescriptionMap.put(title, description);
 		}
 	}
 
 	public static String getBytecodeDescriptions(Opcode opcode)
 	{
-		String opcodeText = opcode.getText();
-
-		// System.out.println("lookup: " + opcodeText);
+		String opcodeText = opcode.getMnemonic();
 
 		String desc = bcDescriptionMap.get(opcodeText);
 
 		if (desc == null)
 		{
-			// System.out.println("null: " + opcodeText);
-
 			for (Map.Entry<String, String> entry : bcDescriptionMap.entrySet())
 			{
 				String key = entry.getKey();
@@ -173,13 +164,8 @@ public class BytecodeUtil
 						String subOpcodeText = opcodeText.substring(0, ltPos);
 						String subKey = key.substring(0, ltPos);
 
-						// System.out.println("checking: " + subOpcodeText + "/"
-						// + subKey);
-
 						if (subOpcodeText.equals(subKey))
 						{
-							// System.out.println("subs: " + key);
-
 							desc = entry.getValue();
 							break;
 						}
@@ -187,11 +173,6 @@ public class BytecodeUtil
 				}
 			}
 		}
-
-		// if (desc == null)
-		// {
-		// System.out.println("nothing found");
-		// }
 
 		return desc;
 	}
@@ -242,14 +223,14 @@ public class BytecodeUtil
 					String comment = matcher.group(4);
 
 					instruction.setOffset(Integer.parseInt(offset));
-					instruction.setMnemonic(mnemonic);
+					instruction.setOpcode(Opcode.getOpcodeForMnemonic(mnemonic));
 
-					if (paramString != null)
+					if (paramString != null && paramString.trim().length() > 0)
 					{
-						processParameters(paramString, instruction);
+						processParameters(paramString.trim(), instruction);
 					}
 
-					if (comment != null)
+					if (comment != null && comment.trim().length() > 0)
 					{
 						instruction.setComment(comment.trim());
 					}
@@ -259,12 +240,12 @@ public class BytecodeUtil
 				}
 				else
 				{
-					System.out.println("could not parse bytecode: " + line);
+					System.err.println("could not parse bytecode: '" + line + "'");
 				}
 			}
 			catch (Exception e)
 			{
-				System.out.println("Error parsing line: " + line);
+				System.err.println("Error parsing bytecode line: '" + line + "'");
 				e.printStackTrace();
 			}
 		}

@@ -219,20 +219,20 @@ public enum Opcode
 	Opcode(int value, String text)
 	{
 		this.value = value;
-		this.text = text;		
+		this.mnemonic = text;		
 	}
 
 	private final int value;
-	private final String text;
+	private final String mnemonic;
 	
 	public int getValue()
 	{
 		return value;
 	}
 	
-	public String getText()
+	public String getMnemonic()
 	{
-		return text;
+		return mnemonic;
 	}
 	
 	static final Map<String, Opcode> opcodeMap = new HashMap<>();
@@ -241,12 +241,12 @@ public enum Opcode
 	{
 		for (Opcode oc : Opcode.values())
 		{
-			opcodeMap.put(oc.getText(),  oc);
+			opcodeMap.put(oc.getMnemonic(),  oc);
 		}
 	}
 	
-	public static Opcode getOpcode(String oc)
+	public static Opcode getOpcodeForMnemonic(String mnemonic)
 	{
-		return opcodeMap.get(oc);
+		return opcodeMap.get(mnemonic);
 	}
 }

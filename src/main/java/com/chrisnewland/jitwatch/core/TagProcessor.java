@@ -7,9 +7,11 @@ package com.chrisnewland.jitwatch.core;
 
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
@@ -17,14 +19,24 @@ public class TagProcessor
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
+	private CompilerName currentCompiler;
 	
-	//TODO replace all this with XPath???
-	// Really include a ton of XML libs?
-
+	//TODO write own mini XPath?
+	
+	public void setCompiler(CompilerName compiler)
+	{
+		currentCompiler = compiler;
+	}
+	
+	public CompilerName getCompiler()
+	{
+		return currentCompiler;
+	}
+	
 	public Tag processLine(String line)
 	{
 		Tag result = null;
-
+		
 		if (line != null)
 		{
 			if (line.length() > 3 && line.charAt(0) == C_OPEN_ANGLE)
@@ -47,6 +59,7 @@ public class TagProcessor
 			topTag = null;
 		}
 
+		
 		return result;
 	}
 
@@ -105,7 +118,7 @@ public class TagProcessor
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			t = new Task(name, attrs, selfClosing);
+			t = new Task(name, attrs, selfClosing, currentCompiler);
 		}
 		else
 		{

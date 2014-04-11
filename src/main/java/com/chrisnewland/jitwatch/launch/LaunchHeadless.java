@@ -9,10 +9,10 @@ import java.io.File;
 import java.io.IOException;
 
 import com.chrisnewland.jitwatch.core.IJITListener;
-import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.JITEvent;
 
 public class LaunchHeadless implements IJITListener
 {

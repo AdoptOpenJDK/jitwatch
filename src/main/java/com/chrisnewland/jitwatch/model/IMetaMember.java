@@ -29,6 +29,9 @@ public interface IMetaMember
 	List<String> getQueuedAttributes();
 
 	MetaClass getMetaClass();
+	
+	void addJournalEntry(Tag entry);
+	Journal getJournal();
 
 	String getQueuedAttribute(String key);
 
@@ -67,7 +70,4 @@ public interface IMetaMember
 	String getSignatureForBytecode();
 	
 	List<String> getTreePath();
-	
-	String getJournalID();
-
 }
