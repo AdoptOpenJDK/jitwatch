@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +21,8 @@ import java.util.Random;
 // -XX:+PrintAssembly
 public class MakeHotSpotLog
 {
+    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+
 	public MakeHotSpotLog(int iterations)
 	{
 //		addVariable(iterations);
@@ -41,7 +46,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		System.out.format("addVariable: %d", count);
+        logger.info(String.format("addVariable: %d", count));
 	}
 
 	private void addConstant(int iterations)
@@ -53,7 +58,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		System.out.format("addConstant: %d", count);
+        logger.info(String.format("addConstant: %d", count));
 	}
 
 	private void randomBranchTest(int iterations)
@@ -76,7 +81,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.format("randomBranchTest: %d %d %d", count, adds, subs);
+        logger.info(String.format("randomBranchTest: %d %d %d", count, adds, subs));
 	}
 
 	private void changingBranchTest(int iterations)
@@ -99,7 +104,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.format("changingBranchTest: %d %d %d", count, adds, subs);
+        logger.info(String.format("changingBranchTest: %d %d %d", count, adds, subs));
 	}
 
 	private void intrinsicTest(int iterations)
@@ -120,7 +125,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.format("intrinsicTest: %d", dstSum);
+        logger.info(String.format("intrinsicTest: %d", dstSum));
 	}
 
 	private long add(long a, long b)
@@ -142,7 +147,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		System.out.format("tooBigToInline: %d", count);
+        logger.warn(String.format("tooBigToInline: %d", count));
 	}
 
 	private long bigMethod(long count, int i)
@@ -237,7 +242,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.format("list sum: %d", sum);
+        logger.info(String.format("list sum: %d", sum));
 	}
 
 	private void testCallChain(long iterations)
@@ -250,7 +255,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		System.out.format("testCallChain: %d", count);
+        logger.info(String.format("testCallChain: %d", count));
 	}
 
 	private long chainA1(long count)
@@ -300,7 +305,7 @@ public class MakeHotSpotLog
 
 		}
 
-		System.out.format("testCallChain2: %d", count);
+        logger.warn(String.format("testCallChain2: %d", count));
 	}
 
 	private long chainC1(long count)
@@ -331,7 +336,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				System.err.format("usage: MakeHotSpotLog [iterations]");
+                logger.error(String.format("usage: MakeHotSpotLog [iterations]"), nfe);
 			}
 		}
 

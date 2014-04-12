@@ -56,9 +56,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JITWatchUI extends Application implements IJITListener, IStageAccessProxy
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT = 592;
 
@@ -700,7 +704,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		}
 		else
 		{
-			System.err.format("Could not open CompileChain - root node was null");
+            logger.error("Could not open CompileChain - root node was null");
 		}
 	}
 

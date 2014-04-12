@@ -41,6 +41,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TriView extends Stage
 {
@@ -67,7 +69,9 @@ public class TriView extends Stage
 	private boolean ignoreComboChanged = false;
 	private JITWatchUI parent;
 
-	public TriView(final JITWatchUI parent, final JITWatchConfig config)
+    private static final Logger logger = LoggerFactory.getLogger(TriView.class);
+
+    public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.parent = parent;
 		this.config = config;
@@ -106,17 +110,14 @@ public class TriView extends Stage
 		checkAssembly.selectedProperty().addListener(checkListener);
 
 		Button btnCallChain = new Button("View Compile Chain");
-		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				if (currentMember != null)
-				{
-					parent.openCompileChain(currentMember);
-				}
-			}
-		});
+		btnCallChain.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                if (currentMember != null) {
+                    parent.openCompileChain(currentMember);
+                }
+            }
+        });
 
 		hBoxToolBarButtons.getChildren().add(checkSource);
 		hBoxToolBarButtons.getChildren().add(checkBytecode);
@@ -132,74 +133,57 @@ public class TriView extends Stage
 		comboMember = new ComboBox<>();
 		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
-		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
-			{
-				// TODO possible race condition or JavaFX bug here
-				// sometimes combo contains only selected member
-				if (!ignoreComboChanged)
-				{
-					System.out.format("combo changed. setting member: %s", newVal);
+		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>() {
+            @Override
+            public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal) {
+                // TODO possible race condition or JavaFX bug here
+                // sometimes combo contains only selected member
+                if (!ignoreComboChanged) {
+                    logger.info(String.format("combo changed. setting member: %s", newVal));
 
-					if (newVal != null)
-					{
-						TriView.this.setMember(newVal);
-					}
-				}
-			}
-		});
+                    if (newVal != null) {
+                        TriView.this.setMember(newVal);
+                    }
+                }
+            }
+        });
 
-		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-		{
-			@Override
-			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-			{
-				return new ListCell<IMetaMember>()
-				{
-					@Override
-					protected void updateItem(IMetaMember item, boolean empty)
-					{
-						super.updateItem(item, empty);
+		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>() {
+            @Override
+            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0) {
+                return new ListCell<IMetaMember>() {
+                    @Override
+                    protected void updateItem(IMetaMember item, boolean empty) {
+                        super.updateItem(item, empty);
 
-						if (item == null || empty)
-						{
-							setText(S_EMPTY);
-							setGraphic(null);
-						}
-						else
-						{
-							setText(item.toStringUnqualifiedMethodName());
+                        if (item == null || empty) {
+                            setText(S_EMPTY);
+                            setGraphic(null);
+                        } else {
+                            setText(item.toStringUnqualifiedMethodName());
 
-							if (item.isCompiled() && UserInterfaceUtil.TICK != null)
-							{
-								setGraphic(new ImageView(UserInterfaceUtil.TICK));
-							}
-							else
-							{
-								setGraphic(null);
-							}
-						}
-					}
-				};
-			}
-		});
+                            if (item.isCompiled() && UserInterfaceUtil.TICK != null) {
+                                setGraphic(new ImageView(UserInterfaceUtil.TICK));
+                            } else {
+                                setGraphic(null);
+                            }
+                        }
+                    }
+                };
+            }
+        });
 
-		comboMember.setConverter(new StringConverter<IMetaMember>()
-		{
-			@Override
-			public String toString(IMetaMember mm)
-			{
-				return mm.toStringUnqualifiedMethodName();
-			}
+		comboMember.setConverter(new StringConverter<IMetaMember>() {
+            @Override
+            public String toString(IMetaMember mm) {
+                return mm.toStringUnqualifiedMethodName();
+            }
 
-			@Override
-			public IMetaMember fromString(String arg0)
-			{
-				return null;
-			}
-		});
+            @Override
+            public IMetaMember fromString(String arg0) {
+                return null;
+            }
+        });
 
 		hBoxToolBarClass.getChildren().add(lblClass);
 		hBoxToolBarClass.getChildren().add(classSearch);

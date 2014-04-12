@@ -9,6 +9,8 @@ import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,8 +60,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;
 	private static final int MIN_INLINING_INVOCATIONS = 1000;
+    private static final Logger logger = LoggerFactory.getLogger(AttributeSuggestionWalker.class);
 
-	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
+    public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
 	}
@@ -170,7 +173,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				}
 				else
 				{
-					System.out.format("No score is set for reason: %s", reason);
+                    logger.info(String.format("No score is set for reason: %s", reason));
 				}
 
 				StringBuilder reasonBuilder = new StringBuilder();

@@ -7,6 +7,8 @@ package com.chrisnewland.jitwatch.loader;
 
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -19,7 +21,9 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class BytecodeLoader
 {
-	public static Map<String, String> fetchByteCodeForClass(Collection<String> classLocations, String fqClassName)
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+
+    public static Map<String, String> fetchByteCodeForClass(Collection<String> classLocations, String fqClassName)
 	{
 		String[] args;
 
@@ -54,11 +58,11 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.err.format("Could not obtain bytcode for class: %s", fqClassName);
+            logger.error(String.format("Could not obtain bytecode for class: %s", fqClassName), ba);
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error(ioe.getStackTrace().toString(), ioe);
 		}
 
 		Map<String, String> result;

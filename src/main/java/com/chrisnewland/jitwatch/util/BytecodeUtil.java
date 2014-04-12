@@ -7,6 +7,8 @@ package com.chrisnewland.jitwatch.util;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.bytecode.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +32,9 @@ public class BytecodeUtil
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
 
-	public static boolean hasLocalJVMS()
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeUtil.class);
+
+    public static boolean hasLocalJVMS()
 	{
 		File file = new File(JVMS_HTML_FILENAME);
 
@@ -254,13 +258,12 @@ public class BytecodeUtil
 				}
 				else
 				{
-					System.out.format("could not parse bytecode: %s", line);
+                    logger.info(String.format("could not parse bytecode: %s", line));
 				}
 			}
 			catch (Exception e)
 			{
-				System.out.format("Error parsing line: %s", line);
-				e.printStackTrace();
+                logger.info(String.format("Error parsing line: %s", line), e);
 			}
 		}
 

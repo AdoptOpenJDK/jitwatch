@@ -11,6 +11,8 @@ import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,6 +52,8 @@ public class HotSpotLogParser
 	private JITWatchConfig config;
 
 	private TagProcessor tagProcessor;
+
+    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	public HotSpotLogParser(JITDataModel model, JITWatchConfig config, IJITListener logListener)
 	{
@@ -112,8 +116,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-					System.err.format("Exception handling: '%s'", currentLine);
-                    ex.printStackTrace();
+                    logger.error(String.format("Exception handling: '%s'", currentLine), ex);
 				}
 			}
 			else
@@ -124,7 +127,7 @@ public class HotSpotLogParser
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+                    logger.error(String.format("Exception: %s",e.getMessage()), e);
 					break;
 				}
 			}

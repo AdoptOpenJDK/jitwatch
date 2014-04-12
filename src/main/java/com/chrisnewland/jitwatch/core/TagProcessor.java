@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.core;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -18,6 +20,8 @@ public class TagProcessor
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
+
+    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
 	
 	//TODO replace all this with XPath???
 	// Really include a ton of XML libs?
@@ -38,7 +42,7 @@ public class TagProcessor
 			}
 			else
 			{
-				System.err.format("Did not handle: %s", line);
+                logger.error(String.format("Did not handle: %s", line));
 			}
 		}
 

@@ -20,10 +20,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-	private ScrollPane scrollPane;
+    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
+
+    private ScrollPane scrollPane;
 	private Pane pane;
 
 	private CompileNode rootNode;
@@ -172,7 +176,7 @@ public class CompileChainStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				System.out.format("%s", node.getMember());
+                logger.info(String.format("%s", node.getMember()));
 			}
 		});
 

@@ -6,6 +6,8 @@
 package com.chrisnewland.jitwatch.util;
 
 import com.chrisnewland.jitwatch.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -20,6 +22,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ParseUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
+
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");
@@ -67,7 +71,7 @@ public class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-			System.err.format("%s", pe.toString());
+            logger.error(String.format("Exception: %s", pe.getMessage()), pe);
 		}
 
 		return result;
