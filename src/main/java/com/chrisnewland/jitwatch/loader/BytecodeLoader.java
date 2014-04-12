@@ -5,10 +5,6 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
-import com.chrisnewland.jitwatch.model.bytecode.*;
-import com.sun.tools.javap.JavapTask;
-import com.sun.tools.javap.JavapTask.BadArgs;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +13,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
+import com.chrisnewland.jitwatch.model.bytecode.BCParamSwitch;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.Opcode;
+import com.sun.tools.javap.JavapTask;
+import com.sun.tools.javap.JavapTask.BadArgs;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 

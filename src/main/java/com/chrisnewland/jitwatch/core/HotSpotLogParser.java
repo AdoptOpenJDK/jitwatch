@@ -247,7 +247,7 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
-
+		
 		case JITWatchConstants.TAG_TASK_QUEUED:
 			handleTagQueued(tag);
 			break;
@@ -546,4 +546,6 @@ public class HotSpotLogParser
 			}
 		}
 	}
+
+
 }
