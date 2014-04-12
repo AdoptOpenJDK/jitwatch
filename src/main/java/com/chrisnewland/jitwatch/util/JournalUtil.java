@@ -270,25 +270,4 @@ public class JournalUtil
 
 		return parsePhase;
 	}
-
-	public static Journal getJournal(IReadOnlyJITDataModel model, IMetaMember member)
-	{
-		Journal journal = null;
-
-		String journalID = member.getJournalID();
-
-		if (journalID != null)
-		{
-			journal = model.getJournal(journalID);
-
-			if (journal == null)
-			{
-				// try appending compile_kind as OSR does not generate a
-				// unique compile_id
-				journal = model.getJournal(journalID + OSR);
-			}
-		}
-
-		return journal;
-	}
 }

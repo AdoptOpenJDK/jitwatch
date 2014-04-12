@@ -77,7 +77,9 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				processParseTag(child);
                 break;
 			}
-			}
+            default:
+                break;
+            }
 		}
 	}
 

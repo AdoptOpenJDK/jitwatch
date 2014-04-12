@@ -198,8 +198,12 @@ public class CompileChainWalker
 
 				processParseTag(child, childNode);
 			}
-				break;
+
+            default:
+                break;
 			}
+
+
 		}
 	}
 }

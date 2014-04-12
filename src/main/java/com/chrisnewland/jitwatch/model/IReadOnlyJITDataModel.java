@@ -7,9 +7,6 @@ package com.chrisnewland.jitwatch.model;
 
 import java.util.List;
 
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
-
 public interface IReadOnlyJITDataModel
 {
     PackageManager getPackageManager();
