@@ -5,25 +5,17 @@
  */
 package com.chrisnewland.jitwatch.model;
 
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
-
 import java.util.List;
 
 public interface IReadOnlyJITDataModel
 {
-	PackageManager getPackageManager();
+    PackageManager getPackageManager();
 
-	JITStats getJITStats();
+    JITStats getJITStats();
 
-	// can we guarantee that IMetaMember will be created before
-	// journal entries are ready? Assume not so store in model
-	// instead of member
-	Journal getJournal(String id);
+    List<JITEvent> getEventListCopy();
 
-	List<JITEvent> getEventListCopy();
+    List<Tag> getCodeCacheTags();
 
-	List<Tag> getCodeCacheTags();
-	
-	String getVmVersionRelease();
+    String getVmVersionRelease();
 }
