@@ -5,14 +5,14 @@
  */
 package com.chrisnewland.jitwatch.launch;
 
-import java.io.File;
-import java.io.IOException;
-
-import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
+import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.JITEvent;
+
+import java.io.File;
+import java.io.IOException;
 
 public class LaunchHeadless implements IJITListener
 {
@@ -60,8 +60,16 @@ public class LaunchHeadless implements IJITListener
 			System.exit(-1);
 		}
 
-		final boolean showErrors = args.length == 2 && Boolean.valueOf(args[1]) == true;
+		final boolean showErrors = twoParametersArePassedIn(args) && firstParameterIsABooleanExpression(args[1]);
 
 		new LaunchHeadless(args[0], showErrors);
 	}
+
+    private static boolean firstParameterIsABooleanExpression(String arg) {
+        return Boolean.valueOf(arg) == true;
+    }
+
+    private static boolean twoParametersArePassedIn(String[] args) {
+        return args.length == 2;
+    }
 }
