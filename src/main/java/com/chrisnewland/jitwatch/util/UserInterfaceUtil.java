@@ -12,7 +12,7 @@ import javafx.scene.image.Image;
 public class UserInterfaceUtil
 {
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
-    public static Image tick = null;
+    public static final Image tick;
 
     static
     {
