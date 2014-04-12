@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 
-class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
+public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 {
 	private VBox vb;
 	private Label lblMetaClass;

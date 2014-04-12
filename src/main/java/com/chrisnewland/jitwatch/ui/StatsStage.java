@@ -5,7 +5,7 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import com.chrisnewland.jitwatch.core.JITStats;
+import com.chrisnewland.jitwatch.model.JITStats;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

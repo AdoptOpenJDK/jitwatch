@@ -1,0 +1,166 @@
+package com.chrisnewland.jitwatch.util;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.chrisnewland.jitwatch.model.bytecode.Opcode;
+
+public class JVMSUtil
+{
+	private static Map<String, String> bcDescriptionMap = new HashMap<>();
+
+	private static final String JVMS_HTML_FILENAME = "JVMS.html";
+	private static final String JVMS_CSS_FILENAME = "JVMS.css";
+
+	public static boolean hasLocalJVMS()
+	{
+		File file = new File(JVMS_HTML_FILENAME);
+
+		return file.exists();
+	}
+
+	public static boolean isJVMSLoaded()
+	{
+		return bcDescriptionMap.size() > 0;
+	}
+
+	public static String getJVMSCSSURL()
+	{
+		File cssFile = new File(JVMS_CSS_FILENAME);
+
+		if (cssFile.exists())
+		{
+			return cssFile.toURI().toString();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public static boolean fetchJVMS()
+	{
+		String html = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
+		String css = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/javaspec.css");
+
+		boolean result = false;
+
+		if (html.length() > 0 && css.length() > 0)
+		{
+			Path pathHTML = Paths.get(new File(JVMS_HTML_FILENAME).toURI());
+			Path pathCSS = Paths.get(new File(JVMS_CSS_FILENAME).toURI());
+
+			try
+			{
+				Files.write(pathHTML, html.getBytes(StandardCharsets.UTF_8));
+				Files.write(pathCSS, css.getBytes(StandardCharsets.UTF_8));
+
+				result = true;
+			}
+			catch (IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
+		}
+
+		return result;
+	}
+
+	public static void loadJVMS()
+	{
+		try
+		{
+			Path path = Paths.get(new File(JVMS_HTML_FILENAME).toURI());
+
+			String html = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+
+			int htmlLength = html.length();
+
+			String descStart = "<div class=\"section-execution\"";
+
+			int startPos = html.indexOf(descStart);
+
+			while (startPos != -1 && startPos < htmlLength)
+			{
+				int endPos = html.indexOf(descStart, startPos + descStart.length());
+
+				if (endPos != -1)
+				{
+					String desc = html.substring(startPos, endPos);
+					storeBytecodeDescription(desc);
+					startPos = endPos;
+				}
+				else if (startPos != -1)
+				{
+					String desc = html.substring(startPos);
+					storeBytecodeDescription(desc);
+					break;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
+	}
+
+	private static void storeBytecodeDescription(String description)
+	{
+		String title = StringUtil.getSubstringBetween(description, "<div class=\"section-execution\" title=\"", S_DOUBLE_QUOTE);
+
+		if (title != null)
+		{
+			bcDescriptionMap.put(title, description);
+		}
+	}
+
+	public static String getBytecodeDescriptions(Opcode opcode)
+	{
+		String opcodeText = opcode.getMnemonic();
+
+		String desc = bcDescriptionMap.get(opcodeText);
+
+		if (desc == null)
+		{
+			for (Map.Entry<String, String> entry : bcDescriptionMap.entrySet())
+			{
+				String key = entry.getKey();
+
+				int ltPos = key.indexOf(C_OPEN_ANGLE);
+
+				// ifge => if<cond>
+				// lconst_1 => lconst_<n>
+				if (ltPos != -1)
+				{
+					if (ltPos < opcodeText.length())
+					{
+						String subOpcodeText = opcodeText.substring(0, ltPos);
+						String subKey = key.substring(0, ltPos);
+
+						if (subOpcodeText.equals(subKey))
+						{
+							desc = entry.getValue();
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return desc;
+	}
+
+}

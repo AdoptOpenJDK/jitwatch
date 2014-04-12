@@ -32,21 +32,17 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			if (parsePhase != null)
 			{
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-				// TODO fix for JDK8
-				if (parsePhase != null)
+				for (Tag parseTag : parseTags)
 				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-					for (Tag parseTag : parseTags)
-					{
-						processParseTag(parseTag);
-					}
+					processParseTag(parseTag);
 				}
 			}
 		}
