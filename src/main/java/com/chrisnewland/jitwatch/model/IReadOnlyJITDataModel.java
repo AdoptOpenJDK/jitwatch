@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface IReadOnlyJITDataModel
 {
-	public PackageManager getPackageManager();
+    PackageManager getPackageManager();
 
-	public JITStats getJITStats();
+    JITStats getJITStats();
 
-	public List<JITEvent> getEventListCopy();
+    List<JITEvent> getEventListCopy();
 
-	public List<Tag> getCodeCacheTags();
-	
-	public String getVmVersionRelease();
+    List<Tag> getCodeCacheTags();
+
+    String getVmVersionRelease();
 }

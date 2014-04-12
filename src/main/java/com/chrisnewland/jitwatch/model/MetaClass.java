@@ -5,15 +5,14 @@
  */
 package com.chrisnewland.jitwatch.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
