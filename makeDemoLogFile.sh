@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# This script makes an example HotSpot log for trying out JITWatch.
+
+# It executes the Java class com.chrisnewland.jitwatch.demo.MakeHotSpotLog
+# which contains methods that exercise various parts of the HotSpot JIT compilers
+# such as inlining, intrinsics, and branch elimination.
+
+# Make sure you have first built JITWatch using
+# mvn clean compile test
+# If you are using Java 8 then add "-f pom-java8.xml"
+
+# Start JITWatch using
+# mvn exec:java
+# If you are using Java 8 then add "-f pom-java8.xml"
+
+# When you start JITWatch open up the configuration (Config button) and mount
+# JDK's src.zip (use the JDK src zip button)
+# Java source files for the demo (src/main/java)
+# Class files for the demo (target/classes)
+
+# Now open the HotSpot log file created by this script and press the Start button :)
+
 #-------------------------------------------------------
 # Required VM switches
 #-------------------------------------------------------
