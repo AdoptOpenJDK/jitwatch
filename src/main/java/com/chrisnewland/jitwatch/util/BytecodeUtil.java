@@ -83,7 +83,7 @@ public class BytecodeUtil
 			}
 			catch (IOException ioe)
 			{
-				ioe.printStackTrace();
+                logger.error(String.format("Exception: %s", ioe.getMessage()), ioe;
 			}
 		}
 
@@ -129,7 +129,7 @@ public class BytecodeUtil
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error(String.format("Exception: %s", ioe.getMessage()), ioe);
 		}
 	}
 

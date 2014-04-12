@@ -127,7 +127,7 @@ public class HotSpotLogParser
 				}
 				catch (InterruptedException e)
 				{
-                    logger.error(String.format("Exception: %s",e.getMessage()), e);
+                    logger.error(String.format("Exception: %s", e.getMessage()), e);
 					break;
 				}
 			}

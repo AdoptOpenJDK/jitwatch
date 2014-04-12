@@ -7,6 +7,8 @@ package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -23,6 +25,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+
     private PackageManager pm;
     private JITStats stats;
 
@@ -148,7 +152,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
                 }
                 catch (Throwable t)
                 {
-                    t.printStackTrace();
+                    logger.error(String.format("Exception: %s", t.getMessage()), t);
                 }
             }
         }

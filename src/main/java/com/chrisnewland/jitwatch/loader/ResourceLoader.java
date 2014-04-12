@@ -5,6 +5,10 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
+import com.chrisnewland.jitwatch.model.MetaClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,11 +19,12 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.chrisnewland.jitwatch.model.MetaClass;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class ResourceLoader
 {
+    private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
+
 	public static String getSourceFilename(MetaClass metaClass)
 	{
 		String fqName = metaClass.getFullyQualifiedName();
@@ -85,7 +90,7 @@ public class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-				ioe.printStackTrace();
+                logger.error(String.format("Exception: %s", ioe.getMessage()), ioe);
 			}
 		}
 
@@ -119,7 +124,7 @@ public class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error(String.format("Exception: %s", ioe.getMessage()), ioe);
 		}
 
 		return result;
