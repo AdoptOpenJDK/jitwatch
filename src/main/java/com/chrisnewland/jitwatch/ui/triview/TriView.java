@@ -41,8 +41,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TriView extends Stage
 {
@@ -65,13 +63,13 @@ public class TriView extends Stage
 
 	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
+	
+	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
 	private JITWatchUI parent;
 
-    private static final Logger logger = LoggerFactory.getLogger(TriView.class);
-
-    public TriView(final JITWatchUI parent, final JITWatchConfig config)
+	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.parent = parent;
 		this.config = config;
@@ -86,7 +84,7 @@ public class TriView extends Stage
 
 		HBox hBoxToolBarButtons = new HBox();
 		hBoxToolBarButtons.setSpacing(10);
-		hBoxToolBarButtons.setPadding(new Insets(10));
+		hBoxToolBarButtons.setPadding(new Insets(0,10,10,10));
 
 		checkSource = new CheckBox("Source");
 		checkBytecode = new CheckBox("Bytecode");
@@ -110,14 +108,17 @@ public class TriView extends Stage
 		checkAssembly.selectedProperty().addListener(checkListener);
 
 		Button btnCallChain = new Button("View Compile Chain");
-		btnCallChain.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if (currentMember != null) {
-                    parent.openCompileChain(currentMember);
-                }
-            }
-        });
+		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					parent.openCompileChain(currentMember);
+				}
+			}
+		});
 
 		hBoxToolBarButtons.getChildren().add(checkSource);
 		hBoxToolBarButtons.getChildren().add(checkBytecode);
@@ -133,57 +134,72 @@ public class TriView extends Stage
 		comboMember = new ComboBox<>();
 		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
-		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>() {
-            @Override
-            public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal) {
-                // TODO possible race condition or JavaFX bug here
-                // sometimes combo contains only selected member
-                if (!ignoreComboChanged) {
-                    logger.info(String.format("combo changed. setting member: %s", newVal));
+		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
+			{
+				// TODO Looks like a bug in JavaFX 2.2 here
+				// sometimes combo contains only selected member
+				if (!ignoreComboChanged)
+				{
+					if (newVal != null)
+					{
+						TriView.this.setMember(newVal);
+					}
+				}
+			}
+		});
 
-                    if (newVal != null) {
-                        TriView.this.setMember(newVal);
-                    }
-                }
-            }
-        });
+		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+		{
+			@Override
+			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			{
+				return new ListCell<IMetaMember>()
+				{
+					@Override
+					protected void updateItem(IMetaMember item, boolean empty)
+					{
+						super.updateItem(item, empty);
 
-		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>() {
-            @Override
-            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0) {
-                return new ListCell<IMetaMember>() {
-                    @Override
-                    protected void updateItem(IMetaMember item, boolean empty) {
-                        super.updateItem(item, empty);
+						if (item == null || empty)
+						{
+							setText(S_EMPTY);
+							setGraphic(null);
+						}
+						else
+						{
+							setText(item.toStringUnqualifiedMethodName());
 
-                        if (item == null || empty) {
-                            setText(S_EMPTY);
-                            setGraphic(null);
-                        } else {
-                            setText(item.toStringUnqualifiedMethodName());
+							if (item.isCompiled() && UserInterfaceUtil.TICK != null)
+							{
+								setGraphic(new ImageView(UserInterfaceUtil.TICK));
+							}
+							else
+							{
+								setGraphic(null);
+							}
+						}
+					}
+				};
+			}
+		});
 
-                            if (item.isCompiled() && UserInterfaceUtil.TICK != null) {
-                                setGraphic(new ImageView(UserInterfaceUtil.TICK));
-                            } else {
-                                setGraphic(null);
-                            }
-                        }
-                    }
-                };
-            }
-        });
+		comboMember.setConverter(new StringConverter<IMetaMember>()
+		{
+			@Override
+			public String toString(IMetaMember mm)
+			{
+				return mm.toStringUnqualifiedMethodName();
+			}
 
-		comboMember.setConverter(new StringConverter<IMetaMember>() {
-            @Override
-            public String toString(IMetaMember mm) {
-                return mm.toStringUnqualifiedMethodName();
-            }
-
-            @Override
-            public IMetaMember fromString(String arg0) {
-                return null;
-            }
-        });
+			@Override
+			public IMetaMember fromString(String arg0)
+			{
+				return null;
+			}
+		});
 
 		hBoxToolBarClass.getChildren().add(lblClass);
 		hBoxToolBarClass.getChildren().add(classSearch);
@@ -233,10 +249,13 @@ public class TriView extends Stage
 
 		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
+		
+		lblMemberInfo = new Label();
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);
 		vBox.getChildren().add(splitViewer);
+		vBox.getChildren().add(lblMemberInfo);
 
 		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
@@ -351,16 +370,9 @@ public class TriView extends Stage
 
 		String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
 		
-		if (bc == null)
-		{
-			bc = "No bytecode found.\nClasses not mounted or native method?";
-		}
-		
-		Journal journal = parent.getJournal(member);
-		
-		Map<Integer, LineAnnotation> annotations = JournalUtil.buildBytecodeAnnotations(journal);
+		List<String> classLocations = config.getClassLocations();
 
-		viewerBytecode.setContent(bc, annotations);
+		viewerBytecode.setContent(currentMember, classLocations);
 
 		String assembly;
 
@@ -368,6 +380,22 @@ public class TriView extends Stage
 		{
 			assembly = currentMember.getAssembly();
 
+			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+			
+			if (attrCompiler != null)
+			{
+				lblMemberInfo.setText("Compiled with " + attrCompiler);
+			}
+			else
+			{
+				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+				
+				if (attrCompileKind != null && C2N.equals(attrCompileKind))
+				{
+					lblMemberInfo.setText("Compiled native wrapper");
+				}
+			}
+			
 			if (assembly == null)
 			{
 				assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
@@ -376,6 +404,7 @@ public class TriView extends Stage
 		else
 		{
 			assembly = "Not JIT-compiled";
+			lblMemberInfo.setText(S_EMPTY);
 		}
 
 		viewerAssembly.setContent(assembly, false);

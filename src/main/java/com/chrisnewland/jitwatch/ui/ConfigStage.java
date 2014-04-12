@@ -6,7 +6,6 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,8 +13,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -29,16 +26,11 @@ public class ConfigStage extends Stage
         initStyle(StageStyle.UTILITY);
 
         VBox vbox = new VBox();
-
-        Label labelFilter = new Label("Package filter (leave empty to show all packages)");
-        final TextArea taFilter = new TextArea();
-        taFilter.setText(StringUtil.listToText(config.getAllowedPackages(), "\n"));
-        taFilter.setDisable(false);
-        
+       
         vbox.setPadding(new Insets(10));
         vbox.setSpacing(10);
 
-        final FileChooserList chooserSource = new FileChooserList(this, "Source locations", config.getSourceLocations());
+        final FileChooserList chooserSource = new FileChooserListSrcZip(this, "Source locations", config.getSourceLocations());
         final FileChooserList chooserClasses = new FileChooserList(this, "Class locations", config.getClassLocations());
 
         HBox hboxButtons = new HBox();
@@ -54,7 +46,6 @@ public class ConfigStage extends Stage
             @Override
             public void handle(ActionEvent e)
             {               
-                config.setAllowedPackages(StringUtil.textToList(taFilter.getText(), "\n"));
                 config.setSourceLocations(chooserSource.getFiles());
                 config.setClassLocations(chooserClasses.getFiles());
 
@@ -78,16 +69,12 @@ public class ConfigStage extends Stage
         hboxButtons.getChildren().add(btnCancel);
         hboxButtons.getChildren().add(btnSave);
 
-        vbox.getChildren().add(labelFilter);
-        vbox.getChildren().add(taFilter);
-
         vbox.getChildren().add(chooserSource);
         vbox.getChildren().add(chooserClasses);
 
         vbox.getChildren().add(hboxButtons);
         
-        taFilter.prefHeightProperty().bind(this.heightProperty().multiply(0.20));
-        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(0.3));
+        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
         chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
         hboxButtons.setPrefHeight(30);
 
@@ -106,5 +93,4 @@ public class ConfigStage extends Stage
             }
         });
     }
-
 }

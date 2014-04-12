@@ -5,18 +5,21 @@
  */
 package com.chrisnewland.jitwatch.suggestion;
 
-import com.chrisnewland.jitwatch.model.*;
-import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
-import com.chrisnewland.jitwatch.util.JournalUtil;
-import com.chrisnewland.jitwatch.util.ParseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.IParseDictionary;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.model.Journal;
+import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 
 public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
@@ -27,6 +30,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	// see
 	// https://wikis.oracle.com/display/HotSpotInternals/Server+Compiler+Inlining+Messages
+	
+	// TODO update for Java8
 	private static final String REASON_HOT_METHOD_TOO_BIG = "hot method too big";
 	private static final String REASON_TOO_BIG = "too big";
 	private static final String REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD = "already compiled into a big method";
@@ -60,9 +65,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;
 	private static final int MIN_INLINING_INVOCATIONS = 1000;
-    private static final Logger logger = LoggerFactory.getLogger(AttributeSuggestionWalker.class);
 
-    public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
+	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
 	}
@@ -72,27 +76,24 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				Task lastTaskTag = JournalUtil.getLastTask(journal);
+				parseDictionary = lastTaskTag.getParseDictionary();
 
-				if (lastTaskTag != null)
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+				// TODO fix for JDK8
+				if (parsePhase != null)
 				{
-					parseDictionary = lastTaskTag.getParseDictionary();
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-					Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-					// TODO fix for JDK8
-					if (parsePhase != null)
+					for (Tag parseTag : parseTags)
 					{
-						List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-						for (Tag parseTag : parseTags)
-						{
-							processParseTag(parseTag, mm);
-						}
+						processParseTag(parseTag, mm);
 					}
 				}
 			}
@@ -155,9 +156,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		if (callee != null)
 		{
 			Tag methodTag = parseDictionary.getMethod(methodID);
-
-			String methodBytecodes = methodTag.getAttrs().get(ATTR_BYTES);
-			String invocations = methodTag.getAttrs().get(ATTR_IICOUNT);
+			
+			String methodBytecodes = methodTag.getAttribute(ATTR_BYTES);
+			String invocations = methodTag.getAttribute(ATTR_IICOUNT);
 
 			int invocationCount = Integer.parseInt(invocations);
 
@@ -173,7 +174,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				}
 				else
 				{
-                    logger.info(String.format("No score is set for reason: %s", reason));
+					System.out.println("No score is set for reason: " + reason);
 				}
 
 				StringBuilder reasonBuilder = new StringBuilder();

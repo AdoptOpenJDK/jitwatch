@@ -5,12 +5,12 @@
  */
 package com.chrisnewland.jitwatch.suggestion;
 
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.treevisitor.ITreeVisitable;
 
+import java.util.Map;
+
 public interface IReportVisitable extends ITreeVisitable
 {
-	public Map<IMetaMember, String> getReportMap();
+	Map<IMetaMember, String> getReportMap();
 }

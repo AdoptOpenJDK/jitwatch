@@ -9,7 +9,7 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public interface IStageAccessProxy
 {
-	public void openTriView(IMetaMember member);
+	void openTriView(IMetaMember member);
 	
-	public void openBrowser(String title, String html, String stylesheet);
+	void openBrowser(String title, String html, String stylesheet);
 }

@@ -14,12 +14,19 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class Task extends Tag
 {
 	private IParseDictionary parseDictionary;
+	private CompilerName compiler;
 
-	public Task(String name, Map<String, String> attrs, boolean selfClosing)
+	public Task(String name, Map<String, String> attrs, boolean selfClosing, CompilerName compiler)
 	{
 		super(name, attrs, selfClosing);
-
+		
+		this.compiler = compiler;
 		parseDictionary = new ParseDictionary();
+	}
+	
+	public CompilerName getCompiler()
+	{
+		return compiler;
 	}
 
 	public IParseDictionary getParseDictionary()
@@ -29,19 +36,16 @@ public class Task extends Tag
 	
 	public void addDictionaryType(String type, Tag tag)
 	{
-		//System.out.println("type: " + type + " " + tag);
 		parseDictionary.setType(type, tag);
 	}
 	
 	public void addDictionaryMethod(String method, Tag tag)
 	{
-		//System.out.println("method: " + method + " " + tag);
 		parseDictionary.setMethod(method, tag);
 	}
 	
 	public void addDictionaryKlass(String klass, Tag tag)
 	{
-		//System.out.println("klass: " + klass + " " + tag);
 		parseDictionary.setKlass(klass, tag);
 	}
 
@@ -51,17 +55,17 @@ public class Task extends Tag
 		
 		Tag methodTag = parseDictionary.getMethod(method);
 		
-		String returnTypeID = methodTag.getAttrs().get(JITWatchConstants.ATTR_RETURN);
+		String returnTypeID = methodTag.getAttribute(JITWatchConstants.ATTR_RETURN);
 
-		String args = methodTag.getAttrs().get(JITWatchConstants.ATTR_ARGUMENTS);
+		String args = methodTag.getAttribute(JITWatchConstants.ATTR_ARGUMENTS);
 
-		String methodName = methodTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
+		String methodName = methodTag.getAttribute(JITWatchConstants.ATTR_NAME);
 
-		String klassId = methodTag.getAttrs().get(JITWatchConstants.ATTR_HOLDER);
+		String klassId = methodTag.getAttribute(JITWatchConstants.ATTR_HOLDER);
 
 		Tag klassTag = parseDictionary.getKlass(klassId);
 
-		String klassName = klassTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
+		String klassName = klassTag.getAttribute(JITWatchConstants.ATTR_NAME);
 		klassName = klassName.replace(S_SLASH, S_DOT);
 		
 		builder.append(" <!-- ");
@@ -102,13 +106,13 @@ public class Task extends Tag
 
 			if (klassTag != null)
 			{
-				result = klassTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
+				result = klassTag.getAttribute(JITWatchConstants.ATTR_NAME);
 				result = result.replace(S_SLASH, S_DOT);
 			}
 		}
 		else
 		{
-			result = typeTag.getAttrs().get(JITWatchConstants.ATTR_NAME);
+			result = typeTag.getAttribute(JITWatchConstants.ATTR_NAME);
 		}
 
 		if (result == null)

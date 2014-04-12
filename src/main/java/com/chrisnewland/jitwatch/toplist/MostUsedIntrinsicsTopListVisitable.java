@@ -12,7 +12,6 @@ import com.chrisnewland.jitwatch.core.IntrinsicFinder;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 {
@@ -29,26 +28,22 @@ public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Map<String, String> intrinsicMap = IntrinsicFinder.findIntrinsics(journal);
+
+			for (Map.Entry<String, String> entry : intrinsicMap.entrySet())
 			{
-				Map<String, String> intrinsicMap = IntrinsicFinder.findIntrinsics(journal);
-			
-				for (Map.Entry<String, String> entry : intrinsicMap.entrySet())
+				String iMapping = entry.getKey() + " => " + entry.getValue();
+
+				int count = 0;
+
+				if (intrinsicountMap.containsKey(iMapping))
 				{
-					String iMapping = entry.getKey() + " => " + entry.getValue();
-					
-					int count = 0;
-					
-					if (intrinsicountMap.containsKey(iMapping))
-					{
-						count = intrinsicountMap.get(iMapping);
-					}
-					
-					intrinsicountMap.put(iMapping, count+1);
+					count = intrinsicountMap.get(iMapping);
 				}
-			
+
+				intrinsicountMap.put(iMapping, count + 1);
 			}
 		}
 	}

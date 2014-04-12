@@ -7,6 +7,6 @@ package com.chrisnewland.jitwatch.toplist;
 
 public interface ITopListScore
 {
-	public Object getKey();
-	public long getScore();
+	Object getKey();
+	long getScore();
 }

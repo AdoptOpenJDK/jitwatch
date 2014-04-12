@@ -6,6 +6,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.chain.CompileNode;
+import com.chrisnewland.jitwatch.model.IMetaMember;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -20,14 +21,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
-
-    private ScrollPane scrollPane;
+	private ScrollPane scrollPane;
 	private Pane pane;
 
 	private CompileNode rootNode;
@@ -95,7 +92,9 @@ public class CompileChainStage extends Stage
 
 	private String getLabelText(CompileNode node)
 	{
-		return node.getMember().getMemberName();
+		IMetaMember member = node.getMember();
+		
+		return member == null ? "Unknown" : member.getMemberName();
 	}
 
 	private double plotNode(final CompileNode node, double x, double parentY, int depth)
@@ -176,7 +175,7 @@ public class CompileChainStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-                logger.info(String.format("%s", node.getMember()));
+				// TODO use for navigation in TriView?
 			}
 		});
 
