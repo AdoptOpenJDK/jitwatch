@@ -9,6 +9,6 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public interface ITreeVisitable
 {
-    public void visit(IMetaMember mm);
-    public void reset();
+    void visit(IMetaMember mm);
+    void reset();
 }

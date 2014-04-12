@@ -7,5 +7,5 @@ package com.chrisnewland.jitwatch.model.bytecode;
 
 public interface IBytecodeParam
 {
-	public Object getValue();
+	Object getValue();
 }
