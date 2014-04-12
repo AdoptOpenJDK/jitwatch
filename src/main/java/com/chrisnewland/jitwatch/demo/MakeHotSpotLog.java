@@ -16,12 +16,27 @@ import java.util.Random;
 // -XX:+TraceClassLoading 
 // -XX:+LogCompilation 
 // -XX:+PrintAssembly
+
+// If you prefer Intel assembly syntax to AT&T
+// -XX:PrintAssemblyOptions=intel
+
+// Disable TieredCompilation on Java 8 (optional)
+// -XX:-TieredCompilation
+
 public class MakeHotSpotLog
 {
 	public MakeHotSpotLog(int iterations)
 	{
+		addVariable(iterations);
+		addConstant(iterations);
+		randomBranchTest(iterations);
+		changingBranchTest(iterations);
+		intrinsicTest(iterations);
+		tooBigToInline(iterations);
+		testSort();
+		testCallChain(iterations);
 		testCallChain2(iterations);
-
+		testLeaf(iterations);
 	}
 
 	private void addVariable(int iterations)
@@ -309,6 +324,41 @@ public class MakeHotSpotLog
 	private long chainC3(long count)
 	{
 		return 3 + count;
+	}
+	
+	private void testLeaf(long iterations)
+	{
+		long count = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			count = leaf1(count);
+			count = leaf2(count);
+			count = leaf3(count);
+			count = leaf4(count);
+		}
+
+		System.out.println("testLeaf: " + count);
+	}
+	
+	private long leaf1(long count)
+	{
+		return count + 1;
+	}
+	
+	private long leaf2(long count)
+	{
+		return count + 2;
+	}
+	
+	private long leaf3(long count)
+	{
+		return count + 3;
+	}
+	
+	private long leaf4(long count)
+	{
+		return count + 4;
 	}
 
 	public static void main(String[] args)

@@ -9,11 +9,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import com.chrisnewland.jitwatch.model.EventType;
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.JITEvent;
+import com.chrisnewland.jitwatch.model.JITStats;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -76,7 +77,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 			for (JITEvent event : events)
 			{
-				if (event.isCompile())
+				if (event.getEventType() != EventType.QUEUE)
 				{
 					maxY++;
 				}
@@ -93,6 +94,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 			if (selectedMember != null)
 			{
+				// last compile stamp write wins - plot all?
 				String cStamp = selectedMember.getCompiledAttribute("stamp");
 
 				if (cStamp != null)
@@ -111,7 +113,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 			for (JITEvent event : events)
 			{
-				if (event.isCompile())
+				if (event.getEventType() != EventType.QUEUE)
 				{
 					long stamp = event.getStamp();
 
@@ -136,11 +138,11 @@ public class TimeLineStage extends AbstractGraphStage
 
 						String line1 = selectedMember.toString();
 
-						String compiler = selectedMember.getCompiledAttribute("compiler");
+						String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
 
 						if (compiler == null)
 						{
-							compiler = selectedMember.getCompiledAttribute("compile_kind");
+							compiler = selectedMember.getCompiledAttribute(ATTR_COMPILE_KIND);
 
 							if (compiler == null)
 							{

@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.model;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+
 public interface IMetaMember
 {
     //===================================
@@ -29,6 +31,9 @@ public interface IMetaMember
 	List<String> getQueuedAttributes();
 
 	MetaClass getMetaClass();
+	
+	void addJournalEntry(Tag entry);
+	Journal getJournal();
 
 	String getQueuedAttribute(String key);
 
@@ -68,6 +73,6 @@ public interface IMetaMember
 	
 	List<String> getTreePath();
 	
-	String getJournalID();
+	List<Instruction> getBytecodeForMember(List<String> classLocations);
 
 }
