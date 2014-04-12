@@ -365,18 +365,22 @@ public class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
+                logger.error("ClassNotFoundException", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-				throw new Exception("NoClassDefFoundError: " + builder.toString());
+                logger.error("NoClassDefFoundError", ncdf);
+                throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Exception: " + ex.getMessage());
+                logger.error("Exception", ex);
+                throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
+                logger.error("Error", err);
 				throw new Exception("Error: " + err.getMessage());
 			}
 

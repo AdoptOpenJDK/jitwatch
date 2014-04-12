@@ -83,7 +83,7 @@ public class BytecodeUtil
 			}
 			catch (IOException ioe)
 			{
-                logger.error(String.format("Exception: %s", ioe.getMessage()), ioe;
+                logger.error(String.format("Exception: %s", ioe.getMessage()), ioe);
 			}
 		}
 
