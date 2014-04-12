@@ -87,6 +87,8 @@ public class JITWatchConstants
 	public static final String S_CLOSE_PARENTHESES = ")";
 	public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
+	public static final String S_OPEN_BRACE = "{";
+	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";

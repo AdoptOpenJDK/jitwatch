@@ -18,7 +18,7 @@ import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
-import com.chrisnewland.jitwatch.util.BytecodeUtil;
+import com.chrisnewland.jitwatch.util.JVMSUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
@@ -32,32 +32,23 @@ public class ViewerBytecode extends Viewer
 
 	public void setContent(IMetaMember member, List<String> classLocations)
 	{
-		String byteCode = BytecodeUtil.getBytecodeForMember(member, classLocations);
+		instructions = member.getBytecodeForMember(classLocations);
 
 		Map<Integer, LineAnnotation> annotations = null;
 
-		if (byteCode == null)
-		{
-			byteCode = "No bytecode found.\nClasses not mounted or native method?";
-		}
-		else
-		{
-			instructions = BytecodeUtil.parseInstructions(byteCode);
-
-			Journal journal = member.getJournal();
-
-			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
-		}
+//			instructions = "No bytecode found.\nClasses not mounted or native method?";
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
-
-		originalSource = byteCode;
 
 		List<Label> labels = new ArrayList<>();
 
 		if (instructions != null && instructions.size() > 0)
 		{
+			Journal journal = member.getJournal();
+
+			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+			
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
 			for (final Instruction instruction : instructions)
@@ -119,16 +110,16 @@ public class ViewerBytecode extends Viewer
 
 	private void browseMnemonic(final Opcode opcode)
 	{
-		if (BytecodeUtil.hasLocalJVMS())
+		if (JVMSUtil.hasLocalJVMS())
 		{
-			if (!BytecodeUtil.isJVMSLoaded())
+			if (!JVMSUtil.isJVMSLoaded())
 			{
-				BytecodeUtil.loadJVMS();
+				JVMSUtil.loadJVMS();
 			}
 
-			String html = BytecodeUtil.getBytecodeDescriptions(opcode);
+			String html = JVMSUtil.getBytecodeDescriptions(opcode);
 
-			String cssURI = BytecodeUtil.getJVMSCSSURL();
+			String cssURI = JVMSUtil.getJVMSCSSURL();
 
 			stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
 		}
@@ -141,15 +132,15 @@ public class ViewerBytecode extends Viewer
 				@Override
 				public void run()
 				{
-					boolean success = BytecodeUtil.fetchJVMS();
+					boolean success = JVMSUtil.fetchJVMS();
 
 					if (success)
 					{
-						BytecodeUtil.loadJVMS();
+						JVMSUtil.loadJVMS();
 
-						final String html = BytecodeUtil.getBytecodeDescriptions(opcode);
+						final String html = JVMSUtil.getBytecodeDescriptions(opcode);
 
-						final String cssURI = BytecodeUtil.getJVMSCSSURL();
+						final String cssURI = JVMSUtil.getJVMSCSSURL();
 
 						Platform.runLater(new Runnable()
 						{

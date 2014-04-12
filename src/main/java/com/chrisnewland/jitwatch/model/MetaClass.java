@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -29,7 +30,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private int compiledMethodCount = 0;
 
-	private Map<String, String> bytecodeCache = null;
+	private ClassBC classBytecode = null;
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
@@ -67,14 +68,14 @@ public class MetaClass implements Comparable<MetaClass>
 		this.missingDef = missingDef;
 	}
 
-	public Map<String, String> getBytecodeCache(List<String> classLocations)
+	public ClassBC getClassBytecode(List<String> classLocations)
 	{
-		if (bytecodeCache == null)
+		if (classBytecode == null)
 		{
-			bytecodeCache = BytecodeLoader.fetchByteCodeForClass(classLocations, getFullyQualifiedName());
+			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
 		}
 
-		return bytecodeCache;
+		return classBytecode;
 	}
 
 	public String toString2()

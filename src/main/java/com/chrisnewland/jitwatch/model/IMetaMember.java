@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.model;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+
 public interface IMetaMember
 {
     //===================================
@@ -70,4 +72,7 @@ public interface IMetaMember
 	String getSignatureForBytecode();
 	
 	List<String> getTreePath();
+	
+	List<Instruction> getBytecodeForMember(List<String> classLocations);
+
 }

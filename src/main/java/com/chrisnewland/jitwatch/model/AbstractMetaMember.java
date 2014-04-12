@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -344,4 +346,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
     {        
         journal.addEntry(entry);
     }
+    
+	public List<Instruction> getBytecodeForMember(List<String> classLocations)
+	{
+		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
+
+		List<Instruction> result = classBytecode.getMemberBytecode(this);
+
+		return result;
+	}
 }
