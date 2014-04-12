@@ -260,7 +260,7 @@ public class ClassMemberList extends VBox
 
 				if (item.isCompiled())
 				{
-					setGraphic(new ImageView(UserInterfaceUtil.TICK));
+					setGraphic(new ImageView(UserInterfaceUtil.tick));
 				}
 				else
 				{
