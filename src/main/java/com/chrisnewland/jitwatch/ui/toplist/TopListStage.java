@@ -163,7 +163,7 @@ public class TopListStage extends Stage
 			@Override
 			public void changed(ObservableValue<? extends ITopListScore> arg0, ITopListScore oldVal, ITopListScore newVal)
 			{
-				if (newVal != null && newVal instanceof MemberScore)
+				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
 				{
 					parent.openTreeAtMember((IMetaMember) newVal.getKey());
 				}
@@ -183,7 +183,15 @@ public class TopListStage extends Stage
 		redraw();
 	}
 
-	private void buildTableView(TopListWrapper topListWrapper)
+    private boolean itIsNull(ITopListScore newVal) {
+        return newVal != null;
+    }
+
+    private boolean isInstanceOfMemberScore(ITopListScore newVal) {
+        return newVal instanceof MemberScore;
+    }
+
+    private void buildTableView(TopListWrapper topListWrapper)
 	{
 		topList.clear();
 		topList.addAll(topListWrapper.getVisitable().buildTopList());
