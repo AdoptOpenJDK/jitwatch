@@ -521,18 +521,18 @@ public class ParseUtil
 
 		if (methodTag != null)
 		{
-			String methodName = methodTag.getAttrs().get(ATTR_NAME);
+			String methodName = methodTag.getAttribute(ATTR_NAME);
 
-			String klassId = methodTag.getAttrs().get(ATTR_HOLDER);
+			String klassId = methodTag.getAttribute(ATTR_HOLDER);
 
 			Tag klassTag = parseDictionary.getKlass(klassId);
 
-			String metaClassName = klassTag.getAttrs().get(ATTR_NAME);
+			String metaClassName = klassTag.getAttribute(ATTR_NAME);
 			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
 
-			String returnTypeId = methodTag.getAttrs().get(ATTR_RETURN);
+			String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
 
-			String argumentsTypeId = methodTag.getAttrs().get(ATTR_ARGUMENTS);
+			String argumentsTypeId = methodTag.getAttribute(ATTR_ARGUMENTS);
 
 			String returnType = lookupType(returnTypeId, parseDictionary);
 
@@ -556,7 +556,14 @@ public class ParseUtil
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
 
-			result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			if (metaClass != null)
+			{
+				result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			}
+			else
+			{
+				System.err.println("metaClass not found: " + metaClassName);
+			}
 		}
 
 		return result;
@@ -577,7 +584,7 @@ public class ParseUtil
 
 			if (typeTag != null)
 			{
-				result = typeTag.getAttrs().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+				result = typeTag.getAttribute(ATTR_NAME).replace(S_SLASH, S_DOT);
 
 				result = ParseUtil.expandParameterType(result);
 			}

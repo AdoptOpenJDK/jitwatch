@@ -6,7 +6,6 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +31,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
@@ -76,7 +74,7 @@ public class Viewer extends VBox
 
 		scrollPane = new ScrollPane();
 		scrollPane.setContent(vBoxRows);
-		scrollPane.setStyle("-fx-background-color:white");
+		scrollPane.setStyle("-fx-background:white");
 
 		scrollPane.prefHeightProperty().bind(heightProperty());
 
@@ -97,7 +95,7 @@ public class Viewer extends VBox
 
 		originalSource = source;
 
-		source = source.replace(S_TAB, S_DOUBLE_SPACE); // 2 spaces
+		source = source.replace(S_TAB, S_DOUBLE_SPACE);
 
 		String[] lines = source.split(S_NEWLINE);
 
@@ -117,7 +115,6 @@ public class Viewer extends VBox
 			Label lblLine = new Label(lines[i]);
 
 			lblLine.setStyle(STYLE_UNHIGHLIGHTED);
-
 			labels.add(lblLine);
 		}
 
@@ -132,24 +129,6 @@ public class Viewer extends VBox
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
 	}
-
-	public void setLineAnnotations(Map<Integer, LineAnnotation> annotations)
-	{
-		this.lineAnnotations = annotations;
-
-		for (Map.Entry<Integer, LineAnnotation> entry : annotations.entrySet())
-		{
-			int lineReference = entry.getKey();
-			LineAnnotation la = entry.getValue();
-			Color colour = la.getColour();
-
-			Label lblLine = (Label) vBoxRows.getChildren().get(lineReference);
-			lblLine.setTooltip(new Tooltip(la.getAnnotation()));
-			lblLine.setTextFill(colour);
-		}
-	}
-
-
 
 	private String padLineNumber(int number, int maxWidth)
 	{

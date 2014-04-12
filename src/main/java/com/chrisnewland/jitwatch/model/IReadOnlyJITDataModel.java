@@ -5,10 +5,10 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import java.util.List;
+
 import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.JITStats;
-
-import java.util.List;
 
 public interface IReadOnlyJITDataModel
 {

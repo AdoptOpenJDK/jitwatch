@@ -33,7 +33,7 @@ public class IntrinsicFinder
 
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				// TODO fix for JDK8, also too deep!
+				// TODO too deep!
 				if (parsePhase != null)
 				{
 					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -50,8 +50,6 @@ public class IntrinsicFinder
 							String tagName = childTag.getName();
 							Map<String, String> attrs = childTag.getAttrs();
 
-							// System.out.println(childTag);
-
 							switch (tagName)
 							{
 							case TAG_METHOD:
@@ -66,27 +64,23 @@ public class IntrinsicFinder
 							{
 								String methodID = attrs.get(ATTR_METHOD);
 
-								// System.out.println("call: " + methodID);
 								Tag methodTag = parseDictionary.getMethod(methodID);
-								currentMethod = methodTag.getAttrs().get(ATTR_NAME);
-								holder = methodTag.getAttrs().get(ATTR_HOLDER);
+								currentMethod = methodTag.getAttribute(ATTR_NAME);
+								holder = methodTag.getAttribute(ATTR_HOLDER);
 							}
 								break;
 
 							case TAG_INTRINSIC:
 							{
-								// System.out.println("intrinsic: " + holder +
-								// " " +
-								// currentMethod);
 								if (holder != null && currentMethod != null)
 								{
 									Tag klassTag = parseDictionary.getKlass(holder);
 
-									String intrinsic = childTag.getAttrs().get(ATTR_ID);
+									String intrinsic = childTag.getAttribute(ATTR_ID);
 
 									if (klassTag != null)
 									{
-										String fqName = klassTag.getAttrs().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
+										String fqName = klassTag.getAttribute(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
 												+ currentMethod;
 
 										result.put(fqName, intrinsic);

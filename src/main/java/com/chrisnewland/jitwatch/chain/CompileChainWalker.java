@@ -33,31 +33,28 @@ public class CompileChainWalker
 
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				Task lastTaskTag = JournalUtil.getLastTask(journal);
+				parseDictionary = lastTaskTag.getParseDictionary();
 
-				if (lastTaskTag != null)
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+				// TODO fix for JDK8
+				if (parsePhase != null)
 				{
-					parseDictionary = lastTaskTag.getParseDictionary();
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-					Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-					// TODO fix for JDK8
-					if (parsePhase != null)
+					for (Tag parseTag : parseTags)
 					{
-						List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+						String id = parseTag.getAttribute(ATTR_METHOD);
 
-						for (Tag parseTag : parseTags)
-						{
-							String id = parseTag.getAttrs().get(ATTR_METHOD);
+						root = new CompileNode(mm, id);
 
-							root = new CompileNode(mm, id);
-
-							processParseTag(parseTag, root);
-						}
+						processParseTag(parseTag, root);
 					}
 				}
 			}
