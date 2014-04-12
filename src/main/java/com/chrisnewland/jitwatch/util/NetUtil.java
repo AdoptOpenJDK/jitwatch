@@ -3,6 +3,7 @@ package com.chrisnewland.jitwatch.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class NetUtil
@@ -26,11 +27,11 @@ public class NetUtil
 				builder.append(inputLine).append("\n");
 			}
 
-		}
-		catch (Exception e)
-		{
-		}
-		finally
+		} catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally
 		{
 			if (in != null)
 			{
