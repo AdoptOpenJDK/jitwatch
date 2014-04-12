@@ -29,7 +29,6 @@ public class NetUtil
 		}
 		catch (Exception e)
 		{
-            System.err.format("%s", e.getMessage());
 		}
 		finally
 		{
