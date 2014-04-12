@@ -36,9 +36,9 @@ export compilation="-XX:+LogCompilation"
 
 export REQUIRED_SWITCHES="$unlock $trace $compilation"
 
-#-------------------------------------------------------
-# Optional VM switches (add as required to the java command
-#-------------------------------------------------------
+#---------------------------------------------------------------------
+# Optional VM switches (add as required to $OPTIONAL_SWITCHES variable
+#---------------------------------------------------------------------
 
 # Enable disassembly of native code into assembly language (AT&T / GNU format)
 # Requires the hsdis (HotSpot disassembler) binary to be added to your JRE
