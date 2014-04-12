@@ -335,7 +335,7 @@ public class TriView extends Stage
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if (previousClass != null && previousClass == memberClass)
+		if ((previousClass != null) && previousClass.equals(memberClass))
 		{
 			sameClass = true;
 		}
