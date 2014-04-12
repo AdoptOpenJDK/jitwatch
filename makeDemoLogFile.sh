@@ -4,7 +4,7 @@
 
 # It executes the Java class com.chrisnewland.jitwatch.demo.MakeHotSpotLog
 # which contains methods that exercise various parts of the HotSpot JIT compilers
-# such as inlining, intrinsics, and branch elimination.
+# such as inlining, intrinsics, and branch analysis.
 
 # Make sure you have first built JITWatch using
 # mvn clean compile test
@@ -41,9 +41,11 @@ export REQUIRED_SWITCHES="$unlock $trace $compilation"
 #-------------------------------------------------------
 
 # Enable disassembly of native code into assembly language (AT&T / GNU format)
+# Requires the hsdis (HotSpot disassembler) binary to be added to your JRE
+# For hsdis build instructions see http://www.chrisnewland.com/building-hsdis-on-linux-amd64-on-debian-369
 export assembly="-XX:+PrintAssembly"
 
-# Change disassembly format to Intel assembly
+# Change disassembly format from AT&T to Intel assembly
 export intel="-XX:PrintAssemblyOptions=intel"
 
 # Disable tiered compilation (enabled by default on Java 8, optional on Java 7)
