@@ -15,7 +15,6 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
