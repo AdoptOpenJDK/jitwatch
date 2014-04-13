@@ -9,6 +9,8 @@ import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,6 +27,8 @@ public class HotSpotLogParser
 	{
 		READY, IN_TAG, IN_NATIVE
 	}
+
+    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
@@ -105,8 +109,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-					System.err.println("Exception handling: '" + currentLine + "'");
-                    ex.printStackTrace();
+                    logger.error(String.format("Exception handling: '%s'", currentLine), ex);
 				}
 			}
 			else
@@ -302,7 +305,7 @@ public class HotSpotLogParser
 		}
 		else
 		{
-			System.err.println("Unexpected compiler name: " + threadName);
+            logger.error(String.format("Unexpected compiler name: ", threadName));
 		}
 	}
 

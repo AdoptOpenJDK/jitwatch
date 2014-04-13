@@ -6,16 +6,11 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -66,11 +61,9 @@ public class TriView extends Stage
 	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
-	private JITWatchUI parent;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
-		this.parent = parent;
 		this.config = config;
 
 		setTitle("TriView Source, Bytecode, Assembly Viewer");
@@ -370,8 +363,6 @@ public class TriView extends Stage
 
 		viewerSource.jumpTo(currentMember);
 
-		String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
-		
 		List<String> classLocations = config.getClassLocations();
 
 		viewerBytecode.setContent(currentMember, classLocations);

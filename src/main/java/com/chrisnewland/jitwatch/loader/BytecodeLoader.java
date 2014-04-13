@@ -8,11 +8,15 @@ package com.chrisnewland.jitwatch.loader;
 import com.chrisnewland.jitwatch.model.bytecode.*;
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +24,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class BytecodeLoader
 {
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
 		ClassBC result = null;
@@ -57,7 +63,7 @@ public class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			System.err.println("Could not obtain bytcode for class: " + fqClassName);
+			logger.error("Could not obtain bytecode for class: " + fqClassName, ba);
 		}
 		catch (IOException ioe)
 		{
@@ -84,8 +90,6 @@ public class BytecodeLoader
 		StringBuilder builder = new StringBuilder();
 
 		boolean inMethod = false;
-
-		Map<String, String> bytecodeMap = new HashMap<>();
 
 		while (pos < lines.length)
 		{
@@ -120,24 +124,25 @@ public class BytecodeLoader
 					for (int i = 1; i <= 3; i++)
 					{
 						signature = lines[pos - i].trim();
-						
+
 						if (signature.indexOf(C_COLON) == -1)
 						{
 							break;
 						}
 					}
-					
+
 					signature = signature.substring(0, signature.length() - 1);
 					inMethod = true;
+					pos++; // skip over stack info
 				}
 			}
 
 			pos++;
 		}
 
-		storeBytecode(bytecodeMap, signature, builder);
+		storeBytecode(classBytecode, signature, builder);
 
-		return bytecodeMap;
+		return classBytecode;
 	}
 
 	private static void storeBytecode(ClassBC classBytecode, String signature, StringBuilder builder)
@@ -204,7 +209,7 @@ public class BytecodeLoader
 					}
 					else
 					{
-						System.err.println("Unexpected tableswitch entry: " + line);
+                        logger.error("Unexpected tableswitch entry: " + line);
 					}
 				}
 			}
@@ -247,13 +252,12 @@ public class BytecodeLoader
 					}
 					else
 					{
-						System.err.println("could not parse bytecode: '" + line + "'");
+                        logger.error("could not parse bytecode: '" + line + "'");
 					}
 				}
 				catch (Exception e)
 				{
-					System.err.println("Error parsing bytecode line: '" + line + "'");
-					e.printStackTrace();
+                    logger.error("Error parsing bytecode line: '" + line + "'", e);
 				}
 			}
 		}
