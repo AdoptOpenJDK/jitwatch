@@ -174,7 +174,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
                 }
                 else
                 {
-                    logger.info(String.format("No score is set for reason: %s", reason));
+                    logger.info("No score is set for reason: {}", reason);
                 }
 
                 StringBuilder reasonBuilder = new StringBuilder();
@@ -224,6 +224,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
+                logger.error("{}", nfe);
             }
         }
 
@@ -235,6 +236,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
+                logger.error("{}", nfe);
             }
         }
 

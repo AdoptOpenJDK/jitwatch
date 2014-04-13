@@ -109,7 +109,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-                    logger.error(String.format("Exception handling: '%s'", currentLine), ex);
+                    logger.error("Exception handling: '{}' {}", currentLine, ex);
 				}
 			}
 			else
@@ -305,7 +305,7 @@ public class HotSpotLogParser
 		}
 		else
 		{
-            logger.error(String.format("Unexpected compiler name: ", threadName));
+            logger.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 

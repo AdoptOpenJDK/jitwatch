@@ -265,7 +265,7 @@ public class JournalUtil
 
 			if (count != 1)
 			{
-                logger.info(String.format("Unexpected parse phase count: %d", count));
+                logger.info("Unexpected parse phase count: {}", count);
 			}
 			else
 			{

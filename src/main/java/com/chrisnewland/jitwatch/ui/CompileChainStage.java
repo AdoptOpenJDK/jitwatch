@@ -179,7 +179,7 @@ public class CompileChainStage extends Stage
             @Override
             public void handle(MouseEvent arg0)
             {
-                logger.info(String.format("%s", node.getMember()));
+                logger.info("{}", node.getMember());
                 // TODO use for navigation in TriView?
             }
         });

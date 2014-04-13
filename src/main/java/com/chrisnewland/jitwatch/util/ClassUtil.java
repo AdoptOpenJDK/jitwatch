@@ -42,7 +42,7 @@ public class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error(String.format("Exception: %s", ex.getMessage()), ex);
+            logger.error("Exception: {} {}", ex.getMessage(), ex);
 		}
 	}
 	
@@ -60,7 +60,7 @@ public class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error(String.format("Exception: %s", ex.getMessage()), ex);
+            logger.error("Exception: {} {}", ex.getMessage(), ex);
 		}
 		
 		return null;

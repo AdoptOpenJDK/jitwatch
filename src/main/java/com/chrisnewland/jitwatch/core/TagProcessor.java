@@ -53,7 +53,7 @@ public class TagProcessor
 			}
 			else
 			{
-                logger.error(String.format("Did not handle: %s", line));
+                logger.error("Did not handle: {}", line);
 			}
 		}
 

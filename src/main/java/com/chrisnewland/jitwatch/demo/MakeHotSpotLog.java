@@ -53,7 +53,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-        logger.info(String.format("addVariable: %d", count));
+        logger.info("addVariable: {}", count);
 	}
 
 	private void addConstant(int iterations)
@@ -65,7 +65,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-        logger.info(String.format("addConstant: %d", count));
+        logger.info("addConstant: {}", count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -132,7 +132,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info(String.format("intrinsicTest: %d", dstSum));
+        logger.info("intrinsicTest: {}", dstSum);
 	}
 
 	private long add(long a, long b)
@@ -154,7 +154,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-        logger.warn(String.format("tooBigToInline: %d", count));
+        logger.warn("tooBigToInline: {}", count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -249,7 +249,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info(String.format("list sum: %d", sum));
+        logger.info("list sum: {}", sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -262,7 +262,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-        logger.info(String.format("testCallChain: %d", count));
+        logger.info("testCallChain: {}", count);
 	}
 
 	private long chainA1(long count)
@@ -312,7 +312,7 @@ public class MakeHotSpotLog
 
 		}
 
-        logger.warn(String.format("testCallChain2: %d", count));
+        logger.warn("testCallChain2: {}", count);
 	}
 
 	private long chainC1(long count)
@@ -343,7 +343,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		logger.info("testLeaf: " + count);
+		logger.info("testLeaf: {}", count);
 	}
 	
 	private long leaf1(long count)
@@ -378,7 +378,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-                logger.error(String.format("usage: MakeHotSpotLog [iterations]"), nfe);
+                logger.error("usage: MakeHotSpotLog [iterations] {}", nfe);
 			}
 		}
 
