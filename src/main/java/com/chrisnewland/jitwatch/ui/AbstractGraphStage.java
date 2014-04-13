@@ -27,7 +27,7 @@ public abstract class AbstractGraphStage extends Stage
 	protected static final double GRAPH_GAP_RIGHT = 20.5;
 	protected static final double GRAPH_GAP_Y = 20.5;
 
-	protected static final int[] Y_SCALE = new int[21];
+	static final int[] Y_SCALE = new int[21];
 
 	protected double width;
 	protected double height;

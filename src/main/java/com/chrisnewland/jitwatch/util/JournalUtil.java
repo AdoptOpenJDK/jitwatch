@@ -199,6 +199,9 @@ public class JournalUtil
 				}
 			}
 				break;
+
+            default:
+                break;
 			}
 		}
 	}

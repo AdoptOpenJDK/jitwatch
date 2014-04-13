@@ -69,7 +69,7 @@ public class CompileChainStage extends Stage
 		});
 	}
 
-	public void redraw()
+	public final void redraw()
 	{
 		show(rootNode, X_OFFSET, Y_OFFSET, 0);
 	}

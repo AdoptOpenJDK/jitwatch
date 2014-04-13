@@ -60,8 +60,16 @@ public class LaunchHeadless implements IJITListener
 			System.exit(-1);
 		}
 
-		final boolean showErrors = args.length == 2 && Boolean.valueOf(args[1]) == true;
+		final boolean showErrors = twoParametersArePassedIn(args) && firstParameterIsABooleanExpression(args[1]);
 
 		new LaunchHeadless(args[0], showErrors);
 	}
+
+    private static boolean firstParameterIsABooleanExpression(String arg) {
+        return Boolean.valueOf(arg) == true;
+    }
+
+    private static boolean twoParametersArePassedIn(String[] args) {
+        return args.length == 2;
+    }
 }

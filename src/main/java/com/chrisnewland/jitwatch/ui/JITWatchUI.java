@@ -884,7 +884,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 	private void log(final String entry)
 	{
-		logBuffer.append(entry + "\n");
+		logBuffer.append(entry);
+        logBuffer.append("\n");
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)

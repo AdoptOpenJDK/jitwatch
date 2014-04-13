@@ -171,9 +171,9 @@ public class TriView extends Stage
 						{
 							setText(item.toStringUnqualifiedMethodName());
 
-							if (item.isCompiled() && UserInterfaceUtil.TICK != null)
+							if (item.isCompiled() && UserInterfaceUtil.tick != null)
 							{
-								setGraphic(new ImageView(UserInterfaceUtil.TICK));
+								setGraphic(new ImageView(UserInterfaceUtil.tick));
 							}
 							else
 							{
@@ -307,6 +307,9 @@ public class TriView extends Stage
 			break;
 		case 3:
 			splitViewer.setDividerPositions(0.333, 0.666);
+            break;
+        default:
+            break;
 		}
 	}
 
@@ -339,7 +342,7 @@ public class TriView extends Stage
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if (previousClass != null && previousClass == memberClass)
+		if ((previousClass != null) && previousClass.equals(memberClass))
 		{
 			sameClass = true;
 		}
