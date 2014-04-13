@@ -5,10 +5,11 @@
  */
 package com.chrisnewland.jitwatch.model;
 
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class Task extends Tag

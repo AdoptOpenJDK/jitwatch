@@ -32,6 +32,7 @@ public class JournalUtil
 
 			Tag parsePhase = getParsePhase(journal);
 
+			//TODO fix for JDK8
 			if (parsePhase != null)
 			{
 				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -198,6 +199,9 @@ public class JournalUtil
 				}
 			}
 				break;
+
+            default:
+                break;
 			}
 		}
 	}

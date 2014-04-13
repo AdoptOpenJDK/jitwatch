@@ -36,8 +36,6 @@ public class ViewerBytecode extends Viewer
 
 		Map<Integer, LineAnnotation> annotations = null;
 
-//			instructions = "No bytecode found.\nClasses not mounted or native method?";
-
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
 

@@ -88,8 +88,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
         synchronized (jitEvents)
         {
-            List<JITEvent> copy = new ArrayList<>(jitEvents);
-            return copy;
+            return new ArrayList<>(jitEvents);
         }
     }
 
@@ -256,8 +255,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
         synchronized (codeCacheTagList)
         {
-            List<Tag> copy = new ArrayList<>(codeCacheTagList);
-            return copy;
+            return new ArrayList<>(codeCacheTagList);
         }
     }
 }

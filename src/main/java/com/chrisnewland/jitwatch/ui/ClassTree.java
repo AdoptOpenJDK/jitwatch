@@ -170,9 +170,9 @@ public class ClassTree extends VBox
             hasCompiledChildren = true;
         }
 
-        if (UserInterfaceUtil.TICK != null && hasCompiledChildren)
+        if (UserInterfaceUtil.tick != null && hasCompiledChildren)
         {
-            found.setGraphic(new ImageView(UserInterfaceUtil.TICK));
+            found.setGraphic(new ImageView(UserInterfaceUtil.tick));
         }
 
         return found;
