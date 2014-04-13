@@ -1,5 +1,8 @@
 package com.chrisnewland.jitwatch.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,7 +11,9 @@ import java.net.URL;
 
 public class NetUtil
 {
-	public static String fetchURL(String toFetch)
+    private static final Logger logger = LoggerFactory.getLogger(NetUtil.class);
+
+    public static String fetchURL(String toFetch)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -28,9 +33,9 @@ public class NetUtil
 			}
 
 		} catch (MalformedURLException e) {
-            e.printStackTrace();
+            logger.error("{}", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("{}", e);
         } finally
 		{
 			if (in != null)

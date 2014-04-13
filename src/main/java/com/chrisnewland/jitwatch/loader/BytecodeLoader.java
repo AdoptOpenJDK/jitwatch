@@ -67,7 +67,7 @@ public class BytecodeLoader
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error("{}", ioe);
 		}
 
 		if (byteCodeString != null)

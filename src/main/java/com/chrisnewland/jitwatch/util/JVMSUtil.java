@@ -1,7 +1,8 @@
 package com.chrisnewland.jitwatch.util;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
+import com.chrisnewland.jitwatch.model.bytecode.Opcode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,11 +13,14 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.bytecode.Opcode;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 
 public class JVMSUtil
 {
-	private static Map<String, String> bcDescriptionMap = new HashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
+
+    private static Map<String, String> bcDescriptionMap = new HashMap<>();
 
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
@@ -68,7 +72,7 @@ public class JVMSUtil
 			}
 			catch (IOException ioe)
 			{
-				ioe.printStackTrace();
+                logger.error("{}", ioe);
 			}
 		}
 
@@ -113,7 +117,7 @@ public class JVMSUtil
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error("{}", ioe);
 		}
 	}
 

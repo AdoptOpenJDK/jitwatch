@@ -343,7 +343,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		System.out.println("testLeaf: " + count);
+		logger.info("testLeaf: " + count);
 	}
 	
 	private long leaf1(long count)
