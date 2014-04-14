@@ -16,9 +16,12 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileChooserListSrcZip extends FileChooserList
 {
+    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
 
 	public FileChooserListSrcZip(Stage stage, String title, List<String> items)
 	{
@@ -40,7 +43,7 @@ public class FileChooserListSrcZip extends FileChooserList
 					}
 					catch (IOException ioe)
 					{
-						System.err.println(ioe);
+						logger.error("{}", ioe);
 					}
 				}
 			}

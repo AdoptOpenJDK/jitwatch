@@ -9,6 +9,8 @@ import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,6 +27,8 @@ public class HotSpotLogParser
 	{
 		READY, IN_TAG, IN_NATIVE
 	}
+
+    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
@@ -105,8 +109,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-					System.err.format("Exception handling: '%s'",  currentLine);
-					ex.printStackTrace();
+                    logger.error("Exception handling: '{}' {}", currentLine, ex);
 				}
 			}
 			else
@@ -117,7 +120,7 @@ public class HotSpotLogParser
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+					logger.error("{}", e);
 					break;
 				}
 			}
@@ -292,11 +295,6 @@ public class HotSpotLogParser
 		model.getJITStats().incCompilerThreads();
 		String threadName = tag.getAttribute(ATTR_NAME);
 
-        if (threadName == null) {
-            System.err.format("Thread name not found (attribute '%s' missing in tag).\n", ATTR_NAME);
-            return;
-        }
-
 		if (threadName.startsWith(C1))
 		{
 			tagProcessor.setCompiler(CompilerName.C1);
@@ -307,7 +305,7 @@ public class HotSpotLogParser
 		}
 		else
 		{
-			System.err.format("Unexpected compiler name: ", threadName);
+            logger.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 

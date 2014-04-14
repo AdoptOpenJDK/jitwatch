@@ -20,8 +20,13 @@ import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JournalUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
+
 	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<Instruction> instructions)
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();
@@ -260,7 +265,7 @@ public class JournalUtil
 
 			if (count != 1)
 			{
-				System.err.println("Unexpected parse phase count: " + count);
+                logger.info("Unexpected parse phase count: {}", count);
 			}
 			else
 			{

@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -20,6 +23,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+
     private PackageManager pm;
     private JITStats stats;
 
@@ -30,9 +35,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// written during parse, make copy for graphing as needs sort
     private List<Tag> codeCacheTagList = new ArrayList<>();
-    
+
     private String vmVersionRelease;
-        
+
     public JITDataModel()
     {
         pm = new PackageManager();
@@ -43,12 +48,12 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
     	this.vmVersionRelease = release;
     }
-    
+
 	public String getVmVersionRelease()
 	{
 		return vmVersionRelease;
 	}
-    
+
     public void reset()
     {
         pm.clear();
@@ -57,8 +62,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
         jitEvents.clear();
 
-        journalMap.clear();  
-        
+        journalMap.clear();
+
         codeCacheTagList.clear();
     }
 
@@ -73,7 +78,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
         return stats;
     }
-    
+
     // ugly but better than using COWAL with so many writes
     public void addEvent(JITEvent event)
     {
@@ -122,7 +127,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
                 }
                 catch (Throwable t)
                 {
-                    t.printStackTrace();
+                    logger.error("Exception: {} {}", t.getMessage(), t);
                 }
             }
         }
@@ -176,13 +181,13 @@ public class JITDataModel implements IReadOnlyJITDataModel
     }
 
     public IMetaMember findMetaMember(String className, String signature)
-    {    	
+    {
         MetaClass metaClass = pm.getMetaClass(className);
 
         IMetaMember result = null;
 
         if (metaClass != null)
-        {        	
+        {
             List<IMetaMember> metaList = metaClass.getMetaMembers();
 
             for (IMetaMember meta : metaList)
@@ -214,7 +219,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
         mp.addClass(metaClass);
 
         stats.incCountClass();
-        
+
         if (clazz == null)
         {
             metaClass.setMissingDef(true);

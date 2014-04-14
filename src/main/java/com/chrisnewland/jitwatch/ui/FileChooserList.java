@@ -21,9 +21,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileChooserList extends VBox
 {
+    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
+
 	private Stage stage;
 
 	protected ListView<Label> fileList;
@@ -32,7 +36,7 @@ public class FileChooserList extends VBox
 	
 	protected VBox vboxButtons;
 
-	public FileChooserList(Stage stage, String title, List<String> items)
+    public FileChooserList(Stage stage, String title, List<String> items)
 	{
 		this.stage = stage;
 
@@ -132,7 +136,7 @@ public class FileChooserList extends VBox
 				}
 				catch (IOException ioe)
 				{
-					System.err.println(ioe);
+                    logger.error("{}", ioe);
 				}
 
 				lastFolder = f.getParentFile();
@@ -168,7 +172,7 @@ public class FileChooserList extends VBox
 			}
 			catch (IOException ioe)
 			{
-				System.err.println(ioe);
+                logger.error("{}", ioe);
 			}
 			
 			lastFolder = result.getParentFile();

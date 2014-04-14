@@ -8,9 +8,13 @@ package com.chrisnewland.jitwatch.util;
 import java.io.InputStream;
 
 import javafx.scene.image.Image;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserInterfaceUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
+
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
     public static Image tick = null;
 
@@ -27,8 +31,8 @@ public class UserInterfaceUtil
         }
         else
         {
-        	//TODO make this a dialog, println too easy to miss in an IDE
-            System.err.println("If running in an IDE please add src/main/resources to your classpath");
+        	//TODO make this a dialog, format too easy to miss in an IDE
+            logger.error("If running in an IDE please add src/main/resources to your classpath");
         }
     }
 }
