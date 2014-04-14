@@ -59,6 +59,7 @@ public final class JITWatchConstants
 	public static final String ATTR_STAMP = "stamp";
 	public static final String ATTR_NAME = "name";
 	public static final String ATTR_BCI = "bci";
+	public static final String ATTR_CODE = "code";
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
 	public static final String ATTR_NMSIZE = "nmsize";
@@ -67,6 +68,7 @@ public final class JITWatchConstants
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
 	public static final String ATTR_PARSE = PARSE;
+	public static final String ATTR_BUILDIR = "buildIR";
 	public static final String ATTR_ID = "id";
 	public static final String ATTR_HOLDER = "holder";
 	public static final String ATTR_RETURN = "return";
@@ -85,6 +87,8 @@ public final class JITWatchConstants
 	public static final String S_CLOSE_PARENTHESES = ")";
 	public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
+	public static final String S_OPEN_BRACE = "{";
+	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";

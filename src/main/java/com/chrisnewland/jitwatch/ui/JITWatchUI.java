@@ -9,28 +9,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.chrisnewland.jitwatch.chain.CompileChainWalker;
 import com.chrisnewland.jitwatch.chain.CompileNode;
 import com.chrisnewland.jitwatch.core.IJITListener;
-import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -56,9 +53,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JITWatchUI extends Application implements IJITListener, IStageAccessProxy
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT = 592;
 
@@ -497,10 +498,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	void openConfigStage()
 	{
 		if (configStage == null)
-		{
+		{		
 			configStage = new ConfigStage(JITWatchUI.this, config);
 			configStage.show();
-
+			
 			openPopupStages.add(configStage);
 
 			btnConfigure.setDisable(true);
@@ -613,63 +614,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		}
 	}
 
-	void openSource(IMetaMember member)
-	{
-		MetaClass methodClass = member.getMetaClass();
-
-		String fqName = methodClass.getFullyQualifiedName();
-
-		String sourceFileName = ResourceLoader.getSourceFilename(methodClass);
-
-		String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-
-		TextViewerStage tvs = null;
-		String title = "Source code for " + fqName;
-
-		for (Stage s : openPopupStages)
-		{
-			if (s instanceof TextViewerStage && title.equals(s.getTitle()))
-			{
-				tvs = (TextViewerStage) s;
-				break;
-			}
-		}
-
-		if (tvs == null)
-		{
-			tvs = new TextViewerStage(JITWatchUI.this, title, source, true);
-			tvs.show();
-			openPopupStages.add(tvs);
-		}
-
-		tvs.requestFocus();
-
-		tvs.jumpTo(member);
-	}
-
-	void openBytecode(IMetaMember member)
-	{
-		String searchMethod = member.getSignatureForBytecode();
-
-		MetaClass methodClass = member.getMetaClass();
-
-		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(config.getClassLocations());
-
-		String bc = bytecodeCache.get(searchMethod);
-
-		TextViewerStage tvs = openTextViewer("Bytecode for " + member.toString(), bc, false);
-
-		Journal journal = getJournal(member);
-
-		tvs.setLineAnnotations(JournalUtil.buildBytecodeAnnotations(journal));
-	}
-
-	void openAssembly(IMetaMember member)
-	{
-		String assembly = member.getAssembly();
-		openTextViewer("Native code for " + member.toString(), assembly, false);
-	}
-
 	TextViewerStage openTextViewer(String title, String content)
 	{
 		return openTextViewer(title, content, false);
@@ -700,7 +644,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		}
 		else
 		{
-			System.err.println("Could not open CompileChain - root node was null");
+            logger.error("Could not open CompileChain - root node was null");
 		}
 	}
 
@@ -940,7 +884,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 	private void log(final String entry)
 	{
-		logBuffer.append(entry + "\n");
+		logBuffer.append(entry);
+        logBuffer.append("\n");
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)
@@ -962,10 +907,4 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	{
 		return model.getPackageManager();
 	}
-
-	public Journal getJournal(IMetaMember member)
-	{
-		return JournalUtil.getJournal(model, member);
-	}
-
 }

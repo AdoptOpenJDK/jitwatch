@@ -100,7 +100,7 @@ public class Tag
 		{
 			if (child.getName().equals(tagName))
 			{
-				if (child.getAttrs().containsKey(attrName) && child.getAttrs().get(attrName).equals(attrValue))
+				if (child.getAttrs().containsKey(attrName) && child.getAttribute(attrName).equals(attrValue))
 				{
 					result.add(child);
 				}
@@ -128,6 +128,11 @@ public class Tag
 	public Map<String, String> getAttrs()
 	{
 		return attrs;
+	}
+	
+	public String getAttribute(String name)
+	{
+		return attrs.get(name);
 	}
 
 	private int getDepth(Tag tag)

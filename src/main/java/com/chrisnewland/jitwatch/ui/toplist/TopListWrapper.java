@@ -30,6 +30,6 @@ public class TopListWrapper
 
 	public String[] getColumns()
 	{
-		return columns;
+		return Arrays.copyOf(columns, columns.length);
 	}
 }

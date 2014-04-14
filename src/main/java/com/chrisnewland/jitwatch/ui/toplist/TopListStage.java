@@ -40,7 +40,8 @@ import javafx.stage.WindowEvent;
 
 public class TopListStage extends Stage
 {
-	private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
+    private static final String MEMBER = "Member";
+    private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
 
 	private TableView<ITopListScore> tableView;
 
@@ -63,18 +64,18 @@ public class TopListStage extends Stage
 		int height = 480;
 
 		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", "Member" });
+				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", MEMBER});
 		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(
 				parent.getJITDataModel(), true), new String[] { "Count", "Reason" });
 		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(
 				parent.getJITDataModel(), true), new String[] { "Count", "Intrinsic" });
 		TopListWrapper tlLargestBytecode = new TopListWrapper("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", "Member" });
+				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
 		TopListWrapper tlSlowestCompilation = new TopListWrapper("Slowest Compilation Times",
 				new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_COMPILE_MILLIS, true), new String[] {
-						"Milliseconds", "Member" });
+						"Milliseconds", MEMBER });
 		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_DECOMPILES, true), new String[] { "Decompiles", "Member" });
+				parent.getJITDataModel(), ATTR_DECOMPILES, true), new String[] { "Decompiles", MEMBER });
 		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(
 				parent.getJITDataModel(), false)
 		{
@@ -89,7 +90,7 @@ public class TopListStage extends Stage
 					topList.add(new MemberScore(mm, value));
 				}
 			}
-		}, new String[] { "Order", "Member" });
+		}, new String[] { "Order", MEMBER });
 
 		TopListWrapper tlCompilationOrderOSR = new TopListWrapper("Compilation Order (OSR)", new AbstractTopListVisitable(
 				parent.getJITDataModel(), false)
@@ -105,7 +106,7 @@ public class TopListStage extends Stage
 					topList.add(new MemberScore(mm, value));
 				}
 			}
-		}, new String[] { "Order", "Member" });
+		}, new String[] { "Order", MEMBER });
 
 		final Map<String, TopListWrapper> attrMap = new HashMap<>();
 
@@ -163,7 +164,7 @@ public class TopListStage extends Stage
 			@Override
 			public void changed(ObservableValue<? extends ITopListScore> arg0, ITopListScore oldVal, ITopListScore newVal)
 			{
-				if (newVal != null && newVal instanceof MemberScore)
+				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
 				{
 					parent.openTreeAtMember((IMetaMember) newVal.getKey());
 				}
@@ -183,7 +184,15 @@ public class TopListStage extends Stage
 		redraw();
 	}
 
-	private void buildTableView(TopListWrapper topListWrapper)
+    private boolean itIsNull(ITopListScore newVal) {
+        return newVal != null;
+    }
+
+    private boolean isInstanceOfMemberScore(ITopListScore newVal) {
+        return newVal instanceof MemberScore;
+    }
+
+    private void buildTableView(TopListWrapper topListWrapper)
 	{
 		topList.clear();
 		topList.addAll(topListWrapper.getVisitable().buildTopList());
@@ -198,7 +207,7 @@ public class TopListStage extends Stage
 		tableView.setItems(topList);
 	}
 
-	public void redraw()
+	public final void redraw()
 	{
 	}
 }

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ $JAVA_HOME = '' ]; then
+   echo "JAVA_HOME has not been set"
+   exit 0;
+fi
+export JDK_HOME=$JAVA_HOME
+
 unamestr=`uname`
 if [ "$unamestr" = 'Darwin' ]; then
    export JDK_HOME=`/usr/libexec/java_home`
