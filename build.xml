@@ -29,11 +29,11 @@
     <target name="test" depends="compile">
         <junit printsummary="yes">
             <classpath>
-                <path refid="classpath"/>
-			<fileset dir="${classes}">
-				<include name="**/*.class" />
-			</fileset>
+        	<path refid="classpath"/>
+	        <pathelement path="${classes}"/>
             </classpath>
+
+  <formatter type="plain"/>
             
             <batchtest fork="yes">
                 <fileset dir="${test}" includes="**/Test*.java"/>
