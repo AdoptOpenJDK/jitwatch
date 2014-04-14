@@ -88,7 +88,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info(String.format("randomBranchTest: %d %d %d", count, adds, subs));
+        logger.info("randomBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -111,7 +111,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info(String.format("changingBranchTest: %d %d %d", count, adds, subs));
+        logger.info("changingBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void intrinsicTest(int iterations)
