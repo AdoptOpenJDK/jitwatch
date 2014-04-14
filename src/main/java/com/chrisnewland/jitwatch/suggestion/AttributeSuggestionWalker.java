@@ -5,21 +5,16 @@
  */
 package com.chrisnewland.jitwatch.suggestion;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.model.Task;
-import com.chrisnewland.jitwatch.suggestion.Suggestion.SuggestionType;
-import com.chrisnewland.jitwatch.util.JournalUtil;
-import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
@@ -144,7 +139,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
 				processParseTag(child, nestedCaller);
 			}
-				break;
+
+            default:
+                break;
 			}
 		}
 	}
@@ -174,7 +171,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				}
 				else
 				{
-					System.err.println("No score is set for reason: " + reason);
+					System.out.println("No score is set for reason: " + reason);
 				}
 
 				StringBuilder reasonBuilder = new StringBuilder();

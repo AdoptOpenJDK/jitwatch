@@ -65,31 +65,48 @@ public class Suggestion
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+        {
 			return true;
+        }
 		if (obj == null)
+        {
 			return false;
+        }
 		if (getClass() != obj.getClass())
+        {
 			return false;
+        }
 		Suggestion other = (Suggestion) obj;
 		if (caller == null)
 		{
 			if (other.caller != null)
+            {
 				return false;
+            }
 		}
 		else if (!caller.equals(other.caller))
+        {
 			return false;
+        }
 		if (score != other.score)
+        {
 			return false;
+        }
 		if (suggestion == null)
 		{
 			if (other.suggestion != null)
+            {
 				return false;
+            }
 		}
 		else if (!suggestion.equals(other.suggestion))
+        {
 			return false;
+        }
 		if (type != other.type)
+        {
 			return false;
+        }
 		return true;
 	}
-
 }

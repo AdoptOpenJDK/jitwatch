@@ -5,11 +5,7 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import com.chrisnewland.jitwatch.model.EventType;
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.JITDataModel;
-import com.chrisnewland.jitwatch.model.JITEvent;
-import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -20,8 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-
-import com.chrisnewland.jitwatch.model.CompilerName;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -247,7 +241,7 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
-
+		
 		case JITWatchConstants.TAG_TASK_QUEUED:
 			handleTagQueued(tag);
 			break;
@@ -263,6 +257,9 @@ public class HotSpotLogParser
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
 			handleStartCompileThread(tag);
 			break;
+
+        default:
+            break;
 		}
 	}
 
@@ -414,7 +411,6 @@ public class HotSpotLogParser
 		if (attrMethod != null)
 		{
 			attrMethod = attrMethod.replace(S_SLASH, S_DOT);
-			// attrs.remove(ATTR_METHOD);
 
 			IMetaMember member = handleMember(attrMethod, attrs, eventType);
 
@@ -543,4 +539,6 @@ public class HotSpotLogParser
 			}
 		}
 	}
+
+
 }
