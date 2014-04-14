@@ -105,7 +105,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-					System.err.println("Exception handling: '" + currentLine + "'");
+					System.err.format("Exception handling: '%s'",  currentLine);
 					ex.printStackTrace();
 				}
 			}
@@ -292,6 +292,11 @@ public class HotSpotLogParser
 		model.getJITStats().incCompilerThreads();
 		String threadName = tag.getAttribute(ATTR_NAME);
 
+        if (threadName == null) {
+            System.err.format("Thread name not found (attribute '%s' missing in tag).\n", ATTR_NAME);
+            return;
+        }
+
 		if (threadName.startsWith(C1))
 		{
 			tagProcessor.setCompiler(CompilerName.C1);
@@ -302,7 +307,7 @@ public class HotSpotLogParser
 		}
 		else
 		{
-			System.err.println("Unexpected compiler name: " + threadName);
+			System.err.format("Unexpected compiler name: ", threadName);
 		}
 	}
 
