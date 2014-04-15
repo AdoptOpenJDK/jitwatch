@@ -100,21 +100,21 @@ public class MetaClass implements Comparable<MetaClass>
 	public String getFullyQualifiedName()
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		if (classPackage != null && classPackage.getName().length() > 0)
 		{
 			builder.append(classPackage.getName()).append(C_DOT);
 		}
 
 		builder.append(className);
-		
+
 		return builder.toString();
 	}
-	
+
 	public String getAbbreviatedFullyQualifiedName()
-	{		
+	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		if (classPackage != null && classPackage.getName().length() > 0)
 		{
 			String[] parts = classPackage.getName().split("\\.");
@@ -122,11 +122,11 @@ public class MetaClass implements Comparable<MetaClass>
 			for(String part : parts)
 			{
 				builder.append(part.charAt(0)).append(C_DOT);
-			}	
+			}
 		}
-		
+
 		builder.append(className);
-		
+
 		return builder.toString();
 	}
 

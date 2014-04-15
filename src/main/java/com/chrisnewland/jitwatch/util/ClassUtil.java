@@ -5,13 +5,18 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class ClassUtil
+public final class ClassUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
@@ -37,7 +42,7 @@ public class ClassUtil
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+            logger.error("Exception: {} {}", ex.getMessage(), ex);
 		}
 	}
 	
@@ -55,7 +60,7 @@ public class ClassUtil
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+            logger.error("Exception: {} {}", ex.getMessage(), ex);
 		}
 		
 		return null;

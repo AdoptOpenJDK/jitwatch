@@ -26,7 +26,7 @@ import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
-import static com.chrisnewland.jitwatch.test.TestUtil.*;
+import static com.chrisnewland.jitwatch.test.UnitTestUtil.*;
 
 public class TestParser
 {

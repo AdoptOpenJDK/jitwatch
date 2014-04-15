@@ -9,6 +9,8 @@ import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -16,6 +18,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
+    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
@@ -36,7 +40,7 @@ public class TagProcessor
 	public Tag processLine(String line)
 	{
 		Tag result = null;
-		
+
 		if (line != null)
 		{
 			if (line.length() > 3 && line.charAt(0) == C_OPEN_ANGLE)
@@ -49,7 +53,7 @@ public class TagProcessor
 			}
 			else
 			{
-				System.err.println("Did not handle: " + line);
+                logger.error("Did not handle: {}", line);
 			}
 		}
 

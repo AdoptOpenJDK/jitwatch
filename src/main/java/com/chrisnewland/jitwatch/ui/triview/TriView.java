@@ -362,7 +362,7 @@ public class TriView extends Stage
 		}
 
 		viewerSource.jumpTo(currentMember);
-		
+
 		List<String> classLocations = config.getClassLocations();
 
 		viewerBytecode.setContent(currentMember, classLocations);
