@@ -1,5 +1,8 @@
 #!/bin/sh
 
+#uncomment the next line and set JDK_HOME as required
+#export JDK_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home
+
 if [ $JAVA_HOME = '' ]; then
    echo "JAVA_HOME has not been set"
    exit 0;
