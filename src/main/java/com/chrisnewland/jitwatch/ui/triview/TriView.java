@@ -6,17 +6,11 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-import com.chrisnewland.jitwatch.util.BytecodeUtil;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -63,13 +57,13 @@ public class TriView extends Stage
 
 	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
+	
+	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
-	private JITWatchUI parent;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
-		this.parent = parent;
 		this.config = config;
 
 		setTitle("TriView Source, Bytecode, Assembly Viewer");
@@ -82,7 +76,7 @@ public class TriView extends Stage
 
 		HBox hBoxToolBarButtons = new HBox();
 		hBoxToolBarButtons.setSpacing(10);
-		hBoxToolBarButtons.setPadding(new Insets(10));
+		hBoxToolBarButtons.setPadding(new Insets(0,10,10,10));
 
 		checkSource = new CheckBox("Source");
 		checkBytecode = new CheckBox("Bytecode");
@@ -137,12 +131,10 @@ public class TriView extends Stage
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
 			{
-				// TODO possible race condition or JavaFX bug here
+				// TODO Looks like a bug in JavaFX 2.2 here
 				// sometimes combo contains only selected member
 				if (!ignoreComboChanged)
 				{
-					System.out.println("combo changed. setting member: " + newVal);
-
 					if (newVal != null)
 					{
 						TriView.this.setMember(newVal);
@@ -172,9 +164,9 @@ public class TriView extends Stage
 						{
 							setText(item.toStringUnqualifiedMethodName());
 
-							if (item.isCompiled() && UserInterfaceUtil.TICK != null)
+							if (item.isCompiled() && UserInterfaceUtil.tick != null)
 							{
-								setGraphic(new ImageView(UserInterfaceUtil.TICK));
+								setGraphic(new ImageView(UserInterfaceUtil.tick));
 							}
 							else
 							{
@@ -249,10 +241,13 @@ public class TriView extends Stage
 
 		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
+		
+		lblMemberInfo = new Label();
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);
 		vBox.getChildren().add(splitViewer);
+		vBox.getChildren().add(lblMemberInfo);
 
 		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
@@ -305,6 +300,9 @@ public class TriView extends Stage
 			break;
 		case 3:
 			splitViewer.setDividerPositions(0.333, 0.666);
+            break;
+        default:
+            break;
 		}
 	}
 
@@ -337,7 +335,7 @@ public class TriView extends Stage
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if (previousClass != null && previousClass == memberClass)
+		if ((previousClass != null) && previousClass.equals(memberClass))
 		{
 			sameClass = true;
 		}
@@ -365,18 +363,9 @@ public class TriView extends Stage
 
 		viewerSource.jumpTo(currentMember);
 
-		String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
-		
-		if (bc == null)
-		{
-			bc = "No bytecode found.\nClasses not mounted or native method?";
-		}
-		
-		Journal journal = parent.getJournal(member);
-		
-		Map<Integer, LineAnnotation> annotations = JournalUtil.buildBytecodeAnnotations(journal);
+		List<String> classLocations = config.getClassLocations();
 
-		viewerBytecode.setContent(bc, annotations);
+		viewerBytecode.setContent(currentMember, classLocations);
 
 		String assembly;
 
@@ -384,6 +373,22 @@ public class TriView extends Stage
 		{
 			assembly = currentMember.getAssembly();
 
+			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+			
+			if (attrCompiler != null)
+			{
+				lblMemberInfo.setText("Compiled with " + attrCompiler);
+			}
+			else
+			{
+				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+				
+				if (attrCompileKind != null && C2N.equals(attrCompileKind))
+				{
+					lblMemberInfo.setText("Compiled native wrapper");
+				}
+			}
+			
 			if (assembly == null)
 			{
 				assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
@@ -392,6 +397,7 @@ public class TriView extends Stage
 		else
 		{
 			assembly = "Not JIT-compiled";
+			lblMemberInfo.setText(S_EMPTY);
 		}
 
 		viewerAssembly.setContent(assembly, false);

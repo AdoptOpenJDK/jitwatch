@@ -73,7 +73,7 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
-		Pattern PATTERN_BC_SIGNATURE = Pattern.compile(builder.toString());
+        final Pattern PATTERN_BC_SIGNATURE = Pattern.compile(builder.toString());
 
 		Matcher matcher = PATTERN_BC_SIGNATURE.matcher(toParse);
 

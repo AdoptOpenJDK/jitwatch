@@ -5,11 +5,11 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
-import java.util.List;
-
 import com.chrisnewland.jitwatch.treevisitor.ITreeVisitable;
+
+import java.util.List;
 
 public interface ITopListVisitable extends ITreeVisitable
 {
-	public List<ITopListScore> buildTopList();
+	List<ITopListScore> buildTopList();
 }

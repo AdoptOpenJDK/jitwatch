@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,20 +19,29 @@ import java.util.Random;
 // -XX:+TraceClassLoading 
 // -XX:+LogCompilation 
 // -XX:+PrintAssembly
+
+// If you prefer Intel assembly syntax to AT&T
+// -XX:PrintAssemblyOptions=intel
+
+// Disable TieredCompilation on Java 8 (optional)
+// -XX:-TieredCompilation
+
 public class MakeHotSpotLog
 {
+    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+
 	public MakeHotSpotLog(int iterations)
 	{
-//		addVariable(iterations);
-//		addConstant(iterations);
-//		randomBranchTest(iterations);
-//		changingBranchTest(iterations);
-//		intrinsicTest(iterations);
-//		tooBigToInline(iterations);
-//		testSort();
-//		testCallChain(iterations);
+		addVariable(iterations);
+		addConstant(iterations);
+		randomBranchTest(iterations);
+		changingBranchTest(iterations);
+		intrinsicTest(iterations);
+		tooBigToInline(iterations);
+		testSort();
+		testCallChain(iterations);
 		testCallChain2(iterations);
-
+		testLeaf(iterations);
 	}
 
 	private void addVariable(int iterations)
@@ -41,7 +53,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		System.out.println("addVariable: " + count);
+        logger.info("addVariable: {}", count);
 	}
 
 	private void addConstant(int iterations)
@@ -53,7 +65,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		System.out.println("addConstant: " + count);
+        logger.info("addConstant: {}", count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -76,7 +88,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("randomBranchTest: " + count + " " + adds + " " + subs);
+        logger.info("randomBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -99,7 +111,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("changingBranchTest: " + count + " " + adds + " " + subs);
+        logger.info("changingBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -120,7 +132,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("intrinsicTest: " + dstSum);
+        logger.info("intrinsicTest: {}", dstSum);
 	}
 
 	private long add(long a, long b)
@@ -142,7 +154,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		System.out.println("tooBigToInline: " + count);
+        logger.warn("tooBigToInline: {}", count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -237,7 +249,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("list sum: " + sum);
+        logger.info("list sum: {}", sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -250,7 +262,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		System.out.println("testCallChain: " + count);
+        logger.info("testCallChain: {}", count);
 	}
 
 	private long chainA1(long count)
@@ -300,7 +312,7 @@ public class MakeHotSpotLog
 
 		}
 
-		System.out.println("testCallChain2: " + count);
+        logger.warn("testCallChain2: {}", count);
 	}
 
 	private long chainC1(long inCount)
@@ -319,6 +331,41 @@ public class MakeHotSpotLog
 	{
 		return 3 + count;
 	}
+	
+	private void testLeaf(long iterations)
+	{
+		long count = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			count = leaf1(count);
+			count = leaf2(count);
+			count = leaf3(count);
+			count = leaf4(count);
+		}
+
+		logger.info("testLeaf: {}", count);
+	}
+	
+	private long leaf1(long count)
+	{
+		return count + 1;
+	}
+	
+	private long leaf2(long count)
+	{
+		return count + 2;
+	}
+	
+	private long leaf3(long count)
+	{
+		return count + 3;
+	}
+	
+	private long leaf4(long count)
+	{
+		return count + 4;
+	}
 
 	public static void main(String[] args)
 	{
@@ -332,7 +379,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				System.err.println("usage: MakeHotSpotLog [iterations]");
+                logger.error("usage: MakeHotSpotLog [iterations] {}", nfe);
 			}
 		}
 

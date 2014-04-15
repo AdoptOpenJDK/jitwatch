@@ -17,6 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
 	protected MetaClass methodClass;
@@ -24,6 +29,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	protected boolean isQueued = false;
 	protected boolean isCompiled = false;
+	
+	protected Journal journal = new Journal();
 
 	protected Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
 	protected Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
@@ -321,12 +328,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		return path;
 	}
-
-	@Override
-	public String getJournalID()
-	{
-		return queuedAttributes.get(ATTR_COMPILE_ID);
-	}
 	
     @Override
     public int compareTo(IMetaMember other)
@@ -340,4 +341,23 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
             return getMemberName().compareTo(other.getMemberName());
         }
     }
+    
+    public Journal getJournal()
+    {
+    	return journal;
+    }
+    
+    public void addJournalEntry(Tag entry)
+    {        
+        journal.addEntry(entry);
+    }
+    
+	public List<Instruction> getBytecodeForMember(List<String> classLocations)
+	{
+		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
+
+		List<Instruction> result = classBytecode.getMemberBytecode(this);
+
+		return result;
+	}
 }

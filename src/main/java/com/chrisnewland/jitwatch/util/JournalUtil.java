@@ -13,21 +13,28 @@ import java.util.Map;
 
 import javafx.scene.paint.Color;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 
-public class JournalUtil
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class JournalUtil
 {
-	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal)
+    private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
+
+	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<Instruction> instructions)
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();
 
 		if (journal != null)
 		{
+			CompilerName compilerName = getLastTaskCompiler(journal);
+
 			Tag parsePhase = getParsePhase(journal);
 
 			//TODO fix for JDK8
@@ -37,7 +44,7 @@ public class JournalUtil
 
 				for (Tag parseTag : parseTags)
 				{
-					buildParseTagAnnotations(parseTag, result);
+					buildParseTagAnnotations(parseTag, result, instructions, compilerName);
 				}
 			}
 		}
@@ -45,7 +52,24 @@ public class JournalUtil
 		return result;
 	}
 
-	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result)
+	private static Instruction getInstructionAtIndex(List<Instruction> instructions, int index)
+	{
+		Instruction found = null;
+
+		for (Instruction instruction : instructions)
+		{
+			if (instruction.getOffset() == index)
+			{
+				found = instruction;
+				break;
+			}
+		}
+
+		return found;
+	}
+
+	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<Instruction> instructions,
+			CompilerName compilerName)
 	{
 		List<Tag> children = parseTag.getChildren();
 
@@ -53,6 +77,16 @@ public class JournalUtil
 
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
+
+		boolean isC2 = false;
+
+		if (compilerName == CompilerName.C2)
+		{
+			isC2 = true;
+		}
+
+		boolean inMethod = true;
+		Instruction currentInstruction = null;
 
 		for (Tag child : children)
 		{
@@ -63,9 +97,26 @@ public class JournalUtil
 			{
 			case TAG_BC:
 			{
-				String bci = tagAttrs.get(ATTR_BCI);
-				currentBytecode = Integer.parseInt(bci);
+				String bciAttr = tagAttrs.get(ATTR_BCI);
+				String codeAttr = tagAttrs.get(ATTR_CODE);
+
+				currentBytecode = Integer.parseInt(bciAttr);
+				int code = Integer.parseInt(codeAttr);
 				callAttrs.clear();
+
+				currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
+
+				inMethod = false;
+
+				if (currentInstruction != null)
+				{
+					int opcodeValue = currentInstruction.getOpcode().getValue();
+
+					if (opcodeValue == code)
+					{
+						inMethod = true;
+					}
+				}
 			}
 				break;
 			case TAG_CALL:
@@ -78,20 +129,38 @@ public class JournalUtil
 			{
 				methodAttrs.clear();
 				methodAttrs.putAll(tagAttrs);
+
+				String nameAttr = methodAttrs.get(ATTR_NAME);
+
+				inMethod = false;
+
+				if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
+				{
+					String comment = currentInstruction.getComment();
+
+					inMethod = comment.contains(nameAttr);
+				}
+
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
-				result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
+				if (inMethod || isC2)
+				{
+					result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
+				}
 			}
 				break;
 			case TAG_INLINE_FAIL:
 			{
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-				result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
+				if (inMethod || isC2)
+				{
+					result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
+				}
 			}
 				break;
 			case TAG_BRANCH:
@@ -117,7 +186,10 @@ public class JournalUtil
 
 				if (!result.containsKey(currentBytecode))
 				{
-					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
+					if (inMethod || isC2)
+					{
+						result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
+					}
 				}
 			}
 				break;
@@ -126,10 +198,15 @@ public class JournalUtil
 				StringBuilder reason = new StringBuilder();
 				reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
-				result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
-
+				if (inMethod || isC2)
+				{
+					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
+				}
 			}
 				break;
+
+            default:
+                break;
 			}
 		}
 	}
@@ -151,6 +228,20 @@ public class JournalUtil
 		return lastTask;
 	}
 
+	public static CompilerName getLastTaskCompiler(Journal journal)
+	{
+		Task lastTask = getLastTask(journal);
+
+		CompilerName compilerName = null;
+
+		if (lastTask != null)
+		{
+			compilerName = lastTask.getCompiler();
+		}
+
+		return compilerName;
+	}
+
 	public static Tag getParsePhase(Journal journal)
 	{
 		Tag parsePhase = null;
@@ -159,14 +250,22 @@ public class JournalUtil
 
 		if (lastTask != null)
 		{
-			//TODO fix for JDK8 structure
-			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+			CompilerName compilerName = lastTask.getCompiler();
+
+			String parseAttributeName = ATTR_PARSE;
+
+			if (compilerName == CompilerName.C1)
+			{
+				parseAttributeName = ATTR_BUILDIR;
+			}
+
+			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, parseAttributeName);
 
 			int count = parsePhases.size();
 
 			if (count != 1)
 			{
-				System.out.println("Unexpected parse phase count: " + count);
+                logger.info("Unexpected parse phase count: {}", count);
 			}
 			else
 			{
@@ -175,26 +274,5 @@ public class JournalUtil
 		}
 
 		return parsePhase;
-	}
-
-	public static Journal getJournal(IReadOnlyJITDataModel model, IMetaMember member)
-	{
-		Journal journal = null;
-
-		String journalID = member.getJournalID();
-
-		if (journalID != null)
-		{
-			journal = model.getJournal(journalID);
-
-			if (journal == null)
-			{
-				// try appending compile_kind as OSR does not generate a
-				// unique compile_id
-				journal = model.getJournal(journalID + OSR);
-			}
-		}
-
-		return journal;
 	}
 }

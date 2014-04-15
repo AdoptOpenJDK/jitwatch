@@ -9,7 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 
-class ScoreTableCell extends TableCell<SuggestTableRow, Integer>
+public class ScoreTableCell extends TableCell<SuggestTableRow, Integer>
 {
 	private Label lblScore;
 

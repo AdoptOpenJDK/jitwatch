@@ -5,27 +5,36 @@
  */
 package com.chrisnewland.jitwatch.loader;
 
+import com.chrisnewland.jitwatch.model.bytecode.*;
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class BytecodeLoader
+public final class BytecodeLoader
 {
-	public static Map<String, String> fetchByteCodeForClass(Collection<String> classLocations, String fqClassName)
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+
+	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
+		ClassBC result = null;
+
 		String[] args;
 
 		if (classLocations.size() == 0)
 		{
-			args = new String[] { "-c", "-p", fqClassName };
+			args = new String[] { "-c", "-p", "-v", fqClassName };
 		}
 		else
 		{
@@ -38,10 +47,10 @@ public class BytecodeLoader
 
 			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
 
-			args = new String[] { "-c", "-p", "-classpath", classPathBuilder.toString(), fqClassName };
+			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
 		}
 
-		String byteCode = null;
+		String byteCodeString = null;
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
 		{
@@ -50,34 +59,30 @@ public class BytecodeLoader
 			task.handleOptions(args);
 			task.call();
 
-			byteCode = baos.toString();
+			byteCodeString = baos.toString();
 		}
 		catch (BadArgs ba)
 		{
-			System.err.println("Could not obtain bytcode for class: " + fqClassName);
+			logger.error("Could not obtain bytecode for class: " + fqClassName, ba);
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            logger.error("{}", ioe);
 		}
 
-		Map<String, String> result;
+		if (byteCodeString != null)
+		{
+			result = parse(byteCodeString);
+		}
 
-		if (byteCode != null)
-		{
-			result = parse(byteCode);
-		}
-		else
-		{
-			result = new HashMap<>();
-		}
-		
 		return result;
 	}
 
-	private static Map<String, String> parse(String result)
-	{		
-		String[] lines = result.split("\n");
+	private static ClassBC parse(String result)
+	{
+		ClassBC classBytecode = new ClassBC();
+
+		String[] lines = result.split(S_NEWLINE);
 
 		int pos = 0;
 
@@ -86,43 +91,61 @@ public class BytecodeLoader
 
 		boolean inMethod = false;
 
-		Map<String, String> bytecodeMap = new HashMap<>();
-
 		while (pos < lines.length)
 		{
 			String line = lines[pos].trim();
 
 			if (inMethod)
 			{
-				if (line.length() == 0)
+				int firstColonIndex = line.indexOf(C_COLON);
+
+				if (firstColonIndex != -1)
 				{
-					inMethod = false;
-					storeBytecode(bytecodeMap, signature, builder);
-				}
-				else if (line.indexOf(':') != -1)
-				{
-					builder.append(line).append("\n");
+					String beforeColon = line.substring(0, firstColonIndex);
+
+					try
+					{
+						// line number ?
+						Integer.parseInt(beforeColon);
+
+						builder.append(line).append(C_NEWLINE);
+					}
+					catch (NumberFormatException nfe)
+					{
+						inMethod = false;
+						storeBytecode(classBytecode, signature, builder);
+					}
 				}
 			}
 			else
 			{
-				if (line.startsWith("Code:") && pos > 0)
+				if (line.startsWith("Code:") && pos >= 2)
 				{
-					signature = lines[pos - 1].trim();
+					for (int i = 1; i <= 3; i++)
+					{
+						signature = lines[pos - i].trim();
+
+						if (signature.indexOf(C_COLON) == -1)
+						{
+							break;
+						}
+					}
+
 					signature = signature.substring(0, signature.length() - 1);
 					inMethod = true;
+					pos++; // skip over stack info
 				}
 			}
 
 			pos++;
 		}
 
-		storeBytecode(bytecodeMap, signature, builder);
+		storeBytecode(classBytecode, signature, builder);
 
-		return bytecodeMap;
+		return classBytecode;
 	}
 
-	private static void storeBytecode(Map<String, String> bytecodeMap, String inSignature, StringBuilder builder)
+	private static void storeBytecode(ClassBC classBytecode, String inSignature, StringBuilder builder)
 	{
         String signature = inSignature;
 		if (signature != null && builder.length() > 0)
@@ -144,8 +167,133 @@ public class BytecodeLoader
 				}
 			}
 
-			bytecodeMap.put(signature, builder.toString());
+			List<Instruction> instructions = parseInstructions(builder.toString());
+
+			classBytecode.addMemberBytecode(signature, instructions);
+
 			builder.delete(0, builder.length());
+		}
+	}
+
+	public static List<Instruction> parseInstructions(String bytecode)
+	{
+		List<Instruction> result = new ArrayList<>();
+
+		String[] lines = bytecode.split(S_NEWLINE);
+
+		final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+
+		boolean inSwitch = false;
+		BCParamSwitch table = new BCParamSwitch();
+		Instruction instruction = null;
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			if (inSwitch)
+			{
+				if (S_CLOSE_BRACE.equals(line))
+				{
+					instruction.addParameter(table);
+
+					result.add(instruction);
+					inSwitch = false;
+				}
+				else
+				{
+					String[] parts = line.split(S_COLON);
+
+					if (parts.length == 2)
+					{
+						table.put(parts[0].trim(), parts[1].trim());
+					}
+					else
+					{
+                        logger.error("Unexpected tableswitch entry: " + line);
+					}
+				}
+			}
+			else
+			{
+				try
+				{
+					Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(line);
+
+					if (matcher.find())
+					{
+						instruction = new Instruction();
+
+						String offset = matcher.group(1);
+						String mnemonic = matcher.group(2);
+						String paramString = matcher.group(3);
+						String comment = matcher.group(4);
+
+						instruction.setOffset(Integer.parseInt(offset));
+						instruction.setOpcode(Opcode.getOpcodeForMnemonic(mnemonic));
+
+						if (comment != null && comment.trim().length() > 0)
+						{
+							instruction.setComment(comment.trim());
+						}
+
+						if (instruction.getOpcode() == Opcode.TABLESWITCH || instruction.getOpcode() == Opcode.LOOKUPSWITCH)
+						{
+							inSwitch = true;
+						}
+						else
+						{
+							if (paramString != null && paramString.trim().length() > 0)
+							{
+								processParameters(paramString.trim(), instruction);
+							}
+
+							result.add(instruction);
+						}
+					}
+					else
+					{
+                        logger.error("could not parse bytecode: '" + line + "'");
+					}
+				}
+				catch (Exception e)
+				{
+                    logger.error("Error parsing bytecode line: '" + line + "'", e);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private static void processParameters(String paramString, Instruction instruction)
+	{
+		String[] parts = paramString.split(S_COMMA);
+
+		for (String part : parts)
+		{
+			IBytecodeParam parameter;
+
+			part = part.trim();
+
+			if (part.charAt(0) == C_HASH)
+			{
+				parameter = new BCParamConstant(part);
+			}
+			else
+			{
+				try
+				{
+					int value = Integer.parseInt(part);
+					parameter = new BCParamNumeric(value);
+				}
+				catch (NumberFormatException nfe)
+				{
+					parameter = new BCParamString(part);
+				}
+			}
+
+			instruction.addParameter(parameter);
 		}
 	}
 }

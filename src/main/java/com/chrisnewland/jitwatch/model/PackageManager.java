@@ -5,12 +5,12 @@
  */
 package com.chrisnewland.jitwatch.model;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 public class PackageManager
 {
@@ -27,7 +27,7 @@ public class PackageManager
 		clear();
 	}
 
-	public void clear()
+	public final void clear()
 	{
 		metaClasses = new ConcurrentHashMap<>();
 		metaPackages = new ConcurrentHashMap<>();

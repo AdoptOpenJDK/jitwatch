@@ -14,7 +14,7 @@ import javafx.util.Callback;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
-public class SuggestionTableUtil
+public final class SuggestionTableUtil
 {
 	public static TableView<SuggestTableRow> buildTableSuggestion(ObservableList<SuggestTableRow> rows)
 	{

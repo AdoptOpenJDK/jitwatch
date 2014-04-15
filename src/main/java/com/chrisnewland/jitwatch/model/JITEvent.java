@@ -3,21 +3,22 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.core;
+package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITEvent
 {
     private long stamp;
-    private boolean isCompile;
+    private EventType eventType;
     private String methodSignature;
     private String stampString;
 
-    public JITEvent(long stamp, boolean isCompile, String methodSignature)
+    public JITEvent(long stamp, EventType eventType, String methodSignature)
     {
         this.stamp = stamp;
-        this.isCompile = isCompile;
+        this.eventType = eventType;
         this.methodSignature = methodSignature;
 
         this.stampString = StringUtil.formatTimestamp(stamp, true);
@@ -28,9 +29,9 @@ public class JITEvent
         return stamp;
     }
 
-    public boolean isCompile()
+    public EventType getEventType()
     {
-        return isCompile;
+        return eventType;
     }
 
     public String getMethodSignature()
@@ -43,17 +44,10 @@ public class JITEvent
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(stampString);
+        sb.append(stampString).append(C_SPACE);
 
-        if (isCompile)
-        {
-            sb.append("  Compiled: ");
-        }
-        else
-        {
-            sb.append("    Queued: ");
-        }
-
+        sb.append(StringUtil.padLeft(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
+     
         sb.append(methodSignature);
 
         return sb.toString();

@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 
 import com.chrisnewland.jitwatch.util.ClassUtil;
 
-public class TestUtil
+public class UnitTestUtil
 {
 	public static Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)
 	{

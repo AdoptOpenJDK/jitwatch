@@ -26,7 +26,7 @@ public class BCParamConstant implements IBytecodeParam
 	}
 
 	@Override
-	public Object getValue()
+	public Integer getValue()
 	{
 		return value;
 	}	

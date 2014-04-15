@@ -6,6 +6,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import com.chrisnewland.jitwatch.chain.CompileNode;
+import com.chrisnewland.jitwatch.model.IMetaMember;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -20,172 +21,177 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-	private ScrollPane scrollPane;
-	private Pane pane;
+    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
 
-	private CompileNode rootNode;
+    private ScrollPane scrollPane;
+    private Pane pane;
 
-	private static final double X_OFFSET = 16;
-	private static final double Y_OFFSET = 16;
+    private CompileNode rootNode;
 
-	private double y = Y_OFFSET;
+    private static final double X_OFFSET = 16;
+    private static final double Y_OFFSET = 16;
 
-	private static final double X_GAP = 25;
+    private double y = Y_OFFSET;
 
-	private static final int STROKE_WIDTH = 3;
-	private static final double RECT_HEIGHT = 25;
-	private static final double RECT_Y_GAP = 16;
+    private static final double X_GAP = 25;
 
-	public CompileChainStage(final JITWatchUI parent, CompileNode root)
-	{
-		initStyle(StageStyle.DECORATED);
+    private static final int STROKE_WIDTH = 3;
+    private static final double RECT_HEIGHT = 25;
+    private static final double RECT_Y_GAP = 16;
 
-		this.rootNode = root;
+    public CompileChainStage(final JITWatchUI parent, CompileNode root)
+    {
+        initStyle(StageStyle.DECORATED);
 
-		scrollPane = new ScrollPane();
-		pane = new Pane();
+        this.rootNode = root;
 
-		scrollPane.setContent(pane);
+        scrollPane = new ScrollPane();
+        pane = new Pane();
 
-		Scene scene = new Scene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+        scrollPane.setContent(pane);
 
-		setTitle("Compile Chain: " + root.getMember().toString());
+        Scene scene = new Scene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
-		setScene(scene);
+        setTitle("Compile Chain: " + root.getMember().toString());
 
-		redraw();
+        setScene(scene);
 
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(CompileChainStage.this);
-			}
-		});
-	}
+        redraw();
 
-	public void redraw()
-	{
-		show(rootNode, X_OFFSET, Y_OFFSET, 0);
-	}
+        setOnCloseRequest(new EventHandler<WindowEvent>()
+        {
+            @Override
+            public void handle(WindowEvent arg0)
+            {
+                parent.handleStageClosed(CompileChainStage.this);
+            }
+        });
+    }
 
-	private void show(CompileNode node, double x, double inParentY, int depth)
-	{
-        double parentY = inParentY;
+    public void redraw()
+    {
+        show(rootNode, X_OFFSET, Y_OFFSET, 0);
+    }
+
+    private void show(CompileNode node, double x, double parentY, int depth)
+    {
         double lastX = x;
 
-		lastX = plotNode(node, x, parentY, depth);
+        lastX = plotNode(node, x, parentY, depth);
 
-		y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
+        y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
 
-		parentY = y - RECT_Y_GAP;
+        parentY = y - RECT_Y_GAP;
 
-		for (CompileNode child : node.getChildren())
-		{
-			show(child, lastX, parentY, depth + 1);
-		}
-	}
+        for (CompileNode child : node.getChildren())
+        {
+            show(child, lastX, parentY, depth + 1);
+        }
+    }
 
-	private String getLabelText(CompileNode node)
-	{
-		return node.getMember().getMemberName();
-	}
+    private String getLabelText(CompileNode node)
+    {
+        IMetaMember member = node.getMember();
 
-	private double plotNode(final CompileNode node, double inX, double parentY, int depth)
-	{
-        double x = inX;
-		String labelText = getLabelText(node);
+        return member == null ? "Unknown" : member.getMemberName();
+    }
 
-		StringBuilder tipBuilder = new StringBuilder();
-		tipBuilder.append(node.getMember().toString()).append("\n");
+    private double plotNode(final CompileNode node, double x, double parentY, int depth)
+    {
+        String labelText = getLabelText(node);
 
-		Text text = new Text(labelText);
+        StringBuilder tipBuilder = new StringBuilder();
+        tipBuilder.append(node.getMember().toString()).append("\n");
 
-		text.snapshot(null, null);
-		double textWidth = text.getLayoutBounds().getWidth();
-		double textHeight = text.getLayoutBounds().getHeight();
+        Text text = new Text(labelText);
 
-		double rectWidth = textWidth + 20;
+        text.snapshot(null, null);
+        double textWidth = text.getLayoutBounds().getWidth();
+        double textHeight = text.getLayoutBounds().getHeight();
 
-		Rectangle rect = new Rectangle(x, y, rectWidth, RECT_HEIGHT);
-		rect.setArcWidth(16);
-		rect.setArcHeight(16);
+        double rectWidth = textWidth + 20;
 
-		text.setX(x + (rectWidth / 2 - textWidth / 2));
+        Rectangle rect = new Rectangle(x, y, rectWidth, RECT_HEIGHT);
+        rect.setArcWidth(16);
+        rect.setArcHeight(16);
 
-		// text plot from bottom left
-		text.setY(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2);
+        text.setX(x + (rectWidth / 2 - textWidth / 2));
 
-		rect.setStroke(Color.BLACK);
-		rect.setStrokeWidth(STROKE_WIDTH);
+        // text plot from bottom left
+        text.setY(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2);
 
-		tipBuilder.append("JIT Compiled: ");
+        rect.setStroke(Color.BLACK);
+        rect.setStrokeWidth(STROKE_WIDTH);
 
-		if (node.getMember().isCompiled())
-		{
-			tipBuilder.append("Yes\n");
-			rect.setFill(Color.GREEN);
-		}
-		else
-		{
-			tipBuilder.append("No\n");
-			rect.setFill(Color.RED);
-		}
+        tipBuilder.append("JIT Compiled: ");
 
-		if (node.isInlined())
-		{
-			text.setFill(Color.YELLOW);
-		}
+        if (node.getMember().isCompiled())
+        {
+            tipBuilder.append("Yes\n");
+            rect.setFill(Color.GREEN);
+        }
+        else
+        {
+            tipBuilder.append("No\n");
+            rect.setFill(Color.RED);
+        }
 
-		String inlineReason = node.getInlineReason();
+        if (node.isInlined())
+        {
+            text.setFill(Color.YELLOW);
+        }
 
-		if (inlineReason != null)
-		{
-			tipBuilder.append(inlineReason);
-		}
+        String inlineReason = node.getInlineReason();
 
-		tipBuilder.append("\n");
+        if (inlineReason != null)
+        {
+            tipBuilder.append(inlineReason);
+        }
 
-		if (depth > 0)
-		{
-			double connectX = x - X_GAP;
-			double connectY = y + RECT_HEIGHT / 2;
-			double upLineY = y + RECT_HEIGHT / 2;
+        tipBuilder.append("\n");
 
-			Line lineUp = new Line(connectX, upLineY, connectX, parentY);
-			lineUp.setStrokeWidth(STROKE_WIDTH);
-			pane.getChildren().add(lineUp);
+        if (depth > 0)
+        {
+            double connectX = x - X_GAP;
+            double connectY = y + RECT_HEIGHT / 2;
+            double upLineY = y + RECT_HEIGHT / 2;
 
-			Line lineLeft = new Line(connectX, connectY, x, connectY);
-			lineLeft.setStrokeWidth(STROKE_WIDTH);
-			pane.getChildren().add(lineLeft);
-		}
+            Line lineUp = new Line(connectX, upLineY, connectX, parentY);
+            lineUp.setStrokeWidth(STROKE_WIDTH);
+            pane.getChildren().add(lineUp);
 
-		x += rectWidth / 2;
+            Line lineLeft = new Line(connectX, connectY, x, connectY);
+            lineLeft.setStrokeWidth(STROKE_WIDTH);
+            pane.getChildren().add(lineLeft);
+        }
 
-		x += X_GAP;
+        x += rectWidth / 2;
 
-		rect.setOnMouseClicked(new EventHandler<MouseEvent>()
-		{
-			@Override
-			public void handle(MouseEvent arg0)
-			{
-				System.out.println(node.getMember());
-			}
-		});
+        x += X_GAP;
 
-		Tooltip tip = new Tooltip(tipBuilder.toString());
-		Tooltip.install(rect, tip);
-		Tooltip.install(text, tip);
+        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent arg0)
+            {
+                logger.info("{}", node.getMember());
+                // TODO use for navigation in TriView?
+            }
+        });
 
-		pane.getChildren().add(rect);
-		pane.getChildren().add(text);
+        Tooltip tip = new Tooltip(tipBuilder.toString());
+        Tooltip.install(rect, tip);
+        Tooltip.install(text, tip);
 
-		return x;
-	}
+        pane.getChildren().add(rect);
+        pane.getChildren().add(text);
+
+        return x;
+    }
 
 }

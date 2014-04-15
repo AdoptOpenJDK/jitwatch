@@ -8,6 +8,9 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.stage.WindowEvent;
@@ -36,7 +39,7 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 		source = source.replace("\t", "    "); // 4 spaces
 
-		String[] lines = source.split("\n");
+		String[] lines = source.split(S_NEWLINE);
 
 		int maxLineLength = 0;
 
@@ -50,7 +53,7 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 			if (showLineNumbers)
 			{
-				lines[i] = padLineNumber(i + 1, maxWidth) + "  " + row;
+				lines[i] = StringUtil.padLeft(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
 
 			int rowLen = row.length();
