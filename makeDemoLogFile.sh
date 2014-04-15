@@ -76,7 +76,7 @@ echo "Building example HotSpot log"
 CLASSPATH=target/classes
 CLASSPATH=$CLASSPATH:lib/logback-classic-1.0.1.jar  
 CLASSPATH=$CLASSPATH:lib/logback-core-1.0.1.jar
-CLASSPATH=$CLASSPATH:lib/slf4j-api-1.6.4.jar
+CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 
 $JAVA_HOME/bin/java $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp $CLASSPATH com.chrisnewland.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
 echo "Done"
