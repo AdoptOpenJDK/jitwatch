@@ -8,7 +8,6 @@ else
      echo "JAVA_HOME has not been set."
      exit 0;
   fi
-  export JDK_HOME=$JAVA_HOME
 fi
 
 export TARGET_JAR=$JAVA_HOME/jre/lib/rt.jar 

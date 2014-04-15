@@ -56,6 +56,17 @@ export tiered="-XX:+TieredCompilation"
 
 export OPTIONAL_SWITCHES="$assembly $notiered"
 
+
+unamestr=`uname`
+if [ "$unamestr" = 'Darwin' ]; then
+   export JAVA_HOME=`/usr/libexec/java_home`
+else
+  if [ "$JAVA_HOME" = '' ]; then
+     echo "JAVA_HOME has not been set."
+     exit 0;
+  fi
+fi
+
 $JAVA_HOME/bin/java -version
 
 echo "VM Switches $REQUIRED_SWITCHES $OPTIONAL_SWITCHES"
