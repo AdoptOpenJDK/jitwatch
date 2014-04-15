@@ -5,22 +5,38 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.Map;
-
+import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
+    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
+	private CompilerName currentCompiler;
 	
-	//TODO replace all this with XPath???
-	// Really include a ton of XML libs?
-
+	//TODO write own mini XPath?
+	
+	public void setCompiler(CompilerName compiler)
+	{
+		currentCompiler = compiler;
+	}
+	
+	public CompilerName getCompiler()
+	{
+		return currentCompiler;
+	}
+	
 	public Tag processLine(String line)
 	{
 		Tag result = null;
@@ -37,7 +53,7 @@ public class TagProcessor
 			}
 			else
 			{
-				System.err.println("Did not handle: " + line);
+                logger.error("Did not handle: {}", line);
 			}
 		}
 
@@ -47,6 +63,7 @@ public class TagProcessor
 			topTag = null;
 		}
 
+		
 		return result;
 	}
 
@@ -105,7 +122,7 @@ public class TagProcessor
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			t = new Task(name, attrs, selfClosing);
+			t = new Task(name, attrs, selfClosing, currentCompiler);
 		}
 		else
 		{
@@ -138,6 +155,9 @@ public class TagProcessor
 			case JITWatchConstants.TAG_KLASS:
 				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
 				break;
+
+            default:
+                break;
 			}
 		}
 

@@ -5,8 +5,6 @@
  */
 package com.chrisnewland.jitwatch.util;
 
-import com.chrisnewland.jitwatch.model.*;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -17,6 +15,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.IParseDictionary;
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.model.MemberSignatureParts;
+import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.model.Tag;
 
 public class ParseUtil
 {
@@ -54,7 +60,7 @@ public class ParseUtil
     */
     private ParseUtil() {
     }
-
+    
 	public static long parseStamp(String stamp)
 	{
 		double number = parseLocaleSafeDouble(stamp);

@@ -1,8 +1,8 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.util.Map;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+import java.util.Map;
 
 public class InlineUtil
 {
@@ -12,7 +12,7 @@ public class InlineUtil
     */
     private InlineUtil() {
     }
-
+    
 	public static String buildInlineAnnotationText(boolean inlined, String reason, Map<String, String> callAttrs, Map<String, String> methodAttrs)
 	{
 		StringBuilder builder = new StringBuilder();

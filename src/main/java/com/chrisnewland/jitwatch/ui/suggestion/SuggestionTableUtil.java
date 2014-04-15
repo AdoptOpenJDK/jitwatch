@@ -14,7 +14,7 @@ import javafx.util.Callback;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
-public class SuggestionTableUtil
+public final class SuggestionTableUtil
 {
     /*
         Hide Utility Class Constructor

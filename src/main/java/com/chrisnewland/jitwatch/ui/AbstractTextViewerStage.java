@@ -6,10 +6,8 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.util.List;
-import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
@@ -23,7 +21,6 @@ public abstract class AbstractTextViewerStage extends Stage
 {
 	private Viewer viewer;
 
-	// make this a TextFlow in Java8
 	public AbstractTextViewerStage(final JITWatchUI parent, String title)
 	{
 		initStyle(StageStyle.DECORATED);
@@ -46,11 +43,6 @@ public abstract class AbstractTextViewerStage extends Stage
 		setScene(scene);
 	}
 
-	public void setLineAnnotations(Map<Integer, LineAnnotation> annotationMap)
-	{
-		viewer.setLineAnnotations(annotationMap);
-	}
-
 	protected void setContent(List<Label> items, int maxLineLength)
 	{
 		viewer.setContent(items);
@@ -63,22 +55,6 @@ public abstract class AbstractTextViewerStage extends Stage
 
 		setWidth(x * 12);
 		setHeight(y * 19);
-	}
-
-	protected String padLineNumber(int number, int maxWidth)
-	{
-		int len = Integer.toString(number).length();
-
-		StringBuilder builder = new StringBuilder();
-
-		for (int i = len; i < maxWidth; i++)
-		{
-			builder.append(' ');
-		}
-
-		builder.append(number);
-
-		return builder.toString();
 	}
 
 	public void jumpTo(IMetaMember member)

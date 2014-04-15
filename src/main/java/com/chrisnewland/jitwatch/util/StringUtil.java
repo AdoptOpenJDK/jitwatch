@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class StringUtil
+public final class StringUtil
 {
 	private static final DecimalFormat DF = new DecimalFormat("#,###");
 

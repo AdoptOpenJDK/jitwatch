@@ -1,11 +1,11 @@
 package com.chrisnewland.jitwatch.treevisitor;
 
+import java.util.List;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
-
-import java.util.List;
 
 public class TreeVisitor
 {

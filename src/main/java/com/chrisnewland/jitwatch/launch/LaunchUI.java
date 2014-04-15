@@ -7,7 +7,7 @@ package com.chrisnewland.jitwatch.launch;
 
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 
-public class LaunchUI
+public final class LaunchUI
 {
     /*
         Hide Utility Class Constructor

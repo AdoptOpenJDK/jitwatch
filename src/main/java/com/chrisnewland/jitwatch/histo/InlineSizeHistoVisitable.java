@@ -5,18 +5,13 @@
  */
 package com.chrisnewland.jitwatch.histo;
 
+import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.util.JournalUtil;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.model.Task;
-import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -42,28 +37,25 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	{
 		if (mm.isCompiled())
 		{
-			Journal journal = JournalUtil.getJournal(model, mm);
+			Journal journal = mm.getJournal();
 
-			if (journal != null)
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				Task lastTaskTag = JournalUtil.getLastTask(journal);
+				parseDictionary = lastTaskTag.getParseDictionary();
+			}
 
-				if (lastTaskTag != null)
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			// TODO fix for JDK8
+			if (parsePhase != null)
+			{
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+				for (Tag parseTag : parseTags)
 				{
-					parseDictionary = lastTaskTag.getParseDictionary();
-				}
-
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-				// TODO fix for JDK8
-				if (parsePhase != null)
-				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-					for (Tag parseTag : parseTags)
-					{
-						processParseTag(parseTag);
-					}
+					processParseTag(parseTag);
 				}
 			}
 		}
@@ -108,7 +100,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 
 					if (klassTag != null)
 					{
-						String fqName = klassTag.getAttrs().get(ATTR_NAME) + C_SLASH + currentMethod;
+						String fqName = klassTag.getAttribute(ATTR_NAME) + C_SLASH + currentMethod;
 
 						if (!inlinedCounted.contains(fqName))
 						{
@@ -126,6 +118,9 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 				processParseTag(child);
 			}
 				break;
+
+            default:
+                break;
 			}
 		}
 	}
