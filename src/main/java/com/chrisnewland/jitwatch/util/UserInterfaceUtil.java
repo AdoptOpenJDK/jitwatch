@@ -11,7 +11,7 @@ import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserInterfaceUtil
+public final class UserInterfaceUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 

@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class BytecodeLoader
+public final class BytecodeLoader
 {
     private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
 

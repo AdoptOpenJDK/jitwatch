@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class IntrinsicFinder
+public final class IntrinsicFinder
 {
 	public static Map<String, String> findIntrinsics(Journal journal)
 	{
