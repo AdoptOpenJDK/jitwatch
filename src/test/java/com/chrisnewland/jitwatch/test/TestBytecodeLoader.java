@@ -5,25 +5,17 @@
  */
 package com.chrisnewland.jitwatch.test;
 
-import static org.junit.Assert.*;
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.model.MetaMethod;
+import com.chrisnewland.jitwatch.model.bytecode.*;
+import com.chrisnewland.jitwatch.util.ClassUtil;
+import org.junit.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.chrisnewland.jitwatch.loader.BytecodeLoader;
-import com.chrisnewland.jitwatch.model.MetaMethod;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamConstant;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamNumeric;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamString;
-import com.chrisnewland.jitwatch.model.bytecode.BCParamSwitch;
-import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.model.bytecode.IBytecodeParam;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.model.bytecode.Opcode;
-import com.chrisnewland.jitwatch.util.ClassUtil;
+import static org.junit.Assert.*;
 
 public class TestBytecodeLoader
 {

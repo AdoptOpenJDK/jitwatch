@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JITWatchConstants
+public final class JITWatchConstants
 {
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";

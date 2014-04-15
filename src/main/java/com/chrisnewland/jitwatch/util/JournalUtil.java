@@ -23,7 +23,7 @@ import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JournalUtil
+public final class JournalUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 

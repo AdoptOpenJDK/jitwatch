@@ -5,14 +5,14 @@
  */
 package com.chrisnewland.jitwatch.test;
 
-import java.util.List;
-
-import org.junit.Test;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
+import org.junit.Test;
 
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.junit.Assert.*;
 
 public class TestTagProcessor

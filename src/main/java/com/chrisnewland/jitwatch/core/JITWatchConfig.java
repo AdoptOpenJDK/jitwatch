@@ -5,18 +5,14 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.chrisnewland.jitwatch.util.StringUtil;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import com.chrisnewland.jitwatch.util.StringUtil;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_COMMA;
 
 public class JITWatchConfig
 {

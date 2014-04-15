@@ -13,7 +13,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class ClassUtil
+public final class ClassUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
