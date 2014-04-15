@@ -5,7 +5,6 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import com.chrisnewland.jitwatch.toplist.ITopListScore;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
