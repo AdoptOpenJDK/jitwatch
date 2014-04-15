@@ -1,10 +1,10 @@
 package com.chrisnewland.jitwatch.util;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import java.util.Map;
 
-public class InlineUtil
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+public final class InlineUtil
 {
     /*
         Hide Utility Class Constructor

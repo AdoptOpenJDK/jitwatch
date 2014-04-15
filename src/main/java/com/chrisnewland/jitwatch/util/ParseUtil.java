@@ -5,6 +5,10 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import com.chrisnewland.jitwatch.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -16,16 +20,10 @@ import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IParseDictionary;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.MemberSignatureParts;
-import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.model.Tag;
-
 public class ParseUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
+
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");
@@ -80,7 +78,7 @@ public class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-			System.err.println(pe.toString());
+            logger.error("{}", pe);
 		}
 
 		return result;
@@ -206,8 +204,7 @@ public class ParseUtil
 	 * 
 	 * @return String[] 0=className 1=methodSignature
 	 */
-	public static String[] parseLogSignature(String logSignature) throws Exception
-	{
+	public static String[] parseLogSignature(String logSignature) throws Exception {
 		String result[] = null;
 
 		String[] parts = splitLogSignatureWithRegex(logSignature);
@@ -374,19 +371,23 @@ public class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
+                logger.error("ClassNotFoundException: {}", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-				throw new Exception("NoClassDefFoundError: " + builder.toString());
+                logger.error("NoClassDefFoundError: {}", ncdf);
+                throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Exception: " + ex.getMessage());
+                logger.error("Exception: {}", ex);
+                throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
-				throw new Exception("Error: " + err.getMessage());
+                logger.error("Error: {}", err);
+                throw new Exception("Error: " + err.getMessage());
 			}
 
 		} // end if empty
@@ -528,18 +529,18 @@ public class ParseUtil
 
 		if (methodTag != null)
 		{
-			String methodName = methodTag.getAttrs().get(ATTR_NAME);
+			String methodName = methodTag.getAttribute(ATTR_NAME);
 
-			String klassId = methodTag.getAttrs().get(ATTR_HOLDER);
+			String klassId = methodTag.getAttribute(ATTR_HOLDER);
 
 			Tag klassTag = parseDictionary.getKlass(klassId);
 
-			String metaClassName = klassTag.getAttrs().get(ATTR_NAME);
+			String metaClassName = klassTag.getAttribute(ATTR_NAME);
 			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
 
-			String returnTypeId = methodTag.getAttrs().get(ATTR_RETURN);
+			String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
 
-			String argumentsTypeId = methodTag.getAttrs().get(ATTR_ARGUMENTS);
+			String argumentsTypeId = methodTag.getAttribute(ATTR_ARGUMENTS);
 
 			String returnType = lookupType(returnTypeId, parseDictionary);
 
@@ -563,7 +564,14 @@ public class ParseUtil
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
 
-			result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			if (metaClass != null)
+			{
+				result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+			}
+			else
+			{
+                logger.error("metaClass not found: " + metaClassName);
+			}
 		}
 
 		return result;
@@ -584,7 +592,7 @@ public class ParseUtil
 
 			if (typeTag != null)
 			{
-				result = typeTag.getAttrs().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+				result = typeTag.getAttribute(ATTR_NAME).replace(S_SLASH, S_DOT);
 
 				result = ParseUtil.expandParameterType(result);
 			}
