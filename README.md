@@ -9,6 +9,9 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 
 ```OpenJDK 8```  [![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch/jdk=OpenJDK8)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/)
 
+[![Built on CloudBees](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
+
+
 <h3>For instructions and screenshots see the wiki</h3>
 <h3>https://github.com/AdoptOpenJDK/jitwatch/wiki</h3>
 
