@@ -3,6 +3,8 @@ JITWatch
 
 Log analyser and visualiser for the HotSpot JIT compiler.
 
+[![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
+
 ```JDK 1.7```  [![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
 
 ```OpenJDK 8```  [![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch/jdk=OpenJDK8)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/)
