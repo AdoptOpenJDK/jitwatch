@@ -27,3 +27,10 @@ mvn -f pom-java8.xml clean compile test exec:java</pre>
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code first with ant / maven / IDE
 ./makeDemoLogFile.sh</pre>
+
+
+Latest binaries from Jenkins
+----------------------------
+JDK 1.7 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=JDK_1.7/ws/jitwatch-1.0.0-SNAPSHOT-JDK_1.7.tar.gz
+
+OpenJDK 8 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/ws/jitwatch-1.0.0-SNAPSHOT-OpenJDK8.tar.gz
