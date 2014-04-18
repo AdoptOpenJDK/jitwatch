@@ -34,3 +34,10 @@ Latest binaries from Jenkins
 JDK 1.7 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=JDK_1.7/ws/jitwatch-1.0.0-SNAPSHOT-JDK_1.7.tar.gz
 
 OpenJDK 8 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/ws/jitwatch-1.0.0-SNAPSHOT-OpenJDK8.tar.gz
+
+
+Java 8 Compatibility
+--------------------
+<b>[Find out how you can also use this logo with your F/OSS projects](https://java.net/projects/adoptopenjdk/pages/TestingJava8)</b>
+
+![Compatibility Badge](https://java.net/downloads/adoptopenjdk/compat.svg)
