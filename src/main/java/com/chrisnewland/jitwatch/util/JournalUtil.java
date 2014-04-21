@@ -27,6 +27,14 @@ public final class JournalUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+
+    private JournalUtil() {
+    }
+
 	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<Instruction> instructions)
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();

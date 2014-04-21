@@ -11,6 +11,13 @@ import java.util.Set;
 
 public final class JITWatchConstants
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private JITWatchConstants() {
+    }
+
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";
 	public static final String TAG_TTY_CLOSE = "</tty>";

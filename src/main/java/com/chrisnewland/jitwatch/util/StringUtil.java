@@ -17,6 +17,13 @@ public final class StringUtil
 {
 	private static final DecimalFormat DF = new DecimalFormat("#,###");
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private StringUtil() {
+    }
+
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
 		if (stamp == 0)

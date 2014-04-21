@@ -17,6 +17,13 @@ public final class ClassUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ClassUtil() {
+    }
+
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try

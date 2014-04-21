@@ -15,7 +15,14 @@ import javafx.stage.StageStyle;
 
 public final class Dialogs
 {
-	public enum Response
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private Dialogs() {
+    }
+
+    public enum Response
 	{
 		NO, YES
 	};
