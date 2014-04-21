@@ -16,7 +16,14 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public final class SuggestionTableUtil
 {
-	public static TableView<SuggestTableRow> buildTableSuggestion(ObservableList<SuggestTableRow> rows)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private SuggestionTableUtil() {
+    }
+
+    public static TableView<SuggestTableRow> buildTableSuggestion(ObservableList<SuggestTableRow> rows)
 	{
 		TableView<SuggestTableRow> tv = new TableView<>();
 

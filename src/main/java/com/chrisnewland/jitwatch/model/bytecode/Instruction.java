@@ -5,12 +5,13 @@
  */
 package com.chrisnewland.jitwatch.model.bytecode;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_COLON;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_SPACE;
 
 public class Instruction
 {

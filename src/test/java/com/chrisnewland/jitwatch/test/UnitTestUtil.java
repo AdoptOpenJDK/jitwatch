@@ -5,10 +5,10 @@
  */
 package com.chrisnewland.jitwatch.test;
 
+import com.chrisnewland.jitwatch.util.ClassUtil;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-
-import com.chrisnewland.jitwatch.util.ClassUtil;
 
 public class UnitTestUtil
 {

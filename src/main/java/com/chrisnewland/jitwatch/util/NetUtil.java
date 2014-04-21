@@ -11,6 +11,13 @@ import java.net.URL;
 
 public final class NetUtil
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private NetUtil() {
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(NetUtil.class);
 
     public static String fetchURL(String toFetch)

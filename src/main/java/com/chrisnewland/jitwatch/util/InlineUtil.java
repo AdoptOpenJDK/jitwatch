@@ -6,6 +6,13 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class InlineUtil
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private InlineUtil() {
+    }
+    
 	public static String buildInlineAnnotationText(boolean inlined, String reason, Map<String, String> callAttrs, Map<String, String> methodAttrs)
 	{
 		StringBuilder builder = new StringBuilder();

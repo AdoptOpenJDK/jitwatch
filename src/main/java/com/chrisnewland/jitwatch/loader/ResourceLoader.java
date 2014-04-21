@@ -25,10 +25,17 @@ public class ResourceLoader
 {
     private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ResourceLoader() {
+    }
+
 	public static String getSourceFilename(MetaClass metaClass)
 	{
 		String fqName = metaClass.getFullyQualifiedName();
-		
+
 		int dollarPos = fqName.indexOf('$');
 
 		if (dollarPos != -1)

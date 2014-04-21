@@ -295,6 +295,11 @@ public class HotSpotLogParser
 		model.getJITStats().incCompilerThreads();
 		String threadName = tag.getAttribute(ATTR_NAME);
 
+        if (theThreadIsNotFound(threadName)) {
+            logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+            return;
+        }
+
 		if (threadName.startsWith(C1))
 		{
 			tagProcessor.setCompiler(CompilerName.C1);
@@ -309,7 +314,11 @@ public class HotSpotLogParser
 		}
 	}
 
-	private IMetaMember findMemberWithSignature(String logSignature)
+    private boolean theThreadIsNotFound(String threadName) {
+        return threadName == null;
+    }
+
+    private IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
 

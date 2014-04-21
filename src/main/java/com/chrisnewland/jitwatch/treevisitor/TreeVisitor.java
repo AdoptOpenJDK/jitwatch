@@ -9,7 +9,14 @@ import java.util.List;
 
 public final class TreeVisitor
 {
-	public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private TreeVisitor() {
+    }
+
+    public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
 	{
 		visitable.reset();
 		

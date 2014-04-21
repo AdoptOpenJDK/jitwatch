@@ -9,7 +9,14 @@ import com.chrisnewland.jitwatch.ui.JITWatchUI;
 
 public final class LaunchUI
 {
-	public static void main(String[] args)
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private LaunchUI() {
+    }
+
+    public static void main(String[] args)
 	{
 		new JITWatchUI(args);
 	}

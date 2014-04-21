@@ -19,6 +19,13 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class IntrinsicFinder
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private IntrinsicFinder() {
+    }
+
 	public static Map<String, String> findIntrinsics(Journal journal)
 	{
 		Map<String, String> result = new HashMap<>();
