@@ -7,8 +7,10 @@ package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
+import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,8 @@ public class HotSpotLogParser
 		this.logListener = logListener;
 
 		this.config = config;
+		
+		logger.info("hsdis available: {}", DisassemblyUtil.isDisassemblerAvailable());
 	}
 
 	private void mountAdditionalClasses()
