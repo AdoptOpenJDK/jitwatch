@@ -34,7 +34,7 @@ public class DisassemblyUtil
 			String binaryPath = getDisassemblerFilePath();
 
 			hsdisFile = new File(jreDir, binaryPath);
-			
+
 			logger.info("looking for hsdis binary: {}", hsdisFile);
 
 			if (hsdisFile.exists() && hsdisFile.isFile())
@@ -75,17 +75,20 @@ public class DisassemblyUtil
 			break;
 		}
 
-		switch (os)
+		if (os != null)
 		{
-		case WIN:
-			builder.append(".dll");
-			break;
-		case MAC:
-			builder.append(".dylib");
-			break;
-		case LINUX:
-			builder.append(".so");
-			break;
+			switch (os)
+			{
+			case WIN:
+				builder.append(".dll");
+				break;
+			case MAC:
+				builder.append(".dylib");
+				break;
+			case LINUX:
+				builder.append(".so");
+				break;
+			}
 		}
 
 		return builder.toString();
@@ -95,32 +98,26 @@ public class DisassemblyUtil
 	{
 		String osNameProperty = System.getProperty("os.name");
 
-		if (osNameProperty == null)
-		{
-			throw new RuntimeException("os.name property is not set");
-		}
-		else
+		if (osNameProperty != null)
 		{
 			osNameProperty = osNameProperty.toLowerCase();
+
+			if (osNameProperty.contains("win"))
+			{
+				return OperatingSystem.WIN;
+			}
+			else if (osNameProperty.contains("mac"))
+			{
+				return OperatingSystem.MAC;
+			}
+			else if (osNameProperty.contains("linux") || osNameProperty.contains("nix"))
+			{
+				return OperatingSystem.LINUX;
+			}
 		}
 
-		if (osNameProperty.contains("win"))
-		{
-			return OperatingSystem.WIN;
-		}
-		else if (osNameProperty.contains("mac"))
-		{
-			return OperatingSystem.MAC;
-		}
-		else if (osNameProperty.contains("linux") || osNameProperty.contains("nix"))
-		{
-			return OperatingSystem.LINUX;
-		}
-		else
-		{
-			logger.error("Unknown OS name: {}", osNameProperty);
-			return null;
-		}
+		logger.error("Unknown OS name: {}", osNameProperty);
+		return null;
 	}
 
 	private static Architecture getArchitecture()
