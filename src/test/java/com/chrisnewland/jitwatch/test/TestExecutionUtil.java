@@ -36,7 +36,10 @@ public class TestExecutionUtil
 		// options.add("-XX:+LogCompilation ");
 		// options.add("-XX:+PrintAssembly");
 
-		ExecutionUtil.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
+		boolean success = ExecutionUtil.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
 
+		assertTrue(success);
+		
+		
 	}
 }
