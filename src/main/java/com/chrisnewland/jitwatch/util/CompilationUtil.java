@@ -46,16 +46,6 @@ public class CompilationUtil
 		COMPILE_DIR = path;
 	}
 
-	public static void main(String[] args) throws IOException
-	{
-		File f = writeToFile(new File(COMPILE_DIR.toFile(), "Foo.java"), "public class Foo { public int bar = 42;}");
-
-		List<File> sources = new ArrayList<>();
-		sources.add(f);
-
-		compile(sources);
-	}
-
 	public static boolean compile(List<File> sourceFiles) throws IOException
 	{
 		if (COMPILE_DIR == null)
