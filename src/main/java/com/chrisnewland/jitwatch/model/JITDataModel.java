@@ -8,12 +8,13 @@ package com.chrisnewland.jitwatch.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -161,22 +162,19 @@ public class JITDataModel implements IReadOnlyJITDataModel
         }
 
         String queueStamp = meta.getQueuedAttribute(ATTR_STAMP);
-        String compileStamp = meta.getCompiledAttribute("stamp");
+        String compileStamp = meta.getCompiledAttribute(ATTR_STAMP);
 
         if (queueStamp != null && compileStamp != null)
         {
-            BigDecimal bdQ = new BigDecimal(queueStamp);
-            BigDecimal bdC = new BigDecimal(compileStamp);
+        	// convert decimal seconds into millis
+            long queueMillis = ParseUtil.parseStamp(queueStamp);
+            long compileMillis = ParseUtil.parseStamp(compileStamp);
 
-            BigDecimal delay = bdC.subtract(bdQ);
+            long delayMillis = compileMillis - queueMillis;
 
-            BigDecimal delayMillis = delay.multiply(new BigDecimal("1000"));
+            meta.addCompiledAttribute("compileMillis", Long.toString(delayMillis));
 
-            long delayLong = delayMillis.longValue();
-
-            meta.addCompiledAttribute("compileMillis", Long.toString(delayLong));
-
-            stats.recordDelay(delayLong);
+            stats.recordDelay(delayMillis);
         }
     }
 
