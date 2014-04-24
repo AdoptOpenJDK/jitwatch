@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,16 +43,6 @@ public class CompilationUtil
 		}
 
 		COMPILE_DIR = path;
-	}
-
-	public static void main(String[] args) throws IOException
-	{
-		File f = writeToFile(new File(COMPILE_DIR.toFile(), "Foo.java"), "public class Foo { public int bar = 42;}");
-
-		List<File> sources = new ArrayList<>();
-		sources.add(f);
-
-		compile(sources);
 	}
 
 	public static boolean compile(List<File> sourceFiles) throws IOException
