@@ -40,9 +40,9 @@ public final class NetUtil
 			}
 
 		} catch (MalformedURLException e) {
-            logger.error("{}", e);
+            logger.error("", e);
         } catch (IOException e) {
-            logger.error("{}", e);
+            logger.error("", e);
         } finally
 		{
 			if (in != null)

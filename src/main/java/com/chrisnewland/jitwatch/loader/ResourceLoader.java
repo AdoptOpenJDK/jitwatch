@@ -97,7 +97,7 @@ public class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-                logger.error("{}", ioe);
+                logger.error("", ioe);
 			}
 		}
 
@@ -131,7 +131,7 @@ public class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-            logger.error("{}", ioe);
+            logger.error("", ioe);
 		}
 
 		return result;

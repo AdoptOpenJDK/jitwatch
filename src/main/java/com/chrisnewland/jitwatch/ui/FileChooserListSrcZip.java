@@ -43,7 +43,7 @@ public class FileChooserListSrcZip extends FileChooserList
 					}
 					catch (IOException ioe)
 					{
-						logger.error("{}", ioe);
+						logger.error("", ioe);
 					}
 				}
 			}

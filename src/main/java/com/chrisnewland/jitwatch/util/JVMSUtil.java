@@ -72,7 +72,7 @@ public class JVMSUtil
 			}
 			catch (IOException ioe)
 			{
-                logger.error("{}", ioe);
+                logger.error("", ioe);
 			}
 		}
 
@@ -117,7 +117,7 @@ public class JVMSUtil
 		}
 		catch (IOException ioe)
 		{
-            logger.error("{}", ioe);
+            logger.error("", ioe);
 		}
 	}
 

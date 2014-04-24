@@ -63,11 +63,11 @@ public final class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			logger.error("Could not obtain bytecode for class: " + fqClassName, ba);
+			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
 		}
 		catch (IOException ioe)
 		{
-            logger.error("{}", ioe);
+            logger.error("", ioe);
 		}
 
 		if (byteCodeString != null)

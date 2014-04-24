@@ -378,7 +378,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-                logger.error("usage: MakeHotSpotLog [iterations] {}", nfe);
+                logger.error("usage: MakeHotSpotLog [iterations]", nfe);
 			}
 		}
 

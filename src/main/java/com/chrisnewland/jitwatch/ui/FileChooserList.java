@@ -136,7 +136,7 @@ public class FileChooserList extends VBox
 				}
 				catch (IOException ioe)
 				{
-                    logger.error("{}", ioe);
+                    logger.error("", ioe);
 				}
 
 				lastFolder = f.getParentFile();
@@ -172,7 +172,7 @@ public class FileChooserList extends VBox
 			}
 			catch (IOException ioe)
 			{
-                logger.error("{}", ioe);
+                logger.error("", ioe);
 			}
 			
 			lastFolder = result.getParentFile();
