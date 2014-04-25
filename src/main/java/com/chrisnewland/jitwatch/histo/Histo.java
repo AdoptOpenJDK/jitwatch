@@ -34,8 +34,9 @@ public class Histo
 		this.resolution = resolution;
 	}
 
-	public void addValue(long value)
+	public void addValue(long inValue)
 	{
+        long value = inValue;
 		synchronized (values)
 		{
 			values.add(value);

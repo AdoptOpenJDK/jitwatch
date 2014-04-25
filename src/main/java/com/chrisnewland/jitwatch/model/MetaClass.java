@@ -6,6 +6,9 @@
 package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
@@ -161,8 +164,10 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember getMemberFromSignature(String name, String returnType, String[] paramTypes)
+	public IMetaMember getMemberFromSignature(String inName, String inReturnType, String[] paramTypes)
 	{
+	    String returnType = inReturnType;
+        String name = inName;
 		IMetaMember result = null;
 
 		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))

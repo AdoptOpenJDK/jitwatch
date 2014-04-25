@@ -17,10 +17,7 @@ public class AttributeTableRow
     {
         this.type = type;
         this.name = name;
-
-        value = StringUtil.formatThousands(value);
-
-        this.value = value;
+        this.value = StringUtil.formatThousands(value);
     }
 
     public String getType()
