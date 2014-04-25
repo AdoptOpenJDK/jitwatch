@@ -78,7 +78,7 @@ public class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-            logger.error("{}", pe);
+            logger.error("", pe);
 		}
 
 		return result;
@@ -371,22 +371,22 @@ public class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
-                logger.error("ClassNotFoundException: {}", cnf);
+                logger.error("ClassNotFoundException:", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-                logger.error("NoClassDefFoundError: {}", ncdf);
+                logger.error("NoClassDefFoundError:", ncdf);
                 throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-                logger.error("Exception: {}", ex);
+                logger.error("Exception:", ex);
                 throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
-                logger.error("Error: {}", err);
+                logger.error("Error:", err);
                 throw new Exception("Error: " + err.getMessage());
 			}
 
@@ -570,7 +570,7 @@ public class ParseUtil
 			}
 			else
 			{
-                logger.error("metaClass not found: " + metaClassName);
+                logger.error("metaClass not found: {}", metaClassName);
 			}
 		}
 

@@ -113,7 +113,7 @@ public class HotSpotLogParser
 				}
 				catch (Exception ex)
 				{
-                    logger.error("Exception handling: '{}' {}", currentLine, ex);
+                    logger.error("Exception handling: '{}'", currentLine, ex);
 				}
 			}
 			else
@@ -124,7 +124,7 @@ public class HotSpotLogParser
 				}
 				catch (InterruptedException e)
 				{
-					logger.error("{}", e);
+					logger.error("", e);
 					break;
 				}
 			}
