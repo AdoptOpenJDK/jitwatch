@@ -5,13 +5,14 @@
  */
 package com.chrisnewland.jitwatch.test;
 
-import java.util.List;
-
-import org.junit.Test;
-
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
+import org.junit.Test;
 
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.junit.Assert.*;
 
 public class TestTagProcessor
@@ -28,11 +29,11 @@ public class TestTagProcessor
 
 		assertEquals(3, tag.getAttrs().size());
 
-		assertEquals("632", tag.getAttrs().get("id"));
+		assertEquals("632", tag.getAttribute("id"));
 
-		assertEquals("java/lang/String", tag.getAttrs().get("name"));
+		assertEquals("java/lang/String", tag.getAttribute("name"));
 
-		assertEquals("17", tag.getAttrs().get("flags"));
+		assertEquals("17", tag.getAttribute("flags"));
 	}
 
 	@Test
@@ -53,9 +54,9 @@ public class TestTagProcessor
 
 		assertEquals(2, tag.getAttrs().size());
 
-		assertEquals("1012", tag.getAttrs().get("idx"));
+		assertEquals("1012", tag.getAttribute("idx"));
 
-		assertEquals("1", tag.getAttrs().get("inner_loop"));
+		assertEquals("1", tag.getAttribute("inner_loop"));
 	}
 
 	@Test
@@ -99,19 +100,19 @@ public class TestTagProcessor
 
 		Tag child01 = child0.getChildren().get(0);
 		assertEquals("loop", child01.getName());
-		assertEquals("1124", child01.getAttrs().get("idx"));
+		assertEquals("1124", child01.getAttribute("idx"));
 
 		Tag child02 = child0.getChildren().get(1);
 		assertEquals("loop", child02.getName());
-		assertEquals("1012", child02.getAttrs().get("idx"));
-		assertEquals("1", child02.getAttrs().get("inner_loop"));
+		assertEquals("1012", child02.getAttribute("idx"));
+		assertEquals("1", child02.getAttribute("inner_loop"));
 
 		Tag child1 = tag.getChildren().get(1);
 		assertEquals("phase_done", child1.getName());
 		assertEquals(2, child1.getAttrs().size());
 		assertEquals(0, child1.getChildren().size());
-		assertEquals("1144", child1.getAttrs().get("nodes"));
-		assertEquals("14.151", child1.getAttrs().get("stamp"));
+		assertEquals("1144", child1.getAttribute("nodes"));
+		assertEquals("14.151", child1.getAttribute("stamp"));
 	}
 
 	@Test
@@ -139,9 +140,9 @@ public class TestTagProcessor
 		}
 
 		assertNotNull(tag);
-				
+
 		assertEquals(7, tag.getAttrs().size());
-		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttrs().get("method"));
+		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttribute("method"));
 	}
 
 	@Test
@@ -171,15 +172,62 @@ public class TestTagProcessor
 		}
 
 		assertNotNull(tag);
-				
+
 		List<Tag> children = tag.getNamedChildren("b");
 		assertEquals(3, children.size());
-		
+
 		Tag firstChild = tag.getFirstNamedChild("b");
-		assertEquals("2", firstChild.getAttrs().get("foo"));
-		assertEquals("baz", firstChild.getAttrs().get("bar"));
+		assertEquals("2", firstChild.getAttribute("foo"));
+		assertEquals("baz", firstChild.getAttribute("bar"));
 
 		List<Tag> childrenWithAttr = tag.getNamedChildrenWithAttribute("b", "bar", "baz");
-		assertEquals(1, childrenWithAttr.size());		
+		assertEquals(1, childrenWithAttr.size());
+	}
+
+	@Test
+	public void testTextNodes()
+	{
+		String line0 = "<vm_version>";
+		String line1 = "<name>";
+		String line2 = "Java HotSpot(TM) 64-Bit Server VM";
+		String line3 = "</name>";
+		String line4 = "<release>";
+		String line5 = "25.0-b70";
+		String line6 = "</release>";
+		String line7 = "<info>";
+		String line8 = "Java HotSpot(TM) 64-Bit Server VM (25.0-b70) for linux-amd64 JRE (1.8.0-b132), built on Mar  4 2014 03:07:25 by &quot;java_re&quot; with gcc 4.3.0 20080428 (RedHat 4.3.0-8)";
+		String line9 = "</info>";
+		String line10 = "</vm_version>";
+
+		String[] lines = new String[] { line0, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10 };
+
+		TagProcessor tp = new TagProcessor();
+
+		int count = 0;
+
+		Tag tag = null;
+
+		for (String line : lines)
+		{
+			tag = tp.processLine(line);
+
+			if (count++ < lines.length - 1)
+			{
+				assertNull(tag);
+			}
+		}
+
+		assertNotNull(tag);
+
+		assertEquals(TAG_VM_VERSION, tag.getName());
+		
+		List<Tag> children = tag.getChildren();
+		
+		assertEquals(3, children.size());
+
+		Tag tagRelease = children.get(1);
+		
+		assertEquals(TAG_RELEASE, tagRelease.getName());	
+		assertEquals(line5, tagRelease.getTextContent());
 	}
 }

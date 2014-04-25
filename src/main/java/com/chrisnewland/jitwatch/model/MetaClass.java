@@ -5,13 +5,16 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
@@ -23,15 +26,15 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private List<MetaMethod> classMethods = new CopyOnWriteArrayList<MetaMethod>();
 	private List<MetaConstructor> classConstructors = new CopyOnWriteArrayList<MetaConstructor>();
-	
+
 	private int compiledMethodCount = 0;
-	
-	private Map<String, String> bytecodeCache = null;
+
+	private ClassBC classBytecode = null;
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;
-		this.className = className;		
+		this.className = className;
 	}
 
 	public boolean isInterface()
@@ -43,17 +46,17 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		compiledMethodCount++;
 	}
-	
+
 	public boolean hasCompiledMethods()
 	{
-	    return compiledMethodCount > 0;
+		return compiledMethodCount > 0;
 	}
-	
+
 	public void setInterface(boolean isInterface)
 	{
 		this.isInterface = isInterface;
 	}
-	
+
 	public boolean isMissingDef()
 	{
 		return missingDef;
@@ -63,22 +66,22 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		this.missingDef = missingDef;
 	}
-	
-	public Map<String, String> getBytecodeCache(List<String> classLocations)
+
+	public ClassBC getClassBytecode(List<String> classLocations)
 	{
-		if (bytecodeCache == null)
+		if (classBytecode == null)
 		{
-			bytecodeCache = BytecodeLoader.fetchByteCodeForClass(classLocations, getFullyQualifiedName());
+			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
 		}
-		
-		return bytecodeCache;
+
+		return classBytecode;
 	}
 
 	public String toString2()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append(classPackage.getName()).append(".").append(className).append(" ").append(compiledMethodCount)
-				.append("/").append(classMethods.size());
+		builder.append(classPackage.getName()).append(S_DOT).append(className).append(C_SPACE).append(compiledMethodCount)
+				.append(S_SLASH).append(classMethods.size());
 
 		return builder.toString();
 	}
@@ -96,7 +99,35 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public String getFullyQualifiedName()
 	{
-		return classPackage.getName() + '.' + className;
+		StringBuilder builder = new StringBuilder();
+
+		if (classPackage != null && classPackage.getName().length() > 0)
+		{
+			builder.append(classPackage.getName()).append(C_DOT);
+		}
+
+		builder.append(className);
+
+		return builder.toString();
+	}
+
+	public String getAbbreviatedFullyQualifiedName()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		if (classPackage != null && classPackage.getName().length() > 0)
+		{
+			String[] parts = classPackage.getName().split("\\.");
+
+			for(String part : parts)
+			{
+				builder.append(part.charAt(0)).append(C_DOT);
+			}
+		}
+
+		builder.append(className);
+
+		return builder.toString();
 	}
 
 	public MetaPackage getPackage()
@@ -108,27 +139,94 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		classMethods.add(method);
 	}
-	
+
 	public void addMetaConstructor(MetaConstructor constructor)
 	{
 		classConstructors.add(constructor);
 	}
 
-	//alpha
 	public List<IMetaMember> getMetaMembers()
 	{
 		List<IMetaMember> result = new ArrayList<>();
-		
+
 		IMetaMember[] constructorsArray = classConstructors.toArray(new MetaConstructor[classConstructors.size()]);
 		Arrays.sort(constructorsArray);
-		
+
 		IMetaMember[] methodsArray = classMethods.toArray(new MetaMethod[classMethods.size()]);
 		Arrays.sort(methodsArray);
 
 		result.addAll(Arrays.asList(constructorsArray));
 		result.addAll(Arrays.asList(methodsArray));
-		
+
 		return result;
+	}
+
+	public IMetaMember getMemberFromSignature(String name, String returnType, String[] paramTypes)
+	{
+		IMetaMember result = null;
+
+		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))
+		{
+			name = getFullyQualifiedName();
+			returnType = name;
+		}
+
+		for (IMetaMember member : getMetaMembers())
+		{
+			if (memberMatches(member, name, returnType, paramTypes))
+			{
+				result = member;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	private boolean memberMatches(IMetaMember member, String name, String returnType, String[] paramTypes)
+	{
+		boolean match = false;
+
+		boolean nameMatch = member.getMemberName().equals(name);
+
+		if (nameMatch)
+		{
+			boolean returnMatch = false;
+			boolean paramsMatch = false;
+
+			String memberReturnTypeName = member.getReturnTypeName();
+			String[] memberArgumentTypeNames = member.getParamTypeNames();
+
+			if (memberReturnTypeName == null && returnType == null)
+			{
+				returnMatch = true;
+			}
+			else if (memberReturnTypeName != null && returnType != null && memberReturnTypeName.equals(returnType))
+			{
+				returnMatch = true;
+			}
+
+			if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
+			{
+				paramsMatch = true;
+
+				for (int i = 0; i < memberArgumentTypeNames.length; i++)
+				{
+					String memberParam = memberArgumentTypeNames[i];
+					String checkParam = paramTypes[i];
+
+					if (!memberParam.equals(checkParam))
+					{
+						paramsMatch = false;
+						break;
+					}
+				}
+			}
+
+			match = returnMatch && paramsMatch;
+		}
+
+		return match;
 	}
 
 	@Override

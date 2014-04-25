@@ -5,23 +5,27 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.chrisnewland.jitwatch.util.ParseUtil;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.core.JITEvent;
-import com.chrisnewland.jitwatch.core.JITStats;
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+
     private PackageManager pm;
     private JITStats stats;
 
@@ -32,12 +36,24 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// written during parse, make copy for graphing as needs sort
     private List<Tag> codeCacheTagList = new ArrayList<>();
-        
+
+    private String vmVersionRelease;
+
     public JITDataModel()
     {
         pm = new PackageManager();
         stats = new JITStats();
     }
+
+    public void setVmVersionRelease(String release)
+    {
+    	this.vmVersionRelease = release;
+    }
+
+	public String getVmVersionRelease()
+	{
+		return vmVersionRelease;
+	}
 
     public void reset()
     {
@@ -47,8 +63,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
         jitEvents.clear();
 
-        journalMap.clear();  
-        
+        journalMap.clear();
+
         codeCacheTagList.clear();
     }
 
@@ -62,36 +78,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	public JITStats getJITStats()
     {
         return stats;
-    }
-    
-    public void addJournalEntry(String id, Tag entry)
-    {
-        Journal journal = journalMap.get(id);
-
-        if (journal == null)
-        {
-            journal = new Journal();
-            journalMap.put(id, journal);
-        }
-
-        journal.addEntry(entry);
-    }
-
-    // can we guarantee that IMetaMember will be created before
-    // journal entries are ready? Assume not so store in model
-    // instead of member
-    @Override
-	public Journal getJournal(String id)
-    {
-        Journal journal = journalMap.get(id);
-
-        if (journal == null)
-        {
-            journal = new Journal();
-            journalMap.put(id, journal);
-        }
-
-        return journal;
     }
 
     // ugly but better than using COWAL with so many writes
@@ -108,8 +94,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
         synchronized (jitEvents)
         {
-            List<JITEvent> copy = new ArrayList<>(jitEvents);
-            return copy;
+            return new ArrayList<>(jitEvents);
         }
     }
 
@@ -124,7 +109,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
         for (String modifier : IMetaMember.MODIFIERS)
         {
-            if (fullSignature.contains(modifier + " "))
+            if (fullSignature.contains(modifier + S_SPACE))
             {
                 // use Java7 MethodHandle on JITStats object to increment
                 // correct counter
@@ -143,56 +128,53 @@ public class JITDataModel implements IReadOnlyJITDataModel
                 }
                 catch (Throwable t)
                 {
-                    t.printStackTrace();
+                    logger.error("Exception: {}", t.getMessage(), t);
                 }
             }
         }
 
-        String compiler = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILER);
+        String compiler = meta.getCompiledAttribute(ATTR_COMPILER);
 
         if (compiler != null)
         {
-            if (JITWatchConstants.C1.equalsIgnoreCase(compiler))
+            if (C1.equalsIgnoreCase(compiler))
             {
                 stats.incCountC1();
             }
-            else if (JITWatchConstants.C2.equalsIgnoreCase(compiler))
+            else if (C2.equalsIgnoreCase(compiler))
             {
                 stats.incCountC2();
             }
         }
 
-        String compileKind = meta.getCompiledAttribute(JITWatchConstants.ATTR_COMPILE_KIND);
+        String compileKind = meta.getCompiledAttribute(ATTR_COMPILE_KIND);
 
         if (compileKind != null)
         {
-            if (JITWatchConstants.OSR.equalsIgnoreCase(compileKind))
+            if (OSR.equalsIgnoreCase(compileKind))
             {
                 stats.incCountOSR();
             }
-            else if (JITWatchConstants.C2N.equalsIgnoreCase(compileKind))
+            else if (C2N.equalsIgnoreCase(compileKind))
             {
                 stats.incCountC2N();
             }
         }
 
-        String queueStamp = meta.getQueuedAttribute(JITWatchConstants.ATTR_STAMP);
-        String compileStamp = meta.getCompiledAttribute("stamp");
+        String queueStamp = meta.getQueuedAttribute(ATTR_STAMP);
+        String compileStamp = meta.getCompiledAttribute(ATTR_STAMP);
 
         if (queueStamp != null && compileStamp != null)
         {
-            BigDecimal bdQ = new BigDecimal(queueStamp);
-            BigDecimal bdC = new BigDecimal(compileStamp);
+        	// convert decimal seconds into millis
+            long queueMillis = ParseUtil.parseStamp(queueStamp);
+            long compileMillis = ParseUtil.parseStamp(compileStamp);
 
-            BigDecimal delay = bdC.subtract(bdQ);
+            long delayMillis = compileMillis - queueMillis;
 
-            BigDecimal delayMillis = delay.multiply(new BigDecimal("1000"));
+            meta.addCompiledAttribute("compileMillis", Long.toString(delayMillis));
 
-            long delayLong = delayMillis.longValue();
-
-            meta.addCompiledAttribute("compileMillis", Long.toString(delayLong));
-
-            stats.recordDelay(delayLong);
+            stats.recordDelay(delayMillis);
         }
     }
 
@@ -276,8 +258,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
     {
         synchronized (codeCacheTagList)
         {
-            List<Tag> copy = new ArrayList<>(codeCacheTagList);
-            return copy;
+            return new ArrayList<>(codeCacheTagList);
         }
     }
 }

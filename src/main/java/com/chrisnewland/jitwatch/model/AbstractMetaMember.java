@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -23,6 +26,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	protected boolean isQueued = false;
 	protected boolean isCompiled = false;
+	
+	protected Journal journal = new Journal();
 
 	protected Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
 	protected Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
@@ -35,8 +40,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	private static final String anyChars = "(.*)";
 	private static final String spaceZeroOrMore = "( )*";
 	private static final String spaceOneOrMore = "( )+";
-	private static final String paramName = "([0-9a-zA-Z_]+)";
-	private static final String regexPackage = "([0-9a-zA-Z_\\.]*)";
+	private static final String paramName = "([0-9\\p{L}_]+)";
+	private static final String regexPackage = "([0-9\\p{L}_\\.]*)";
 	
 	@Override
 	public String getMemberName()
@@ -59,7 +64,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getReturnTypeName()
 	{
-		return (returnType == null) ? "" : ParseUtil.expandParameterType(returnType.getName());
+		return (returnType == null) ? S_EMPTY : ParseUtil.expandParameterType(returnType.getName());
 	}
 
 	@Override
@@ -194,7 +199,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		for (String mod : MODIFIERS)
 		{
-			nameToMatch = nameToMatch.replace(mod + " ", "");
+			nameToMatch = nameToMatch.replace(mod + S_SPACE, S_EMPTY);
 		}
 
 		return nameToMatch.equals(input);
@@ -227,7 +232,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(modifiers).append(' ');
 		}
 
-		if (returnType != null)
+		// return type of constructor is not declared in signature
+		if (!(this instanceof MetaConstructor) && returnType != null)
 		{
 			String rt = expandParamRegEx(returnType.getName());
 
@@ -260,7 +266,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				builder.append(paramType);
 				builder.append(spaceOneOrMore);
 				builder.append(paramName);
-				builder.append(",");
+				builder.append(S_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
@@ -281,7 +287,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			paramType = ParseUtil.expandParameterType(paramType);
 		}
 
-		if (paramType.contains("."))
+		if (paramType.contains(S_DOT))
 		{
 			paramType = StringUtil.makeUnqualified(paramType);
 		}
@@ -298,7 +304,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			paramType = paramType.replace("[", "\\[").replace("]", "\\]");
 		}
 
-		if (paramType.contains("."))
+		if (paramType.contains(S_DOT))
 		{
 			paramType = regexPackage + StringUtil.makeUnqualified(paramType);
 		}
@@ -317,12 +323,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		return path;
 	}
-
-	@Override
-	public String getJournalID()
-	{
-		return queuedAttributes.get(JITWatchConstants.ATTR_COMPILE_ID);
-	}
 	
     @Override
     public int compareTo(IMetaMember other)
@@ -336,4 +336,23 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
             return getMemberName().compareTo(other.getMemberName());
         }
     }
+    
+    public Journal getJournal()
+    {
+    	return journal;
+    }
+    
+    public void addJournalEntry(Tag entry)
+    {        
+        journal.addEntry(entry);
+    }
+    
+	public List<Instruction> getBytecodeForMember(List<String> classLocations)
+	{
+		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
+
+		List<Instruction> result = classBytecode.getMemberBytecode(this);
+
+		return result;
+	}
 }

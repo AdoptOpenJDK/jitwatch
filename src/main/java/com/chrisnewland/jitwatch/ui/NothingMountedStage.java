@@ -65,11 +65,11 @@ public class NothingMountedStage extends Stage
         {
             @Override
             public void handle(ActionEvent e)
-            {              
-				parent.handleStageClosed(NothingMountedStage.this);
-                close();
-                
+            {   
+            	close();
 				parent.openConfigStage();
+            	
+				parent.handleStageClosed(NothingMountedStage.this);                
             }
         });
 

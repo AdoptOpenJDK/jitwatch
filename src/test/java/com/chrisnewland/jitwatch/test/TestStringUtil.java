@@ -13,6 +13,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TestStringUtil
 {
@@ -43,7 +44,7 @@ public class TestStringUtil
 		map1.put("bar", "2");
 		map1.put("baz", "3");
 
-		String line2 = "";
+		String line2 = S_EMPTY;
 
 		Map<String, String> map2 = new HashMap<>();
 

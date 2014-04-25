@@ -5,11 +5,8 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-
-public interface ITopListFilter
+public interface ITopListScore
 {
-    public boolean acceptMember(IMetaMember mm);
-    
-    public MemberScore getScore(IMetaMember mm);
+	Object getKey();
+	long getScore();
 }

@@ -11,14 +11,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StringUtil
-{
-	private static final char QUOTE = '\'';
-	private static final char DOUBLE_QUOTE = '"';
-	private static final char SPACE = ' ';
-	private static final char EQUALS = '=';
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
+public final class StringUtil
+{
 	private static final DecimalFormat DF = new DecimalFormat("#,###");
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private StringUtil() {
+    }
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
@@ -32,10 +36,6 @@ public class StringUtil
 			{
 				return "0";
 			}
-		}
-		else if (showMillis && stamp <= 1000)
-		{
-			return "0." + pad(stamp, 3);
 		}
 
 		long stampCopy = stamp;
@@ -66,36 +66,67 @@ public class StringUtil
 			sb.append(days).append("d ");
 		}
 
-		sb.append(pad(hours, 2)).append(":");
-		sb.append(pad(minutes, 2)).append(":");
-		sb.append(pad(seconds, 2));
+		sb.append(padZero(hours, 2)).append(S_COLON);
+		sb.append(padZero(minutes, 2)).append(S_COLON);
+		sb.append(padZero(seconds, 2));
 
 		if (showMillis)
 		{
-			sb.append(".").append(pad(millis, 3));
+			sb.append(S_DOT).append(padZero(millis, 3));
 		}
 
 		return sb.toString();
 	}
 
-	public static String pad(long num, int width)
+	public static String padLeft(long num, int width)
 	{
-		String numString = Long.toString(num);
-
+		return pad(Long.toString(num), width, C_SPACE, true);
+	}
+	
+	public static String padLeft(String str, int width)
+	{
+		return pad(str, width, C_SPACE, true);
+	}	
+	
+	public static String padRight(long num, int width)
+	{
+		return pad(Long.toString(num), width, C_SPACE, false);
+	}
+	
+	public static String padRight(String str, int width)
+	{
+		return pad(str, width, C_SPACE, false);
+	}	
+	
+	public static String padZero(long num, int width)
+	{
+		return pad(Long.toString(num), width, '0', true);
+	}	
+	
+	public static String pad(String str, int width, char padding, boolean left)
+	{
 		StringBuilder sb = new StringBuilder();
 
-		int len = numString.length();
+		int len = str.length();
+		
+		if (!left)
+		{
+			sb.append(str);
+		}
 
 		if (len < width)
 		{
 			for (int i = 0; i < width - len; i++)
 			{
-				sb.append("0");
+				sb.append(padding);
 			}
 		}
 
-		sb.append(numString);
-
+		if (left)
+		{
+			sb.append(str);
+		}
+		
 		return sb.toString();
 	}
 
@@ -150,21 +181,34 @@ public class StringUtil
 			{
 				result = input.substring(startPos + start.length(), endPos);
 			}
-
 		}
 
 		return result;
 	}
 
-	public static String makeUnqualified(String input)
+	public static String makeUnqualified(String fqClassName)
 	{
-		int lastDot = input.lastIndexOf('.');
+		int lastDot = fqClassName.lastIndexOf('.');
 
-		String result = input;
+		String result = fqClassName;
 
 		if (lastDot != -1)
 		{
-			result = input.substring(lastDot + 1);
+			result = fqClassName.substring(lastDot + 1);
+		}
+
+		return result;
+	}
+	
+	public static String getPackageName(String fqClassName)
+	{
+		int lastDot = fqClassName.lastIndexOf('.');
+
+		String result = fqClassName;
+
+		if (lastDot != -1)
+		{
+			result = fqClassName.substring(0, lastDot);
 		}
 
 		return result;
@@ -189,18 +233,18 @@ public class StringUtil
 
 				switch (c)
 				{
-				case SPACE:
+				case C_SPACE:
 					if (!inValue)
 					{
-						// space before new key
+						// C_SPACE before new key
 						key.delete(0, key.length());
 					}
 					else
 					{
-						val.append(SPACE);
+						val.append(C_SPACE);
 					}
 					break;
-				case QUOTE:
+				case C_QUOTE:
 					if (inValue)
 					{
 						// finished attr
@@ -214,10 +258,10 @@ public class StringUtil
 						inValue = true;
 					}
 					break;
-				case EQUALS:
+				case C_EQUALS:
 					if (inValue)
 					{
-						val.append(EQUALS);
+						val.append(C_EQUALS);
 					}
 					break;
 				default:
@@ -255,18 +299,18 @@ public class StringUtil
 
 				switch (c)
 				{
-				case SPACE:
+				case C_SPACE:
 					if (!inValue)
 					{
-						// space before new key
+						// C_SPACE before new key
 						key.delete(0, key.length());
 					}
 					else
 					{
-						val.append(SPACE);
+						val.append(C_SPACE);
 					}
 					break;
-				case DOUBLE_QUOTE:
+				case C_DOUBLE_QUOTE:
 					if (inValue)
 					{
 						// finished attr
@@ -280,10 +324,10 @@ public class StringUtil
 						inValue = true;
 					}
 					break;
-				case EQUALS:
+				case C_EQUALS:
 					if (inValue)
 					{
-						val.append(EQUALS);
+						val.append(C_EQUALS);
 					}
 					break;
 				default:
@@ -315,5 +359,4 @@ public class StringUtil
 
 		return value;
 	}
-
 }

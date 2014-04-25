@@ -6,6 +6,7 @@
 package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,151 +21,173 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileChooserList extends VBox
 {
-    private Stage stage;
+    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
 
-    private ListView<Label> fileList;
+	private Stage stage;
 
-    private File lastFolder = null;
+	protected ListView<Label> fileList;
+
+	private File lastFolder = null;
+	
+	protected VBox vboxButtons;
 
     public FileChooserList(Stage stage, String title, List<String> items)
-    {
-        this.stage = stage;
+	{
+		this.stage = stage;
 
-        HBox hbox = new HBox();
+		HBox hbox = new HBox();
 
-        fileList = new ListView<Label>();
+		fileList = new ListView<Label>();
 
-        for (String item : items)
-        {
-            fileList.getItems().add(new Label(item));
-        }
+		for (String item : items)
+		{
+			fileList.getItems().add(new Label(item));
+		}
 
-        Button btnOpenFileDialog = new Button("Add File(s)");
-        btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                chooseFile();
-            }
-        });
+		Button btnOpenFileDialog = new Button("Add File(s)");
+		btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				chooseFile();
+			}
+		});
 
-        Button btnOpenFolderDialog = new Button("Add Folder");
-        btnOpenFolderDialog.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                chooseFolder();
-            }
-        });
+		Button btnOpenFolderDialog = new Button("Add Folder");
+		btnOpenFolderDialog.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				chooseFolder();
+			}
+		});
 
-        Button btnRemove = new Button("Remove");
-        btnRemove.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                Label selected = fileList.getSelectionModel().getSelectedItem();
+		Button btnRemove = new Button("Remove");
+		btnRemove.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				Label selected = fileList.getSelectionModel().getSelectedItem();
 
-                if (selected != null)
-                {
-                    fileList.getItems().remove(selected);
-                }
-            }
-        });
+				if (selected != null)
+				{
+					fileList.getItems().remove(selected);
+				}
+			}
+		});
 
-        VBox vboxButtons = new VBox();
-        vboxButtons.setPadding(new Insets(10, 10, 10, 10));
-        vboxButtons.setSpacing(10);
+		vboxButtons = new VBox();
+		vboxButtons.setPadding(new Insets(10, 10, 10, 10));
+		vboxButtons.setSpacing(10);
 
-        vboxButtons.getChildren().add(btnOpenFileDialog);
-        vboxButtons.getChildren().add(btnOpenFolderDialog);
-        vboxButtons.getChildren().add(btnRemove);
+		vboxButtons.getChildren().add(btnOpenFileDialog);
+		vboxButtons.getChildren().add(btnOpenFolderDialog);
+		vboxButtons.getChildren().add(btnRemove);
 
-        hbox.getChildren().add(fileList);
-        hbox.getChildren().add(vboxButtons);
+		hbox.getChildren().add(fileList);
+		hbox.getChildren().add(vboxButtons);
 
-        fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.85));
-        vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.15));
+		fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.85));
+		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.15));
 
-        Label titleLabel = new Label(title);
+		Label titleLabel = new Label(title);
 
-        getChildren().add(titleLabel);
-        getChildren().add(hbox);
+		getChildren().add(titleLabel);
+		getChildren().add(hbox);
 
-        setSpacing(10);
-    }
+		setSpacing(10);
+	}
 
-    private void chooseFile()
-    {
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Choose File(s)");
+	private void chooseFile()
+	{
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Choose File(s)");
 
-        File dirFile = null;
+		File dirFile = null;
 
-        if (lastFolder == null)
-        {
-            dirFile = new File(System.getProperty("user.dir"));
-        }
-        else
-        {
-            dirFile = lastFolder;
-        }
+		if (lastFolder == null)
+		{
+			dirFile = new File(System.getProperty("user.dir"));
+		}
+		else
+		{
+			dirFile = lastFolder;
+		}
 
-        fc.setInitialDirectory(dirFile);
+		fc.setInitialDirectory(dirFile);
 
-        List<File> result = fc.showOpenMultipleDialog(stage);
+		List<File> result = fc.showOpenMultipleDialog(stage);
 
-        if (result != null)
-        {
-            for (File f : result)
-            {
-                fileList.getItems().add(new Label(f.getAbsolutePath()));
-                lastFolder = f.getParentFile();
-            }
-        }
-    }
+		if (result != null)
+		{
+			for (File f : result)
+			{
+				try
+				{
+					fileList.getItems().add(new Label(f.getCanonicalPath()));
+				}
+				catch (IOException ioe)
+				{
+                    logger.error("", ioe);
+				}
 
-    private void chooseFolder()
-    {
-        DirectoryChooser dc = new DirectoryChooser();
-        dc.setTitle("Choose Folder");
+				lastFolder = f.getParentFile();
+			}
+		}
+	}
 
-        File dirFile = null;
+	private void chooseFolder()
+	{
+		DirectoryChooser dc = new DirectoryChooser();
+		dc.setTitle("Choose Folder");
 
-        if (lastFolder == null)
-        {
-            dirFile = new File(System.getProperty("user.dir"));
-        }
-        else
-        {
-            dirFile = lastFolder;
-        }
+		File dirFile = null;
 
-        dc.setInitialDirectory(dirFile);
+		if (lastFolder == null)
+		{
+			dirFile = new File(System.getProperty("user.dir"));
+		}
+		else
+		{
+			dirFile = lastFolder;
+		}
 
-        File result = dc.showDialog(stage);
+		dc.setInitialDirectory(dirFile);
 
-        if (result != null)
-        {
-            fileList.getItems().add(new Label(result.getAbsolutePath()));
-            lastFolder = result.getParentFile();
-        }
-    }
+		File result = dc.showDialog(stage);
 
-    public List<String> getFiles()
-    {
-        List<String> result = new ArrayList<>();
+		if (result != null)
+		{
+			try
+			{
+				fileList.getItems().add(new Label(result.getCanonicalPath()));
+			}
+			catch (IOException ioe)
+			{
+                logger.error("", ioe);
+			}
+			
+			lastFolder = result.getParentFile();
+		}
+	}
 
-        for (Label label : fileList.getItems())
-        {
-            result.add(label.getText());
-        }
+	public List<String> getFiles()
+	{
+		List<String> result = new ArrayList<>();
 
-        return result;
-    }
+		for (Label label : fileList.getItems())
+		{
+			result.add(label.getText());
+		}
+
+		return result;
+	}
 }

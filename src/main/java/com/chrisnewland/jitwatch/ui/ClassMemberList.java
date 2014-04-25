@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import java.util.List;
 import java.util.Map;
 
@@ -71,14 +73,14 @@ public class ClassMemberList extends VBox
 				parent.showMemberInfo(newVal);
 			}
 		});
-		
+
 		memberList.getItems().addListener(new ListChangeListener<IMetaMember>()
 		{
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IMetaMember> arg0)
 			{
-				setScrollBar();		
+				setScrollBar();
 			}
 		});
 
@@ -94,20 +96,17 @@ public class ClassMemberList extends VBox
 		final ContextMenu contextMenuCompiled = new ContextMenu();
 		final ContextMenu contextMenuNotCompiled = new ContextMenu();
 
-		MenuItem menuItemSource = new MenuItem("Show source");
-		MenuItem menuItemBytecode = new MenuItem("Show bytecode");
-		MenuItem menuItemNative = new MenuItem("Show native code");
+		MenuItem menuItemTriView = new MenuItem("Show TriView");
 		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
+		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
 
-		contextMenuCompiled.getItems().add(menuItemSource);
-		contextMenuCompiled.getItems().add(menuItemBytecode);
-		contextMenuCompiled.getItems().add(menuItemNative);
+		contextMenuCompiled.getItems().add(menuItemTriView);
 		contextMenuCompiled.getItems().add(menuItemJournal);
 		contextMenuCompiled.getItems().add(menuItemIntrinsics);
+		contextMenuCompiled.getItems().add(menuItemCallChain);
 
-		contextMenuNotCompiled.getItems().add(menuItemSource);
-		contextMenuNotCompiled.getItems().add(menuItemBytecode);
+		contextMenuNotCompiled.getItems().add(menuItemTriView);
 		contextMenuNotCompiled.getItems().add(menuItemJournal);
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
@@ -129,30 +128,12 @@ public class ClassMemberList extends VBox
 			}
 		});
 
-		menuItemSource.setOnAction(new EventHandler<ActionEvent>()
+		menuItemTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openSource(memberList.getSelectionModel().getSelectedItem());
-			}
-		});
-
-		menuItemBytecode.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.openBytecode(memberList.getSelectionModel().getSelectedItem());
-			}
-		});
-
-		menuItemNative.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.openAssembly(memberList.getSelectionModel().getSelectedItem());
+				parent.openTriView(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -163,18 +144,9 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				String journalID = member.getJournalID();
+				Journal journal = member.getJournal();
 
-				if (journalID != null)
-				{
-					Journal journal = parent.getJournal(journalID);
-
-					if (journal != null)
-					{
-						parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
-					}
-				}
-
+				parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
 			}
 		});
 
@@ -185,33 +157,34 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				String journalID = member.getJournalID();
+				Journal journal = member.getJournal();
 
 				StringBuilder builder = new StringBuilder();
 
-				if (journalID != null)
+				Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+
+				if (intrinsics.size() > 0)
 				{
-					Journal journal = parent.getJournal(journalID);
-
-					if (journal != null)
+					for (Map.Entry<String, String> entry : intrinsics.entrySet())
 					{
-						Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
-
-						if (intrinsics.size() > 0)
-						{
-							for (Map.Entry<String, String> entry : intrinsics.entrySet())
-							{
-								builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-							}
-						}
-						else
-						{
-							builder.append("No intrinsics used in this method");
-						}
+						builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
 					}
+				}
+				else
+				{
+					builder.append("No intrinsics used in this method");
 				}
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
+			}
+		});
+
+		menuItemCallChain.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openCompileChain(memberList.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -261,11 +234,11 @@ public class ClassMemberList extends VBox
 
 		setScrollBar();
 	}
-	
+
 	private void setScrollBar()
 	{
 		int index = memberList.getSelectionModel().getSelectedIndex();
-		
+
 		memberList.scrollTo(index);
 	}
 
@@ -276,18 +249,18 @@ public class ClassMemberList extends VBox
 		{
 			super.updateItem(item, empty);
 
-			if (item != null)
+            if (item == null)
 			{
-				if (isSelected())
-				{
-					// TODO make appearance same as if selected with mouse click
-				}
-
+				setText(S_EMPTY);
+				setGraphic(null);	
+			}
+            else
+            {
 				setText(item.toStringUnqualifiedMethodName());
 
 				if (item.isCompiled())
 				{
-					setGraphic(new ImageView(UserInterfaceUtil.TICK));
+					setGraphic(new ImageView(UserInterfaceUtil.tick));
 				}
 				else
 				{
@@ -296,5 +269,4 @@ public class ClassMemberList extends VBox
 			}
 		}
 	}
-
 }

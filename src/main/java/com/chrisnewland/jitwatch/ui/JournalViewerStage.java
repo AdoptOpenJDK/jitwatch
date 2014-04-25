@@ -8,7 +8,8 @@ package com.chrisnewland.jitwatch.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.chrisnewland.jitwatch.core.JITWatchConstants;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
@@ -16,7 +17,8 @@ import com.chrisnewland.jitwatch.ui.triview.Viewer;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.event.EventHandler;
-import javafx.scene.text.Text;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 import javafx.stage.WindowEvent;
 
 public class JournalViewerStage extends AbstractTextViewerStage
@@ -25,7 +27,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 	public JournalViewerStage(final JITWatchUI parent, String title, Journal journal)
 	{
 		super(parent, title);
-		
+
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -37,7 +39,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 		int maxLineLength = 0;
 
-		List<Text> textItems = new ArrayList<>();
+		List<Label> labels = new ArrayList<>();
 
 		for (Tag tag : journal.getEntryList())
 		{
@@ -54,43 +56,44 @@ public class JournalViewerStage extends AbstractTextViewerStage
 					maxLineLength = rowLen;
 				}
 
-				String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill:";
+				String style = "-fx-font-family: monospace; -fx-font-size:12px;";
 
 				String colour = Viewer.COLOUR_BLACK;
 
-				if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_FAIL))
+				if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INLINE_FAIL))
 				{
 					colour = Viewer.COLOUR_RED;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INLINE_SUCCESS))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INLINE_SUCCESS))
 				{
 					colour = Viewer.COLOUR_GREEN;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_INTRINSIC))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_INTRINSIC))
 				{
 					colour = Viewer.COLOUR_BLUE;
 				}
-				else if (tagLines[i].contains("<" + JITWatchConstants.TAG_PARSE + " "))
+				else if (tagLines[i].contains(S_OPEN_ANGLE + TAG_PARSE + C_SPACE))
 				{
-					Map<String, String> attrs = StringUtil.getLineAttributesDoubleQuote(tagLines[i]
-							.substring(1 + JITWatchConstants.TAG_PARSE.length()));
+					Map<String, String> attrs = StringUtil.getLineAttributesDoubleQuote(tagLines[i].substring(1 + TAG_PARSE
+							.length()));
 
-					String method = attrs.get(JITWatchConstants.ATTR_METHOD);
+					String method = attrs.get(ATTR_METHOD);
 
 					if (tag instanceof Task)
 					{
-						tagLines[i] += ((Task)tag).decodeParseMethod(method);
+						tagLines[i] += ((Task) tag).decodeParseMethod(method);
 					}
 				}
 
-				Text lineText = new Text(tagLines[i]);
+				Label lblLine = new Label(tagLines[i]);
 
-				lineText.setStyle(style + colour + ";");
+				lblLine.setStyle(style);
+				lblLine.setTextFill(Color.web(colour));
 
-				textItems.add(lineText);
+				labels.add(lblLine);
 			}
 		}
 
-		setContent(textItems, maxLineLength);
+		setContent(labels, maxLineLength);
 	}
 }

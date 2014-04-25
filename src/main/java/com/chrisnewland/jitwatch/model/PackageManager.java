@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 public class PackageManager
 {
 	// class name -> MetaClass
@@ -25,7 +27,7 @@ public class PackageManager
 		clear();
 	}
 
-	public void clear()
+	public final void clear()
 	{
 		metaClasses = new ConcurrentHashMap<>();
 		metaPackages = new ConcurrentHashMap<>();
@@ -95,8 +97,8 @@ public class PackageManager
 		if (mp == null)
 		{
 			// default package ""
-			mp = new MetaPackage("");
-			metaPackages.put("", mp);
+			mp = new MetaPackage(S_EMPTY);
+			metaPackages.put(S_EMPTY, mp);
 		}
 
 		return mp;

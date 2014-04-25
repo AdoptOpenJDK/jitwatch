@@ -12,7 +12,7 @@ import com.chrisnewland.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.text.Text;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -21,7 +21,6 @@ public abstract class AbstractTextViewerStage extends Stage
 {
 	private Viewer viewer;
 
-	// make this a TextFlow in Java8
 	public AbstractTextViewerStage(final JITWatchUI parent, String title)
 	{
 		initStyle(StageStyle.DECORATED);
@@ -35,7 +34,7 @@ public abstract class AbstractTextViewerStage extends Stage
 			}
 		});
 
-		viewer = new Viewer();
+		viewer = new Viewer(parent);
 
 		setTitle(title);
 
@@ -44,7 +43,7 @@ public abstract class AbstractTextViewerStage extends Stage
 		setScene(scene);
 	}
 
-	protected void setContent(List<Text> items, int maxLineLength)
+	protected void setContent(List<Label> items, int maxLineLength)
 	{
 		viewer.setContent(items);
 
@@ -56,22 +55,6 @@ public abstract class AbstractTextViewerStage extends Stage
 
 		setWidth(x * 12);
 		setHeight(y * 19);
-	}
-
-	protected String padLineNumber(int number, int maxWidth)
-	{
-		int len = Integer.toString(number).length();
-
-		StringBuilder builder = new StringBuilder();
-
-		for (int i = len; i < maxWidth; i++)
-		{
-			builder.append(' ');
-		}
-
-		builder.append(number);
-
-		return builder.toString();
 	}
 
 	public void jumpTo(IMetaMember member)

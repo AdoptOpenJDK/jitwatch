@@ -5,6 +5,15 @@
  */
 package com.chrisnewland.jitwatch.core;
 
+import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.util.ClassUtil;
+import com.chrisnewland.jitwatch.util.DisassemblyUtil;
+import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,25 +21,22 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.JITDataModel;
-import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.util.ClassUtil;
-import com.chrisnewland.jitwatch.util.ParseUtil;
-import com.chrisnewland.jitwatch.util.StringUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser
 {
-	enum EventType
+	enum ParseState
 	{
-		QUEUE, NMETHOD, TASK
+		READY, IN_TAG, IN_NATIVE
 	}
+
+    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
 	private boolean watching = false;
 
-	private boolean inNativeCode = false;
+	private ParseState parseState = ParseState.READY;
 
 	private StringBuilder nativeCodeBuilder = new StringBuilder();
 
@@ -51,6 +57,8 @@ public class HotSpotLogParser
 		this.logListener = logListener;
 
 		this.config = config;
+		
+		logger.info("hsdis available: {}", DisassemblyUtil.isDisassemblerAvailable());
 	}
 
 	private void mountAdditionalClasses()
@@ -103,9 +111,9 @@ public class HotSpotLogParser
 				{
 					handleLine(currentLine);
 				}
-				catch (Throwable t)
+				catch (Exception ex)
 				{
-					t.printStackTrace();
+                    logger.error("Exception handling: '{}'", currentLine, ex);
 				}
 			}
 			else
@@ -116,7 +124,7 @@ public class HotSpotLogParser
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+					logger.error("", e);
 					break;
 				}
 			}
@@ -163,11 +171,10 @@ public class HotSpotLogParser
 
 	private void handleLine(String currentLine)
 	{
-		currentLine = currentLine.replace("&apos;", "'");
-		currentLine = currentLine.replace("&lt;", "<");
-		currentLine = currentLine.replace("&gt;", ">");
+		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
+		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
 
-		if (currentLine.startsWith("<"))
+		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
 			boolean isSkip = false;
 
@@ -187,32 +194,39 @@ public class HotSpotLogParser
 				if (tag != null)
 				{
 					handleTag(tag);
+
+					parseState = ParseState.READY;
+				}
+				else
+				{
+					parseState = ParseState.IN_TAG;
 				}
 			}
 		}
 		else if (currentLine.startsWith(JITWatchConstants.LOADED))
 		{
-			if (inNativeCode)
+			if (parseState == ParseState.IN_NATIVE)
 			{
 				completeNativeCode();
 			}
 			handleLoaded(currentLine);
 		}
-		else if (inNativeCode)
+		else if (parseState == ParseState.IN_NATIVE)
 		{
 			appendNativeCode(currentLine);
+		}
+		else if (parseState == ParseState.IN_TAG)
+		{
+			tagProcessor.processLine(currentLine);
 		}
 		else if (currentLine.contains(JITWatchConstants.NATIVE_CODE_METHOD_MARK))
 		{
-			String sig = convertNativeCodeMethodName(currentLine);
+			String sig = ParseUtil.convertNativeCodeMethodName(currentLine);
 
 			currentMember = findMemberWithSignature(sig);
-			inNativeCode = true;
 
-			appendNativeCode(currentLine);
-		}
-		else if (inNativeCode)
-		{
+			parseState = ParseState.IN_NATIVE;
+
 			appendNativeCode(currentLine);
 		}
 
@@ -221,9 +235,9 @@ public class HotSpotLogParser
 
 	private void handleTag(Tag tag)
 	{
-		if (inNativeCode)
+		if (parseState == ParseState.IN_NATIVE)
 		{
-			// TODO: file a bug report for mangled hotspot output
+			// TODO: chase up bug report for mangled hotspot output
 			completeNativeCode();
 		}
 
@@ -231,64 +245,36 @@ public class HotSpotLogParser
 
 		switch (tagName)
 		{
+		case JITWatchConstants.TAG_VM_VERSION:
+			handleVmVersion(tag);
+			break;
+		
 		case JITWatchConstants.TAG_TASK_QUEUED:
-			handleMethodLine(tag, EventType.QUEUE);
+			handleTagQueued(tag);
 			break;
 
 		case JITWatchConstants.TAG_NMETHOD:
-			handleMethodLine(tag, EventType.NMETHOD);
+			handleTagNMethod(tag);
 			break;
 
 		case JITWatchConstants.TAG_TASK:
-			handleMethodLine(tag, EventType.TASK);
-
-			Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
-
-			if (tagCodeCache != null)
-			{
-				// copy timestamp from parent <task> tag used for graphing code
-				// cache
-				String stamp = tag.getAttrs().get(JITWatchConstants.ATTR_STAMP);
-				tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
-
-				model.addCodeCacheTag(tagCodeCache);
-			}
-
-			Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
-
-			if (tagTaskDone != null)
-			{
-				handleTaskDone(tagTaskDone);
-			}
-
+			handleTagTask(tag);
 			break;
 
 		case JITWatchConstants.TAG_START_COMPILE_THREAD:
-			handleStartCompileThread();
+			handleStartCompileThread(tag);
 			break;
+
+        default:
+            break;
 		}
+	}
 
-		Map<String, String> attrs = tag.getAttrs();
+	private void handleVmVersion(Tag tag)
+	{
+		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
-		String compileID = attrs.get(JITWatchConstants.ATTR_COMPILE_ID);
-		String compileKind = attrs.get(JITWatchConstants.ATTR_COMPILE_KIND);
-
-		String journalID;
-
-		// osr compiles do not have unique compile IDs so concat compile_kind
-		if (compileID != null && compileKind != null && JITWatchConstants.OSR.equals(compileKind))
-		{
-			journalID = compileID + compileKind;
-		}
-		else
-		{
-			journalID = compileID;
-		}
-
-		if (compileID != null)
-		{
-			model.addJournalEntry(journalID, tag);
-		}
+		model.setVmVersionRelease(release);
 	}
 
 	private void appendNativeCode(String line)
@@ -298,7 +284,7 @@ public class HotSpotLogParser
 
 	private void completeNativeCode()
 	{
-		inNativeCode = false;
+		parseState = ParseState.READY;
 
 		if (currentMember != null)
 		{
@@ -308,32 +294,35 @@ public class HotSpotLogParser
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
 	}
 
-	private void handleStartCompileThread()
+	private void handleStartCompileThread(Tag tag)
 	{
 		model.getJITStats().incCompilerThreads();
-	}
+		String threadName = tag.getAttribute(ATTR_NAME);
 
-	private void handleMethodLine(Tag tag, EventType eventType)
-	{
-		Map<String, String> attrs = tag.getAttrs();
+        if (theThreadIsNotFound(threadName)) {
+            logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+            return;
+        }
 
-		String fqMethodName = attrs.get(JITWatchConstants.METHOD);
-
-		if (fqMethodName != null)
+		if (threadName.startsWith(C1))
 		{
-			fqMethodName = fqMethodName.replace("/", ".");
-
-			boolean packageOK = config.isAllowedPackage(fqMethodName);
-
-			if (packageOK)
-			{
-				attrs.remove("method");
-				handleMethod(fqMethodName, attrs, eventType);
-			}
+			tagProcessor.setCompiler(CompilerName.C1);
+		}
+		else if (threadName.startsWith(C2))
+		{
+			tagProcessor.setCompiler(CompilerName.C2);
+		}
+		else
+		{
+            logger.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 
-	private IMetaMember findMemberWithSignature(String logSignature)
+    private boolean theThreadIsNotFound(String threadName) {
+        return threadName == null;
+    }
+
+    private IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
 
@@ -366,11 +355,93 @@ public class HotSpotLogParser
 		return metaMember;
 	}
 
-	private void handleMethod(String methodSignature, Map<String, String> attrs, EventType type)
+	private void handleTagQueued(Tag tag)
 	{
-		IMetaMember metaMember = findMemberWithSignature(methodSignature);
+		handleMethodLine(tag, EventType.QUEUE);
+	}
 
-		String stampAttr = attrs.get("stamp");
+	private void handleTagNMethod(Tag tag)
+	{
+		String attrCompiler = tag.getAttribute(ATTR_COMPILER);
+
+		if (attrCompiler != null)
+		{
+			if (C1.equals(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C1);
+			}
+			else if (C2.equals(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C2);
+			}
+			else
+			{
+				logError("Unexpected Compiler attribute: " + attrCompiler);
+			}
+		}
+		else
+		{
+			String attrCompileKind = tag.getAttribute(ATTR_COMPILE_KIND);
+			
+			if (attrCompileKind != null && C2N.equals(attrCompileKind))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_C2N);
+			}
+			else
+			{
+				logError("Missing Compiler attribute " + tag);
+			}
+		}
+	}
+
+	private void handleTagTask(Tag tag)
+	{
+		handleMethodLine(tag, EventType.TASK);
+
+		Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+
+		if (tagCodeCache != null)
+		{
+			// copy timestamp from parent <task> tag used for graphing code
+			// cache
+			String stamp = tag.getAttribute(JITWatchConstants.ATTR_STAMP);
+			tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+
+			model.addCodeCacheTag(tagCodeCache);
+		}
+
+		Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
+
+		if (tagTaskDone != null)
+		{
+			handleTaskDone(tagTaskDone);
+		}
+	}
+
+	private void handleMethodLine(Tag tag, EventType eventType)
+	{
+		Map<String, String> attrs = tag.getAttrs();
+
+		String attrMethod = attrs.get(ATTR_METHOD);
+
+		if (attrMethod != null)
+		{
+			attrMethod = attrMethod.replace(S_SLASH, S_DOT);
+
+			IMetaMember member = handleMember(attrMethod, attrs, eventType);
+
+			if (member != null)
+			{
+				member.addJournalEntry(tag);
+			}
+		}
+	}
+
+	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
+	{
+		IMetaMember metaMember = findMemberWithSignature(signature);
+
+		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
 
 		if (metaMember != null)
@@ -378,26 +449,36 @@ public class HotSpotLogParser
 			switch (type)
 			{
 			case QUEUE:
+			{
 				metaMember.setQueuedAttributes(attrs);
-				JITEvent queuedEvent = new JITEvent(stampTime, false, metaMember.toString());
+				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember.toString());
 				model.addEvent(queuedEvent);
 				logEvent(queuedEvent);
+			}
 				break;
-			case NMETHOD:
+			case NMETHOD_C1:
+			case NMETHOD_C2:
+			case NMETHOD_C2N:
+			{
 				metaMember.setCompiledAttributes(attrs);
 				metaMember.getMetaClass().incCompiledMethodCount();
 				model.updateStats(metaMember);
 
-				JITEvent compiledEvent = new JITEvent(stampTime, true, metaMember.toString());
+				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember.toString());
 				model.addEvent(compiledEvent);
 				logEvent(compiledEvent);
+			}
 				break;
 			case TASK:
+			{
 				metaMember.addCompiledAttributes(attrs);
 				currentMember = metaMember;
+			}
 				break;
 			}
 		}
+
+		return metaMember;
 	}
 
 	private void handleTaskDone(Tag tag)
@@ -426,7 +507,7 @@ public class HotSpotLogParser
 	 */
 	private void handleLoaded(String currentLine)
 	{
-		String fqClassName = StringUtil.getSubstringBetween(currentLine, JITWatchConstants.LOADED, " ");
+		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
 		{
@@ -442,67 +523,38 @@ public class HotSpotLogParser
 			}
 			else
 			{
-				packageName = "";
+				packageName = S_EMPTY;
 				className = fqClassName;
 			}
 
-			boolean allowedPackage = config.isAllowedPackage(packageName);
+			Class<?> clazz = null;
 
-			if (allowedPackage)
+			try
 			{
-				Class<?> clazz = null;
+				clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
+			}
+			catch (ClassNotFoundException cnf)
+			{
+				logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
+			}
+			catch (NoClassDefFoundError ncdf)
+			{
+				logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
+			}
 
-				try
-				{
-					clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-				}
-				catch (ClassNotFoundException cnf)
-				{
-					logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
-				}
-				catch (NoClassDefFoundError ncdf)
-				{
-					logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
-				}
-
-				try
-				{
-					// can throw NCDFE from clazz.getDeclaredMethods()
-					model.buildMetaClass(packageName, className, clazz);
-				}
-				catch (NoClassDefFoundError ncdf)
-				{
-					// missing class is from a method declaration in fqClassName
-					// so look in getMessage()
-					logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
-				}
+			try
+			{
+				// can throw NCDFE from clazz.getDeclaredMethods()
+				model.buildMetaClass(packageName, className, clazz);
+			}
+			catch (NoClassDefFoundError ncdf)
+			{
+				// missing class is from a method declaration in fqClassName
+				// so look in getMessage()
+				logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
 			}
 		}
 	}
 
-	public String convertNativeCodeMethodName(String name)
-	{
-		name = name.replace("'", "");
 
-		int methodMarkIndex = name.indexOf(JITWatchConstants.NATIVE_CODE_METHOD_MARK);
-
-		if (methodMarkIndex != -1)
-		{
-			name = name.substring(methodMarkIndex + JITWatchConstants.NATIVE_CODE_METHOD_MARK.length());
-			name = name.trim();
-		}
-
-		String inToken = " in ";
-
-		int inPos = name.indexOf(inToken);
-
-		if (inPos != -1)
-		{
-			name = name.substring(inPos + inToken.length()) + " " + name.substring(0, inPos);
-		}
-
-		name = name.replaceAll("/", ".");
-
-		return name;
-	}
 }

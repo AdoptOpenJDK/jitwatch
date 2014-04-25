@@ -7,31 +7,41 @@ JITWatch
 
 Log analyser and visualiser for the HotSpot JIT compiler.
 
+[![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
+
+```JDK 1.7```  [![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
+
+```OpenJDK 8```  [![Build Status](https://adopt-openjdk.ci.cloudbees.com/buildStatus/icon?job=jitwatch/jdk=OpenJDK8)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/)
+
+[![Built on CloudBees](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/)
+
+
 <h3>For instructions and screenshots see the wiki</h3>
 <h3>https://github.com/AdoptOpenJDK/jitwatch/wiki</h3>
 
-JITwatch depends on tools.jar (from JDK_HOME/lib) for javap bytecode display.
+<h2>ant</h2>
+<pre>ant clean compile test run</pre>
 
-JITWatch depends on jfxrt.jar (from JDK_HOME/jre/lib/) for the user interface.
+<h2>maven</h2>
+<pre># Java 7
+mvn clean compile test exec:java</pre>
+<pre># Java 8
+mvn -f pom-java8.xml clean compile test exec:java</pre>
 
-<h2>Using ant</h2>
-<h3>Build</h3>
-<pre>ant clean
-ant</pre>
-<h3>Run</h3>
-<pre>ant run</pre>
-
-<h2>Using maven</h2>
-<h3>Build</h3>
-<pre>mvn package</pre>
-<h3>Run</h3>
-<pre>mvn exec:java</pre>
-
-<h2>Using shell</h2>
-<h3>Run</h3>
-<pre>#GUI Version
-./launchUI.sh</pre>
-<pre>#Simplifed Text Version
-./launchHeadless.sh</pre>
+<h2>Build an example HotSpot log</h2>
+<pre># Build the code first with ant / maven / IDE
+./makeDemoLogFile.sh</pre>
 
 
+Latest binaries from Jenkins
+----------------------------
+JDK 1.7 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=JDK_1.7/ws/jitwatch-1.0.0-SNAPSHOT-JDK_1.7.tar.gz
+
+OpenJDK 8 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/ws/jitwatch-1.0.0-SNAPSHOT-OpenJDK8.tar.gz
+
+
+Java 8 Compatibility
+--------------------
+<b>[Find out how you can also use this logo with your F/OSS projects](https://java.net/projects/adoptopenjdk/pages/TestingJava8)</b>
+
+![Compatibility Badge](https://java.net/downloads/adoptopenjdk/compat.svg)

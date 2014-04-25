@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.chrisnewland.jitwatch.util.ParseUtil.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MemberSignatureParts
 {
@@ -63,7 +63,7 @@ public class MemberSignatureParts
 
 		String regexGenerics = "(<.*> )?";
 		String regexReturnType = "(.* )?"; // optional could be constructor
-		String regexMethodName = "([a-zA-Z0-9\\.]+)";
+		String regexMethodName = "([\\p{L}0-9\\.]+)";
 		String regexParams = "(\\(.*\\))";
 		String regexRest = "(.*)";
 
@@ -73,7 +73,7 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
-		Pattern PATTERN_BC_SIGNATURE = Pattern.compile(builder.toString());
+        final Pattern PATTERN_BC_SIGNATURE = Pattern.compile(builder.toString());
 
 		Matcher matcher = PATTERN_BC_SIGNATURE.matcher(toParse);
 
@@ -138,11 +138,11 @@ public class MemberSignatureParts
 	private void buildGenerics(String genericsString)
 	{
 		String stripped = genericsString.substring(1, genericsString.length() - 1);
-		String[] substitutions = stripped.split(",");
+		String[] substitutions = stripped.split(S_COMMA);
 
 		for (String sub : substitutions)
 		{
-			sub = sub.replace("/", "."); // in package names
+			sub = sub.replace(S_SLASH, S_DOT); // in package names
 			
 			if (sub.contains(" extends "))
 			{

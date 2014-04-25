@@ -6,22 +6,23 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
-
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-import com.chrisnewland.jitwatch.util.BytecodeUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -37,332 +38,368 @@ import javafx.util.StringConverter;
 
 public class TriView extends Stage
 {
-    private IMetaMember currentMember;
-    private JITWatchConfig config;
+	private IMetaMember currentMember;
+	private JITWatchConfig config;
 
-    private Viewer viewerSource;
-    private Viewer viewerByteCode;
-    private Viewer viewerAssembly;
+	private Viewer viewerSource;
+	private ViewerBytecode viewerBytecode;
+	private Viewer viewerAssembly; // TODO ref.x86asm.net
 
-    private SplitPane splitViewer;
+	private SplitPane splitViewer;
 
-    private VBox colSource;
-    private VBox colBytecode;
-    private VBox colAssembly;
+	private VBox colSource;
+	private VBox colBytecode;
+	private VBox colAssembly;
 
-    private CheckBox checkSource;
-    private CheckBox checkBytecode;
-    private CheckBox checkAssembly;
+	private CheckBox checkSource;
+	private CheckBox checkBytecode;
+	private CheckBox checkAssembly;
 
-    private ClassSearch classSearch;
-    private ComboBox<IMetaMember> comboMember;
+	private ClassSearch classSearch;
+	private ComboBox<IMetaMember> comboMember;
+	
+	private Label lblMemberInfo;
 
-    private boolean ignoreComboChanged = false;
+	private boolean ignoreComboChanged = false;
 
-    public TriView(final JITWatchUI parent, final JITWatchConfig config)
-    {
-        this.config = config;
+	public TriView(final JITWatchUI parent, final JITWatchConfig config)
+	{
+		this.config = config;
 
-        setTitle("JITWatch TriView Source, Bytecode, Assembly Viewer");
+		setTitle("TriView Source, Bytecode, Assembly Viewer");
 
-        VBox vBox = new VBox();
+		VBox vBox = new VBox();
 
-        HBox hBoxToolBarClass = new HBox();
-        hBoxToolBarClass.setSpacing(10);
-        hBoxToolBarClass.setPadding(new Insets(10));
+		HBox hBoxToolBarClass = new HBox();
+		hBoxToolBarClass.setSpacing(10);
+		hBoxToolBarClass.setPadding(new Insets(10));
 
-        HBox hBoxToolBarButtons = new HBox();
-        hBoxToolBarButtons.setSpacing(10);
-        hBoxToolBarButtons.setPadding(new Insets(10));
+		HBox hBoxToolBarButtons = new HBox();
+		hBoxToolBarButtons.setSpacing(10);
+		hBoxToolBarButtons.setPadding(new Insets(0,10,10,10));
 
-        checkSource = new CheckBox("Source");
-        checkBytecode = new CheckBox("Bytecode");
-        checkAssembly = new CheckBox("Assembly");
+		checkSource = new CheckBox("Source");
+		checkBytecode = new CheckBox("Bytecode");
+		checkAssembly = new CheckBox("Assembly");
 
-        checkSource.setSelected(true);
-        checkBytecode.setSelected(true);
-        checkAssembly.setSelected(true);
+		checkSource.setSelected(true);
+		checkBytecode.setSelected(true);
+		checkAssembly.setSelected(true);
 
-        ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                checkColumns();
-            }
-        };
+		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				checkColumns();
+			}
+		};
 
-        checkSource.selectedProperty().addListener(checkListener);
-        checkBytecode.selectedProperty().addListener(checkListener);
-        checkAssembly.selectedProperty().addListener(checkListener);
+		checkSource.selectedProperty().addListener(checkListener);
+		checkBytecode.selectedProperty().addListener(checkListener);
+		checkAssembly.selectedProperty().addListener(checkListener);
 
-        hBoxToolBarButtons.getChildren().add(checkSource);
-        hBoxToolBarButtons.getChildren().add(checkBytecode);
-        hBoxToolBarButtons.getChildren().add(checkAssembly);
+		Button btnCallChain = new Button("View Compile Chain");
+		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					parent.openCompileChain(currentMember);
+				}
+			}
+		});
 
-        Label lblClass = new Label("Class:");
-        classSearch = new ClassSearch(this, parent.getPackageManager());
-        classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		hBoxToolBarButtons.getChildren().add(checkSource);
+		hBoxToolBarButtons.getChildren().add(checkBytecode);
+		hBoxToolBarButtons.getChildren().add(checkAssembly);
+		hBoxToolBarButtons.getChildren().add(btnCallChain);
 
-        Label lblMember = new Label("Member:");
+		Label lblClass = new Label("Class:");
+		classSearch = new ClassSearch(this, parent.getPackageManager());
+		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
-        comboMember = new ComboBox<>();
-        comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		Label lblMember = new Label("Member:");
 
-        comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
-            {
-                if (!ignoreComboChanged)
-                {
-                    TriView.this.setMember(newVal);
-                }
-            }
-        });
+		comboMember = new ComboBox<>();
+		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
 
-        comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-        {
-            @Override
-            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-            {
-                return new ListCell<IMetaMember>()
-                {
-                    @Override
-                    protected void updateItem(IMetaMember item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
+		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
+			{
+				// TODO Looks like a bug in JavaFX 2.2 here
+				// sometimes combo contains only selected member
+				if (!ignoreComboChanged)
+				{
+					if (newVal != null)
+					{
+						TriView.this.setMember(newVal);
+					}
+				}
+			}
+		});
 
-                        if (item == null || empty)
-                        {
-                            setText("");
-                            setGraphic(null);
-                        }
-                        else
-                        {                            
-                            setText(item.toStringUnqualifiedMethodName());
+		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+		{
+			@Override
+			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			{
+				return new ListCell<IMetaMember>()
+				{
+					@Override
+					protected void updateItem(IMetaMember item, boolean empty)
+					{
+						super.updateItem(item, empty);
 
-                            if (item.isCompiled() && UserInterfaceUtil.TICK != null)
-                            {
-                                setGraphic(new ImageView(UserInterfaceUtil.TICK));
-                            }
-                            else
-                            {
-                                setGraphic(null);
-                            }
-                        }
-                    }
-                };
-            }
-        });
+						if (item == null || empty)
+						{
+							setText(S_EMPTY);
+							setGraphic(null);
+						}
+						else
+						{
+							setText(item.toStringUnqualifiedMethodName());
 
-        comboMember.setConverter(new StringConverter<IMetaMember>()
-        {
-            @Override
-            public String toString(IMetaMember mm)
-            {
-                return mm.toStringUnqualifiedMethodName();
-            }
+							if (item.isCompiled() && UserInterfaceUtil.tick != null)
+							{
+								setGraphic(new ImageView(UserInterfaceUtil.tick));
+							}
+							else
+							{
+								setGraphic(null);
+							}
+						}
+					}
+				};
+			}
+		});
 
-            @Override
-            public IMetaMember fromString(String arg0)
-            {
-                return null;
-            }
-        });
+		comboMember.setConverter(new StringConverter<IMetaMember>()
+		{
+			@Override
+			public String toString(IMetaMember mm)
+			{
+				return mm.toStringUnqualifiedMethodName();
+			}
 
-        hBoxToolBarClass.getChildren().add(lblClass);
-        hBoxToolBarClass.getChildren().add(classSearch);
+			@Override
+			public IMetaMember fromString(String arg0)
+			{
+				return null;
+			}
+		});
 
-        hBoxToolBarClass.getChildren().add(lblMember);
-        hBoxToolBarClass.getChildren().add(comboMember);
+		hBoxToolBarClass.getChildren().add(lblClass);
+		hBoxToolBarClass.getChildren().add(classSearch);
 
-        splitViewer = new SplitPane();
-        splitViewer.setOrientation(Orientation.HORIZONTAL);
+		hBoxToolBarClass.getChildren().add(lblMember);
+		hBoxToolBarClass.getChildren().add(comboMember);
 
-        colSource = new VBox();
-        colBytecode = new VBox();
-        colAssembly = new VBox();
+		splitViewer = new SplitPane();
+		splitViewer.setOrientation(Orientation.HORIZONTAL);
 
-        Label lblSource = new Label("Source");
-        Label lblBytecode = new Label("Bytecode");
-        Label lblAssembly = new Label("Assembly");
+		colSource = new VBox();
+		colBytecode = new VBox();
+		colAssembly = new VBox();
 
-        lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-        lblBytecode.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-        lblAssembly.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		Label lblSource = new Label("Source");
+		Label lblBytecode = new Label("Bytecode (double click for JVMS)");
+		Label lblAssembly = new Label("Assembly");
 
-        lblSource.prefWidthProperty().bind(colSource.widthProperty());
-        lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
-        lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
+		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		lblBytecode.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		lblAssembly.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
 
-        viewerSource = new Viewer();
-        viewerByteCode = new Viewer();
-        viewerAssembly = new Viewer();
+		lblSource.prefWidthProperty().bind(colSource.widthProperty());
+		lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
+		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 
-        colSource.getChildren().add(lblSource);
-        colSource.getChildren().add(viewerSource);
+		viewerSource = new Viewer(parent);
+		viewerBytecode = new ViewerBytecode(parent);
+		viewerAssembly = new Viewer(parent);
 
-        colBytecode.getChildren().add(lblBytecode);
-        colBytecode.getChildren().add(viewerByteCode);
+		colSource.getChildren().add(lblSource);
+		colSource.getChildren().add(viewerSource);
 
-        colAssembly.getChildren().add(lblAssembly);
-        colAssembly.getChildren().add(viewerAssembly);
+		colBytecode.getChildren().add(lblBytecode);
+		colBytecode.getChildren().add(viewerBytecode);
 
-        splitViewer.prefHeightProperty().bind(vBox.heightProperty());
+		colAssembly.getChildren().add(lblAssembly);
+		colAssembly.getChildren().add(viewerAssembly);
 
-        viewerSource.prefWidthProperty().bind(colSource.widthProperty());
-        viewerSource.prefHeightProperty().bind(colSource.heightProperty());
+		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
-        viewerByteCode.prefWidthProperty().bind(colBytecode.widthProperty());
-        viewerByteCode.prefHeightProperty().bind(colBytecode.heightProperty());
+		viewerSource.prefWidthProperty().bind(colSource.widthProperty());
+		viewerSource.prefHeightProperty().bind(colSource.heightProperty());
 
-        viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
-        viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
+		viewerBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
+		viewerBytecode.prefHeightProperty().bind(colBytecode.heightProperty());
 
-        vBox.getChildren().add(hBoxToolBarClass);
-        vBox.getChildren().add(hBoxToolBarButtons);
-        vBox.getChildren().add(splitViewer);
+		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
+		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
+		
+		lblMemberInfo = new Label();
 
-        Scene scene = new Scene(vBox, 800, 480);
+		vBox.getChildren().add(hBoxToolBarClass);
+		vBox.getChildren().add(hBoxToolBarButtons);
+		vBox.getChildren().add(splitViewer);
+		vBox.getChildren().add(lblMemberInfo);
 
-        setScene(scene);
+		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
-        setOnCloseRequest(new EventHandler<WindowEvent>()
-        {
-            @Override
-            public void handle(WindowEvent arg0)
-            {
-                parent.handleStageClosed(TriView.this);
-            }
-        });
+		setScene(scene);
 
-        checkColumns();
-    }
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(TriView.this);
+			}
+		});
 
-    private void checkColumns()
-    {
-        splitViewer.getItems().clear();
+		checkColumns();
+	}
 
-        int colCount = 0;
+	private void checkColumns()
+	{
+		splitViewer.getItems().clear();
 
-        if (checkSource.isSelected())
-        {
-            splitViewer.getItems().add(colSource);
-            colCount++;
-        }
-        if (checkBytecode.isSelected())
-        {
-            splitViewer.getItems().add(colBytecode);
-            colCount++;
-        }
-        if (checkAssembly.isSelected())
-        {
-            splitViewer.getItems().add(colAssembly);
-            colCount++;
-        }
+		int colCount = 0;
 
-        switch (colCount)
-        {
-        case 0:
-            splitViewer.setDividerPositions(0);
+		if (checkSource.isSelected())
+		{
+			splitViewer.getItems().add(colSource);
+			colCount++;
+		}
+		if (checkBytecode.isSelected())
+		{
+			splitViewer.getItems().add(colBytecode);
+			colCount++;
+		}
+		if (checkAssembly.isSelected())
+		{
+			splitViewer.getItems().add(colAssembly);
+			colCount++;
+		}
+
+		switch (colCount)
+		{
+		case 0:
+			splitViewer.setDividerPositions(0);
+			break;
+		case 1:
+			splitViewer.setDividerPositions(1);
+			break;
+		case 2:
+			splitViewer.setDividerPositions(0.5);
+			break;
+		case 3:
+			splitViewer.setDividerPositions(0.333, 0.666);
             break;
-        case 1:
-            splitViewer.setDividerPositions(1);
+        default:
             break;
-        case 2:
-            splitViewer.setDividerPositions(0.5);
-            break;
-        case 3:
-            splitViewer.setDividerPositions(0.333, 0.666);
-        }
-    }
+		}
+	}
 
-    public void setMetaClass(MetaClass metaClass)
-    {
-        String fqName = metaClass.getFullyQualifiedName();
+	public void setMetaClass(MetaClass metaClass)
+	{
+		String fqName = metaClass.getFullyQualifiedName();
 
-        classSearch.setText(fqName);
+		classSearch.setText(fqName);
 
-        List<IMetaMember> members = metaClass.getMetaMembers();
+		List<IMetaMember> members = metaClass.getMetaMembers();
 
-        if (members.size() > 0)
-        {
-            setMember(members.get(0));
-        }
-        else
-        {
-            // unlikely but if no members then clear the combo
-            comboMember.getItems().clear();
-        }
-    }
+		if (members.size() > 0)
+		{
+			setMember(members.get(0));
+		}
+		else
+		{
+			// unlikely but if no members then clear the combo
+			comboMember.getItems().clear();
+		}
+	}
 
-    public void setMember(IMetaMember member)
-    {    	
-        boolean sameClass = false;
+	public void setMember(IMetaMember member)
+	{
+		boolean sameClass = false;
 
-        MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
+		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 
-        currentMember = member;
+		currentMember = member;
 
-        final MetaClass memberClass = currentMember.getMetaClass();
+		final MetaClass memberClass = currentMember.getMetaClass();
 
-        if (previousClass != null && previousClass == memberClass)
-        {
-            sameClass = true;
-        }
+		if ((previousClass != null) && previousClass.equals(memberClass))
+		{
+			sameClass = true;
+		}
 
-        if (!sameClass)
-        {
-            comboMember.getSelectionModel().clearSelection();
-            comboMember.getItems().clear();
-            comboMember.getItems().addAll(memberClass.getMetaMembers());
+		if (!sameClass)
+		{
+			comboMember.getSelectionModel().clearSelection();
+			comboMember.getItems().clear();
+			comboMember.getItems().addAll(memberClass.getMetaMembers());
 
-            String fqName = memberClass.getFullyQualifiedName();
-            classSearch.setText(fqName);
-        }
+			String fqName = memberClass.getFullyQualifiedName();
+			classSearch.setText(fqName);
+		}
 
-        ignoreComboChanged = true;
-        comboMember.setValue(currentMember);
-        ignoreComboChanged = false;
+		ignoreComboChanged = true;
+		comboMember.setValue(currentMember);
+		ignoreComboChanged = false;
 
-        if (!sameClass)
-        {
-            String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
-            String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-            viewerSource.setContent(source, true);
-        }
-        
-        viewerSource.jumpTo(currentMember);
-        
-        String bc = BytecodeUtil.getBytecodeForMember(currentMember, config.getClassLocations());
+		if (!sameClass)
+		{
+			String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
+			String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+			viewerSource.setContent(source, true);
+		}
 
-        if (bc == null)
-        {
-            bc = "No bytecode found, native method?";
-        }
+		viewerSource.jumpTo(currentMember);
 
-        // reduce comment spacing
-        bc = bc.replace("             //", "//");
+		List<String> classLocations = config.getClassLocations();
 
-        viewerByteCode.setContent(bc, false);
+		viewerBytecode.setContent(currentMember, classLocations);
 
-        String assembly;
+		String assembly;
 
-        if (currentMember.isCompiled())
-        {
-            assembly = currentMember.getAssembly();
+		if (currentMember.isCompiled())
+		{
+			assembly = currentMember.getAssembly();
 
-            if (assembly == null)
-            {
-                assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
-            }
-        }
-        else
-        {
-            assembly = "Not JIT-compiled";
-        }
+			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+			
+			if (attrCompiler != null)
+			{
+				lblMemberInfo.setText("Compiled with " + attrCompiler);
+			}
+			else
+			{
+				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+				
+				if (attrCompileKind != null && C2N.equals(attrCompileKind))
+				{
+					lblMemberInfo.setText("Compiled native wrapper");
+				}
+			}
+			
+			if (assembly == null)
+			{
+				assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
+			}
+		}
+		else
+		{
+			assembly = "Not JIT-compiled";
+			lblMemberInfo.setText(S_EMPTY);
+		}
 
-        viewerAssembly.setContent(assembly, false);
-    }
+		viewerAssembly.setContent(assembly, false);
+	}
 }

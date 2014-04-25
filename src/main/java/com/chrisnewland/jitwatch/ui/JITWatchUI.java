@@ -9,19 +9,24 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import com.chrisnewland.jitwatch.chain.CompileChainWalker;
+import com.chrisnewland.jitwatch.chain.CompileNode;
 import com.chrisnewland.jitwatch.core.IJITListener;
-import com.chrisnewland.jitwatch.core.JITEvent;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.loader.ResourceLoader;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.JITDataModel;
+import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
+import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
 
 import javafx.animation.Animation;
@@ -48,9 +53,16 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JITWatchUI extends Application implements IJITListener
+public class JITWatchUI extends Application implements IJITListener, IStageAccessProxy
 {
+    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+
+	public static final int WINDOW_WIDTH = 1024;
+	public static final int WINDOW_HEIGHT = 592;
+
 	private Stage stage;
 
 	private JITDataModel model;
@@ -78,7 +90,8 @@ public class JITWatchUI extends Application implements IJITListener
 	private Button btnTopList;
 	private Button btnErrorLog;
 	private Button btnCodeCache;
-	private Button btnCodeBrowser;
+	private Button btnTriView;
+	private Button btnSuggest;
 
 	private Label lblHeap;
 
@@ -89,6 +102,8 @@ public class JITWatchUI extends Application implements IJITListener
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheStage;
 	private TriView triView;
+	private BrowserStage browserStage;
+	private SuggestStage suggestStage;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -201,12 +216,9 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		int width = 1024;
-		int height = 592;
-
 		BorderPane borderPane = new BorderPane();
 
-		Scene scene = new Scene(borderPane, width, height);
+		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
@@ -214,7 +226,7 @@ public class JITWatchUI extends Application implements IJITListener
 			@Override
 			public void handle(ActionEvent e)
 			{
-			    stopWatching();
+				stopWatching();
 				chooseHotSpotFile();
 			}
 		});
@@ -346,24 +358,29 @@ public class JITWatchUI extends Application implements IJITListener
 			}
 		});
 
-		btnCodeBrowser = new Button("TriView");
-		btnCodeBrowser.setOnAction(new EventHandler<ActionEvent>()
+		btnTriView = new Button("TriView");
+		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				triView = new TriView(JITWatchUI.this, config);
-				
-				triView.show();
-				
-				openPopupStages.add(triView);
+				openTriView(selectedMember);
+			}
+		});
 
-				if (selectedMember != null)
-				{
-					triView.setMember(selectedMember);
-				}
-				
-				btnCodeBrowser.setDisable(true);
+		btnSuggest = new Button("Suggest");
+		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				suggestStage = new SuggestStage(JITWatchUI.this);
+
+				suggestStage.show();
+
+				openPopupStages.add(suggestStage);
+
+				btnSuggest.setDisable(true);
 			}
 		});
 
@@ -379,12 +396,15 @@ public class JITWatchUI extends Application implements IJITListener
 
 		lblHeap = new Label();
 
-		int topHeight = 50;
-		int bottomHeight = 100;
+		int menuBarHeight = 40;
+		int textAreaHeight = 100;
+		int statusBarHeight = 25;
 
 		HBox hboxTop = new HBox();
 
 		hboxTop.setPadding(new Insets(10));
+		hboxTop.setPrefHeight(menuBarHeight);
+		hboxTop.setSpacing(10);
 		hboxTop.getChildren().add(btnChooseWatchFile);
 		hboxTop.getChildren().add(btnStartWatching);
 		hboxTop.getChildren().add(btnStopWatching);
@@ -394,11 +414,9 @@ public class JITWatchUI extends Application implements IJITListener
 		hboxTop.getChildren().add(btnHisto);
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCache);
-		hboxTop.getChildren().add(btnCodeBrowser);
+		hboxTop.getChildren().add(btnTriView);
+		hboxTop.getChildren().add(btnSuggest);
 		hboxTop.getChildren().add(btnErrorLog);
-		hboxTop.getChildren().add(lblHeap);
-		hboxTop.setPrefHeight(topHeight);
-		hboxTop.setSpacing(10);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -428,7 +446,7 @@ public class JITWatchUI extends Application implements IJITListener
 
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
-		textAreaLog.setPrefHeight(bottomHeight);
+		textAreaLog.setPrefHeight(textAreaHeight);
 		textAreaLog
 				.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 
@@ -444,8 +462,16 @@ public class JITWatchUI extends Application implements IJITListener
 		spMain.getItems().add(textAreaLog);
 		spMain.setDividerPositions(0.7, 0.3);
 
+		HBox hboxBottom = new HBox();
+
+		hboxBottom.setPadding(new Insets(4));
+		hboxBottom.setPrefHeight(statusBarHeight);
+		hboxBottom.setSpacing(0);
+		hboxBottom.getChildren().add(lblHeap);
+
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
+		borderPane.setBottom(hboxBottom);
 
 		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
 		stage.setScene(scene);
@@ -472,14 +498,49 @@ public class JITWatchUI extends Application implements IJITListener
 	void openConfigStage()
 	{
 		if (configStage == null)
-		{
+		{		
 			configStage = new ConfigStage(JITWatchUI.this, config);
 			configStage.show();
-
+			
 			openPopupStages.add(configStage);
 
 			btnConfigure.setDisable(true);
 		}
+	}
+
+	@Override
+	public void openTriView(IMetaMember member)
+	{
+		if (triView == null)
+		{
+			triView = new TriView(JITWatchUI.this, config);
+
+			triView.show();
+
+			openPopupStages.add(triView);
+
+			btnTriView.setDisable(true);
+		}
+
+		if (member != null)
+		{
+			triView.setMember(member);
+		}
+	}
+
+	@Override
+	public void openBrowser(String title, String html, String stylesheet)
+	{
+		if (browserStage == null)
+		{
+			browserStage = new BrowserStage(JITWatchUI.this);
+
+			browserStage.show();
+
+			openPopupStages.add(browserStage);
+		}
+
+		browserStage.setContent(title, html, stylesheet);
 	}
 
 	public IReadOnlyJITDataModel getJITDataModel()
@@ -553,69 +614,38 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 	}
 
-	void openSource(IMetaMember member)
+	TextViewerStage openTextViewer(String title, String content)
 	{
-		MetaClass methodClass = member.getMetaClass();
-
-		String fqName = methodClass.getFullyQualifiedName();
-
-		String sourceFileName = ResourceLoader.getSourceFilename(methodClass);
-
-		String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-
-		TextViewerStage tvs = null;
-		String title = "Source code for " + fqName;
-
-		for (Stage s : openPopupStages)
-		{
-			if (s instanceof TextViewerStage && title.equals(s.getTitle()))
-			{
-				tvs = (TextViewerStage) s;
-				break;
-			}
-		}
-
-		if (tvs == null)
-		{
-			tvs = new TextViewerStage(JITWatchUI.this, title, source, true);
-			tvs.show();
-			openPopupStages.add(tvs);
-		}
-
-		tvs.requestFocus();
-
-		tvs.jumpTo(member);
+		return openTextViewer(title, content, false);
 	}
 
-	void openBytecode(IMetaMember member)
-	{
-		String searchMethod = member.getSignatureForBytecode();
-
-		MetaClass methodClass = member.getMetaClass();
-
-		Map<String, String> bytecodeCache = methodClass.getBytecodeCache(config.getClassLocations());
-
-		String bc = bytecodeCache.get(searchMethod);
-
-		openTextViewer("Bytecode for " + member.toString(), bc, false);
-	}
-
-	void openAssembly(IMetaMember member)
-	{
-		String assembly = member.getAssembly();
-		openTextViewer("Native code for " + member.toString(), assembly, false);
-	}
-
-	void openTextViewer(String title, String content)
-	{
-		openTextViewer(title, content, false);
-	}
-
-	void openTextViewer(String title, String content, boolean lineNumbers)
+	TextViewerStage openTextViewer(String title, String content, boolean lineNumbers)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
 		tvs.show();
 		openPopupStages.add(tvs);
+
+		return tvs;
+	}
+
+	public void openCompileChain(IMetaMember member)
+	{
+		CompileChainWalker walker = new CompileChainWalker(model);
+
+		CompileNode root = walker.buildCallTree(member);
+
+		if (root != null)
+		{
+			CompileChainStage ccs = new CompileChainStage(this, root);
+
+			ccs.show();
+
+			openPopupStages.add(ccs);
+		}
+		else
+		{
+            logger.error("Could not open CompileChain - root node was null");
+		}
 	}
 
 	void openJournalViewer(String title, Journal journal)
@@ -630,6 +660,15 @@ public class JITWatchUI extends Application implements IJITListener
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 
+		String osNameProperty = System.getProperty("os.name");
+
+		// don't use ExtensionFilter on OSX due to JavaFX2 missing combo bug
+		if (osNameProperty != null && !osNameProperty.toLowerCase().contains("mac"))
+		{
+			fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"),
+					new FileChooser.ExtensionFilter("All Files", "*.*"));
+		}
+
 		String searchDir = config.getLastLogDir();
 
 		if (searchDir == null)
@@ -638,7 +677,7 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 
 		File dirFile = new File(searchDir);
-		
+
 		if (!dirFile.exists() || !dirFile.isDirectory())
 		{
 			dirFile = new File(System.getProperty("user.dir"));
@@ -671,7 +710,7 @@ public class JITWatchUI extends Application implements IJITListener
 		{
 			return;
 		}
-		
+
 		if (triView != null)
 		{
 			triView.setMember(member);
@@ -733,11 +772,11 @@ public class JITWatchUI extends Application implements IJITListener
 
 		long megabyte = 1024 * 1024;
 
-		String heapString = "Heap: " + (usedMemory / megabyte) + "/" + (totalMemory / megabyte) + "M";
+		String heapString = "Heap: " + (usedMemory / megabyte) + S_SLASH + (totalMemory / megabyte) + "M";
 
 		lblHeap.setText(heapString);
 
-		btnErrorLog.setText("Errors (" + errorCount + ")");
+		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
 	}
 
 	private void refreshLog()
@@ -809,8 +848,17 @@ public class JITWatchUI extends Application implements IJITListener
 		}
 		else if (stage instanceof TriView)
 		{
-			btnCodeBrowser.setDisable(false);
+			btnTriView.setDisable(false);
 			triView = null;
+		}
+		else if (stage instanceof SuggestStage)
+		{
+			btnSuggest.setDisable(false);
+			suggestStage = null;
+		}
+		else if (stage instanceof BrowserStage)
+		{
+			browserStage = null;
 		}
 	}
 
@@ -836,7 +884,8 @@ public class JITWatchUI extends Application implements IJITListener
 
 	private void log(final String entry)
 	{
-		logBuffer.append(entry + "\n");
+		logBuffer.append(entry);
+        logBuffer.append("\n");
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)
@@ -857,10 +906,5 @@ public class JITWatchUI extends Application implements IJITListener
 	public PackageManager getPackageManager()
 	{
 		return model.getPackageManager();
-	}
-
-	public Journal getJournal(String id)
-	{
-		return model.getJournal(id);
 	}
 }

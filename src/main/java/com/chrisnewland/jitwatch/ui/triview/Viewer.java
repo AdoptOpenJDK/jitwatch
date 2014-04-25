@@ -9,13 +9,18 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
+import com.chrisnewland.jitwatch.model.LineAnnotation;
+import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -23,13 +28,13 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.text.Text;
 
 public class Viewer extends VBox
 {
@@ -41,11 +46,21 @@ public class Viewer extends VBox
 	public static final String COLOUR_GREEN = "green";
 	public static final String COLOUR_BLUE = "blue";
 
-	private int scrollIndex = 0;
-	private String originalSource;
+	protected int scrollIndex = 0;
+	protected int lastScrollIndex = -1;
+	protected String originalSource;
 
-	public Viewer()
+	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
+
+	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
+
+	protected IStageAccessProxy stageAccessProxy;
+	
+	public Viewer(IStageAccessProxy stageAccessProxy)
 	{
+		this.stageAccessProxy = stageAccessProxy;
+		
 		vBoxRows = new VBox();
 
 		vBoxRows.heightProperty().addListener(new ChangeListener<Number>()
@@ -59,7 +74,7 @@ public class Viewer extends VBox
 
 		scrollPane = new ScrollPane();
 		scrollPane.setContent(vBoxRows);
-		scrollPane.setStyle("-fx-background-color:white");
+		scrollPane.setStyle("-fx-background:white");
 
 		scrollPane.prefHeightProperty().bind(heightProperty());
 
@@ -70,20 +85,23 @@ public class Viewer extends VBox
 
 	public void setContent(String source, boolean showLineNumbers)
 	{
+		lineAnnotations.clear();
+		lastScrollIndex = -1;
+
 		if (source == null)
 		{
 			source = "Empty";
 		}
-		
+
 		originalSource = source;
 
-		source = source.replace("\t", "  "); // 2 spaces
+		source = source.replace(S_TAB, S_DOUBLE_SPACE);
 
-		String[] lines = source.split("\n");
+		String[] lines = source.split(S_NEWLINE);
 
 		int maxWidth = Integer.toString(lines.length).length();
 
-		List<Text> textItems = new ArrayList<>();
+		List<Label> labels = new ArrayList<>();
 
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -91,23 +109,23 @@ public class Viewer extends VBox
 
 			if (showLineNumbers)
 			{
-				lines[i] = padLineNumber(i + 1, maxWidth) + "  " + row;
+				lines[i] = padLineNumber(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
 
-			Text lineText = new Text(lines[i]);
+			Label lblLine = new Label(lines[i]);
 
-			String style = "-fx-font-family: monospace; -fx-font-size:12px; -fx-fill: black";
-
-			lineText.setStyle(style);
-
-			textItems.add(lineText);
+			lblLine.setStyle(STYLE_UNHIGHLIGHTED);
+			labels.add(lblLine);
 		}
 
-		setContent(textItems);
+		setContent(labels);
 	}
 
-	public void setContent(List<Text> items)
+	public void setContent(List<Label> items)
 	{
+		lineAnnotations.clear();
+		lastScrollIndex = -1;
+
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
 	}
@@ -120,7 +138,7 @@ public class Viewer extends VBox
 
 		for (int i = len; i < maxWidth; i++)
 		{
-			builder.append(' ');
+			builder.append(S_SPACE);
 		}
 
 		builder.append(number);
@@ -160,11 +178,10 @@ public class Viewer extends VBox
 
 				ObservableList<Node> items = vBoxRows.getChildren();
 
-				for (Node text : items)
+				for (Node item : items)
 				{
-					String line = ((Text) text).getText();
-
-					builder.append(line).append("\n");
+					String line = ((Label) item).getText();
+					builder.append(line).append(S_NEWLINE);
 				}
 
 				content.putString(builder.toString());
@@ -179,11 +196,11 @@ public class Viewer extends VBox
 		scrollIndex = 0;
 
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
-		
+
 		if (regexPos == -1)
-		{			
-			List<String> lines = Arrays.asList(originalSource.split("\n"));
-			
+		{
+			List<String> lines = Arrays.asList(originalSource.split(S_NEWLINE));
+
 			scrollIndex = ParseUtil.findBestLineMatchForMemberSignature(member, lines);
 		}
 		else
@@ -191,24 +208,45 @@ public class Viewer extends VBox
 			scrollIndex = regexPos;
 		}
 
-		setScrollBar();
+		highlightLine(scrollIndex);
 	}
-	
+
+	// ugh! dirty hack for highlighting
+	private void highlightLine(int pos)
+	{
+		if (pos != 0)
+		{
+			if (lastScrollIndex != -1)
+			{
+				// revert to black Label
+				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
+				label.setStyle(STYLE_UNHIGHLIGHTED);
+			}
+
+			// replace new selected Label with background coloured label
+			Label label = (Label) vBoxRows.getChildren().get(pos);
+			label.prefWidthProperty().bind(vBoxRows.widthProperty());
+			label.setStyle(STYLE_HIGHLIGHTED);
+
+			lastScrollIndex = pos;
+
+			setScrollBar();
+		}
+	}
+
 	private int findPosForRegex(String regex)
 	{
 		int result = -1;
-		
+
 		ObservableList<Node> items = vBoxRows.getChildren();
 
 		Pattern pattern = Pattern.compile(regex);
 
 		int index = 0;
-		
+
 		for (Node item : items)
 		{
-			Text text = (Text) item;
-
-			String line = text.getText();
+			String line = ((Label) item).getText();
 
 			Matcher matcher = pattern.matcher(line);
 			if (matcher.find())
@@ -219,10 +257,10 @@ public class Viewer extends VBox
 
 			index++;
 		}
-		
-		return result;		
+
+		return result;
 	}
-	
+
 	private void setScrollBar()
 	{
 		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()

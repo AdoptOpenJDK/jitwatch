@@ -5,78 +5,105 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import java.util.HashMap;
+import com.chrisnewland.jitwatch.model.IParseDictionary;
+import com.chrisnewland.jitwatch.model.Journal;
+import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.model.Task;
+import com.chrisnewland.jitwatch.util.JournalUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.Tag;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class IntrinsicFinder
+public final class IntrinsicFinder
 {
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private IntrinsicFinder() {
+    }
+
 	public static Map<String, String> findIntrinsics(Journal journal)
 	{
 		Map<String, String> result = new HashMap<>();
 
-		Tag lastTaskTag = null;
-
-		for (Tag tag : journal.getEntryList())
+		if (journal != null)
 		{
-			if (TAG_TASK.equals(tag.getName()))
+			Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+			if (lastTaskTag != null)
 			{
-				lastTaskTag = tag;
-			}
-		}
+				IParseDictionary parseDictionary = lastTaskTag.getParseDictionary();
 
-		if (lastTaskTag != null)
-		{
-			List<Tag> parsePhases = lastTaskTag.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-			if (parsePhases.size() > 0)
-			{
-				Tag lastParsePhase = parsePhases.get(parsePhases.size() - 1);
-
-				List<Tag> parseTags = lastParsePhase.getNamedChildren(ATTR_PARSE);
-
-				for (Tag parseTag : parseTags)
+				// TODO too deep!
+				if (parsePhase != null)
 				{
-					String klass = null;
-					String method = null;
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-					// <klass>
-					// <method>
-					// <intrinsic>
-					List<Tag> allChildren = parseTag.getChildren();
-
-					for (Tag childTag : allChildren)
+					for (Tag parseTag : parseTags)
 					{
-						String name = childTag.getName();
+						String currentMethod = null;
+						String holder = null;
 
-						switch (name)
+						List<Tag> allChildren = parseTag.getChildren();
+
+						for (Tag childTag : allChildren)
 						{
-						case TAG_KLASS:
-							klass = childTag.getAttrs().get(ATTR_NAME);
-							klass = klass.replace("/", ".");
-							break;
+							String tagName = childTag.getName();
+							Map<String, String> attrs = childTag.getAttrs();
 
-						case TAG_METHOD:
-							method = childTag.getAttrs().get(ATTR_NAME);
-							break;
-
-						case TAG_INTRINSIC:
-							String intrinsic = childTag.getAttrs().get(ATTR_ID);
-
-							if (klass != null && method != null)
+							switch (tagName)
 							{
-								result.put(klass + "." + method, intrinsic);
+							case TAG_METHOD:
+							{
+								currentMethod = attrs.get(ATTR_NAME);
+								holder = attrs.get(ATTR_HOLDER);
+							}
+								break;
+
+							// changes member context
+							case TAG_CALL:
+							{
+								String methodID = attrs.get(ATTR_METHOD);
+
+								Tag methodTag = parseDictionary.getMethod(methodID);
+								currentMethod = methodTag.getAttribute(ATTR_NAME);
+								holder = methodTag.getAttribute(ATTR_HOLDER);
+							}
+								break;
+
+							case TAG_INTRINSIC:
+							{
+								if (holder != null && currentMethod != null)
+								{
+									Tag klassTag = parseDictionary.getKlass(holder);
+
+									String intrinsic = childTag.getAttribute(ATTR_ID);
+
+									if (klassTag != null)
+									{
+										String fqName = klassTag.getAttribute(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT
+												+ currentMethod;
+
+										result.put(fqName, intrinsic);
+									}
+								}
+
+								holder = null;
+								currentMethod = null;
+								break;
 							}
 
-							klass = null;
-							method = null;
-							break;
+                            default:
+                            {
+                                break;
+                            }
+							}
 						}
 					}
 				}

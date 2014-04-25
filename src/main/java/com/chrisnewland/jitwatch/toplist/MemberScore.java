@@ -7,7 +7,7 @@ package com.chrisnewland.jitwatch.toplist;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
-public class MemberScore
+public class MemberScore implements ITopListScore
 {
 	private final IMetaMember member;
 	private final long score;
@@ -18,7 +18,7 @@ public class MemberScore
 		this.score = score;
 	}
 	
-	public IMetaMember getMember()
+	public IMetaMember getKey()
 	{
 		return member;
 	}

@@ -5,22 +5,34 @@
  */
 package com.chrisnewland.jitwatch.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class ClassUtil
+public final class ClassUtil
 {
+    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ClassUtil() {
+    }
+
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
 		{
 			return Class.forName(fqClassName, false, getClassLoader());
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			throw t;
+			throw ex;
 		}
 	}
 	
@@ -35,9 +47,9 @@ public class ClassUtil
 			method.setAccessible(true);
 			method.invoke(urlClassLoader, new Object[] { url });
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			t.printStackTrace();
+            logger.error("Exception: {}", ex.getMessage(), ex);
 		}
 	}
 	
@@ -53,9 +65,9 @@ public class ClassUtil
 			
 			return (URL[])result;
 		}
-		catch (Throwable t)
+		catch (Exception ex)
 		{
-			t.printStackTrace();
+            logger.error("Exception: {}", ex.getMessage(), ex);
 		}
 		
 		return null;
