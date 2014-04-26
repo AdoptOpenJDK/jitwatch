@@ -315,8 +315,9 @@ public class MakeHotSpotLog
         logger.warn("testCallChain2: {}", count);
 	}
 
-	private long chainC1(long count)
+	private long chainC1(long inCount)
 	{
+        long count = inCount;
 		count += chainC2(count);
 		return chainC3(count);
 	}
@@ -378,7 +379,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-                logger.error("usage: MakeHotSpotLog [iterations] {}", nfe);
+                logger.error("usage: MakeHotSpotLog [iterations]", nfe);
 			}
 		}
 

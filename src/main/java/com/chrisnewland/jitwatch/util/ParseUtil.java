@@ -6,6 +6,8 @@
 package com.chrisnewland.jitwatch.util;
 
 import com.chrisnewland.jitwatch.model.*;
+
+import com.chrisnewland.jitwatch.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +80,7 @@ public class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-            logger.error("{}", pe);
+            logger.error("", pe);
 		}
 
 		return result;
@@ -371,22 +373,22 @@ public class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
-                logger.error("ClassNotFoundException: {}", cnf);
+                logger.error("ClassNotFoundException:", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-                logger.error("NoClassDefFoundError: {}", ncdf);
+                logger.error("NoClassDefFoundError:", ncdf);
                 throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-                logger.error("Exception: {}", ex);
+                logger.error("Exception:", ex);
                 throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
-                logger.error("Error: {}", err);
+                logger.error("Error:", err);
                 throw new Exception("Error: " + err.getMessage());
 			}
 
@@ -477,9 +479,10 @@ public class ParseUtil
 		return bestScoreLine;
 	}
 
-	private static boolean compareTypeEquality(String memberTypeName, String mspTypeName, Map<String, String> genericsMap)
+	private static boolean compareTypeEquality(String memberTypeName, String inMspTypeName, Map<String, String> genericsMap)
 	{
-		if (memberTypeName != null && memberTypeName.equals(mspTypeName))
+        String mspTypeName = inMspTypeName;
+        if (memberTypeName != null && memberTypeName.equals(mspTypeName))
 		{
 			return true;
 		}
@@ -570,7 +573,7 @@ public class ParseUtil
 			}
 			else
 			{
-                logger.error("metaClass not found: " + metaClassName);
+                logger.error("metaClass not found: {}", metaClassName);
 			}
 		}
 
@@ -601,9 +604,9 @@ public class ParseUtil
 		return result;
 	}
 
-	public static String convertNativeCodeMethodName(String line)
+	public static String convertNativeCodeMethodName(String inLine)
 	{
-		line = line.replace(ENTITY_APOS, S_QUOTE);
+		String line = inLine.replace(ENTITY_APOS, S_QUOTE);
 
 		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
 

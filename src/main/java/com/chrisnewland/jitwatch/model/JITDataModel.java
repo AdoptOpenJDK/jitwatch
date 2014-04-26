@@ -128,7 +128,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
                 }
                 catch (Throwable t)
                 {
-                    logger.error("Exception: {} {}", t.getMessage(), t);
+                    logger.error("Exception: {}", t.getMessage(), t);
                 }
             }
         }

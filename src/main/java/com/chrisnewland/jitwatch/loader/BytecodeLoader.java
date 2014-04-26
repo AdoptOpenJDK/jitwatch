@@ -63,11 +63,11 @@ public final class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			logger.error("Could not obtain bytecode for class: " + fqClassName, ba);
+			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
 		}
 		catch (IOException ioe)
 		{
-            logger.error("{}", ioe);
+            logger.error("", ioe);
 		}
 
 		if (byteCodeString != null)
@@ -145,8 +145,9 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
-	private static void storeBytecode(ClassBC classBytecode, String signature, StringBuilder builder)
+	private static void storeBytecode(ClassBC classBytecode, String inSignature, StringBuilder builder)
 	{
+        String signature = inSignature;
 		if (signature != null && builder.length() > 0)
 		{
 			// remove spaces between multiple method parameters

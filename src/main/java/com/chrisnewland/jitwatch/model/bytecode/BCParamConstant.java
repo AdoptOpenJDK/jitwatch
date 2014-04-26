@@ -11,10 +11,10 @@ public class BCParamConstant implements IBytecodeParam
 {
 	private int value;
 	
-	public BCParamConstant(String constant)
+	public BCParamConstant(String inConstant)
 	{
 		// remove leading # for constant pool param
-		constant = constant.substring(1);
+		String constant = inConstant.substring(1);
 		
 		value = Integer.parseInt(constant);
 	}

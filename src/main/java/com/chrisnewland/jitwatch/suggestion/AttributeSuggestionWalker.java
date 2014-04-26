@@ -224,7 +224,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
-                logger.error("{}", nfe);
+                logger.error("", nfe);
             }
         }
 
@@ -236,7 +236,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
-                logger.error("{}", nfe);
+                logger.error("", nfe);
             }
         }
 

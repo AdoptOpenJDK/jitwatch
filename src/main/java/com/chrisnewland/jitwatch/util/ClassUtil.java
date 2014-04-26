@@ -49,7 +49,7 @@ public final class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error("Exception: {} {}", ex.getMessage(), ex);
+            logger.error("Exception: {}", ex.getMessage(), ex);
 		}
 	}
 	
@@ -67,7 +67,7 @@ public final class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error("Exception: {} {}", ex.getMessage(), ex);
+            logger.error("Exception: {}", ex.getMessage(), ex);
 		}
 		
 		return null;

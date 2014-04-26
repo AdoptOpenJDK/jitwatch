@@ -346,8 +346,9 @@ public final class StringUtil
 		return result;
 	}
 
-	public static String formatThousands(String value)
+	public static String formatThousands(String inValue)
 	{
+        String value = inValue;
 		// see if it can be formatted as a long with commas at thousands
 		try
 		{
