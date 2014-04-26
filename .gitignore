@@ -5,3 +5,5 @@
 /ide-bin
 /target
 /bin
+.DS_Store
+jitwatch.log
