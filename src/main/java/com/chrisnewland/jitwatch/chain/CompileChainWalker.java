@@ -191,9 +191,9 @@ public class CompileChainWalker
 
                 case TAG_INLINE_FAIL:
                 {
-                    PerformTAG_INLINE_FAIL performTAG_INLINE_FAIL = new PerformTAG_INLINE_FAIL(node, methodID, methodAttrs, callAttrs, tagAttrs).invoke();
-                    inlined = performTAG_INLINE_FAIL.isInlined();
-                    methodID = performTAG_INLINE_FAIL.getMethodID();
+                    PerformTAG_INLINE_FAIL performTagInlineFail = new PerformTAG_INLINE_FAIL(node, methodID, methodAttrs, callAttrs, tagAttrs).invoke();
+                    inlined = performTagInlineFail.isInlined();
+                    methodID = performTagInlineFail.getMethodID();
                 }
                 break;
 
