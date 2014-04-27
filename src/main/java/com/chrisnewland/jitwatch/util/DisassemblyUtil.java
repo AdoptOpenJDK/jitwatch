@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-public class DisassemblyUtil
+public final class DisassemblyUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(DisassemblyUtil.class);
 

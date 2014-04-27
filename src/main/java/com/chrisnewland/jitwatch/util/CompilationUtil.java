@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-public class CompilationUtil
+public final class CompilationUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
 

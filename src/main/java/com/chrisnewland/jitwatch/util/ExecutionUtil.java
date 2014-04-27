@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExecutionUtil
+public final class ExecutionUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(ExecutionUtil.class);
 

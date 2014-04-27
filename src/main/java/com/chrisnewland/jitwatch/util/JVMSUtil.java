@@ -16,7 +16,7 @@ import java.util.Map;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 
-public class JVMSUtil
+public final class JVMSUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
 
