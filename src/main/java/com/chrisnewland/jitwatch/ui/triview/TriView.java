@@ -162,17 +162,17 @@ public class TriView extends Stage
 						}
 						else
 						{
-							setText(item.toStringUnqualifiedMethodName());
+                            setText(item.toStringUnqualifiedMethodName());
 
-							if (item.isCompiled() && UserInterfaceUtil.tick != null)
-							{
-								setGraphic(new ImageView(UserInterfaceUtil.tick));
-							}
-							else
-							{
-								setGraphic(null);
-							}
-						}
+                            if (item.isCompiled() && UserInterfaceUtil.tick != null)
+                            {
+                                setGraphic(new ImageView(UserInterfaceUtil.tick));
+                            }
+                            else
+                            {
+                                setGraphic(null);
+                            }
+                        }
 					}
 				};
 			}
@@ -265,7 +265,7 @@ public class TriView extends Stage
 		checkColumns();
 	}
 
-	private void checkColumns()
+    private void checkColumns()
 	{
 		splitViewer.getItems().clear();
 

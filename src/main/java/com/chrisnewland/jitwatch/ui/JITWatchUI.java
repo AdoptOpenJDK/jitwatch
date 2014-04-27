@@ -259,18 +259,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 					int classCount = config.getClassLocations().size();
 					int sourceCount = config.getSourceLocations().size();
 
-					if (classCount == 0 && sourceCount == 0)
-					{
-						if (config.isShowNothingMounted())
-						{
-							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, config);
-							nothingMountedStage.show();
-
-							openPopupStages.add(nothingMountedStage);
-
-							startDelayedByConfig = true;
-						}
-					}
+                    performActionWhenNothingIsMounted(classCount, sourceCount);
 				}
 
 				if (!startDelayedByConfig)
@@ -512,7 +501,22 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		updateButtons();
 	}
 
-	void openConfigStage()
+    private void performActionWhenNothingIsMounted(int classCount, int sourceCount) {
+        if (classCount == 0 && sourceCount == 0)
+        {
+            if (config.isShowNothingMounted())
+            {
+                nothingMountedStage = new NothingMountedStage(this, config);
+                nothingMountedStage.show();
+
+                openPopupStages.add(nothingMountedStage);
+
+                startDelayedByConfig = true;
+            }
+        }
+    }
+
+    void openConfigStage()
 	{
 		if (configStage == null)
 		{		

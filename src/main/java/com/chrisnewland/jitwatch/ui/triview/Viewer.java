@@ -175,24 +175,29 @@ public class Viewer extends VBox
 				final Clipboard clipboard = Clipboard.getSystemClipboard();
 				final ClipboardContent content = new ClipboardContent();
 
-				StringBuilder builder = new StringBuilder();
-
 				ObservableList<Node> items = vBoxRows.getChildren();
 
-				for (Node item : items)
-				{
-					String line = ((Label) item).getText();
-					builder.append(line).append(S_NEWLINE);
-				}
+                StringBuilder builder =
+                        transformNodeItemsToTextUsing(new StringBuilder(), items);
 
-				content.putString(builder.toString());
+                content.putString(builder.toString());
 
 				clipboard.setContent(content);
 			}
 		});
 	}
 
-	public void jumpTo(IMetaMember member)
+    private StringBuilder transformNodeItemsToTextUsing(StringBuilder inBuilder, ObservableList<Node> items) {
+        StringBuilder builder = inBuilder;
+        for (Node item : items)
+        {
+            String line = ((Label) item).getText();
+            builder.append(line).append(S_NEWLINE);
+        }
+        return builder;
+    }
+
+    public void jumpTo(IMetaMember member)
 	{
 		scrollIndex = 0;
 

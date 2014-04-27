@@ -161,19 +161,7 @@ public class ClassMemberList extends VBox
 
 				StringBuilder builder = new StringBuilder();
 
-				Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
-
-				if (intrinsics.size() > 0)
-				{
-					for (Map.Entry<String, String> entry : intrinsics.entrySet())
-					{
-						builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-					}
-				}
-				else
-				{
-					builder.append("No intrinsics used in this method");
-				}
+                builder = processIntrinsicsUsing(journal, builder);
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
 			}
@@ -194,7 +182,29 @@ public class ClassMemberList extends VBox
 		memberList.prefHeightProperty().bind(heightProperty());
 	}
 
-	public void setMetaClass(MetaClass metaClass)
+    private StringBuilder processIntrinsicsUsing(Journal journal, StringBuilder inBuilder) {
+        StringBuilder builder = inBuilder;
+        Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+
+        if (intrinsics.size() > 0)
+        {
+            addArrowWithNewLineToEachIntrinsicEntry(builder, intrinsics);
+        }
+        else
+        {
+            builder.append("No intrinsics used in this method");
+        }
+        return builder;
+    }
+
+    private void addArrowWithNewLineToEachIntrinsicEntry(StringBuilder builder, Map<String, String> intrinsics) {
+        for (Map.Entry<String, String> entry : intrinsics.entrySet())
+        {
+            builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
+        }
+    }
+
+    public void setMetaClass(MetaClass metaClass)
 	{
 		this.metaClass = metaClass;
 		refresh();
