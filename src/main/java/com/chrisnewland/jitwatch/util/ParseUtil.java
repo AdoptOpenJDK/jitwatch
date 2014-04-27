@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class ParseUtil
+public final class ParseUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
