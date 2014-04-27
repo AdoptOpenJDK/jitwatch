@@ -205,7 +205,7 @@ public class CompileChainWalker
 
                 case TAG_PARSE: // call depth
                 {
-                    performTAG_PARSE(node, methodID, inlined, inlineReason, child, tagAttrs);
+                    performTagParse(node, methodID, inlined, inlineReason, child, tagAttrs);
                 }
                 break;
 
@@ -215,7 +215,7 @@ public class CompileChainWalker
             return this;
         }
 
-        private void performTAG_PARSE(CompileNode node, String methodID, boolean inlined, String inlineReason, Tag child, Map<String, String> tagAttrs) {
+        private void performTagParse(CompileNode node, String methodID, boolean inlined, String inlineReason, Tag child, Map<String, String> tagAttrs) {
             String childMethodID = tagAttrs.get(ATTR_METHOD);
 
             IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);

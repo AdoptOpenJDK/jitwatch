@@ -329,11 +329,11 @@ public class ParseUtil
             switch (c)
             {
             case C_OPEN_SQUARE_BRACKET:
-                pos = parse_C_OPEN_SQUARE_BRACKET(types, classes, typeLen, builder, pos, c);
+                pos = parseCOpenSquareBracket(types, classes, typeLen, builder, pos, c);
                 break;
             case C_OBJECT_REF:
                 // ref type
-                pos = parse_C_OBJECT_REF(types, classes, typeLen, builder, pos);
+                pos = parseCObjectRef(types, classes, typeLen, builder, pos);
                 break;
             default:
                 // primitive
@@ -351,11 +351,11 @@ public class ParseUtil
         return pos;
     }
 
-    private static int parse_C_OBJECT_REF(String types,
-                                          List<Class<?>> classes,
-                                          int typeLen,
-                                          StringBuilder builder,
-                                          int pos) throws ClassNotFoundException {
+    private static int parseCObjectRef(String types,
+                                       List<Class<?>> classes,
+                                       int typeLen,
+                                       StringBuilder builder,
+                                       int pos) throws ClassNotFoundException {
         // ref type
         char c;
         while (pos < typeLen)
@@ -377,7 +377,7 @@ public class ParseUtil
         return pos;
     }
 
-    private static int parse_C_OPEN_SQUARE_BRACKET(String types, List<Class<?>> classes, int typeLen, StringBuilder builder, int pos, char c) throws ClassNotFoundException {
+    private static int parseCOpenSquareBracket(String types, List<Class<?>> classes, int typeLen, StringBuilder builder, int pos, char c) throws ClassNotFoundException {
         // Could be
         // [Ljava.lang.String; Object array
         // [I primitive array

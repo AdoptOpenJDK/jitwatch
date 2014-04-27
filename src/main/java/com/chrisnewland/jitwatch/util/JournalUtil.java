@@ -99,28 +99,28 @@ public final class JournalUtil
 				break;
 			case TAG_METHOD:
 			{
-                inMethod = parse_TAG_METHOD(methodAttrs, currentInstruction, tagAttrs);
+                inMethod = parseTagMethod(methodAttrs, currentInstruction, tagAttrs);
 
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-                parse_TAG_INLINE_SUCCESS(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
+                parseTagInlineSuccess(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_INLINE_FAIL:
 			{
-                parse_TAG_INLINE_FAIL(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
+                parseTagInlineFail(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_BRANCH:
 			{
-                parse_TAG_BRANCH(result, currentBytecode, isC2, inMethod, tagAttrs);
+                parseTagBranch(result, currentBytecode, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_INTRINSIC:
 			{
-                parse_TAG_INTRINSIC(result, currentBytecode, isC2, inMethod, tagAttrs);
+                parseTagIntrinsic(result, currentBytecode, isC2, inMethod, tagAttrs);
 			}
 				break;
 
@@ -138,7 +138,7 @@ public final class JournalUtil
         return isC2;
     }
 
-    private static void parse_TAG_INTRINSIC(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+    private static void parseTagIntrinsic(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
         StringBuilder reason = new StringBuilder();
         reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
@@ -148,7 +148,7 @@ public final class JournalUtil
         }
     }
 
-    private static void parse_TAG_BRANCH(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+    private static void parseTagBranch(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
         String count = tagAttrs.get(ATTR_BRANCH_COUNT);
         String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
         String notTaken = tagAttrs.get(ATTR_BRANCH_NOT_TAKEN);
@@ -177,7 +177,7 @@ public final class JournalUtil
         }
     }
 
-    private static void parse_TAG_INLINE_FAIL(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+    private static void parseTagInlineFail(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
         String reason = tagAttrs.get(ATTR_REASON);
         String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
         if (inMethod || isC2)
@@ -186,7 +186,7 @@ public final class JournalUtil
         }
     }
 
-    private static void parse_TAG_INLINE_SUCCESS(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+    private static void parseTagInlineSuccess(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
         String reason = tagAttrs.get(ATTR_REASON);
         String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
         if (inMethod || isC2)
@@ -195,7 +195,7 @@ public final class JournalUtil
         }
     }
 
-    private static boolean parse_TAG_METHOD(Map<String, String> methodAttrs, Instruction currentInstruction, Map<String, String> tagAttrs) {
+    private static boolean parseTagMethod(Map<String, String> methodAttrs, Instruction currentInstruction, Map<String, String> tagAttrs) {
         boolean inMethod;
         methodAttrs.clear();
         methodAttrs.putAll(tagAttrs);
