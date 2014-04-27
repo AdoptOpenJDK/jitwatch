@@ -1,12 +1,16 @@
 package com.chrisnewland.jitwatch.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class StreamCollector
 {
-	private StringBuilder builder = new StringBuilder();
+    private static final Logger logger = LoggerFactory.getLogger(StreamCollector.class);
+    private StringBuilder builder = new StringBuilder();
 
 	public StreamCollector(InputStream stream)
 	{
@@ -29,7 +33,7 @@ public class StreamCollector
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					logger.error("", e);
 				}
 			}
 		}).start();
