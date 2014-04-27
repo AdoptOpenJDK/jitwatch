@@ -5,19 +5,19 @@
  */
 package com.chrisnewland.jitwatch.toplist;
 
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
-
 public abstract class AbstractTopListVisitable implements ITopListVisitable
 {
-	protected IReadOnlyJITDataModel model;
-	protected List<ITopListScore> topList;
-	protected boolean sortHighToLow;
+    protected IReadOnlyJITDataModel model;
+    protected List<ITopListScore> topList;
+    protected boolean sortHighToLow;
 
 	public AbstractTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
 	{

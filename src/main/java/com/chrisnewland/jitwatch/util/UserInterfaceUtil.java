@@ -16,7 +16,7 @@ public final class UserInterfaceUtil
     private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
-    public static Image tick = null;
+    private static Image tick = null;
 
     /*
         Hide Utility Class Constructor
@@ -41,5 +41,9 @@ public final class UserInterfaceUtil
         	//TODO make this a dialog, format too easy to miss in an IDE
             logger.error("If running in an IDE please add src/main/resources to your classpath");
         }
+    }
+
+    public static Image getTick() {
+        return tick;
     }
 }

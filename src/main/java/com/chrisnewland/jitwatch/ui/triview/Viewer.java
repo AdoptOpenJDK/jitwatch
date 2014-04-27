@@ -46,16 +46,16 @@ public class Viewer extends VBox
 	public static final String COLOUR_GREEN = "green";
 	public static final String COLOUR_BLUE = "blue";
 
-	protected int scrollIndex = 0;
+    private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
-	protected String originalSource;
+    protected String originalSource;
 
 	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
 
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
-	protected IStageAccessProxy stageAccessProxy;
+    protected IStageAccessProxy stageAccessProxy;
 	
 	public Viewer(IStageAccessProxy stageAccessProxy)
 	{

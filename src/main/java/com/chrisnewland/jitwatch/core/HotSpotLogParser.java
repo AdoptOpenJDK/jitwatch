@@ -25,7 +25,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser
 {
-	enum ParseState
+    enum ParseState
 	{
 		READY, IN_TAG, IN_NATIVE
 	}
