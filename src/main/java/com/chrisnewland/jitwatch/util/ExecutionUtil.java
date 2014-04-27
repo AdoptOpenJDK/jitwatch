@@ -1,14 +1,21 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExecutionUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(ExecutionUtil.class);
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private ExecutionUtil() {
+    }
 
 	public static boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
 	{

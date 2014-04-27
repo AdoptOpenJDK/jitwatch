@@ -25,6 +25,13 @@ public final class BytecodeLoader
 {
     private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private BytecodeLoader() {
+    }
+
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
 		ClassBC result = null;

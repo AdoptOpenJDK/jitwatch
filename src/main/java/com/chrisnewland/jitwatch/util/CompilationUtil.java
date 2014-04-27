@@ -1,25 +1,15 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
+import com.sun.source.util.JavacTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.tools.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.source.util.JavacTask;
 
 public class CompilationUtil
 {
@@ -44,6 +34,13 @@ public class CompilationUtil
 
 		COMPILE_DIR = path;
 	}
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private CompilationUtil() {
+    }
 
 	public static boolean compile(List<File> sourceFiles) throws IOException
 	{

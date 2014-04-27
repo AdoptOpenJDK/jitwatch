@@ -1,9 +1,9 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 public class DisassemblyUtil
 {
@@ -18,6 +18,13 @@ public class DisassemblyUtil
 	{
 		BIT32, BIT64
 	}
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private DisassemblyUtil() {
+    }
 
 	public static boolean isDisassemblerAvailable()
 	{

@@ -25,6 +25,13 @@ public class JVMSUtil
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
 
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private JVMSUtil() {
+    }
+
 	public static boolean hasLocalJVMS()
 	{
 		File file = new File(JVMS_HTML_FILENAME);
