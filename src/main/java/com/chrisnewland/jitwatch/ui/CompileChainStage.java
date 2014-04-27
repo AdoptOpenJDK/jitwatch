@@ -78,9 +78,10 @@ public class CompileChainStage extends Stage
         show(rootNode, X_OFFSET, Y_OFFSET, 0);
     }
 
-    private void show(CompileNode node, double x, double parentY, int depth)
+    private void show(CompileNode node, double x, double inParentY, int depth)
     {
         double lastX = x;
+        double parentY = inParentY;
 
         lastX = plotNode(node, x, parentY, depth);
 

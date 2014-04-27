@@ -199,7 +199,8 @@ public class TimeLineStage extends AbstractGraphStage
         }
     }
 
-    private double parseCompiledStampTimeUsingSelectedMember(IMetaMember selectedMember, double compiledStampTime) {
+    private double parseCompiledStampTimeUsingSelectedMember(IMetaMember selectedMember, double inCompiledStampTime) {
+        double compiledStampTime = inCompiledStampTime;
         if (selectedMember != null)
         {
             // last compile stamp write wins - plot all?
@@ -210,7 +211,8 @@ public class TimeLineStage extends AbstractGraphStage
         return compiledStampTime;
     }
 
-    private double parseCompiledStampTime(double compiledStampTime, String cStamp) {
+    private double parseCompiledStampTime(double inCompiledStampTime, String cStamp) {
+        double compiledStampTime = inCompiledStampTime;
         if (cStamp != null)
         {
             compiledStampTime = ParseUtil.parseStamp(cStamp);

@@ -344,7 +344,8 @@ public final class ParseUtil
         } // end while
     }
 
-    private static int parsePrimitive(List<Class<?>> classes, int pos, char c) {
+    private static int parsePrimitive(List<Class<?>> classes, int inPos, char c) {
+        int pos = inPos;
         Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
         classes.add(primitiveClass);
         pos++;
