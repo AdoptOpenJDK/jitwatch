@@ -20,8 +20,8 @@ import javafx.stage.WindowEvent;
 public abstract class AbstractGraphStage extends Stage
 {
 	protected Canvas canvas;
-	protected GraphicsContext gc;
-	protected JITWatchUI parent;
+    protected GraphicsContext gc;
+    protected JITWatchUI parent;
 
 	protected static final double GRAPH_GAP_LEFT = 60.5;
 	protected static final double GRAPH_GAP_RIGHT = 20.5;
@@ -29,15 +29,15 @@ public abstract class AbstractGraphStage extends Stage
 
 	static final int[] Y_SCALE = new int[21];
 
-	protected double width;
-	protected double height;
-	protected double chartWidth;
-	protected double chartHeight;
+    protected double width;
+    protected double height;
+    protected double chartWidth;
+    protected double chartHeight;
 
-	protected long minX;
-	protected long maxX;
-	protected long minY;
-	protected long maxY;
+    protected long minX;
+    protected long maxX;
+    protected long minY;
+    protected long maxY;
 
 	private boolean xAxisTime = false;
 
@@ -267,5 +267,4 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		return 0.5 + (int) pixel;
 	}
-
 }

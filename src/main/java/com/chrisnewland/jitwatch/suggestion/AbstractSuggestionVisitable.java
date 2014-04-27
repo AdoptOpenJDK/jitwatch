@@ -1,18 +1,18 @@
 package com.chrisnewland.jitwatch.suggestion;
 
+import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.treevisitor.ITreeVisitable;
+import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.treevisitor.ITreeVisitable;
-import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
-
 public abstract class AbstractSuggestionVisitable implements ITreeVisitable
-{	
-	protected IReadOnlyJITDataModel model;
-	protected List<Suggestion> suggestionList;
+{
+    protected IReadOnlyJITDataModel model;
+    protected List<Suggestion> suggestionList;
 	
 	public AbstractSuggestionVisitable(IReadOnlyJITDataModel model)
 	{
