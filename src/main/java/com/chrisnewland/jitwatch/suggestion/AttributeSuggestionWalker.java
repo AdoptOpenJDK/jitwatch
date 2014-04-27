@@ -142,6 +142,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
                     IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
                     processParseTag(child, nestedCaller);
                 }
+                break;
 
             default:
                 break;
