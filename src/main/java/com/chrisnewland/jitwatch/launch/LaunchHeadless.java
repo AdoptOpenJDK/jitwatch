@@ -70,7 +70,7 @@ public class LaunchHeadless implements IJITListener
 	}
 
     private static boolean firstParameterIsABooleanExpression(String arg) {
-        return Boolean.valueOf(arg) == true;
+        return Boolean.valueOf(arg);
     }
 
     private static boolean twoParametersArePassedIn(String[] args) {
