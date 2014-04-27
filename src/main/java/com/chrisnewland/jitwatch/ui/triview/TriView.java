@@ -155,26 +155,9 @@ public class TriView extends Stage
 					{
 						super.updateItem(item, empty);
 
-						if (item == null || empty)
-						{
-							setText(S_EMPTY);
-							setGraphic(null);
-						}
-						else
-						{
-							setText(item.toStringUnqualifiedMethodName());
-
-							if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
-							{
-								setGraphic(new ImageView(UserInterfaceUtil.getTick()));
-							}
-							else
-							{
-								setGraphic(null);
-							}
-						}
-					}
-				};
+                        performUpdatingOfListCellUsing(this, item, empty);
+                    }
+                };
 			}
 		});
 
@@ -265,7 +248,32 @@ public class TriView extends Stage
 		checkColumns();
 	}
 
-	private void checkColumns()
+    private void performUpdatingOfListCellUsing(ListCell<IMetaMember> listCell, IMetaMember item, boolean empty) {
+        if (item == null || empty)
+        {
+            listCell.setText(S_EMPTY);
+            listCell.setGraphic(null);
+        }
+        else
+        {
+            populateListCellWhenContentAvailable(listCell, item);
+        }
+    }
+
+    private void populateListCellWhenContentAvailable(ListCell<IMetaMember> listCell, IMetaMember item) {
+        listCell.setText(item.toStringUnqualifiedMethodName());
+
+        if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
+        {
+            listCell.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+        }
+        else
+        {
+            listCell.setGraphic(null);
+        }
+    }
+
+    private void checkColumns()
 	{
 		splitViewer.getItems().clear();
 
