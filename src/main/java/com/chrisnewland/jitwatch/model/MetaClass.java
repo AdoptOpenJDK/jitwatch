@@ -7,10 +7,7 @@ package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.util.ParseUtil;
-
-import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;

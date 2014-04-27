@@ -32,7 +32,7 @@ public class LaunchHeadless implements IJITListener
 
         HotSpotLogParser parser = new HotSpotLogParser(model, config, this);
 
-        parser.watch(new File(filename));
+        parser.readLogFile(new File(filename));
     }
 
     @Override
@@ -76,4 +76,10 @@ public class LaunchHeadless implements IJITListener
     private static boolean twoParametersArePassedIn(String[] args) {
         return args.length == 2;
     }
+
+	@Override
+	public void handleReadComplete()
+	{
+		logger.info("Finished reading log file.");		
+	}
 }

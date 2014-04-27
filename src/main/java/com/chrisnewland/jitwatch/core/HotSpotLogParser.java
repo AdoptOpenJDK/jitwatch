@@ -34,7 +34,7 @@ public class HotSpotLogParser
 
 	private JITDataModel model;
 
-	private boolean watching = false;
+	private boolean reading = false;
 
 	private ParseState parseState = ParseState.READY;
 
@@ -89,91 +89,50 @@ public class HotSpotLogParser
 		}
 	}
 
-	public void watch(File hotspotLog) throws IOException
+	public void readLogFile(File hotspotLog) throws IOException
 	{
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
 
-		BufferedReader input = new BufferedReader(new FileReader(hotspotLog));
-
-		String currentLine = null;
-
 		tagProcessor = new TagProcessor();
 
-		watching = true;
+		reading = true;
+		
+		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
 
-		while (watching)
+		String currentLine = input.readLine();
+
+		while (reading && currentLine != null)
 		{
-			if (currentLine != null)
-			{
-				try
-				{
-					handleLine(currentLine);
-				}
-				catch (Exception ex)
-				{
-                    logger.error("Exception handling: '{}'", currentLine, ex);
-				}
-			}
-			else
-			{
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-					logger.error("", e);
-					break;
-				}
-			}
 
+			try
+			{
+				handleLine(currentLine);
+			}
+			catch (Exception ex)
+			{
+                   logger.error("Exception handling: '{}'", currentLine, ex);
+			}
+		
 			currentLine = input.readLine();
 		}
 
 		input.close();
+		
+		logListener.handleReadComplete();
 	}
 
 	public void stop()
 	{
-		watching = false;
+		reading = false;
 	}
-
-	// <?xml version='1.0' encoding='UTF-8'?>
-	// <hotspot_log version='160 1' process='20929' time_ms='1380789730403'>
-	// <vm_version>
-	// <name>
-	// </name>
-	// <release>
-	// </release>
-	// <info>
-	// </info>
-	// </vm_version>
-	// <vm_arguments>
-	// <args>
-	// </args>
-	// <command>
-	// </command>
-	// <launcher>
-	// </launcher>
-	// <properties>
-	// </properties>
-	// </vm_arguments>
-	// <tty>
-	// <task_queued /> ...
-	// </tty>
-	// <compilation_log>
-	// <task > ...
-	// <compilation_log>
-	// <hotspot_log_done stamp='175.381'/>
-	// </hotspot_log>
 
 	private void handleLine(String inCurrentLine)
 	{
         String currentLine = inCurrentLine;
-		currentLine = currentLine.replace("&lt;", S_OPEN_ANGLE);
-		currentLine = currentLine.replace("&gt;", S_CLOSE_ANGLE);
+		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
+		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{

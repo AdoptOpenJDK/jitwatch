@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.util;
 
 import com.chrisnewland.jitwatch.model.*;
 
-import com.chrisnewland.jitwatch.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

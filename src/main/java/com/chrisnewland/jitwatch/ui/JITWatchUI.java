@@ -33,6 +33,7 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -53,6 +54,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +80,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 	private TextArea textAreaLog;
 
-	private File watchFile = null;
-	private boolean isWatching = false;
+	private File hsLogFile = null;
+	private boolean isReadingLogFile = false;
 
 	private Button btnStartWatching;
 	private Button btnStopWatching;
@@ -137,11 +139,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 	public void setHotSpotLogFile(File file)
 	{
-		watchFile = file;
+		hsLogFile = file;
 		updateButtons();
 	}
 
-	private void startWatching()
+	private void readLogFile()
 	{
 		startDelayedByConfig = false;
 
@@ -149,7 +151,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 		textAreaLog.clear();
 
-		log("Processing file: " + watchFile);
+		log("Processing file: " + hsLogFile);
 
 		selectedMember = null;
 
@@ -159,7 +161,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		classTree.clear();
 		refreshSelectedTreeNode(null);
 
-		isWatching = true;
+		isReadingLogFile = true;
 
 		updateButtons();
 
@@ -170,7 +172,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 			{
 				try
 				{
-					logParser.watch(watchFile);
+					logParser.readLogFile(hsLogFile);
 				}
 				catch (IOException ioe)
 				{
@@ -182,15 +184,30 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		jwThread.start();
 	}
 
+	@Override
+	public void handleReadComplete()
+	{
+		log("Finished reading log file.");		
+		isReadingLogFile = false;
+		
+		Platform.runLater(new Runnable()
+		{
+			public void run()
+			{
+				updateButtons();
+			}
+		});
+	}
+	
 	private void stopWatching()
 	{
-		if (isWatching)
+		if (isReadingLogFile)
 		{
 			logParser.stop();
-			isWatching = false;
+			isReadingLogFile = false;
 			updateButtons();
 
-			log("Stopped watching " + watchFile.getAbsolutePath());
+			log("Stopped watching " + hsLogFile.getAbsolutePath());
 		}
 	}
 
@@ -258,7 +275,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 				if (!startDelayedByConfig)
 				{
-					startWatching();
+					readLogFile();
 				}
 			}
 		});
@@ -450,13 +467,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 		textAreaLog
 				.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 
-		if (watchFile == null)
+		if (hsLogFile == null)
 		{
 			log("Please choose a HotSpot log file");
 		}
 		else
 		{
-			log("Using HotSpot log file: " + watchFile.getAbsolutePath());
+			log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
 		}
 		spMain.getItems().add(spCentre);
 		spMain.getItems().add(textAreaLog);
@@ -550,8 +567,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 	private void updateButtons()
 	{
-		btnStartWatching.setDisable(watchFile == null || isWatching);
-		btnStopWatching.setDisable(!isWatching);
+		btnStartWatching.setDisable(hsLogFile == null || isReadingLogFile);
+		btnStopWatching.setDisable(!isReadingLogFile);
 	}
 
 	public void openTreeAtMember(IMetaMember member)
@@ -689,12 +706,12 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 		if (result != null)
 		{
-			watchFile = result;
+			hsLogFile = result;
 
-			config.setLastLogDir(watchFile.getParent());
+			config.setLastLogDir(hsLogFile.getParent());
 			config.saveConfig();
 
-			log("Selected file: " + watchFile.getAbsolutePath());
+			log("Selected file: " + hsLogFile.getAbsolutePath());
 			log("Click Start button to process or tail the file");
 			updateButtons();
 
@@ -824,7 +841,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 			if (startDelayedByConfig)
 			{
-				startWatching();
+				readLogFile();
 			}
 		}
 		else if (stage instanceof TopListStage)
@@ -838,7 +855,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
 			if (configStage == null && startDelayedByConfig)
 			{
-				startWatching();
+				readLogFile();
 			}
 		}
 		else if (stage instanceof CodeCacheStage)
@@ -907,4 +924,5 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	{
 		return model.getPackageManager();
 	}
+
 }

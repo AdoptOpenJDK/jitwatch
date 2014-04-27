@@ -19,8 +19,6 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-import com.chrisnewland.jitwatch.util.ParseUtil;
-import com.chrisnewland.jitwatch.util.StringUtil;
 
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
