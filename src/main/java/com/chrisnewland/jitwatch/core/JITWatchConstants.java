@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.core;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
+
 import static com.chrisnewland.jitwatch.model.IMetaMember.*;
 
 public final class JITWatchConstants
@@ -142,5 +144,9 @@ public final class JITWatchConstants
             SYNCHRONIZED,
             STRICTFP,
             NATIVE,
-            ABSTRACT };
+            ABSTRACT
+    };
+
+    public static final Pattern PATTERN_LOG_SIGNATURE =
+            Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 }
