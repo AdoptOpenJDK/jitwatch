@@ -164,9 +164,9 @@ public class TriView extends Stage
 						{
 							setText(item.toStringUnqualifiedMethodName());
 
-							if (item.isCompiled() && UserInterfaceUtil.tick != null)
+							if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
 							{
-								setGraphic(new ImageView(UserInterfaceUtil.tick));
+								setGraphic(new ImageView(UserInterfaceUtil.getTick()));
 							}
 							else
 							{

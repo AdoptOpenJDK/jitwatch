@@ -33,8 +33,8 @@ public class FileChooserList extends VBox
 	protected ListView<Label> fileList;
 
 	private File lastFolder = null;
-	
-	protected VBox vboxButtons;
+
+    protected VBox vboxButtons;
 
     public FileChooserList(Stage stage, String title, List<String> items)
 	{

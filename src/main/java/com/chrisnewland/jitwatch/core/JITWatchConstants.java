@@ -94,7 +94,9 @@ public final class JITWatchConstants
 
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
-	public static final String S_OPEN_ANGLE = "<";
+    public static final String S_ENTITY_LT = "&lt;";
+    public static final String S_ENTITY_GT = "&gt;";
+    public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE= "}";

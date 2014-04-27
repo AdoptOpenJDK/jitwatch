@@ -4,10 +4,10 @@ import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.treevisitor.TreeVisitor;
 
 public abstract class AbstractHistoVisitable implements IHistoVisitable
-{	
-	protected Histo histo;
-	protected IReadOnlyJITDataModel model;
-	protected long resolution;
+{
+    protected Histo histo;
+    protected IReadOnlyJITDataModel model;
+    protected long resolution;
 	
 	public AbstractHistoVisitable(IReadOnlyJITDataModel model, long resolution)
 	{

@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
+import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -17,26 +19,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
-
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
 	protected MetaClass methodClass;
-	protected String nativeCode = null;
+    private String nativeCode = null;
 
-	protected boolean isQueued = false;
-	protected boolean isCompiled = false;
-	
-	protected Journal journal = new Journal();
+    private boolean isQueued = false;
+    private boolean isCompiled = false;
 
-	protected Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
-	protected Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+    private Journal journal = new Journal();
 
-	protected int modifier; // bitset
-	protected String memberName;
-	protected Class<?> returnType;
-	protected Class<?>[] paramTypes;
+    private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
+    private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+
+    protected int modifier; // bitset
+    protected String memberName;
+    protected Class<?> returnType;
+    protected Class<?>[] paramTypes;
 
 	private static final String anyChars = "(.*)";
 	private static final String spaceZeroOrMore = "( )*";
