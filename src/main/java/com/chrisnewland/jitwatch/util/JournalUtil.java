@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public final class JournalUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
+    public static final boolean LETS_ASSUME_ITS_NOT_C2 = false;
 
     /*
         Hide Utility Class Constructor
@@ -60,23 +61,7 @@ public final class JournalUtil
 		return result;
 	}
 
-	private static Instruction getInstructionAtIndex(List<Instruction> instructions, int index)
-	{
-		Instruction found = null;
-
-		for (Instruction instruction : instructions)
-		{
-			if (instruction.getOffset() == index)
-			{
-				found = instruction;
-				break;
-			}
-		}
-
-		return found;
-	}
-
-	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<Instruction> instructions,
+    private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<Instruction> instructions,
 			CompilerName compilerName)
 	{
 		List<Tag> children = parseTag.getChildren();
@@ -86,14 +71,9 @@ public final class JournalUtil
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
 
-		boolean isC2 = false;
+        boolean isC2 = isTheFormatC2(compilerName, LETS_ASSUME_ITS_NOT_C2);
 
-		if (compilerName == CompilerName.C2)
-		{
-			isC2 = true;
-		}
-
-		boolean inMethod = true;
+        boolean inMethod = true;
 		Instruction currentInstruction = null;
 
 		for (Tag child : children)
@@ -105,26 +85,10 @@ public final class JournalUtil
 			{
 			case TAG_BC:
 			{
-				String bciAttr = tagAttrs.get(ATTR_BCI);
-				String codeAttr = tagAttrs.get(ATTR_CODE);
-
-				currentBytecode = Integer.parseInt(bciAttr);
-				int code = Integer.parseInt(codeAttr);
-				callAttrs.clear();
-
-				currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
-
-				inMethod = false;
-
-				if (currentInstruction != null)
-				{
-					int opcodeValue = currentInstruction.getOpcode().getValue();
-
-					if (opcodeValue == code)
-					{
-						inMethod = true;
-					}
-				}
+                Parse_TAG_BC parse_TAG_BC = new Parse_TAG_BC(instructions, callAttrs, tagAttrs).invoke();
+                inMethod = parse_TAG_BC.isInMethod();
+                currentInstruction = parse_TAG_BC.getCurrentInstruction();
+                currentBytecode = parse_TAG_BC.getCurrentBytecode();
 			}
 				break;
 			case TAG_CALL:
@@ -135,81 +99,28 @@ public final class JournalUtil
 				break;
 			case TAG_METHOD:
 			{
-				methodAttrs.clear();
-				methodAttrs.putAll(tagAttrs);
-
-				String nameAttr = methodAttrs.get(ATTR_NAME);
-
-				inMethod = false;
-
-				if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
-				{
-					String comment = currentInstruction.getComment();
-
-					inMethod = comment.contains(nameAttr);
-				}
+                inMethod = parse_TAG_METHOD(methodAttrs, currentInstruction, tagAttrs);
 
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
-				if (inMethod || isC2)
-				{
-					result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
-				}
+                parse_TAG_INLINE_SUCCESS(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_INLINE_FAIL:
 			{
-				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-				if (inMethod || isC2)
-				{
-					result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
-				}
+                parse_TAG_INLINE_FAIL(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_BRANCH:
 			{
-				String count = tagAttrs.get(ATTR_BRANCH_COUNT);
-				String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
-				String notTaken = tagAttrs.get(ATTR_BRANCH_NOT_TAKEN);
-				String prob = tagAttrs.get(ATTR_BRANCH_PROB);
-
-				StringBuilder reason = new StringBuilder();
-
-				if (count != null)
-				{
-					reason.append("Count: ").append(count).append("\n");
-				}
-
-				reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
-
-				if (prob != null)
-				{
-					reason.append("\nProbability: ").append(prob);
-				}
-
-				if (!result.containsKey(currentBytecode))
-				{
-					if (inMethod || isC2)
-					{
-						result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
-					}
-				}
+                parse_TAG_BRANCH(result, currentBytecode, isC2, inMethod, tagAttrs);
 			}
 				break;
 			case TAG_INTRINSIC:
 			{
-				StringBuilder reason = new StringBuilder();
-				reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
-
-				if (inMethod || isC2)
-				{
-					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
-				}
+                parse_TAG_INTRINSIC(result, currentBytecode, isC2, inMethod, tagAttrs);
 			}
 				break;
 
@@ -219,7 +130,90 @@ public final class JournalUtil
 		}
 	}
 
-	public static Task getLastTask(Journal journal)
+    private static boolean isTheFormatC2(CompilerName compilerName, boolean isC2) {
+        if (compilerName == CompilerName.C2)
+        {
+            isC2 = true;
+        }
+        return isC2;
+    }
+
+    private static void parse_TAG_INTRINSIC(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+        StringBuilder reason = new StringBuilder();
+        reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
+
+        if (inMethod || isC2)
+        {
+            result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
+        }
+    }
+
+    private static void parse_TAG_BRANCH(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+        String count = tagAttrs.get(ATTR_BRANCH_COUNT);
+        String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
+        String notTaken = tagAttrs.get(ATTR_BRANCH_NOT_TAKEN);
+        String prob = tagAttrs.get(ATTR_BRANCH_PROB);
+
+        StringBuilder reason = new StringBuilder();
+
+        if (count != null)
+        {
+            reason.append("Count: ").append(count).append("\n");
+        }
+
+        reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
+
+        if (prob != null)
+        {
+            reason.append("\nProbability: ").append(prob);
+        }
+
+        if (!result.containsKey(currentBytecode))
+        {
+            if (inMethod || isC2)
+            {
+                result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
+            }
+        }
+    }
+
+    private static void parse_TAG_INLINE_FAIL(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+        String reason = tagAttrs.get(ATTR_REASON);
+        String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+        if (inMethod || isC2)
+        {
+            result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
+        }
+    }
+
+    private static void parse_TAG_INLINE_SUCCESS(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, Map<String, String> tagAttrs) {
+        String reason = tagAttrs.get(ATTR_REASON);
+        String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
+        if (inMethod || isC2)
+        {
+            result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
+        }
+    }
+
+    private static boolean parse_TAG_METHOD(Map<String, String> methodAttrs, Instruction currentInstruction, Map<String, String> tagAttrs) {
+        boolean inMethod;
+        methodAttrs.clear();
+        methodAttrs.putAll(tagAttrs);
+
+        String nameAttr = methodAttrs.get(ATTR_NAME);
+
+        inMethod = false;
+
+        if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
+        {
+            String comment = currentInstruction.getComment();
+
+            inMethod = comment.contains(nameAttr);
+        }
+        return inMethod;
+    }
+
+    public static Task getLastTask(Journal journal)
 	{
 		// find the latest task tag
 		// this is the most recent compile task for the member
@@ -283,4 +277,71 @@ public final class JournalUtil
 
 		return parsePhase;
 	}
+
+    private static class Parse_TAG_BC {
+        private List<Instruction> instructions;
+        private Map<String, String> callAttrs;
+        private Map<String, String> tagAttrs;
+        private int currentBytecode;
+        private boolean inMethod;
+        private Instruction currentInstruction;
+
+        public Parse_TAG_BC(List<Instruction> instructions, Map<String, String> callAttrs, Map<String, String> tagAttrs) {
+            this.instructions = instructions;
+            this.callAttrs = callAttrs;
+            this.tagAttrs = tagAttrs;
+        }
+
+        private static Instruction getInstructionAtIndex(List<Instruction> instructions, int index)
+        {
+            Instruction found = null;
+
+            for (Instruction instruction : instructions)
+            {
+                if (instruction.getOffset() == index)
+                {
+                    found = instruction;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
+        public int getCurrentBytecode() {
+            return currentBytecode;
+        }
+
+        public boolean isInMethod() {
+            return inMethod;
+        }
+
+        public Instruction getCurrentInstruction() {
+            return currentInstruction;
+        }
+
+        public Parse_TAG_BC invoke() {
+            String bciAttr = tagAttrs.get(ATTR_BCI);
+            String codeAttr = tagAttrs.get(ATTR_CODE);
+
+            currentBytecode = Integer.parseInt(bciAttr);
+            int code = Integer.parseInt(codeAttr);
+            callAttrs.clear();
+
+            currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
+
+            inMethod = false;
+
+            if (currentInstruction != null)
+            {
+                int opcodeValue = currentInstruction.getOpcode().getValue();
+
+                if (opcodeValue == code)
+                {
+                    inMethod = true;
+                }
+            }
+            return this;
+        }
+    }
 }

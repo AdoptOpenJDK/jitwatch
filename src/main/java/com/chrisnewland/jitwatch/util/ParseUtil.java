@@ -289,86 +289,7 @@ public class ParseUtil
 
 			try
 			{
-				int pos = 0;
-
-				while (pos < types.length())
-				{
-					char c = types.charAt(pos);
-
-					switch (c)
-					{
-					case C_OPEN_SQUARE_BRACKET:
-						// Could be
-						// [Ljava.lang.String; Object array
-						// [I primitive array
-						// [..[I multidimensional primitive array
-						// [..[Ljava.lang.String multidimensional Object array
-						builder.delete(0, builder.length());
-						builder.append(c);
-						pos++;
-						c = types.charAt(pos);
-
-						while (c == C_OPEN_SQUARE_BRACKET)
-						{
-							builder.append(c);
-							pos++;
-							c = types.charAt(pos);
-						}
-
-						if (c == C_OBJECT_REF)
-						{
-							// array of ref type
-							while (pos < typeLen)
-							{
-								c = types.charAt(pos++);
-								builder.append(c);
-
-								if (c == C_SEMICOLON)
-								{
-									break;
-								}
-							}
-						}
-						else
-						{
-							// array of primitive
-							builder.append(c);
-							pos++;
-						}
-
-						Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-						classes.add(arrayClass);
-						builder.delete(0, builder.length());
-						break;
-					case C_OBJECT_REF:
-						// ref type
-						while (pos < typeLen)
-						{
-							pos++;
-							c = types.charAt(pos);
-
-							if (c == C_SEMICOLON)
-							{
-								pos++;
-								break;
-							}
-
-							builder.append(c);
-						}
-						Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-						classes.add(refClass);
-						builder.delete(0, builder.length());
-						break;
-					default:
-						// primitive
-						Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
-						classes.add(primitiveClass);
-						pos++;
-
-					} // end switch
-
-				} // end while
-
+                calculateTagPosition(types, classes, typeLen, builder);
 			}
 			catch (ClassNotFoundException cnf)
 			{
@@ -396,7 +317,112 @@ public class ParseUtil
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
 
-	public static String findBestMatchForMemberSignature(IMetaMember member, List<String> lines)
+    private static void calculateTagPosition(String types, List<Class<?>> classes,
+                                             int typeLen,
+                                             StringBuilder builder) throws ClassNotFoundException {
+        int pos = 0;
+
+        while (pos < types.length())
+        {
+            char c = types.charAt(pos);
+
+            switch (c)
+            {
+            case C_OPEN_SQUARE_BRACKET:
+                pos = parse_C_OPEN_SQUARE_BRACKET(types, classes, typeLen, builder, pos, c);
+                break;
+            case C_OBJECT_REF:
+                // ref type
+                pos = parse_C_OBJECT_REF(types, classes, typeLen, builder, pos);
+                break;
+            default:
+                // primitive
+                pos = parsePrimitive(classes, pos, c);
+                break;
+            } // end switch
+
+        } // end while
+    }
+
+    private static int parsePrimitive(List<Class<?>> classes, int pos, char c) {
+        Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
+        classes.add(primitiveClass);
+        pos++;
+        return pos;
+    }
+
+    private static int parse_C_OBJECT_REF(String types,
+                                          List<Class<?>> classes,
+                                          int typeLen,
+                                          StringBuilder builder,
+                                          int pos) throws ClassNotFoundException {
+        // ref type
+        char c;
+        while (pos < typeLen)
+        {
+            pos++;
+            c = types.charAt(pos);
+
+            if (c == C_SEMICOLON)
+            {
+                pos++;
+                break;
+            }
+
+            builder.append(c);
+        }
+        Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
+        classes.add(refClass);
+        builder.delete(0, builder.length());
+        return pos;
+    }
+
+    private static int parse_C_OPEN_SQUARE_BRACKET(String types, List<Class<?>> classes, int typeLen, StringBuilder builder, int pos, char c) throws ClassNotFoundException {
+        // Could be
+        // [Ljava.lang.String; Object array
+        // [I primitive array
+        // [..[I multidimensional primitive array
+        // [..[Ljava.lang.String multidimensional Object array
+        builder.delete(0, builder.length());
+        builder.append(c);
+        pos++;
+        c = types.charAt(pos);
+
+        while (c == C_OPEN_SQUARE_BRACKET)
+        {
+            builder.append(c);
+            pos++;
+            c = types.charAt(pos);
+        }
+
+        if (c == C_OBJECT_REF)
+        {
+            // array of ref type
+            while (pos < typeLen)
+            {
+                c = types.charAt(pos++);
+                builder.append(c);
+
+                if (c == C_SEMICOLON)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // array of primitive
+            builder.append(c);
+            pos++;
+        }
+
+        Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
+        classes.add(arrayClass);
+        builder.delete(0, builder.length());
+        return pos;
+    }
+
+    public static String findBestMatchForMemberSignature(IMetaMember member, List<String> lines)
 	{
 		int index = findBestLineMatchForMemberSignature(member, lines);
 

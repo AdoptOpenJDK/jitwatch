@@ -58,16 +58,9 @@ public class TimeLineStage extends AbstractGraphStage
 
 		List<JITEvent> events = parent.getJITDataModel().getEventListCopy();
 
-		Collections.sort(events, new Comparator<JITEvent>()
-		{
-			@Override
-			public int compare(JITEvent e1, JITEvent e2)
-			{
-				return Long.compare(e1.getStamp(), e2.getStamp());
-			}
-		});
+        defineEventsSortingByUsingStamp(events);
 
-		if (events.size() > 0)
+        if (events.size() > 0)
 		{
 			minX = 0;
 			maxX = events.get(events.size() - 1).getStamp();
@@ -75,15 +68,9 @@ public class TimeLineStage extends AbstractGraphStage
 			minY = 0;
 			maxY = 0;
 
-			for (JITEvent event : events)
-			{
-				if (event.getEventType() != EventType.QUEUE)
-				{
-					maxY++;
-				}
-			}
+            countNumberOfNonQueueEventTypes(events);
 
-			double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
+            double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
 			double lastCY = GRAPH_GAP_Y + normaliseY(0);
 
 			drawAxes();
@@ -92,18 +79,9 @@ public class TimeLineStage extends AbstractGraphStage
 
 			double compiledStampTime = -1;
 
-			if (selectedMember != null)
-			{
-				// last compile stamp write wins - plot all?
-				String cStamp = selectedMember.getCompiledAttribute("stamp");
+            compiledStampTime = parseCompiledStampTimeUsingSelectedMember(selectedMember, compiledStampTime);
 
-				if (cStamp != null)
-				{
-					compiledStampTime = ParseUtil.parseStamp(cStamp);
-				}
-			}
-
-			Color colourMarker = Color.BLUE;
+            Color colourMarker = Color.BLUE;
 			
 			gc.setFill(colourMarker);
 			gc.setStroke(colourMarker);
@@ -129,57 +107,116 @@ public class TimeLineStage extends AbstractGraphStage
 					lastCX = x;
 					lastCY = y;
 
-					if (compiledStampTime != -1 && stamp > compiledStampTime)
-					{
-						double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
-
-						gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
-								fix(markerDiameter));
-
-						String line1 = selectedMember.toString();
-
-						String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
-
-						if (compiler == null)
-						{
-							compiler = selectedMember.getCompiledAttribute(ATTR_COMPILE_KIND);
-
-							if (compiler == null)
-							{
-								compiler = "unknown!";
-							}
-						}
-
-						String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
-								+ compiler;
-
-						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
-
-						if (compiletime != null)
-						{
-							line2 += " took " + compiletime + "ms";
-						}
-
-						double legendY = y;
-
-						if (legendY > GRAPH_GAP_Y + chartHeight - 32)
-						{
-							legendY = GRAPH_GAP_Y + chartHeight - 32;
-						}
-
-						gc.strokeText(line1, fix(smX + 10), fix(legendY));
-						gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
-
-						compiledStampTime = -1;
-					}
-				}
+                    compiledStampTime = updateVisualsUsingCompiledStampTime(
+                            selectedMember, compiledStampTime, markerDiameter, stamp, y);
+                }
 			}
 
 			showStatsLegend(gc);
 		}
 	}
 
-	private void showStatsLegend(GraphicsContext gc)
+    private double updateVisualsUsingCompiledStampTime(IMetaMember selectedMember, double compiledStampTime, int markerDiameter, long stamp, double y) {
+        if ((compiledStampTime != -1) && (stamp > compiledStampTime))
+        {
+            double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
+
+            gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
+                    fix(markerDiameter));
+
+            String line1 = selectedMember.toString();
+
+String compiler = parseCompilerAttributeUsing(selectedMember);
+
+            String line2 = convertCompileTimeIntoString(selectedMember, compiledStampTime, compiler);
+
+double legendY = computerLegendYAxis(y);
+
+            gc.strokeText(line1, fix(smX + 10), fix(legendY));
+            gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
+
+            compiledStampTime = -1;
+        }
+        return compiledStampTime;
+    }
+
+    private String convertCompileTimeIntoString(IMetaMember selectedMember, double compiledStampTime, String compiler) {
+        String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
+                + compiler;
+
+        String compiletime = selectedMember.getCompiledAttribute("compileMillis");
+
+        if (compiletime != null)
+        {
+            line2 += " took " + compiletime + "ms";
+        }
+        return line2;
+    }
+
+    private double computerLegendYAxis(double y) {
+        double legendY = y;
+
+        if (legendY > GRAPH_GAP_Y + chartHeight - 32)
+        {
+            legendY = GRAPH_GAP_Y + chartHeight - 32;
+        }
+        return legendY;
+    }
+
+    private String parseCompilerAttributeUsing(IMetaMember selectedMember) {
+        String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
+
+        if (compiler == null)
+        {
+            compiler = selectedMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+
+            if (compiler == null)
+            {
+                compiler = "unknown!";
+            }
+        }
+        return compiler;
+    }
+
+    private void defineEventsSortingByUsingStamp(List<JITEvent> events) {
+        Collections.sort(events, new Comparator<JITEvent>() {
+            @Override
+            public int compare(JITEvent e1, JITEvent e2) {
+                return Long.compare(e1.getStamp(), e2.getStamp());
+            }
+        });
+    }
+
+    private void countNumberOfNonQueueEventTypes(List<JITEvent> events) {
+        for (JITEvent event : events)
+        {
+            if (event.getEventType() != EventType.QUEUE)
+            {
+                maxY++;
+            }
+        }
+    }
+
+    private double parseCompiledStampTimeUsingSelectedMember(IMetaMember selectedMember, double compiledStampTime) {
+        if (selectedMember != null)
+        {
+            // last compile stamp write wins - plot all?
+            String cStamp = selectedMember.getCompiledAttribute("stamp");
+
+            compiledStampTime = parseCompiledStampTime(compiledStampTime, cStamp);
+        }
+        return compiledStampTime;
+    }
+
+    private double parseCompiledStampTime(double compiledStampTime, String cStamp) {
+        if (cStamp != null)
+        {
+            compiledStampTime = ParseUtil.parseStamp(cStamp);
+        }
+        return compiledStampTime;
+    }
+
+    private void showStatsLegend(GraphicsContext gc)
 	{
 		JITStats stats = parent.getJITDataModel().getJITStats();
 

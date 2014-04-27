@@ -54,7 +54,7 @@ public class CompileChainWalker
 
                         root = new CompileNode(mm, id);
 
-                        processParseTag(parseTag, root);
+                        performParseTag(parseTag, root);
                     }
                 }
             }
@@ -116,7 +116,7 @@ public class CompileChainWalker
         }
     }
 
-    private void processParseTag(Tag parseTag, CompileNode node)
+    private void performParseTag(Tag parseTag, CompileNode node)
     {
         String methodID = null;
         boolean inlined = false;
@@ -130,6 +130,36 @@ public class CompileChainWalker
         // or visitor pattern
         for (Tag child : parseTag.getChildren())
         {
+            new ParseAllTagTypes(node,
+                    methodID,
+                    inlined,
+                    inlineReason,
+                    methodAttrs,
+                    callAttrs,
+                    child).invoke();
+        }
+    }
+
+    private class ParseAllTagTypes {
+        private CompileNode node;
+        private String methodID;
+        private boolean inlined;
+        private String inlineReason;
+        private Map<String, String> methodAttrs;
+        private Map<String, String> callAttrs;
+        private Tag child;
+
+        public ParseAllTagTypes(CompileNode node, String methodID, boolean inlined, String inlineReason, Map<String, String> methodAttrs, Map<String, String> callAttrs, Tag child) {
+            this.node = node;
+            this.methodID = methodID;
+            this.inlined = inlined;
+            this.inlineReason = inlineReason;
+            this.methodAttrs = methodAttrs;
+            this.callAttrs = callAttrs;
+            this.child = child;
+        }
+
+        public ParseAllTagTypes invoke() {
             String tagName = child.getName();
             Map<String, String> tagAttrs = child.getAttrs();
 
@@ -161,18 +191,9 @@ public class CompileChainWalker
 
                 case TAG_INLINE_FAIL:
                 {
-                    inlined = false; // reset
-
-                    IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
-
-                    CompileNode childNode = new CompileNode(childCall, methodID);
-                    node.addChild(childNode);
-
-                    String reason = tagAttrs.get(ATTR_REASON);
-                    String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-                    childNode.setInlined(inlined, annotationText);
-
-                    methodID = null;
+                    PerformTAG_INLINE_FAIL performTAG_INLINE_FAIL = new PerformTAG_INLINE_FAIL(node, methodID, methodAttrs, callAttrs, tagAttrs).invoke();
+                    inlined = performTAG_INLINE_FAIL.isInlined();
+                    methodID = performTAG_INLINE_FAIL.getMethodID();
                 }
                 break;
 
@@ -184,25 +205,75 @@ public class CompileChainWalker
 
                 case TAG_PARSE: // call depth
                 {
-                    String childMethodID = tagAttrs.get(ATTR_METHOD);
-
-                    IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
-
-                    CompileNode childNode = new CompileNode(childCall, childMethodID);
-                    node.addChild(childNode);
-
-                    if (methodID != null && methodID.equals(childMethodID))
-                    {
-                        childNode.setInlined(inlined, inlineReason);
-                    }
-
-                    processParseTag(child, childNode);
+                    performTAG_PARSE(node, methodID, inlined, inlineReason, child, tagAttrs);
                 }
                 break;
 
                 default:
                     break;
             }
+            return this;
+        }
+
+        private void performTAG_PARSE(CompileNode node, String methodID, boolean inlined, String inlineReason, Tag child, Map<String, String> tagAttrs) {
+            String childMethodID = tagAttrs.get(ATTR_METHOD);
+
+            IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
+
+            CompileNode childNode = new CompileNode(childCall, childMethodID);
+            node.addChild(childNode);
+
+            if (methodID != null && methodID.equals(childMethodID))
+            {
+                childNode.setInlined(inlined, inlineReason);
+            }
+
+            performParseTag(child, childNode);
+        }
+    }
+
+    private class PerformTAG_INLINE_FAIL {
+        private CompileNode node;
+        private String methodID;
+        private Map<String, String> methodAttrs;
+        private Map<String, String> callAttrs;
+        private Map<String, String> tagAttrs;
+        private boolean inlined;
+
+        public PerformTAG_INLINE_FAIL(CompileNode node,
+                                      String methodID,
+                                      Map<String, String> methodAttrs,
+                                      Map<String, String> callAttrs,
+                                      Map<String, String> tagAttrs) {
+            this.node = node;
+            this.methodID = methodID;
+            this.methodAttrs = methodAttrs;
+            this.callAttrs = callAttrs;
+            this.tagAttrs = tagAttrs;
+        }
+
+        public String getMethodID() {
+            return methodID;
+        }
+
+        public boolean isInlined() {
+            return inlined;
+        }
+
+        public PerformTAG_INLINE_FAIL invoke() {
+            inlined = false; // reset
+
+            IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
+
+            CompileNode childNode = new CompileNode(childCall, methodID);
+            node.addChild(childNode);
+
+            String reason = tagAttrs.get(ATTR_REASON);
+            String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+            childNode.setInlined(inlined, annotationText);
+
+            methodID = null;
+            return this;
         }
     }
 }
