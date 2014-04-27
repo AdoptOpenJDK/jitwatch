@@ -8,6 +8,7 @@ package com.chrisnewland.jitwatch.core;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import static com.chrisnewland.jitwatch.model.IMetaMember.*;
 
 public final class JITWatchConstants
 {
@@ -131,4 +132,15 @@ public final class JITWatchConstants
 	public static final char C_SEMICOLON = ';';
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
 	public static final char C_QUESTION = '?';
+
+    public static final String[] MODIFIERS = new String[] {
+            PUBLIC,
+            PRIVATE,
+            PROTECTED,
+            STATIC,
+            FINAL,
+            SYNCHRONIZED,
+            STRICTFP,
+            NATIVE,
+            ABSTRACT };
 }
