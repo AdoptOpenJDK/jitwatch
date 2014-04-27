@@ -355,8 +355,9 @@ public final class ParseUtil
                                        List<Class<?>> classes,
                                        int typeLen,
                                        StringBuilder builder,
-                                       int pos) throws ClassNotFoundException {
+                                       int inPos) throws ClassNotFoundException {
         // ref type
+        int pos = inPos;
         char c;
         while (pos < typeLen)
         {
@@ -377,12 +378,20 @@ public final class ParseUtil
         return pos;
     }
 
-    private static int parseCOpenSquareBracket(String types, List<Class<?>> classes, int typeLen, StringBuilder builder, int pos, char c) throws ClassNotFoundException {
+    private static int parseCOpenSquareBracket(String types,
+                                               List<Class<?>> classes,
+                                               int typeLen,
+                                               StringBuilder builder,
+                                               int inPos,
+                                               char inC) throws ClassNotFoundException {
         // Could be
         // [Ljava.lang.String; Object array
         // [I primitive array
         // [..[I multidimensional primitive array
         // [..[Ljava.lang.String multidimensional Object array
+        char c = inC;
+        int pos = inPos;
+
         builder.delete(0, builder.length());
         builder.append(c);
         pos++;

@@ -116,7 +116,9 @@ public class TimeLineStage extends AbstractGraphStage
 		}
 	}
 
-    private double updateVisualsUsingCompiledStampTime(IMetaMember selectedMember, double compiledStampTime, int markerDiameter, long stamp, double y) {
+    private double updateVisualsUsingCompiledStampTime(IMetaMember selectedMember, double inCompiledStampTime, int markerDiameter, long stamp, double y) {
+        double compiledStampTime = inCompiledStampTime;
+
         if ((compiledStampTime != -1) && (stamp > compiledStampTime))
         {
             double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
@@ -126,11 +128,11 @@ public class TimeLineStage extends AbstractGraphStage
 
             String line1 = selectedMember.toString();
 
-String compiler = parseCompilerAttributeUsing(selectedMember);
+            String compiler = parseCompilerAttributeUsing(selectedMember);
 
             String line2 = convertCompileTimeIntoString(selectedMember, compiledStampTime, compiler);
 
-double legendY = computerLegendYAxis(y);
+            double legendY = computerLegendYAxis(y);
 
             gc.strokeText(line1, fix(smX + 10), fix(legendY));
             gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));

@@ -101,8 +101,11 @@ public class CompileChainStage extends Stage
         return member == null ? "Unknown" : member.getMemberName();
     }
 
-    private double plotNode(final CompileNode node, double x, double parentY, int depth)
+    private double plotNode(final CompileNode node, double inX, double inParentY, int depth)
     {
+        double x = inX;
+        double parentY = inParentY;
+
         String labelText = getLabelText(node);
 
         StringBuilder tipBuilder = new StringBuilder();

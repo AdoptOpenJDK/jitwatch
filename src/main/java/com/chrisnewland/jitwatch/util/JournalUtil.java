@@ -130,7 +130,8 @@ public final class JournalUtil
 		}
 	}
 
-    private static boolean isTheFormatC2(CompilerName compilerName, boolean isC2) {
+    private static boolean isTheFormatC2(CompilerName compilerName, boolean inIsC2) {
+        boolean isC2 = inIsC2;
         if (compilerName == CompilerName.C2)
         {
             isC2 = true;
