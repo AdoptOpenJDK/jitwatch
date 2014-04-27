@@ -134,21 +134,9 @@ public class CompileChainStage extends Stage
 
         tipBuilder.append("JIT Compiled: ");
 
-        if (node.getMember().isCompiled())
-        {
-            tipBuilder.append("Yes\n");
-            rect.setFill(Color.GREEN);
-        }
-        else
-        {
-            tipBuilder.append("No\n");
-            rect.setFill(Color.RED);
-        }
+        highlightInGreenOrRed(node, tipBuilder, rect);
 
-        if (node.isInlined())
-        {
-            text.setFill(Color.YELLOW);
-        }
+        ifInlinedHighlightInYellow(node, text);
 
         String inlineReason = node.getInlineReason();
 
@@ -178,15 +166,7 @@ public class CompileChainStage extends Stage
 
         x += X_GAP;
 
-        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent arg0)
-            {
-                logger.info("{}", node.getMember());
-                // TODO use for navigation in TriView?
-            }
-        });
+        initialiseRectWithOnMouseClickedEventHandler(node, rect);
 
         Tooltip tip = new Tooltip(tipBuilder.toString());
         Tooltip.install(rect, tip);
@@ -196,6 +176,38 @@ public class CompileChainStage extends Stage
         pane.getChildren().add(text);
 
         return x;
+    }
+
+    private void highlightInGreenOrRed(CompileNode node, StringBuilder tipBuilder, Rectangle rect) {
+        if (node.getMember().isCompiled())
+        {
+            tipBuilder.append("Yes\n");
+            rect.setFill(Color.GREEN);
+        }
+        else
+        {
+            tipBuilder.append("No\n");
+            rect.setFill(Color.RED);
+        }
+    }
+
+    private void ifInlinedHighlightInYellow(CompileNode node, Text text) {
+        if (node.isInlined())
+        {
+            text.setFill(Color.YELLOW);
+        }
+    }
+
+    private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Rectangle rect) {
+        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent arg0)
+            {
+                logger.info("{}", node.getMember());
+                // TODO use for navigation in TriView?
+            }
+        });
     }
 
 }
