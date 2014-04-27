@@ -26,14 +26,7 @@ public final class ClassUtil
 
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
-		try
-		{
-			return Class.forName(fqClassName, false, getClassLoader());
-		}
-		catch (Exception ex)
-		{
-			throw ex;
-		}
+	    return Class.forName(fqClassName, false, getClassLoader());
 	}
 	
 	public static void addURIToClasspath(URI uri)
