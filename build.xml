@@ -13,9 +13,11 @@
 	</target>
 
 	<path id="classpath">
-	        <fileset dir="${lib}" includes="**/*.jar"/>
+		<fileset dir="${lib}" includes="**/*.jar" />
 		<filelist>
 			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
+			<!-- Java 8 stores jfxrt in a different location -->
+			<file name="${env.JAVA_HOME}/jre/lib/ext/jfxrt.jar" />
 			<file name="${env.JAVA_HOME}/lib/tools.jar" />
 		</filelist>
 	</path>
@@ -27,18 +29,18 @@
 	</target>
 
 	<target name="test" depends="compile">
-        	<junit printsummary="yes">
-            		<classpath>
-        			<path refid="classpath"/>
-	        		<pathelement path="${classes}"/>
-            		</classpath>
+		<junit printsummary="yes">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement path="${classes}" />
+			</classpath>
 
-			<formatter type="plain"/>
-            
-            		<batchtest fork="yes">
-                		<fileset dir="${test}" includes="**/Test*.java"/>
-            		</batchtest>
-        	</junit>
+			<formatter type="plain" />
+
+			<batchtest fork="yes">
+				<fileset dir="${test}" includes="**/Test*.java" />
+			</batchtest>
+		</junit>
 	</target>
 
 	<target name="jar" depends="test">
@@ -58,7 +60,7 @@
 	<target name="run" depends="jar">
 		<java classname="com.chrisnewland.jitwatch.launch.LaunchUI" classpathref="classpath">
 			<classpath>
-				<pathelement location="${target}/jitwatch-1.0.0-SNAPSHOT.jar"/>
+				<pathelement location="${target}/jitwatch-1.0.0-SNAPSHOT.jar" />
 			</classpath>
 		</java>
 	</target>
