@@ -7,3 +7,4 @@
 /bin
 .DS_Store
 jitwatch.log
+TEST-com.chrisnewland.jitwatch.test.*.txt

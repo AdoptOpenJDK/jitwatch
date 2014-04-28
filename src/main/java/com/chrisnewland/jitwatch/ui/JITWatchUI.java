@@ -25,6 +25,7 @@ import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.live.LiveViewStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
@@ -95,6 +96,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	private Button btnCodeCache;
 	private Button btnTriView;
 	private Button btnSuggest;
+	private Button btnLiveView;
 
 	private Label lblHeap;
 
@@ -104,9 +106,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 	private HistoStage histoStage;
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheStage;
-	private TriView triView;
+	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
+	private LiveViewStage liveViewStage;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -233,7 +236,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
         HBox hboxTop = initialiseHboxTop(btnChooseWatchFile, menuBarHeight);
 
-		memberAttrList = FXCollections.observableArrayList();
+        memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
 		attributeTableView.setPlaceholder(new Text("Select a JIT-compiled class member to view compilation attributes."));
 
@@ -317,6 +320,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
 
         btnErrorLog = new Button("Errors (0)");
         initialiseBtnErrorLogWithOnActionEventHandler();
+
+        btnLiveView = new Button("LiveView");
+        initialiseBtnLiveViewWithOnActionEventHandler();
     }
 
     private SplitPane initialiseSplitPane(SplitPane spMethodInfo) {
@@ -377,7 +383,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
         hboxTop.getChildren().add(btnCodeCache);
         hboxTop.getChildren().add(btnTriView);
         hboxTop.getChildren().add(btnSuggest);
+        //hboxTop.getChildren().add(btnLiveView);
         hboxTop.getChildren().add(btnErrorLog);
+
         return hboxTop;
     }
 
@@ -555,7 +563,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageAcces
                     int classCount = config.getClassLocations().size();
                     int sourceCount = config.getSourceLocations().size();
 
-performActionWhenNothingIsMounted(classCount, sourceCount);
+                    performActionWhenNothingIsMounted(classCount, sourceCount);
                 }
 
                 if (!startDelayedByConfig)
@@ -597,6 +605,15 @@ performActionWhenNothingIsMounted(classCount, sourceCount);
         });
     }
 
+    private void initialiseBtnLiveViewWithOnActionEventHandler() {
+        btnLiveView.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                openLiveView();
+            }
+        });
+    }
+
     private void performActionWhenNothingIsMounted(int classCount, int sourceCount) {
         if (classCount == 0 && sourceCount == 0)
         {
@@ -628,22 +645,36 @@ performActionWhenNothingIsMounted(classCount, sourceCount);
 	@Override
 	public void openTriView(IMetaMember member)
 	{
-		if (triView == null)
+		if (triViewStage == null)
 		{
-			triView = new TriView(JITWatchUI.this, config);
+			triViewStage = new TriView(JITWatchUI.this, config);
 
-			triView.show();
+			triViewStage.show();
 
-			openPopupStages.add(triView);
+			openPopupStages.add(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
 
 		if (member != null)
 		{
-			triView.setMember(member);
+			triViewStage.setMember(member);
 		}
 	}
+	
+	public void openLiveView()
+	{
+		if (liveViewStage == null)
+		{
+			liveViewStage = new LiveViewStage(JITWatchUI.this, config);
+
+			liveViewStage.show();
+
+			openPopupStages.add(liveViewStage);
+
+			btnLiveView.setDisable(true);
+		}
+	}	
 
 	@Override
 	public void openBrowser(String title, String html, String stylesheet)
@@ -828,9 +859,9 @@ performActionWhenNothingIsMounted(classCount, sourceCount);
 			return;
 		}
 
-		if (triView != null)
+		if (triViewStage != null)
 		{
-			triView.setMember(member);
+			triViewStage.setMember(member);
 		}
 
 		selectedMember = member;
@@ -966,7 +997,7 @@ performActionWhenNothingIsMounted(classCount, sourceCount);
 		else if (stage instanceof TriView)
 		{
 			btnTriView.setDisable(false);
-			triView = null;
+			triViewStage = null;
 		}
 		else if (stage instanceof SuggestStage)
 		{
@@ -976,6 +1007,11 @@ performActionWhenNothingIsMounted(classCount, sourceCount);
 		else if (stage instanceof BrowserStage)
 		{
 			browserStage = null;
+		}
+		else if (stage instanceof LiveViewStage)
+		{
+			btnLiveView.setDisable(false);
+			liveViewStage = null;
 		}
 	}
 
