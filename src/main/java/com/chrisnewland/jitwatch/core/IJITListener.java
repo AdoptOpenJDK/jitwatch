@@ -12,5 +12,6 @@ public interface IJITListener
 	void handleJITEvent(JITEvent event);
 	void handleLogEntry(String entry);
 	void handleErrorEntry(String entry);
+	void handleReadStart();
 	void handleReadComplete();
 }

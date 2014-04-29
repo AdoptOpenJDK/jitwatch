@@ -114,6 +114,7 @@ public final class JITWatchConstants
 	public static final String S_QUOTE = "'";
 	public static final String S_DOUBLE_QUOTE = "\"";
 	public static final String S_REGEX_WHITESPACE = "\\s+";
+	public static final String S_BACKSLASH = "\\";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
@@ -131,4 +132,6 @@ public final class JITWatchConstants
 	public static final char C_SEMICOLON = ';';
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
 	public static final char C_QUESTION = '?';
+	public static final char C_BACKSLASH = '\\';
+
 }

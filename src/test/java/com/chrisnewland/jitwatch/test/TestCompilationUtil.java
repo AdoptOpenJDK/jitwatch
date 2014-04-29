@@ -14,7 +14,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.chrisnewland.jitwatch.util.CompilationUtil;
-import static com.chrisnewland.jitwatch.util.CompilationUtil.COMPILE_DIR;
+import static com.chrisnewland.jitwatch.util.CompilationUtil.*;
 
 public class TestCompilationUtil
 {
@@ -23,7 +23,7 @@ public class TestCompilationUtil
 	public void testCompileSimple()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append("package com.chrisnewland.compiletest;\n");
+		builder.append("package com.chrisnewland.jitwatch.compiletest;\n");
 		builder.append("public class CompileTest\n");
 		builder.append("{\n");
 		builder.append("private int foo = 0;\n");
@@ -33,7 +33,12 @@ public class TestCompilationUtil
 
 		try
 		{
-			File f = CompilationUtil.writeToFile(new File(COMPILE_DIR.toFile(), "CompileTest.java"), builder.toString());
+			File f = CompilationUtil.writeSource("com.chrisnewland.jitwatch.compiletest.CompileTest", builder.toString());
+
+			File expectedSourceFile = new File(SANDBOX_SOURCE_DIR.toFile(), "com" + File.separator + "chrisnewland"
+					+ File.separator + "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.java");
+
+			assertTrue(expectedSourceFile.exists());
 
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
@@ -41,10 +46,11 @@ public class TestCompilationUtil
 			boolean success = CompilationUtil.compile(sources);
 
 			assertTrue(success);
-			
-			File expectedFile = new File(COMPILE_DIR.toFile(), "com" + File.separator + "chrisnewland" + File.separator + "compiletest"+ File.separator +"CompileTest.class");
-			
-			assertTrue(expectedFile.exists());
+
+			File expectedClassFile = new File(SANDBOX_CLASS_DIR.toFile(), "com" + File.separator + "chrisnewland" + File.separator
+					+ "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.class");
+
+			assertTrue(expectedClassFile.exists());
 		}
 		catch (Exception e)
 		{

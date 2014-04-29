@@ -57,7 +57,7 @@ public class TriView extends Stage
 
 	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
-	
+
 	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
@@ -76,7 +76,7 @@ public class TriView extends Stage
 
 		HBox hBoxToolBarButtons = new HBox();
 		hBoxToolBarButtons.setSpacing(10);
-		hBoxToolBarButtons.setPadding(new Insets(0,10,10,10));
+		hBoxToolBarButtons.setPadding(new Insets(0, 10, 10, 10));
 
 		checkSource = new CheckBox("Source");
 		checkBytecode = new CheckBox("Bytecode");
@@ -137,7 +137,7 @@ public class TriView extends Stage
 				{
 					if (newVal != null)
 					{
-						TriView.this.setMember(newVal);
+						TriView.this.setMember(newVal, false);
 					}
 				}
 			}
@@ -241,7 +241,7 @@ public class TriView extends Stage
 
 		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
-		
+
 		lblMemberInfo = new Label();
 
 		vBox.getChildren().add(hBoxToolBarClass);
@@ -300,9 +300,9 @@ public class TriView extends Stage
 			break;
 		case 3:
 			splitViewer.setDividerPositions(0.333, 0.666);
-            break;
-        default:
-            break;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -316,7 +316,7 @@ public class TriView extends Stage
 
 		if (members.size() > 0)
 		{
-			setMember(members.get(0));
+			setMember(members.get(0), false);
 		}
 		else
 		{
@@ -325,7 +325,7 @@ public class TriView extends Stage
 		}
 	}
 
-	public void setMember(IMetaMember member)
+	public void setMember(IMetaMember member, boolean force)
 	{
 		boolean sameClass = false;
 
@@ -335,9 +335,12 @@ public class TriView extends Stage
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if ((previousClass != null) && previousClass.equals(memberClass))
+		if (!force)
 		{
-			sameClass = true;
+			if ((previousClass != null) && previousClass.equals(memberClass))
+			{
+				sameClass = true;
+			}
 		}
 
 		if (!sameClass)
@@ -374,7 +377,7 @@ public class TriView extends Stage
 			assembly = currentMember.getAssembly();
 
 			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
-			
+
 			if (attrCompiler != null)
 			{
 				lblMemberInfo.setText("Compiled with " + attrCompiler);
@@ -382,13 +385,13 @@ public class TriView extends Stage
 			else
 			{
 				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
-				
+
 				if (attrCompileKind != null && C2N.equals(attrCompileKind))
 				{
 					lblMemberInfo.setText("Compiled native wrapper");
 				}
 			}
-			
+
 			if (assembly == null)
 			{
 				assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";

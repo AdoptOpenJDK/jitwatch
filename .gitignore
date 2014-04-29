@@ -5,6 +5,7 @@
 /ide-bin
 /target
 /bin
+/sandbox
 .DS_Store
 jitwatch.log
 TEST-com.chrisnewland.jitwatch.test.*.txt

@@ -7,6 +7,8 @@ package com.chrisnewland.jitwatch.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,24 +24,31 @@ public class TestExecutionUtil
 	{
 		List<String> cp = new ArrayList<>();
 
-		String workingDir = System.getProperty("user.dir");
-		System.out.println(workingDir);
-
 		cp.add("target/classes");
-		cp.add("lib/logback-classic-1.0.1.jar");
-		cp.add("lib/slf4j-api-1.7.7.jar");
-		cp.add("lib/logback-core-1.0.1.jar");
+
+		File libDir = new File("lib");
+
+		assertTrue(libDir.exists());
+		assertTrue(libDir.isDirectory());
+
+		String[] jarNames = libDir.list(new FilenameFilter()
+		{
+			@Override
+			public boolean accept(File dir, String name)
+			{
+				return name.endsWith(".jar");
+			}
+		});
+
+		for (String jar : jarNames)
+		{
+			cp.add("lib/" + jar);
+		}
 
 		List<String> options = new ArrayList<>();
-		// options.add("-XX:+UnlockDiagnosticVMOptions");
-		// options.add("-XX:+TraceClassLoading");
-		// options.add("-XX:+LogCompilation ");
-		// options.add("-XX:+PrintAssembly");
 
 		boolean success = ExecutionUtil.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
 
 		assertTrue(success);
-		
-		
 	}
 }
