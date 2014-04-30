@@ -55,8 +55,6 @@ public class HotSpotLogParser implements ILogParser
 		model = new JITDataModel();
 
 		this.logListener = logListener;
-		
-		logger.info("hsdis available: {}", DisassemblyUtil.isDisassemblerAvailable());
 	}
 	
 	public void setConfig(JITWatchConfig config)

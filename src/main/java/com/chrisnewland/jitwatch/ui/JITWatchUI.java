@@ -25,7 +25,7 @@ import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.ui.sandbox.SandBoxStage;
+import com.chrisnewland.jitwatch.ui.sandbox.SandboxStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
@@ -94,7 +94,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private Button btnCodeCache;
 	private Button btnTriView;
 	private Button btnSuggest;
-	private Button btnSandBox;
+	private Button btnSandbox;
 
 	private Label lblHeap;
 
@@ -107,7 +107,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
-	private SandBoxStage sandBoxStage;
+	private SandboxStage sandBoxStage;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -415,13 +415,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			}
 		});
 		
-		btnSandBox = new Button("SandBox");
-		btnSandBox.setOnAction(new EventHandler<ActionEvent>()
+		btnSandbox = new Button("Sandbox");
+		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openSandBox();
+				openSandbox();
 			}
 		});
 
@@ -446,7 +446,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.setPadding(new Insets(10));
 		hboxTop.setPrefHeight(menuBarHeight);
 		hboxTop.setSpacing(10);
-		hboxTop.getChildren().add(btnSandBox);
+		hboxTop.getChildren().add(btnSandbox);
 		hboxTop.getChildren().add(btnChooseWatchFile);
 		hboxTop.getChildren().add(btnStartWatching);
 		hboxTop.getChildren().add(btnStopWatching);
@@ -570,17 +570,17 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 	
-	public void openSandBox()
+	public void openSandbox()
 	{
 		if (sandBoxStage == null)
 		{
-			sandBoxStage = new SandBoxStage(this, this, logParser);
+			sandBoxStage = new SandboxStage(this, this, logParser);
 
 			sandBoxStage.show();
 
 			openPopupStages.add(sandBoxStage);
 
-			btnSandBox.setDisable(true);
+			btnSandbox.setDisable(true);
 		}
 	}	
 
@@ -918,9 +918,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			browserStage = null;
 		}
-		else if (stage instanceof SandBoxStage)
+		else if (stage instanceof SandboxStage)
 		{
-			btnSandBox.setDisable(false);
+			btnSandbox.setDisable(false);
 			sandBoxStage = null;
 		}
 	}

@@ -24,6 +24,7 @@ import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.CompilationUtil;
+import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 import com.chrisnewland.jitwatch.util.ExecutionUtil;
 
 import javafx.application.Platform;
@@ -41,9 +42,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class SandBoxStage extends Stage
+public class SandboxStage extends Stage
 {
-	private static final Logger logger = LoggerFactory.getLogger(SandBoxStage.class);
+	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
 	private TextArea taSource;
 	private TextArea taLoad;
@@ -54,10 +55,10 @@ public class SandBoxStage extends Stage
 
 	private ILogParser logParser;
 	private IStageAccessProxy accessProxy;
+	
+	private static final boolean hsdisAvailable = DisassemblyUtil.isDisassemblerAvailable();
 
-	private StringBuilder logBuilder = new StringBuilder();
-
-	public SandBoxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
+	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
 	{
 		this.logParser = parser;
 		this.accessProxy = proxy;
@@ -139,7 +140,8 @@ public class SandBoxStage extends Stage
 
 		splitVertical.setDividerPositions(0.7, 0.3);
 
-		log("Ready");
+		log("Sandbox Ready");
+		log("HotSpot disassembler (hsdis) available: " + hsdisAvailable);
 
 		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
@@ -150,7 +152,7 @@ public class SandBoxStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				closeListener.handleStageClosed(SandBoxStage.this);
+				closeListener.handleStageClosed(SandboxStage.this);
 			}
 		});
 
@@ -199,25 +201,111 @@ public class SandBoxStage extends Stage
 
 	}
 
+	private String getPackageFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			if (line.startsWith(S_PACKAGE) && line.endsWith(S_SEMICOLON))
+			{
+				result = line.substring(S_PACKAGE.length(), line.length() - 1).trim();
+			}
+		}
+
+		if (result == null)
+		{
+			result = "";
+		}
+
+		return result;
+	}
+
+	private String getClassFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		String classToken = S_SPACE + S_CLASS + S_SPACE;
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			int classTokenPos = line.indexOf(classToken);
+
+			if (classTokenPos != -1)
+			{
+				result = line.substring(classTokenPos + classToken.length());
+			}
+		}
+
+		if (result == null)
+		{
+			result = "";
+		}
+
+		return result;
+	}
+
 	private void runTestLoad()
 	{
 		try
 		{
-			String fqNameSource = "com.chrisnewland.jitwatch.sandbox.Test";
-			String fqNameLoad = "com.chrisnewland.jitwatch.sandbox.TestLoad";
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					taLog.setText(S_EMPTY);
+				}
+			});
+
+			String source = taSource.getText();
+			String load = taLoad.getText();
+
+			String sourcePackage = getPackageFromSource(source);
+			String loadPackage = getPackageFromSource(load);
+
+			String sourceClass = getClassFromSource(source);
+			String loadClass = getClassFromSource(load);
+
+			StringBuilder fqNameSourceBuilder = new StringBuilder();
+
+			if (sourcePackage.length() > 0)
+			{
+				fqNameSourceBuilder.append(sourcePackage).append(S_DOT);
+			}
+
+			fqNameSourceBuilder.append(sourceClass);
+
+			StringBuilder fqNameLoadBuilder = new StringBuilder();
+
+			if (loadPackage.length() > 0)
+			{
+				fqNameLoadBuilder.append(loadPackage).append(S_DOT);
+			}
+
+			fqNameLoadBuilder.append(loadClass);
+
+			String fqNameSource = fqNameSourceBuilder.toString();
+			String fqNameLoad = fqNameLoadBuilder.toString();
 
 			log("Writing source file: " + fqNameSource);
-			String source = taSource.getText();
 			File sourceFile = CompilationUtil.writeSource(fqNameSource, source);
 
 			log("Writing load file: " + fqNameLoad);
-			String load = taLoad.getText();
 			File loadFile = CompilationUtil.writeSource(fqNameLoad, load);
 
 			List<File> toCompile = new ArrayList<>();
 			toCompile.add(sourceFile);
 			toCompile.add(loadFile);
-			
+
 			log("Compiling: " + listToString(toCompile));
 			CompilationUtil.compile(toCompile);
 
@@ -230,11 +318,16 @@ public class SandBoxStage extends Stage
 			options.add("-XX:+TraceClassLoading");
 			options.add("-XX:+LogCompilation");
 			options.add("-XX:LogFile=live.log");
-			options.add("-XX:+PrintAssembly");
+
+
+			if (hsdisAvailable)
+			{
+				options.add("-XX:+PrintAssembly");
+			}
 
 			log("Executing: " + fqNameLoad);
 			log("VM options: " + listToString(options));
-			
+
 			boolean success = ExecutionUtil.execute(fqNameLoad, cp, options);
 
 			log("Success: " + success);
@@ -259,14 +352,39 @@ public class SandBoxStage extends Stage
 
 			logParser.readLogFile(logFile);
 
+			log("Parsing complete");
+
 			IReadOnlyJITDataModel model = logParser.getModel();
+
+			log("Looking up class: " + fqNameSource);
 
 			MetaClass metaClass = model.getPackageManager().getMetaClass(fqNameSource);
 
-			final IMetaMember member = metaClass.getMemberFromSignature("add", "int", new String[] { "int", "int" });
+			IMetaMember firstCompiled = null;
 
-			log("Launching TriView");
-			
+			if (metaClass != null)
+			{
+				log("Found: " + metaClass.getFullyQualifiedName());
+
+				log("looking for compiled members");
+
+				// select first compiled member if any
+				List<IMetaMember> memberList = metaClass.getMetaMembers();
+
+				for (IMetaMember mm : memberList)
+				{
+					if (mm.isCompiled())
+					{
+						firstCompiled = mm;
+						break;
+					}
+				}
+			}
+
+			final IMetaMember member = firstCompiled;
+
+			log("Launching TriView for " + member);
+
 			Platform.runLater(new Runnable()
 			{
 				@Override
@@ -275,36 +393,33 @@ public class SandBoxStage extends Stage
 					accessProxy.openTriView(member, true);
 				}
 			});
-
 		}
 		catch (IOException ioe)
 		{
 			logger.error("Compile failure", ioe);
 		}
 	}
-	
+
 	private String listToString(List<?> list)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		for (Object item : list)
 		{
 			builder.append(item.toString()).append(C_SPACE);
 		}
-		
+
 		return builder.toString().trim();
 	}
 
-	private void log(String text)
+	private void log(final String text)
 	{
-		logBuilder.append(text).append(C_NEWLINE);
-
 		Platform.runLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				taLog.setText(logBuilder.toString());
+				taLog.appendText(text + S_NEWLINE);
 			}
 		});
 	}

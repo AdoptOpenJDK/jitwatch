@@ -91,6 +91,9 @@ public final class JITWatchConstants
 	public static final String ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";
 	public static final String S_ENTITY_GT = "&gt;";
+	
+	public static final String S_PACKAGE = "package";
+	public static final String S_CLASS = "class";
 
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
