@@ -26,10 +26,7 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 <pre>ant clean compile test run</pre>
 
 <h2>maven</h2>
-<pre># Java 7
-mvn clean compile test exec:java</pre>
-<pre># Java 8
-mvn -f pom-java8.xml clean compile test exec:java</pre>
+<pre>mvn clean compile test exec:java</pre>
 
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code first with ant / maven / IDE
