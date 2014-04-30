@@ -25,7 +25,7 @@ import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
-import com.chrisnewland.jitwatch.ui.live.LiveViewStage;
+import com.chrisnewland.jitwatch.ui.sandbox.SandBoxStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
@@ -94,7 +94,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private Button btnCodeCache;
 	private Button btnTriView;
 	private Button btnSuggest;
-	private Button btnLiveView;
+	private Button btnSandBox;
 
 	private Label lblHeap;
 
@@ -107,7 +107,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
-	private LiveViewStage liveViewStage;
+	private SandBoxStage sandBoxStage;
 
 	private NothingMountedStage nothingMountedStage;
 
@@ -415,13 +415,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			}
 		});
 		
-		btnLiveView = new Button("LiveView");
-		btnLiveView.setOnAction(new EventHandler<ActionEvent>()
+		btnSandBox = new Button("SandBox");
+		btnSandBox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openLiveView();
+				openSandBox();
 			}
 		});
 
@@ -446,6 +446,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.setPadding(new Insets(10));
 		hboxTop.setPrefHeight(menuBarHeight);
 		hboxTop.setSpacing(10);
+		hboxTop.getChildren().add(btnSandBox);
 		hboxTop.getChildren().add(btnChooseWatchFile);
 		hboxTop.getChildren().add(btnStartWatching);
 		hboxTop.getChildren().add(btnStopWatching);
@@ -457,7 +458,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnSuggest);
-		hboxTop.getChildren().add(btnLiveView); //TODO here
 		hboxTop.getChildren().add(btnErrorLog);
 
 		memberAttrList = FXCollections.observableArrayList();
@@ -570,17 +570,17 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 	
-	public void openLiveView()
+	public void openSandBox()
 	{
-		if (liveViewStage == null)
+		if (sandBoxStage == null)
 		{
-			liveViewStage = new LiveViewStage(this, this, logParser);
+			sandBoxStage = new SandBoxStage(this, this, logParser);
 
-			liveViewStage.show();
+			sandBoxStage.show();
 
-			openPopupStages.add(liveViewStage);
+			openPopupStages.add(sandBoxStage);
 
-			btnLiveView.setDisable(true);
+			btnSandBox.setDisable(true);
 		}
 	}	
 
@@ -918,10 +918,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			browserStage = null;
 		}
-		else if (stage instanceof LiveViewStage)
+		else if (stage instanceof SandBoxStage)
 		{
-			btnLiveView.setDisable(false);
-			liveViewStage = null;
+			btnSandBox.setDisable(false);
+			sandBoxStage = null;
 		}
 	}
 

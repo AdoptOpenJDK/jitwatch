@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui.live;
+package com.chrisnewland.jitwatch.ui.sandbox;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
@@ -24,6 +26,7 @@ import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.CompilationUtil;
 import com.chrisnewland.jitwatch.util.ExecutionUtil;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -38,48 +41,51 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class LiveViewStage extends Stage
+public class SandBoxStage extends Stage
 {
-	private static final Logger logger = LoggerFactory.getLogger(LiveViewStage.class);
-
-	private SplitPane splitViewer;
+	private static final Logger logger = LoggerFactory.getLogger(SandBoxStage.class);
 
 	private TextArea taSource;
 	private TextArea taLoad;
+	private TextArea taLog;
 
 	private VBox colSource;
 	private VBox colLoad;
-	
+
 	private ILogParser logParser;
 	private IStageAccessProxy accessProxy;
 
-	public LiveViewStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
+	private StringBuilder logBuilder = new StringBuilder();
+
+	public SandBoxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
 	{
 		this.logParser = parser;
 		this.accessProxy = proxy;
-		
-		setTitle("LiveView JIT Sandbox");
 
-		VBox vBox = new VBox();
+		setTitle("JIT Sandbox");
 
-		HBox hBoxToolBarButtons = new HBox();
-		hBoxToolBarButtons.setSpacing(10);
-		hBoxToolBarButtons.setPadding(new Insets(0, 10, 10, 10));
-
-		Button btnCallChain = new Button("Go!");
-		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
+		Button btnRunTestLoad = new Button("Run");
+		btnRunTestLoad.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				runTestLoad();
+				new Thread(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						runTestLoad();
+					}
+				}).start();
 			}
 		});
 
-		hBoxToolBarButtons.getChildren().add(btnCallChain);
+		SplitPane splitHorizontal = new SplitPane();
+		splitHorizontal.setOrientation(Orientation.HORIZONTAL);
 
-		splitViewer = new SplitPane();
-		splitViewer.setOrientation(Orientation.HORIZONTAL);
+		SplitPane splitVertical = new SplitPane();
+		splitVertical.setOrientation(Orientation.VERTICAL);
 
 		colSource = new VBox();
 		colLoad = new VBox();
@@ -87,39 +93,55 @@ public class LiveViewStage extends Stage
 		Label lblSource = new Label("Source");
 		Label lblLoad = new Label("Test Load");
 
-		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-		lblLoad.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		HBox hBoxLoad = new HBox();
+		hBoxLoad.setSpacing(10);
+		hBoxLoad.setPadding(new Insets(0, 10, 0, 10));
+		hBoxLoad.getChildren().add(lblLoad);
+		hBoxLoad.getChildren().add(btnRunTestLoad);
 
-		lblSource.prefWidthProperty().bind(colSource.widthProperty());
-		lblLoad.prefWidthProperty().bind(colLoad.widthProperty());
+		HBox hBoxSource = new HBox();
+		hBoxSource.setSpacing(10);
+		hBoxSource.setPadding(new Insets(0, 10, 0, 10));
+		hBoxSource.getChildren().add(lblSource);
+
+		hBoxSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+		hBoxLoad.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
+
+		hBoxSource.prefWidthProperty().bind(colSource.widthProperty());
+		hBoxLoad.prefWidthProperty().bind(colLoad.widthProperty());
+
+		double headerFraction = 0.1;
+
+		hBoxSource.prefHeightProperty().bind(colSource.heightProperty().multiply(headerFraction));
+		hBoxLoad.prefHeightProperty().bind(colLoad.heightProperty().multiply(headerFraction));
 
 		taSource = new TextArea();
 		taLoad = new TextArea();
+		taLog = new TextArea();
 
-		colSource.getChildren().add(lblSource);
+		colSource.getChildren().add(hBoxSource);
 		colSource.getChildren().add(taSource);
 
-		colLoad.getChildren().add(lblLoad);
+		colLoad.getChildren().add(hBoxLoad);
 		colLoad.getChildren().add(taLoad);
 
-		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
-
 		taSource.prefWidthProperty().bind(colSource.widthProperty());
-		taSource.prefHeightProperty().bind(colSource.heightProperty());
+		taSource.prefHeightProperty().bind(colSource.heightProperty().multiply(1 - headerFraction));
 
 		taLoad.prefWidthProperty().bind(colLoad.widthProperty());
-		taLoad.prefHeightProperty().bind(colLoad.heightProperty());
+		taLoad.prefHeightProperty().bind(colLoad.heightProperty().multiply(1 - headerFraction));
 
-		splitViewer.getItems().add(colSource);
-		splitViewer.getItems().add(colLoad);
+		splitHorizontal.getItems().add(colSource);
+		splitHorizontal.getItems().add(colLoad);
 
-		// horizontal VM switches!
-		// horizontal status messages
+		splitVertical.getItems().add(splitHorizontal);
+		splitVertical.getItems().add(taLog);
 
-		vBox.getChildren().add(hBoxToolBarButtons);
-		vBox.getChildren().add(splitViewer);
+		splitVertical.setDividerPositions(0.7, 0.3);
 
-		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		log("Ready");
+
+		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setScene(scene);
 
@@ -128,7 +150,7 @@ public class LiveViewStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				closeListener.handleStageClosed(LiveViewStage.this);
+				closeListener.handleStageClosed(SandBoxStage.this);
 			}
 		});
 
@@ -139,7 +161,7 @@ public class LiveViewStage extends Stage
 	{
 		StringBuilder sourceBuilder = new StringBuilder();
 
-		sourceBuilder.append("package com.chrisnewland.jitwatch.liveview;\n\n");
+		sourceBuilder.append("package com.chrisnewland.jitwatch.sandbox;\n\n");
 
 		sourceBuilder.append("public class Test\n");
 		sourceBuilder.append("{\n");
@@ -155,7 +177,7 @@ public class LiveViewStage extends Stage
 
 		StringBuilder loadBuilder = new StringBuilder();
 
-		loadBuilder.append("package com.chrisnewland.jitwatch.liveview;\n\n");
+		loadBuilder.append("package com.chrisnewland.jitwatch.sandbox;\n\n");
 
 		loadBuilder.append("public class TestLoad\n");
 		loadBuilder.append("{\n");
@@ -181,21 +203,24 @@ public class LiveViewStage extends Stage
 	{
 		try
 		{
-			logger.info("Writing source file");
-			String source = taSource.getText();
-			File sourceFile = CompilationUtil.writeSource("com.chrisnewland.jitwatch.liveview.Test", source);
+			String fqNameSource = "com.chrisnewland.jitwatch.sandbox.Test";
+			String fqNameLoad = "com.chrisnewland.jitwatch.sandbox.TestLoad";
 
-			logger.info("Writing load file");
+			log("Writing source file: " + fqNameSource);
+			String source = taSource.getText();
+			File sourceFile = CompilationUtil.writeSource(fqNameSource, source);
+
+			log("Writing load file: " + fqNameLoad);
 			String load = taLoad.getText();
-			File loadFile = CompilationUtil.writeSource("com.chrisnewland.jitwatch.liveview.TestLoad", load);
+			File loadFile = CompilationUtil.writeSource(fqNameLoad, load);
 
 			List<File> toCompile = new ArrayList<>();
 			toCompile.add(sourceFile);
 			toCompile.add(loadFile);
-
-			logger.info("Compiling");
-			CompilationUtil.compile(toCompile);
 			
+			log("Compiling: " + listToString(toCompile));
+			CompilationUtil.compile(toCompile);
+
 			List<String> cp = new ArrayList<>();
 
 			cp.add(CompilationUtil.SANDBOX_CLASS_DIR.toString());
@@ -207,43 +232,80 @@ public class LiveViewStage extends Stage
 			options.add("-XX:LogFile=live.log");
 			options.add("-XX:+PrintAssembly");
 
-			logger.info("Executing");
-			boolean success = ExecutionUtil.execute("com.chrisnewland.jitwatch.liveview.TestLoad", cp, options);
+			log("Executing: " + fqNameLoad);
+			log("VM options: " + listToString(options));
+			
+			boolean success = ExecutionUtil.execute(fqNameLoad, cp, options);
 
-			logger.info("Success: {}", success);
-			
+			log("Success: " + success);
+
 			File logFile = new File("live.log");
-			
+
 			List<String> sourceLocations = new ArrayList<>();
 			List<String> classLocations = new ArrayList<>();
-			
+
 			sourceLocations.add(CompilationUtil.SANDBOX_SOURCE_DIR.toString());
 			classLocations.add(CompilationUtil.SANDBOX_CLASS_DIR.toString());
 
 			JITWatchConfig config = new JITWatchConfig();
 			config.setSourceLocations(sourceLocations);
 			config.setClassLocations(classLocations);
-			
-			// TODO: unload classes?
-			
+
+			// TODO: unload classes? CUSTOM CLASSLOADER
+
 			logParser.reset();
-			
+
 			logParser.setConfig(config);
-			
+
 			logParser.readLogFile(logFile);
-			
+
 			IReadOnlyJITDataModel model = logParser.getModel();
+
+			MetaClass metaClass = model.getPackageManager().getMetaClass(fqNameSource);
+
+			final IMetaMember member = metaClass.getMemberFromSignature("add", "int", new String[] { "int", "int" });
+
+			log("Launching TriView");
 			
-			MetaClass metaClass = model.getPackageManager().getMetaClass("com.chrisnewland.jitwatch.liveview.Test");
-			
-			IMetaMember member = metaClass.getMemberFromSignature("add", "int",  new String[]{"int", "int"});
-			
-			accessProxy.openTriView(member, true);
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					accessProxy.openTriView(member, true);
+				}
+			});
 
 		}
 		catch (IOException ioe)
 		{
 			logger.error("Compile failure", ioe);
 		}
+	}
+	
+	private String listToString(List<?> list)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (Object item : list)
+		{
+			builder.append(item.toString()).append(C_SPACE);
+		}
+		
+		return builder.toString().trim();
+	}
+
+	private void log(String text)
+	{
+		logBuilder.append(text).append(C_NEWLINE);
+
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				taLog.setText(logBuilder.toString());
+			}
+		});
 	}
 }
