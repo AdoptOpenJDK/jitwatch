@@ -133,7 +133,7 @@ public class ClassMemberList extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openTriView(memberList.getSelectionModel().getSelectedItem());
+				parent.openTriView(memberList.getSelectionModel().getSelectedItem(), false);
 			}
 		});
 

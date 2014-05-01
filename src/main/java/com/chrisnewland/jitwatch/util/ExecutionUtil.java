@@ -54,16 +54,17 @@ public final class ExecutionUtil
 			cmdBuilder.append(part).append(" ");
 		}
 		
-		logger.info(cmdBuilder.toString());
+		logger.info("Executing: {}", cmdBuilder.toString());
 
 		int result = -1;
 		
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
-
+			
 			Process proc = pb.start();
 
+			//TODO: how to not miss start of output?
 			StreamCollector outBuilder = new StreamCollector(proc.getInputStream());
 			StreamCollector errBuilder = new StreamCollector(proc.getErrorStream());
 
@@ -72,7 +73,6 @@ public final class ExecutionUtil
 			logger.info("Execution complete: {}", result);
 			logger.info("Process out: {}", outBuilder.getStreamString());
 			logger.info("Process err: {}", errBuilder.getStreamString());
-
 		}
 		catch (Exception e)
 		{

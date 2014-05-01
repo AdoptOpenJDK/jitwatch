@@ -94,6 +94,9 @@ public final class JITWatchConstants
 	public static final String ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";
 	public static final String S_ENTITY_GT = "&gt;";
+	
+	public static final String S_PACKAGE = "package";
+	public static final String S_CLASS = "class";
 
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
@@ -117,6 +120,7 @@ public final class JITWatchConstants
 	public static final String S_QUOTE = "'";
 	public static final String S_DOUBLE_QUOTE = "\"";
 	public static final String S_REGEX_WHITESPACE = "\\s+";
+	public static final String S_BACKSLASH = "\\";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
@@ -134,6 +138,8 @@ public final class JITWatchConstants
 	public static final char C_SEMICOLON = ';';
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
 	public static final char C_QUESTION = '?';
+	public static final char C_BACKSLASH = '\\';
+
 
     public static final String[] MODIFIERS = new String[] {
             PUBLIC,

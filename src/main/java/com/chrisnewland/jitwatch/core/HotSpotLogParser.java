@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
-import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -23,7 +22,7 @@ import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class HotSpotLogParser
+public class HotSpotLogParser implements ILogParser
 {
     enum ParseState
 	{
@@ -50,15 +49,22 @@ public class HotSpotLogParser
 
 	private TagProcessor tagProcessor;
 
-	public HotSpotLogParser(JITDataModel model, JITWatchConfig config, IJITListener logListener)
+	public HotSpotLogParser(IJITListener logListener)
 	{
-		this.model = model;
+		model = new JITDataModel();
 
 		this.logListener = logListener;
-
+	}
+	
+	public void setConfig(JITWatchConfig config)
+	{
 		this.config = config;
-		
-		logger.info("hsdis available: {}", DisassemblyUtil.isDisassemblerAvailable());
+	}
+	
+	@Override
+	public JITWatchConfig getConfig()
+	{
+		return config;
 	}
 
 	private void mountAdditionalClasses()
@@ -88,14 +94,32 @@ public class HotSpotLogParser
 			logListener.handleErrorEntry(entry);
 		}
 	}
-
-	public void readLogFile(File hotspotLog) throws IOException
+	
+	@Override
+	public JITDataModel getModel()
 	{
+		return model;
+	}
+	
+	@Override
+	public void reset()
+	{
+		getModel().reset();
+		
+		// tell listener to reset any data
+		logListener.handleReadStart();
+		
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
+	}
+
+	@Override
+	public void readLogFile(File hotspotLog) throws IOException
+	{
+		reset();
 
 		reading = true;
 		
@@ -123,7 +147,8 @@ public class HotSpotLogParser
 		logListener.handleReadComplete();
 	}
 
-	public void stop()
+	@Override
+	public void stopParsing()
 	{
 		reading = false;
 	}
@@ -278,7 +303,8 @@ public class HotSpotLogParser
 		}
 	}
 
-    private boolean theThreadIsNotFound(String threadName) {
+    private boolean theThreadIsNotFound(String threadName) 
+    {
         return threadName == null;
     }
 

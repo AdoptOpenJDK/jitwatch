@@ -57,7 +57,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 				@Override
 				public void handle(ActionEvent e)
 				{
-					triViewAccessor.openTriView(member);
+					triViewAccessor.openTriView(member, false);
 				}
 			});
 

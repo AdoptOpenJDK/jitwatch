@@ -8,7 +8,6 @@ package com.chrisnewland.jitwatch.launch;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
 import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-import com.chrisnewland.jitwatch.model.JITDataModel;
 import com.chrisnewland.jitwatch.model.JITEvent;
 
 import org.slf4j.Logger;
@@ -26,11 +25,10 @@ public class LaunchHeadless implements IJITListener
     {
         this.showErrors = showErrors;
 
-        JITDataModel model = new JITDataModel();
+        JITWatchConfig config = new JITWatchConfig();
 
-        JITWatchConfig config = new JITWatchConfig(this);
-
-        HotSpotLogParser parser = new HotSpotLogParser(model, config, this);
+        HotSpotLogParser parser = new HotSpotLogParser(this);
+        parser.setConfig(config);
 
         parser.readLogFile(new File(filename));
     }
@@ -81,5 +79,11 @@ public class LaunchHeadless implements IJITListener
 	public void handleReadComplete()
 	{
 		logger.info("Finished reading log file.");		
+	}
+
+	@Override
+	public void handleReadStart()
+	{
+		
 	}
 }

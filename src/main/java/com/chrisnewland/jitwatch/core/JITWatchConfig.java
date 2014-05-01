@@ -6,16 +6,22 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.util.StringUtil;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_COMMA;
 
 public class JITWatchConfig
 {
+	private static final Logger logger = LoggerFactory.getLogger(JITWatchConfig.class);
+
 	private static final String PROPERTIES_FILENAME = "jitwatch.properties";
 
 	private static final String KEY_SOURCE_LOCATIONS = "Sources";
@@ -26,8 +32,6 @@ public class JITWatchConfig
 	private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
 	private static final String KEY_LAST_LOG_DIR = "LastLogDir";
 
-	private IJITListener logListener;
-
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
 
@@ -37,13 +41,11 @@ public class JITWatchConfig
 	private boolean showNothingMounted = true;
 	private String lastLogDir = null;
 
-	public JITWatchConfig(IJITListener logListener)
+	public JITWatchConfig()
 	{
-		this.logListener = logListener;
-		loadConfig();
 	}
 
-	private void loadConfig()
+	public void loadFromProperties()
 	{
 		Properties loadProps = new Properties();
 
@@ -53,11 +55,11 @@ public class JITWatchConfig
 		}
 		catch (FileNotFoundException fnf)
 		{
-
+			logger.error("Could not find config file", fnf);
 		}
 		catch (IOException ioe)
 		{
-			logListener.handleErrorEntry(ioe.toString());
+			logger.error("Could not load config file", ioe);
 		}
 
 		String confClasses = loadProps.getProperty(KEY_CLASS_LOCATIONS);
@@ -104,7 +106,7 @@ public class JITWatchConfig
 		}
 		catch (IOException ioe)
 		{
-			logListener.handleErrorEntry(ioe.toString());
+			logger.error("Could not save config file", ioe);
 		}
 	}
 
@@ -134,7 +136,7 @@ public class JITWatchConfig
 				}
 			}
 		}
-		
+
 		return result;
 	}
 

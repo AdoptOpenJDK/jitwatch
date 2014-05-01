@@ -28,7 +28,7 @@ import java.util.Random;
 
 public class MakeHotSpotLog
 {
-    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+	private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
 
 	public MakeHotSpotLog(int iterations)
 	{
@@ -41,6 +41,7 @@ public class MakeHotSpotLog
 		testSort();
 		testCallChain(iterations);
 		testCallChain2(iterations);
+		testCallChain3();
 		testLeaf(iterations);
 	}
 
@@ -53,7 +54,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-        logger.info("addVariable: {}", count);
+		logger.info("addVariable: {}", count);
 	}
 
 	private void addConstant(int iterations)
@@ -65,7 +66,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-        logger.info("addConstant: {}", count);
+		logger.info("addConstant: {}", count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -88,7 +89,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info("randomBranchTest: {} {} {}", count, adds, subs);
+		logger.info("randomBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -111,7 +112,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info("changingBranchTest: {} {} {}", count, adds, subs);
+		logger.info("changingBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -132,7 +133,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info("intrinsicTest: {}", dstSum);
+		logger.info("intrinsicTest: {}", dstSum);
 	}
 
 	private long add(long a, long b)
@@ -154,7 +155,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-        logger.warn("tooBigToInline: {}", count);
+		logger.warn("tooBigToInline: {}", count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -233,7 +234,7 @@ public class MakeHotSpotLog
 			Random random = new Random();
 
 			int count = 1000;
-			
+
 			List<Integer> list = new ArrayList<>();
 
 			for (int j = 0; j < count; j++)
@@ -249,7 +250,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-        logger.info("list sum: {}", sum);
+		logger.info("list sum: {}", sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -262,7 +263,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-        logger.info("testCallChain: {}", count);
+		logger.info("testCallChain: {}", count);
 	}
 
 	private long chainA1(long count)
@@ -309,15 +310,40 @@ public class MakeHotSpotLog
 		{
 			count = chainC1(count);
 			count = chainC2(count);
-
 		}
 
-        logger.warn("testCallChain2: {}", count);
+		logger.warn("testCallChain2: {}", count);
+	}
+	
+	private boolean test(int count, int iterations)
+	{
+		return count < (0.9 * (double)iterations);
+	}
+
+	private void testCallChain3()
+	{
+		long count = 0;
+
+		int iterations = 100_000;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			if (test(i, iterations))
+			{
+				count = chainC1(count);
+			}
+			else
+			{
+				count = chainC2(count);
+			}
+		}
+
+		logger.warn("testCallChain2: {}", count);
 	}
 
 	private long chainC1(long inCount)
 	{
-        long count = inCount;
+		long count = inCount;
 		count += chainC2(count);
 		return chainC3(count);
 	}
@@ -331,7 +357,7 @@ public class MakeHotSpotLog
 	{
 		return 3 + count;
 	}
-	
+
 	private void testLeaf(long iterations)
 	{
 		long count = 0;
@@ -346,22 +372,22 @@ public class MakeHotSpotLog
 
 		logger.info("testLeaf: {}", count);
 	}
-	
+
 	private long leaf1(long count)
 	{
 		return count + 1;
 	}
-	
+
 	private long leaf2(long count)
 	{
 		return count + 2;
 	}
-	
+
 	private long leaf3(long count)
 	{
 		return count + 3;
 	}
-	
+
 	private long leaf4(long count)
 	{
 		return count + 4;
@@ -379,7 +405,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-                logger.error("usage: MakeHotSpotLog [iterations]", nfe);
+				logger.error("usage: MakeHotSpotLog [iterations]", nfe);
 			}
 		}
 
