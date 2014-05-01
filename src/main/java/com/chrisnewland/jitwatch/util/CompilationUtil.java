@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-import com.sun.source.util.JavacTask;
-
 public class CompilationUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
@@ -74,9 +72,7 @@ public class CompilationUtil
 		JavaCompiler.CompilationTask task = compiler.getTask(compilerOutputStream, fileManager, null, compileOptions, null,
 				sourceFileObjects);
 
-		JavacTask javacTask = (JavacTask) task;
-
-		boolean success = javacTask.call();
+		boolean success = task.call();
 
 		String compilationMessages = compilerOutputStream.toString();
 

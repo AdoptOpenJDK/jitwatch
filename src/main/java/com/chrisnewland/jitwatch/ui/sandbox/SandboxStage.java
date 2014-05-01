@@ -119,6 +119,12 @@ public class SandboxStage extends Stage
 		taSource = new TextArea();
 		taLoad = new TextArea();
 		taLog = new TextArea();
+		
+		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+
+		taSource.setStyle(style);
+		taLoad.setStyle(style);
+		taLog.setStyle(style);
 
 		colSource.getChildren().add(hBoxSource);
 		colSource.getChildren().add(taSource);
@@ -168,10 +174,10 @@ public class SandboxStage extends Stage
 		sourceBuilder.append("public class Test\n");
 		sourceBuilder.append("{\n");
 
-		sourceBuilder.append("\tpublic int add(int a, int b)\n");
-		sourceBuilder.append("\t{\n");
-		sourceBuilder.append("\t\treturn a + b;\n");
-		sourceBuilder.append("\t}\n");
+		sourceBuilder.append("    public int add(int a, int b)\n");
+		sourceBuilder.append("    {\n");
+		sourceBuilder.append("        return a + b;\n");
+		sourceBuilder.append("    }\n");
 
 		sourceBuilder.append("}\n");
 
@@ -184,16 +190,16 @@ public class SandboxStage extends Stage
 		loadBuilder.append("public class TestLoad\n");
 		loadBuilder.append("{\n");
 
-		loadBuilder.append("\tpublic static void main(String[] args)\n");
-		loadBuilder.append("\t{\n");
-		loadBuilder.append("\t\tTest test = new Test();\n\n");
-		loadBuilder.append("\t\tint sum = 0;\n\n");
-		loadBuilder.append("\t\tfor (int i = 0 ; i < 1_000_000; i++)\n");
-		loadBuilder.append("\t\t{\n");
-		loadBuilder.append("\t\t\tsum = test.add(sum, 1);\n");
-		loadBuilder.append("\t\t}\n\n");
-		loadBuilder.append("\t\tSystem.out.println(\"Sum:\" + sum);\n");
-		loadBuilder.append("\t}\n");
+		loadBuilder.append("    public static void main(String[] args)\n");
+		loadBuilder.append("    {\n");
+		loadBuilder.append("        Test test = new Test();\n\n");
+		loadBuilder.append("        int sum = 0;\n\n");
+		loadBuilder.append("        for (int i = 0 ; i < 1_000_000; i++)\n");
+		loadBuilder.append("        {\n");
+		loadBuilder.append("            sum = test.add(sum, 1);\n");
+		loadBuilder.append("        }\n\n");
+		loadBuilder.append("        System.out.println(\"Sum:\" + sum);\n");
+		loadBuilder.append("    }\n");
 
 		loadBuilder.append("}\n");
 

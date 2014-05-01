@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
-import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
