@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 // Demo class to generate an example hotspot.log
 // run with VM arguments
 // -XX:+UnlockDiagnosticVMOptions
@@ -43,6 +45,7 @@ public class MakeHotSpotLog
 		testCallChain2(iterations);
 		testCallChain3();
 		testLeaf(iterations);
+		testToUpperCase(iterations);
 	}
 
 	private void addVariable(int iterations)
@@ -391,6 +394,31 @@ public class MakeHotSpotLog
 	private long leaf4(long count)
 	{
 		return count + 4;
+	}
+	
+	private void testToUpperCase(long iterations)
+	{		
+		String sentence = "The quick brown fox jumps over the lazy dog";
+		
+		String[] words = sentence.split(S_SPACE);
+		
+		int wordcount = words.length;
+		
+		String[] ucwords = new String[wordcount];
+
+		for (int i = 0; i < iterations; i++)
+		{
+			for (int w = 0; w < wordcount; w++)
+			{
+				ucwords[w] = words[w].toUpperCase();
+			}
+		}
+
+		for (String ucw : ucwords)
+		{
+			logger.info("upper: {}", ucw);
+		}
+		
 	}
 
 	public static void main(String[] args)
