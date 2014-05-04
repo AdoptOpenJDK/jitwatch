@@ -125,7 +125,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private boolean repaintTree = false;
 	private boolean startDelayedByConfig = false;
 
-    private JITWatchConfig config;
+    //private JITWatchConfig config;
 
 	// Called by JFX
 	public JITWatchUI()
@@ -254,7 +254,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
-		classMemberList = new ClassMemberList(this, config);
+		classMemberList = new ClassMemberList(this, getConfig());
 
         classTree = new ClassTree(this, getConfig());
         classTree.prefWidthProperty().bind(scene.widthProperty());
@@ -265,7 +265,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		classMemberList.prefHeightProperty().bind(scene.heightProperty());
 		attributeTableView.prefHeightProperty().bind(scene.heightProperty());
 
-		classTree = new ClassTree(this, config);
+		classTree = new ClassTree(this, getConfig());
 		classTree.prefWidthProperty().bind(scene.widthProperty());
 
 		SplitPane spMain = new SplitPane();
@@ -571,20 +571,12 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
         btnStartWatching.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+
                 if (nothingMountedStage == null) {
                     int classCount = getConfig().getClassLocations().size();
                     int sourceCount = getConfig().getSourceLocations().size();
 
-                    if (classCount == 0 && sourceCount == 0) {
-                        if (getConfig().isShowNothingMounted()) {
-                            nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-                            nothingMountedStage.show();
-
-                            openPopupStages.add(nothingMountedStage);
-
-                            startDelayedByConfig = true;
-                        }
-                    }
+                    performActionWhenNothingIsMounted(classCount, sourceCount);
                 }
 
                 if (!startDelayedByConfig) {
@@ -628,9 +620,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
     private void performActionWhenNothingIsMounted(int classCount, int sourceCount) {
         if (classCount == 0 && sourceCount == 0)
         {
-            if (config.isShowNothingMounted())
+            if (getConfig().isShowNothingMounted())
             {
-                nothingMountedStage = new NothingMountedStage(this, config);
+                nothingMountedStage = new NothingMountedStage(this, getConfig());
                 nothingMountedStage.show();
 
                 openPopupStages.add(nothingMountedStage);
