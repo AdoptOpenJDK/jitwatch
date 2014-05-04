@@ -12,7 +12,7 @@ import java.util.List;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_BACKSLASH;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
-public class CompilationUtil
+public final class CompilationUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
 
