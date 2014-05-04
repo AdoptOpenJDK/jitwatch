@@ -125,8 +125,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private boolean repaintTree = false;
 	private boolean startDelayedByConfig = false;
 
-    //private JITWatchConfig config;
-
 	// Called by JFX
 	public JITWatchUI()
 	{
