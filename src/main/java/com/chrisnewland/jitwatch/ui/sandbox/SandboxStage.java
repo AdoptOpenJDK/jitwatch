@@ -350,15 +350,15 @@ public class SandboxStage extends Stage
         CompilationUtil.compile(toCompile);
     }
 
-    private StringBuilder buildFqSource(String package_, String class_) {
+    private StringBuilder buildFqSource(String inPackage, String inClass) {
         StringBuilder fqSourceBuilder = new StringBuilder();
 
-        if (package_.length() > 0)
+        if (inPackage.length() > 0)
         {
-            fqSourceBuilder.append(package_).append(S_DOT);
+            fqSourceBuilder.append(inPackage).append(S_DOT);
         }
 
-        fqSourceBuilder.append(class_);
+        fqSourceBuilder.append(inClass);
         return fqSourceBuilder;
     }
 
