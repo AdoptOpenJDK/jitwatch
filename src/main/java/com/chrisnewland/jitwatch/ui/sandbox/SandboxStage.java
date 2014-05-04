@@ -263,16 +263,9 @@ public class SandboxStage extends Stage
 	{
 		try
 		{
-			Platform.runLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					taLog.setText(S_EMPTY);
-				}
-			});
+            platformRunLaterSetEmptyText();
 
-			String source = taSource.getText();
+            String source = taSource.getText();
 			String load = taLoad.getText();
 
 			String sourcePackage = getPackageFromSource(source);
@@ -281,23 +274,8 @@ public class SandboxStage extends Stage
 			String sourceClass = getClassFromSource(source);
 			String loadClass = getClassFromSource(load);
 
-			StringBuilder fqNameSourceBuilder = new StringBuilder();
-
-			if (sourcePackage.length() > 0)
-			{
-				fqNameSourceBuilder.append(sourcePackage).append(S_DOT);
-			}
-
-			fqNameSourceBuilder.append(sourceClass);
-
-			StringBuilder fqNameLoadBuilder = new StringBuilder();
-
-			if (loadPackage.length() > 0)
-			{
-				fqNameLoadBuilder.append(loadPackage).append(S_DOT);
-			}
-
-			fqNameLoadBuilder.append(loadClass);
+            StringBuilder fqNameSourceBuilder = buildFqSource(sourcePackage, sourceClass);
+			StringBuilder fqNameLoadBuilder = buildFqSource(loadPackage, loadClass);
 
 			String fqNameSource = fqNameSourceBuilder.toString();
 			String fqNameLoad = fqNameLoadBuilder.toString();
@@ -308,28 +286,13 @@ public class SandboxStage extends Stage
 			log("Writing load file: " + fqNameLoad);
 			File loadFile = CompilationUtil.writeSource(fqNameLoad, load);
 
-			List<File> toCompile = new ArrayList<>();
-			toCompile.add(sourceFile);
-			toCompile.add(loadFile);
+            compileFiles(sourceFile, loadFile);
 
-			log("Compiling: " + listToString(toCompile));
-			CompilationUtil.compile(toCompile);
-
-			List<String> cp = new ArrayList<>();
+            List<String> cp = new ArrayList<>();
 
 			cp.add(CompilationUtil.SANDBOX_CLASS_DIR.toString());
 
-			List<String> options = new ArrayList<>();
-			options.add("-XX:+UnlockDiagnosticVMOptions");
-			options.add("-XX:+TraceClassLoading");
-			options.add("-XX:+LogCompilation");
-			options.add("-XX:LogFile=live.log");
-
-
-			if (hsdisAvailable)
-			{
-				options.add("-XX:+PrintAssembly");
-			}
+            List<String> options = setupListOfOptions();
 
 			log("Executing: " + fqNameLoad);
 			log("VM options: " + listToString(options));
@@ -366,47 +329,98 @@ public class SandboxStage extends Stage
 
 			MetaClass metaClass = model.getPackageManager().getMetaClass(fqNameSource);
 
-			IMetaMember firstCompiled = null;
-
-			if (metaClass != null)
-			{
-				log("Found: " + metaClass.getFullyQualifiedName());
-
-				log("looking for compiled members");
-
-				// select first compiled member if any
-				List<IMetaMember> memberList = metaClass.getMetaMembers();
-
-				for (IMetaMember mm : memberList)
-				{
-					if (mm.isCompiled())
-					{
-						firstCompiled = mm;
-						break;
-					}
-				}
-			}
-
-			final IMetaMember member = firstCompiled;
+            final IMetaMember member = processCompiledMemberList(metaClass, null);
 
 			log("Launching TriView for " + member);
 
-			Platform.runLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					accessProxy.openTriView(member, true);
-				}
-			});
-		}
+            platformRunLaterAccessProxy(member);
+        }
 		catch (IOException ioe)
 		{
 			logger.error("Compile failure", ioe);
 		}
 	}
 
-	private String listToString(List<?> list)
+    private void compileFiles(File sourceFile, File loadFile) throws IOException {
+        List<File> toCompile = new ArrayList<>();
+        toCompile.add(sourceFile);
+        toCompile.add(loadFile);
+
+        log("Compiling: " + listToString(toCompile));
+        CompilationUtil.compile(toCompile);
+    }
+
+    private StringBuilder buildFqSource(String package_, String class_) {
+        StringBuilder fqSourceBuilder = new StringBuilder();
+
+        if (package_.length() > 0)
+        {
+            fqSourceBuilder.append(package_).append(S_DOT);
+        }
+
+        fqSourceBuilder.append(class_);
+        return fqSourceBuilder;
+    }
+
+    private List<String> setupListOfOptions() {
+        List<String> options = new ArrayList<>();
+        options.add("-XX:+UnlockDiagnosticVMOptions");
+        options.add("-XX:+TraceClassLoading");
+        options.add("-XX:+LogCompilation");
+        options.add("-XX:LogFile=live.log");
+
+        if (hsdisAvailable)
+        {
+            options.add("-XX:+PrintAssembly");
+        }
+        return options;
+    }
+
+    private IMetaMember processCompiledMemberList(MetaClass metaClass, IMetaMember firstCompiled) {
+        if (metaClass != null)
+        {
+            log("Found: " + metaClass.getFullyQualifiedName());
+
+            log("looking for compiled members");
+
+            // select first compiled member if any
+            List<IMetaMember> memberList = metaClass.getMetaMembers();
+
+            for (IMetaMember mm : memberList)
+            {
+                if (mm.isCompiled())
+                {
+                    firstCompiled = mm;
+                    break;
+                }
+            }
+        }
+        return firstCompiled;
+    }
+
+    private void platformRunLaterAccessProxy(final IMetaMember member) {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                accessProxy.openTriView(member, true);
+            }
+        });
+    }
+
+    private void platformRunLaterSetEmptyText() {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                taLog.setText(S_EMPTY);
+            }
+        });
+    }
+
+    private String listToString(List<?> list)
 	{
 		StringBuilder builder = new StringBuilder();
 
