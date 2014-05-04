@@ -376,7 +376,8 @@ public class SandboxStage extends Stage
         return options;
     }
 
-    private IMetaMember processCompiledMemberList(MetaClass metaClass, IMetaMember firstCompiled) {
+    private IMetaMember processCompiledMemberList(MetaClass metaClass, IMetaMember inFirstCompiled) {
+        IMetaMember firstCompiled = inFirstCompiled;
         if (metaClass != null)
         {
             log("Found: " + metaClass.getFullyQualifiedName());
