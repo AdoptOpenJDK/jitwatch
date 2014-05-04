@@ -332,7 +332,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
         btnSuggest = new Button("Suggest");
         initialiseBtnSuggestWithOnActionEventHandler();
 
-        btn`Sandbox = new Button("Sandbox");
+        btnSandbox = new Button("Sandbox");
         initialiseBtnSandboxWithOnActionEventHandler();
         
 		classMemberList = new ClassMemberList(this, getConfig());
