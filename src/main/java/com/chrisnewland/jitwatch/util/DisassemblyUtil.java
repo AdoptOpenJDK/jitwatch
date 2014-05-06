@@ -1,13 +1,13 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 public class DisassemblyUtil
 {
-	private static final Logger logger = LoggerFactory.getLogger(DisassemblyUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DisassemblyUtil.class);
 
 	enum OperatingSystem
 	{
@@ -35,7 +35,7 @@ public class DisassemblyUtil
 
 			hsdisFile = new File(jreDir, binaryPath);
 
-			logger.info("looking for hsdis binary: {}", hsdisFile);
+			LOGGER.info("looking for hsdis binary: {}", hsdisFile);
 
 			if (hsdisFile.exists() && hsdisFile.isFile())
 			{
@@ -116,7 +116,7 @@ public class DisassemblyUtil
 			}
 		}
 
-		logger.error("Unknown OS name: {}", osNameProperty);
+		LOGGER.error("Unknown OS name: {}", osNameProperty);
 		return null;
 	}
 

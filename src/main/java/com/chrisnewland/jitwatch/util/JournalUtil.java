@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public final class JournalUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JournalUtil.class);
 
     /*
         Hide Utility Class Constructor
@@ -272,7 +272,7 @@ public final class JournalUtil
 
 			if (count != 1)
 			{
-                logger.info("Unexpected parse phase count: {}", count);
+                LOGGER.info("Unexpected parse phase count: {}", count);
 			}
 			else
 			{

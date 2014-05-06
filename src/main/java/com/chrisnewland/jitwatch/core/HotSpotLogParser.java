@@ -29,7 +29,7 @@ public class HotSpotLogParser implements ILogParser
 		READY, IN_TAG, IN_NATIVE
 	}
 
-    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
@@ -136,7 +136,7 @@ public class HotSpotLogParser implements ILogParser
 			}
 			catch (Exception ex)
 			{
-                   logger.error("Exception handling: '{}'", currentLine, ex);
+                   LOGGER.error("Exception handling: '{}'", currentLine, ex);
 			}
 		
 			currentLine = input.readLine();
@@ -285,7 +285,7 @@ public class HotSpotLogParser implements ILogParser
 		String threadName = tag.getAttribute(ATTR_NAME);
 
         if (theThreadIsNotFound(threadName)) {
-            logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+            LOGGER.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
             return;
         }
 
@@ -299,7 +299,7 @@ public class HotSpotLogParser implements ILogParser
 		}
 		else
 		{
-            logger.error("Unexpected compiler name: {}", threadName);
+            LOGGER.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 

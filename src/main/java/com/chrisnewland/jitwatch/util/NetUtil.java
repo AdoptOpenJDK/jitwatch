@@ -18,7 +18,7 @@ public final class NetUtil
     private NetUtil() {
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(NetUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetUtil.class);
 
     public static String fetchURL(String toFetch)
 	{
@@ -40,9 +40,9 @@ public final class NetUtil
 			}
 
 		} catch (MalformedURLException e) {
-            logger.error("", e);
+            LOGGER.error("", e);
         } catch (IOException e) {
-            logger.error("", e);
+            LOGGER.error("", e);
         } finally
 		{
 			if (in != null)

@@ -25,7 +25,7 @@ public class MemberSignatureParts
 	private List<String> paramTypeList;
 
 	// LinkedHashMap to ensure entry set iteration matches insertion order
-	private static final Map<String, Integer> modifierMap = new LinkedHashMap<String, Integer>();
+	private static final Map<String, Integer> MODIFIER_MAP = new LinkedHashMap<String, Integer>();
 
 	static
 	{
@@ -42,7 +42,7 @@ public class MemberSignatureParts
 
 	private static void addModifierMapping(int modifier)
 	{
-		modifierMap.put(Modifier.toString(modifier), modifier);
+		MODIFIER_MAP.put(Modifier.toString(modifier), modifier);
 	}
 
 	public MemberSignatureParts(String toParse)
@@ -56,7 +56,7 @@ public class MemberSignatureParts
 
 		builder.append("^[ ]*");
 
-		for (String mod : modifierMap.keySet())
+		for (String mod : MODIFIER_MAP.keySet())
 		{
 			builder.append(S_OPEN_PARENTHESES).append(mod).append(S_SPACE).append(S_CLOSE_PARENTHESES).append(C_QUESTION);
 		}
@@ -78,7 +78,7 @@ public class MemberSignatureParts
 
 		Matcher matcher = PATTERN_BC_SIGNATURE.matcher(toParse);
 
-		int modifierCount = modifierMap.size();
+		int modifierCount = MODIFIER_MAP.size();
 
 		if (matcher.find())
 		{
@@ -98,7 +98,7 @@ public class MemberSignatureParts
 					modifierList.add(group);
 
 					// add bitset value for this modifier
-					modifier += modifierMap.get(group);
+					modifier += MODIFIER_MAP.get(group);
 				}
 
 				if ((i == modifierCount + 1) &&

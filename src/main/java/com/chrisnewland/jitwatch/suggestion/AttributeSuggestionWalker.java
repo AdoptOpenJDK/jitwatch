@@ -22,8 +22,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
     private IParseDictionary parseDictionary;
 
-    private static final Map<String, Double> scoreMap = new HashMap<>();
-    private static final Map<String, String> explanationMap = new HashMap<>();
+    private static final Map<String, Double> SCORE_MAP = new HashMap<>();
+    private static final Map<String, String> EXPLANATION_MAP = new HashMap<>();
 
     // see
     // https://wikis.oracle.com/display/HotSpotInternals/Server+Compiler+Inlining+Messages
@@ -41,28 +41,28 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
     static
     {
-        scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
-        scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
-        scoreMap.put(REASON_TOO_BIG, 0.5);
-        scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
-        scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
-        scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
+        SCORE_MAP.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
+        SCORE_MAP.put(REASON_UNCERTAIN_BRANCH, 0.5);
+        SCORE_MAP.put(REASON_TOO_BIG, 0.5);
+        SCORE_MAP.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
+        SCORE_MAP.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
+        SCORE_MAP.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
 
-        scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
-        scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
+        SCORE_MAP.put(REASON_NEVER_EXECUTED, 0.0);
+        SCORE_MAP.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
 
-        explanationMap
+        EXPLANATION_MAP
                 .put(REASON_HOT_METHOD_TOO_BIG,
                         "The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
-        explanationMap.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
-        explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
+        EXPLANATION_MAP.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
+        EXPLANATION_MAP.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
                 "The callee method is not 'hot' but is too big to be inlined into the caller method.");
-        explanationMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
+        EXPLANATION_MAP.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
     }
 
     private static final int MIN_BRANCH_INVOCATIONS = 1000;
     private static final int MIN_INLINING_INVOCATIONS = 1000;
-    private static final Logger logger = LoggerFactory.getLogger(AttributeSuggestionWalker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSuggestionWalker.class);
 
     public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
     {
@@ -168,13 +168,13 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
                 double score = 0;
 
-                if (scoreMap.containsKey(reason))
+                if (SCORE_MAP.containsKey(reason))
                 {
-                    score = scoreMap.get(reason);
+                    score = SCORE_MAP.get(reason);
                 }
                 else
                 {
-                    logger.info("No score is set for reason: {}", reason);
+                    LOGGER.info("No score is set for reason: {}", reason);
                 }
 
                 StringBuilder reasonBuilder = new StringBuilder();
@@ -184,9 +184,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
                 reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName()).append("\n");
                 reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
 
-                if (explanationMap.containsKey(reason))
+                if (EXPLANATION_MAP.containsKey(reason))
                 {
-                    reasonBuilder.append(explanationMap.get(reason)).append("\n");
+                    reasonBuilder.append(EXPLANATION_MAP.get(reason)).append("\n");
                 }
 
                 reasonBuilder.append("Invocations: ").append(invocationCount).append("\n");
@@ -224,7 +224,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
-                logger.error("", nfe);
+                LOGGER.error("", nfe);
             }
         }
 
@@ -236,7 +236,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
             }
             catch (NumberFormatException nfe)
             {
-                logger.error("", nfe);
+                LOGGER.error("", nfe);
             }
         }
 
@@ -244,7 +244,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
         if (probability > 0.45 && probability < 0.55 && count >= MIN_BRANCH_INVOCATIONS)
         {
-            score = scoreMap.get(REASON_UNCERTAIN_BRANCH);
+            score = SCORE_MAP.get(REASON_UNCERTAIN_BRANCH);
 
             score *= count;
         }

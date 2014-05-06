@@ -30,7 +30,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MakeHotSpotLog
 {
-	private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MakeHotSpotLog.class);
 
 	public MakeHotSpotLog(int iterations)
 	{
@@ -57,7 +57,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		logger.info("addVariable: {}", count);
+		LOGGER.info("addVariable: {}", count);
 	}
 
 	private void addConstant(int iterations)
@@ -69,7 +69,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		logger.info("addConstant: {}", count);
+		LOGGER.info("addConstant: {}", count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -92,7 +92,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("randomBranchTest: {} {} {}", count, adds, subs);
+		LOGGER.info("randomBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -115,7 +115,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("changingBranchTest: {} {} {}", count, adds, subs);
+		LOGGER.info("changingBranchTest: {} {} {}", count, adds, subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -136,7 +136,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("intrinsicTest: {}", dstSum);
+		LOGGER.info("intrinsicTest: {}", dstSum);
 	}
 
 	private long add(long a, long b)
@@ -158,7 +158,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		logger.warn("tooBigToInline: {}", count);
+		LOGGER.warn("tooBigToInline: {}", count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -253,7 +253,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("list sum: {}", sum);
+		LOGGER.info("list sum: {}", sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -266,7 +266,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		logger.info("testCallChain: {}", count);
+		LOGGER.info("testCallChain: {}", count);
 	}
 
 	private long chainA1(long count)
@@ -315,7 +315,7 @@ public class MakeHotSpotLog
 			count = chainC2(count);
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		LOGGER.warn("testCallChain2: {}", count);
 	}
 	
 	private boolean test(int count, int iterations)
@@ -341,7 +341,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		LOGGER.warn("testCallChain2: {}", count);
 	}
 
 	private long chainC1(long inCount)
@@ -373,7 +373,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		logger.info("testLeaf: {}", count);
+		LOGGER.info("testLeaf: {}", count);
 	}
 
 	private long leaf1(long count)
@@ -416,7 +416,7 @@ public class MakeHotSpotLog
 
 		for (String ucw : ucwords)
 		{
-			logger.info("upper: {}", ucw);
+			LOGGER.info("upper: {}", ucw);
 		}
 		
 	}
@@ -433,7 +433,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("usage: MakeHotSpotLog [iterations]", nfe);
+				LOGGER.error("usage: MakeHotSpotLog [iterations]", nfe);
 			}
 		}
 

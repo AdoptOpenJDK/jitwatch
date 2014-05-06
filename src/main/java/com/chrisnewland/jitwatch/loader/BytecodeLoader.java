@@ -24,7 +24,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class BytecodeLoader
 {
-    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BytecodeLoader.class);
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
@@ -63,11 +63,11 @@ public final class BytecodeLoader
 		}
 		catch (BadArgs ba)
 		{
-			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
+			LOGGER.error("Could not obtain bytecode for class: {}", fqClassName, ba);
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+            LOGGER.error("", ioe);
 		}
 
 		if (byteCodeString != null)
@@ -211,7 +211,7 @@ public final class BytecodeLoader
 					}
 					else
 					{
-                        logger.error("Unexpected tableswitch entry: " + line);
+                        LOGGER.error("Unexpected tableswitch entry: " + line);
 					}
 				}
 			}
@@ -254,12 +254,12 @@ public final class BytecodeLoader
 					}
 					else
 					{
-                        logger.error("could not parse bytecode: '" + line + "'");
+                        LOGGER.error("could not parse bytecode: '" + line + "'");
 					}
 				}
 				catch (Exception e)
 				{
-                    logger.error("Error parsing bytecode line: '" + line + "'", e);
+                    LOGGER.error("Error parsing bytecode line: '" + line + "'", e);
 				}
 			}
 		}

@@ -19,7 +19,7 @@ import java.io.IOException;
 public class LaunchHeadless implements IJITListener
 {
     private boolean showErrors;
-    private static final Logger logger = LoggerFactory.getLogger(LaunchHeadless.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LaunchHeadless.class);
 
     public LaunchHeadless(String filename, boolean showErrors) throws IOException
     {
@@ -36,7 +36,7 @@ public class LaunchHeadless implements IJITListener
     @Override
     public void handleLogEntry(String entry)
     {
-        logger.error(entry);
+        LOGGER.error(entry);
     }
 
     @Override
@@ -44,21 +44,21 @@ public class LaunchHeadless implements IJITListener
     {
         if (showErrors)
         {
-            logger.error(entry);
+            LOGGER.error(entry);
         }
     }
 
     @Override
     public void handleJITEvent(JITEvent event)
     {
-        logger.info(event.toString());
+        LOGGER.info(event.toString());
     }
 
     public static void main(String[] args) throws IOException
     {
         if (args.length < 1)
         {
-            logger.error("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
+            LOGGER.error("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
             System.exit(-1);
         }
 
@@ -78,7 +78,7 @@ public class LaunchHeadless implements IJITListener
 	@Override
 	public void handleReadComplete()
 	{
-		logger.info("Finished reading log file.");		
+		LOGGER.info("Finished reading log file.");
 	}
 
 	@Override

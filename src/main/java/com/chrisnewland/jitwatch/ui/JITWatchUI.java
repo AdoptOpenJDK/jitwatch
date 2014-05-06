@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
 
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
-    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT = 592;
@@ -699,7 +699,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 		else
 		{
-            logger.error("Could not open CompileChain - root node was null");
+            LOGGER.error("Could not open CompileChain - root node was null");
 		}
 	}
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ExecutionUtil
 {
-	private static final Logger logger = LoggerFactory.getLogger(ExecutionUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionUtil.class);
 
 	public static boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
 	{
@@ -47,7 +47,7 @@ public class ExecutionUtil
 			cmdBuilder.append(part).append(" ");
 		}
 		
-		logger.info("Executing: {}", cmdBuilder.toString());
+		LOGGER.info("Executing: {}", cmdBuilder.toString());
 
 		int result = -1;
 		
@@ -63,13 +63,13 @@ public class ExecutionUtil
 
 			result = proc.waitFor();
 
-			logger.info("Execution complete: {}", result);
-			logger.info("Process out: {}", outBuilder.getStreamString());
-			logger.info("Process err: {}", errBuilder.getStreamString());
+			LOGGER.info("Execution complete: {}", result);
+			LOGGER.info("Process out: {}", outBuilder.getStreamString());
+			LOGGER.info("Process err: {}", errBuilder.getStreamString());
 		}
 		catch (Exception e)
 		{
-			logger.error("Could not execute program", e);
+			LOGGER.error("Could not execute program", e);
 		}
 
         // normal completion

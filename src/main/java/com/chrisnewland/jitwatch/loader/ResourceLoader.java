@@ -23,7 +23,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class ResourceLoader
 {
-    private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceLoader.class);
 
     /*
         Hide Utility Class Constructor
@@ -97,7 +97,7 @@ public class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+                LOGGER.error("", ioe);
 			}
 		}
 
@@ -131,7 +131,7 @@ public class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+            LOGGER.error("", ioe);
 		}
 
 		return result;

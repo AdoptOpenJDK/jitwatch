@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileChooserList extends VBox
 {
-    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileChooserList.class);
 
 	private Stage stage;
 
@@ -136,7 +136,7 @@ public class FileChooserList extends VBox
 				}
 				catch (IOException ioe)
 				{
-                    logger.error("", ioe);
+                    LOGGER.error("", ioe);
 				}
 
 				lastFolder = f.getParentFile();
@@ -172,7 +172,7 @@ public class FileChooserList extends VBox
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+                LOGGER.error("", ioe);
 			}
 			
 			lastFolder = result.getParentFile();

@@ -235,18 +235,18 @@ public enum Opcode
 		return mnemonic;
 	}
 	
-	static final Map<String, Opcode> opcodeMap = new HashMap<>();
+	static final Map<String, Opcode> OPCODE_MAP = new HashMap<>();
 
 	static
 	{
 		for (Opcode oc : Opcode.values())
 		{
-			opcodeMap.put(oc.getMnemonic(),  oc);
+			OPCODE_MAP.put(oc.getMnemonic(), oc);
 		}
 	}
 	
 	public static Opcode getOpcodeForMnemonic(String mnemonic)
 	{
-		return opcodeMap.get(mnemonic);
+		return OPCODE_MAP.get(mnemonic);
 	}
 }

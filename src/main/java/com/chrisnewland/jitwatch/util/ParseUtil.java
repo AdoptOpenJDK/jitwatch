@@ -23,7 +23,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ParseUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParseUtil.class);
 
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
@@ -79,7 +79,7 @@ public class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-            logger.error("", pe);
+            LOGGER.error("", pe);
 		}
 
 		return result;
@@ -372,22 +372,22 @@ public class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
-                logger.error("ClassNotFoundException:", cnf);
+                LOGGER.error("ClassNotFoundException:", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-                logger.error("NoClassDefFoundError:", ncdf);
+                LOGGER.error("NoClassDefFoundError:", ncdf);
                 throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-                logger.error("Exception:", ex);
+                LOGGER.error("Exception:", ex);
                 throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
-                logger.error("Error:", err);
+                LOGGER.error("Error:", err);
                 throw new Exception("Error: " + err.getMessage());
 			}
 
@@ -572,7 +572,7 @@ public class ParseUtil
 			}
 			else
 			{
-                logger.error("metaClass not found: {}", metaClassName);
+                LOGGER.error("metaClass not found: {}", metaClassName);
 			}
 		}
 

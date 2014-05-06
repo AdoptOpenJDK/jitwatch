@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompileChainStage.class);
 
     private ScrollPane scrollPane;
     private Pane pane;
@@ -179,7 +179,7 @@ public class CompileChainStage extends Stage
             @Override
             public void handle(MouseEvent arg0)
             {
-                logger.info("{}", node.getMember());
+                LOGGER.info("{}", node.getMember());
                 // TODO use for navigation in TriView?
             }
         });

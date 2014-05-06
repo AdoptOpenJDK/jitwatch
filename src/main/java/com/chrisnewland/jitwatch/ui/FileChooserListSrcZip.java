@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileChooserListSrcZip extends FileChooserList
 {
-    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileChooserList.class);
 
 	public FileChooserListSrcZip(Stage stage, String title, List<String> items)
 	{
@@ -43,7 +43,7 @@ public class FileChooserListSrcZip extends FileChooserList
 					}
 					catch (IOException ioe)
 					{
-						logger.error("", ioe);
+						LOGGER.error("", ioe);
 					}
 				}
 			}

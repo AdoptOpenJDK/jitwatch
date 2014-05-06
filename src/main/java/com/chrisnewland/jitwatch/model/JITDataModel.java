@@ -24,7 +24,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
-    private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JITDataModel.class);
 
     private PackageManager pm;
     private JITStats stats;
@@ -128,7 +128,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
                 }
                 catch (Throwable t)
                 {
-                    logger.error("Exception: {}", t.getMessage(), t);
+                    LOGGER.error("Exception: {}", t.getMessage(), t);
                 }
             }
         }

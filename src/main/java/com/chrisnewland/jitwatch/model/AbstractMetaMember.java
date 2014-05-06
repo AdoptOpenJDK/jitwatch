@@ -38,11 +38,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
     protected Class<?> returnType;
     protected Class<?>[] paramTypes;
 
-	private static final String anyChars = "(.*)";
-	private static final String spaceZeroOrMore = "( )*";
-	private static final String spaceOneOrMore = "( )+";
-	private static final String paramName = "([0-9\\p{L}_]+)";
-	private static final String regexPackage = "([0-9\\p{L}_\\.]*)";
+	private static final String ANY_CHARS = "(.*)";
+	private static final String SPACE_ZERO_OR_MORE = "( )*";
+	private static final String SPACE_ONE_OR_MORE = "( )+";
+	private static final String PARAM_NAME = "([0-9\\p{L}_]+)";
+	private static final String REGEX_PACKAGE = "([0-9\\p{L}_\\.]*)";
 	
 	@Override
 	public String getMemberName()
@@ -224,7 +224,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("^");
-		builder.append(anyChars);
+		builder.append(ANY_CHARS);
 
 		String modifiers = Modifier.toString(modifier);
 
@@ -244,7 +244,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (this instanceof MetaConstructor)
 		{
-			builder.append(regexPackage);
+			builder.append(REGEX_PACKAGE);
 			builder.append(StringUtil.makeUnqualified(memberName));
 		}
 		else
@@ -252,7 +252,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(memberName);
 		}
 		
-		builder.append(spaceZeroOrMore);
+		builder.append(SPACE_ZERO_OR_MORE);
 
 		builder.append("\\(");
 
@@ -260,22 +260,22 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
-				builder.append(spaceZeroOrMore);
+				builder.append(SPACE_ZERO_OR_MORE);
 
 				String paramType = expandParamRegEx(paramClass.getName());
 
 				builder.append(paramType);
-				builder.append(spaceOneOrMore);
-				builder.append(paramName);
+				builder.append(SPACE_ONE_OR_MORE);
+				builder.append(PARAM_NAME);
 				builder.append(S_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
-		builder.append(spaceZeroOrMore);
+		builder.append(SPACE_ZERO_OR_MORE);
 		builder.append("\\)");
-		builder.append(anyChars);
+		builder.append(ANY_CHARS);
 		builder.append("$");
 
 		return builder.toString();
@@ -309,7 +309,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (paramType.contains(S_DOT))
 		{
-			paramType = regexPackage + StringUtil.makeUnqualified(paramType);
+			paramType = REGEX_PACKAGE + StringUtil.makeUnqualified(paramType);
 		}
 
 		return paramType;
