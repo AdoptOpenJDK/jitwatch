@@ -1,10 +1,10 @@
 #!/bin/sh
 
 unamestr=`uname`
-if [ "$unamestr" = 'Darwin' ]; then
-   export JAVA_HOME=`/usr/libexec/java_home`
-else
-  if [ "$JAVA_HOME" = '' ]; then
+if [ "$JAVA_HOME" = '' ]; then
+  if [ "$unamestr" = 'Darwin' ]; then
+     export JAVA_HOME=`/usr/libexec/java_home`
+  else
      echo "JAVA_HOME has not been set."
      exit 0;
   fi
