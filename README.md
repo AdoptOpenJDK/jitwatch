@@ -1,7 +1,3 @@
-This project has moved to <a href="https://github.com/AdoptOpenJDK/jitwatch">AdoptOpenJDK/jitwatch</a> to benefit the wider Java community.
-
-All further development will take place on the AdoptOpenJDK fork.
-
 JITWatch
 ========
 
