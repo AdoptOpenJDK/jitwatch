@@ -8,11 +8,9 @@
 
 # Make sure you have first built JITWatch using
 # mvn clean compile test
-# If you are using Java 8 then add "-f pom-java8.xml"
 
 # Start JITWatch using
 # mvn exec:java
-# If you are using Java 8 then add "-f pom-java8.xml"
 
 # When you start JITWatch open up the configuration (Config button) and mount
 # JDK's src.zip (use the JDK src zip button)
@@ -56,16 +54,17 @@ export tiered="-XX:+TieredCompilation"
 
 export OPTIONAL_SWITCHES="$assembly $notiered"
 
-
 unamestr=`uname`
-if [ "$unamestr" = 'Darwin' ]; then
-   export JAVA_HOME=`/usr/libexec/java_home`
-else
-  if [ "$JAVA_HOME" = '' ]; then
+
+if [ "$JAVA_HOME" = '' ]; then
+  if [ "$unamestr" = 'Darwin' ]; then
+     export JAVA_HOME=`/usr/libexec/java_home`
+  else
      echo "JAVA_HOME has not been set."
      exit 0;
   fi
 fi
+
 
 $JAVA_HOME/bin/java -version
 
@@ -74,8 +73,8 @@ echo "VM Switches $REQUIRED_SWITCHES $OPTIONAL_SWITCHES"
 echo "Building example HotSpot log"
 
 CLASSPATH=target/classes
-CLASSPATH=$CLASSPATH:lib/logback-classic-1.0.1.jar  
-CLASSPATH=$CLASSPATH:lib/logback-core-1.0.1.jar
+CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
+CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 
 $JAVA_HOME/bin/java $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp $CLASSPATH com.chrisnewland.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
