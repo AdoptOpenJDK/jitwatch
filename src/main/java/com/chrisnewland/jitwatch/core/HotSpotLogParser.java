@@ -107,6 +107,16 @@ public class HotSpotLogParser implements ILogParser
 	public void reset()
 	{
 		getModel().reset();
+		
+		hasTraceClassLoad = false;
+		
+		parseState = ParseState.READY;
+		
+		nativeCodeBuilder = new StringBuilder();
+		
+		reading = false;
+		
+		currentMember = null;
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
