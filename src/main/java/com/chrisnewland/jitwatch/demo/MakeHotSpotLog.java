@@ -398,27 +398,26 @@ public class MakeHotSpotLog
 	
 	private void testToUpperCase(long iterations)
 	{		
-		String sentence = "The quick brown fox jumps over the lazy dog";
+		String sentence = "The quick brown fox jumps over the lazy dog\n";
 		
-		String[] words = sentence.split(S_SPACE);
-		
-		int wordcount = words.length;
-		
-		String[] ucwords = new String[wordcount];
+		String[] lcWords = sentence.split(S_SPACE);
 
-		for (int i = 0; i < iterations; i++)
-		{
-			for (int w = 0; w < wordcount; w++)
-			{
-				ucwords[w] = words[w].toUpperCase();
-			}
-		}
+		int wordCount = lcWords.length;
 
-		for (String ucw : ucwords)
-		{
-			logger.info("upper: {}", ucw);
-		}
+		String[] ucWords = new String[wordCount];
 		
+		for (long l = 0; l < iterations; l++)
+		{
+			toUpper(lcWords, ucWords, wordCount);
+		}
+	}
+	
+	private void toUpper(String[] lcWords, String[] ucWords, int wordCount)
+	{
+		for (int w = 0; w < wordCount; w++)
+		{
+			ucWords[w] = lcWords[w].toUpperCase();
+		}
 	}
 
 	public static void main(String[] args)

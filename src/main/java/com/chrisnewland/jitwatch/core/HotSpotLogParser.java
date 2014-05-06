@@ -24,16 +24,18 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser implements ILogParser
 {
-    enum ParseState
+	enum ParseState
 	{
 		READY, IN_TAG, IN_NATIVE
 	}
 
-    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
 	private boolean reading = false;
+	
+	private boolean hasTraceClassLoad = false;
 
 	private ParseState parseState = ParseState.READY;
 
@@ -55,12 +57,12 @@ public class HotSpotLogParser implements ILogParser
 
 		this.logListener = logListener;
 	}
-	
+
 	public void setConfig(JITWatchConfig config)
 	{
 		this.config = config;
 	}
-	
+
 	@Override
 	public JITWatchConfig getConfig()
 	{
@@ -94,21 +96,21 @@ public class HotSpotLogParser implements ILogParser
 			logListener.handleErrorEntry(entry);
 		}
 	}
-	
+
 	@Override
 	public JITDataModel getModel()
 	{
 		return model;
 	}
-	
+
 	@Override
 	public void reset()
 	{
 		getModel().reset();
-		
+
 		// tell listener to reset any data
 		logListener.handleReadStart();
-		
+
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
@@ -122,7 +124,7 @@ public class HotSpotLogParser implements ILogParser
 		reset();
 
 		reading = true;
-		
+
 		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
 
 		String currentLine = input.readLine();
@@ -136,14 +138,14 @@ public class HotSpotLogParser implements ILogParser
 			}
 			catch (Exception ex)
 			{
-                   logger.error("Exception handling: '{}'", currentLine, ex);
+				logger.error("Exception handling: '{}'", currentLine, ex);
 			}
-		
+
 			currentLine = input.readLine();
 		}
 
 		input.close();
-		
+
 		logListener.handleReadComplete();
 	}
 
@@ -155,7 +157,7 @@ public class HotSpotLogParser implements ILogParser
 
 	private void handleLine(String inCurrentLine)
 	{
-        String currentLine = inCurrentLine;
+		String currentLine = inCurrentLine;
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
@@ -233,7 +235,7 @@ public class HotSpotLogParser implements ILogParser
 		case JITWatchConstants.TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
-		
+
 		case JITWatchConstants.TAG_TASK_QUEUED:
 			handleTagQueued(tag);
 			break;
@@ -250,8 +252,8 @@ public class HotSpotLogParser implements ILogParser
 			handleStartCompileThread(tag);
 			break;
 
-        default:
-            break;
+		default:
+			break;
 		}
 	}
 
@@ -284,10 +286,11 @@ public class HotSpotLogParser implements ILogParser
 		model.getJITStats().incCompilerThreads();
 		String threadName = tag.getAttribute(ATTR_NAME);
 
-        if (theThreadIsNotFound(threadName)) {
-            logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
-            return;
-        }
+		if (theThreadIsNotFound(threadName))
+		{
+			logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+			return;
+		}
 
 		if (threadName.startsWith(C1))
 		{
@@ -299,16 +302,16 @@ public class HotSpotLogParser implements ILogParser
 		}
 		else
 		{
-            logger.error("Unexpected compiler name: {}", threadName);
+			logger.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 
-    private boolean theThreadIsNotFound(String threadName) 
-    {
-        return threadName == null;
-    }
+	private boolean theThreadIsNotFound(String threadName)
+	{
+		return threadName == null;
+	}
 
-    private IMetaMember findMemberWithSignature(String logSignature)
+	private IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
 
@@ -368,7 +371,7 @@ public class HotSpotLogParser implements ILogParser
 		else
 		{
 			String attrCompileKind = tag.getAttribute(ATTR_COMPILE_KIND);
-			
+
 			if (attrCompileKind != null && C2N.equals(attrCompileKind))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_C2N);
@@ -493,55 +496,46 @@ public class HotSpotLogParser implements ILogParser
 	 */
 	private void handleLoaded(String inCurrentLine)
 	{
-        String currentLine = inCurrentLine;
-		String fqClassName = StringUtil.getSubstringBetween(currentLine, LOADED, S_SPACE);
+		if (!hasTraceClassLoad)
+		{
+			hasTraceClassLoad = true;
+		}
+		
+		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
 		{
-			String packageName;
-			String className;
-
-			int lastDotIndex = fqClassName.lastIndexOf('.');
-
-			if (lastDotIndex != -1)
-			{
-				packageName = fqClassName.substring(0, lastDotIndex);
-				className = fqClassName.substring(lastDotIndex + 1);
-			}
-			else
-			{
-				packageName = S_EMPTY;
-				className = fqClassName;
-			}
-
-			Class<?> clazz = null;
-
-			try
-			{
-				clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-			}
-			catch (ClassNotFoundException cnf)
-			{
-				logError("ClassNotFoundException: '" + fqClassName + "' parsing " + currentLine);
-			}
-			catch (NoClassDefFoundError ncdf)
-			{
-				logError("NoClassDefFoundError: '" + fqClassName + "' parsing " + currentLine);
-			}
-
-			try
-			{
-				// can throw NCDFE from clazz.getDeclaredMethods()
-				model.buildMetaClass(packageName, className, clazz);
-			}
-			catch (NoClassDefFoundError ncdf)
-			{
-				// missing class is from a method declaration in fqClassName
-				// so look in getMessage()
-				logError("NoClassDefFoundError: '" + ncdf.getMessage() + "' parsing " + currentLine);
-			}
+			addToClassModel(fqClassName);
 		}
 	}
 
+	private void addToClassModel(String fqClassName)
+	{
+		Class<?> clazz = null;
 
+		try
+		{
+			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
+			
+			if (clazz != null)
+			{
+				model.buildMetaClass(fqClassName, clazz);
+			}
+		}
+		catch (ClassNotFoundException cnf)
+		{
+			logError("ClassNotFoundException: '" + fqClassName);
+		}
+		catch (NoClassDefFoundError ncdf)
+		{
+			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage());
+		}
+	}
+
+	@Override
+	public boolean hasTraceClassLoading()
+	{
+		logger.info("returning hasTraceClassLoad {}", hasTraceClassLoad);
+		return hasTraceClassLoad;
+	}
 }
