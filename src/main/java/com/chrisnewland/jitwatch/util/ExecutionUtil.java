@@ -1,10 +1,10 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExecutionUtil
 {
@@ -71,7 +71,8 @@ public class ExecutionUtil
 		{
 			logger.error("Could not execute program", e);
 		}
-		
-		return result == 0; // normal completion
+
+        // normal completion
+		return result == 0;
 	}
 }

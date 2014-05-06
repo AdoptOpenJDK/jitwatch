@@ -43,7 +43,8 @@ public class TriView extends Stage
 
 	private Viewer viewerSource;
 	private ViewerBytecode viewerBytecode;
-	private Viewer viewerAssembly; // TODO ref.x86asm.net
+    // TODO ref.x86asm.net
+	private Viewer viewerAssembly;
 
 	private SplitPane splitViewer;
 

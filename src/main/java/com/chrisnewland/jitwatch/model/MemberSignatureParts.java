@@ -62,7 +62,8 @@ public class MemberSignatureParts
 		}
 
 		String regexGenerics = "(<.*> )?";
-		String regexReturnType = "(.* )?"; // optional could be constructor
+        // optional could be constructor
+		String regexReturnType = "(.* )?";
 		String regexMethodName = "([\\p{L}0-9\\.]+)";
 		String regexParams = "(\\(.*\\))";
 		String regexRest = "(.*)";
@@ -142,7 +143,8 @@ public class MemberSignatureParts
 
 		for (String sub : substitutions)
 		{
-			sub = sub.replace(S_SLASH, S_DOT); // in package names
+            // in package names
+			sub = sub.replace(S_SLASH, S_DOT);
 			
 			if (sub.contains(" extends "))
 			{

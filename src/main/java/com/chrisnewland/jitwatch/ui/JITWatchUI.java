@@ -519,7 +519,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		stage.setScene(scene);
 		stage.show();
 
-		int refresh = 1000; // ms
+        // refresh rate in ms
+		int refresh = 1000;
 
 		final Duration oneFrameAmt = Duration.millis(refresh);
 

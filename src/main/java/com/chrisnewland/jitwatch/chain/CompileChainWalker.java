@@ -144,7 +144,8 @@ public class CompileChainWalker
                 case TAG_METHOD:
                 {
                     methodID = tagAttrs.get(ATTR_ID);
-                    inlined = false; // reset
+                    // reset
+                    inlined = false;
                     methodAttrs.clear();
                     methodAttrs.putAll(tagAttrs);
                 }
@@ -161,7 +162,8 @@ public class CompileChainWalker
 
                 case TAG_INLINE_FAIL:
                 {
-                    inlined = false; // reset
+                    // reset
+                    inlined = false;
 
                     IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
@@ -182,7 +184,8 @@ public class CompileChainWalker
                     inlineReason = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
                     break;
 
-                case TAG_PARSE: // call depth
+                // call depth
+                case TAG_PARSE:
                 {
                     String childMethodID = tagAttrs.get(ATTR_METHOD);
 

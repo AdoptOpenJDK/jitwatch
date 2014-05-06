@@ -133,7 +133,8 @@ public final class BytecodeLoader
 
 					signature = signature.substring(0, signature.length() - 1);
 					inMethod = true;
-					pos++; // skip over stack info
+                    // skip over stack info
+					pos++;
 				}
 			}
 

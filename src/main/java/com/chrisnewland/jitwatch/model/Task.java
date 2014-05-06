@@ -118,7 +118,8 @@ public class Task extends Tag
 
 		if (result == null)
 		{
-			result = "???"; // further understanding required!
+            // further understanding required!
+			result = "???";
 		}
 		else
 		{

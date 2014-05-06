@@ -32,7 +32,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
     private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
     private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
 
-    protected int modifier; // bitset
+    // bitset
+    protected int modifier;
     protected String memberName;
     protected Class<?> returnType;
     protected Class<?>[] paramTypes;

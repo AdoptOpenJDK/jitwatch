@@ -71,7 +71,8 @@ public class HistoStage extends AbstractGraphStage
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(4, 0, 0, GRAPH_GAP_LEFT));
         hbox.getChildren().add(comboBox);
-        hbox.setMinHeight(30); // prevent combo clipping when highlighted
+        // prevent combo clipping when highlighted
+        hbox.setMinHeight(30);
 
         vbox.getChildren().add(hbox);
         vbox.getChildren().add(canvas);
