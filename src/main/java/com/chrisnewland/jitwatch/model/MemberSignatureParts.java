@@ -101,37 +101,29 @@ public class MemberSignatureParts
 					modifier += modifierMap.get(group);
 				}
 
-				if (i == modifierCount + 1)
-				{
-					if (group != null)
-					{
-						buildGenerics(group);
-					}
+				if ((i == modifierCount + 1) &&
+                    (group != null))
+                {
+                    buildGenerics(group);
+                }
+
+				if ((i == modifierCount + 2) &&
+                    (group != null))
+                {
+                    returnType = group;
 				}
 
-				if (i == modifierCount + 2)
-				{
-					if (group != null)
-					{
-						returnType = group;
-					}
+				if ((i == modifierCount + 3) &&
+                    (group != null))
+                {
+                    memberName = group;
 				}
 
-				if (i == modifierCount + 3)
-				{
-					if (group != null)
-					{
-						memberName = group;
-					}
-				}
-
-				if (i == modifierCount + 4)
-				{
-					if (group != null)
-					{
-						buildParamTypes(group);
-					}
-				}
+				if ((i == modifierCount + 4) &&
+                    (group != null))
+                {
+                    buildParamTypes(group);
+                }
 			}
 		}
 	}

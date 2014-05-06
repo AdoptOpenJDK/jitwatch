@@ -192,15 +192,14 @@ public final class JournalUtil
 					reason.append("\nProbability: ").append(prob);
 				}
 
-				if (!result.containsKey(currentBytecode))
-				{
-					if (inMethod || isC2)
-					{
-						result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
-					}
-				}
+				if ((!result.containsKey(currentBytecode)) &&
+				    (inMethod || isC2))
+                {
+                    result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.BLUE));
+                }
 			}
 				break;
+
 			case TAG_INTRINSIC:
 			{
 				StringBuilder reason = new StringBuilder();

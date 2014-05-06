@@ -161,15 +161,11 @@ public class TagProcessor
 			}
 		}
 
-		if (selfClosing)
-		{
-			if (name.equals(currentTag.getName()))
-			{
-				if (currentTag.getParent() == null)
-				{
-					result = currentTag;
-				}
-			}
+		if (selfClosing &&
+		    (name.equals(currentTag.getName())) &&
+		    (currentTag.getParent() == null))
+        {
+            result = currentTag;
 		}
 		else
 		{
@@ -179,5 +175,4 @@ public class TagProcessor
 
 		return result;
 	}
-
 }

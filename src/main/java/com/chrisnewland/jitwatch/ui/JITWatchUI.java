@@ -273,18 +273,16 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 					int classCount = getConfig().getClassLocations().size();
 					int sourceCount = getConfig().getSourceLocations().size();
 
-					if (classCount == 0 && sourceCount == 0)
-					{
-						if (getConfig().isShowNothingMounted())
-						{
-							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-							nothingMountedStage.show();
+					if ((classCount == 0 && sourceCount == 0)
+					    && (getConfig().isShowNothingMounted()))
+                    {
+                        nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
+                        nothingMountedStage.show();
 
-							openPopupStages.add(nothingMountedStage);
+                        openPopupStages.add(nothingMountedStage);
 
-							startDelayedByConfig = true;
-						}
-					}
+                        startDelayedByConfig = true;
+                    }
 				}
 
 				if (!startDelayedByConfig)

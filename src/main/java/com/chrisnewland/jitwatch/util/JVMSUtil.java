@@ -147,20 +147,18 @@ public class JVMSUtil
 
 				// ifge => if<cond>
 				// lconst_1 => lconst_<n>
-				if (ltPos != -1)
-				{
-					if (ltPos < opcodeText.length())
-					{
-						String subOpcodeText = opcodeText.substring(0, ltPos);
-						String subKey = key.substring(0, ltPos);
+				if ((ltPos != -1) &&
+				    (ltPos < opcodeText.length()))
+                {
+                    String subOpcodeText = opcodeText.substring(0, ltPos);
+                    String subKey = key.substring(0, ltPos);
 
-						if (subOpcodeText.equals(subKey))
-						{
-							desc = entry.getValue();
-							break;
-						}
-					}
-				}
+                    if (subOpcodeText.equals(subKey))
+                    {
+                        desc = entry.getValue();
+                        break;
+                    }
+                }
 			}
 		}
 

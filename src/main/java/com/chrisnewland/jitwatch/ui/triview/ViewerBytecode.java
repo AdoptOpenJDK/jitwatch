@@ -83,15 +83,13 @@ public class ViewerBytecode extends Viewer
 					@Override
 					public void handle(MouseEvent mouseEvent)
 					{
-						if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-						{
-							if (mouseEvent.getClickCount() == 2)
-							{
-								Opcode opcode = instruction.getOpcode();
+						if ((mouseEvent.getButton().equals(MouseButton.PRIMARY))
+						    && (mouseEvent.getClickCount() == 2))
+                        {
+                            Opcode opcode = instruction.getOpcode();
 
-								browseMnemonic(opcode);
-							}
-						}
+                            browseMnemonic(opcode);
+                        }
 					}
 				});
 			}
