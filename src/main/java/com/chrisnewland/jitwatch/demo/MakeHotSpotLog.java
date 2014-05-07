@@ -417,7 +417,6 @@ public class MakeHotSpotLog
 		for (int w = 0; w < wordCount; w++)
 		{
 			ucWords[w] = lcWords[w].toUpperCase();
-			LOGGER.info("upper: {}", ucWords[w]);
 		}
 	}
 

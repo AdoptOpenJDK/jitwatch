@@ -9,19 +9,18 @@ import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.InlineUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class CompileChainWalker
 {
-	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CompileChainWalker.class);
 
 	private IParseDictionary parseDictionary;
 
@@ -181,7 +180,7 @@ public class CompileChainWalker
 				}
 				else
 				{
-					logger.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
+					LOGGER.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
 				}
 
 				methodID = null;
@@ -214,7 +213,7 @@ public class CompileChainWalker
 				}
 				else
 				{
-					logger.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
+					LOGGER.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
 				}
 			}
 				break;
