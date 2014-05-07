@@ -18,4 +18,8 @@ public interface IReadOnlyJITDataModel
     List<Tag> getCodeCacheTags();
 
     String getVmVersionRelease();
+    
+    // AARRGGG mutator on a read only interface
+    // TODO: Fix the design!
+	void buildMetaClass(String fqClassName, Class<?> clazz);
 }

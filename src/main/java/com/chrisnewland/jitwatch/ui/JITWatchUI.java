@@ -64,7 +64,22 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
     private static final Logger LOGGER = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
-	public static final int WINDOW_HEIGHT = 592;
+	public static final int WINDOW_HEIGHT;
+
+	static
+	{
+		String version = System.getProperty("java.version", "1.7");
+
+		if (version.contains("1.7"))
+		{
+			WINDOW_HEIGHT = 592;
+		}
+		else
+		{
+			// JavaFX 8 has more padding.
+			WINDOW_HEIGHT = 550;
+		}
+	}
 
 	private Stage stage;
 
@@ -129,7 +144,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		JITWatchConfig config = new JITWatchConfig();
 		config.loadFromProperties();
-		
+
 		logParser = new HotSpotLogParser(this);
 		logParser.setConfig(config);
 	}
@@ -178,27 +193,27 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		errorLog.delete(0, errorLog.length());
 
 		isReadingLogFile = true;
-		
+
 		Platform.runLater(new Runnable()
 		{
 			public void run()
 			{
 				updateButtons();
-				
+
 				classTree.clear();
 				refreshSelectedTreeNode(null);
-				
+
 				textAreaLog.clear();
 			}
 		});
 	}
-	
+
 	@Override
 	public void handleReadComplete()
 	{
-		log("Finished reading log file.");		
+		log("Finished reading log file.");
 		isReadingLogFile = false;
-		
+
 		Platform.runLater(new Runnable()
 		{
 			public void run()
@@ -206,8 +221,24 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				updateButtons();
 			}
 		});
+
+		if (!logParser.hasTraceClassLoading())
+		{
+            LOGGER.error("Required VM switch -XX:+TraceClassLoading was not enabled");
+
+			Platform.runLater(new Runnable()
+			{
+				public void run()
+				{
+					String title = "Missing VM Switch -XX:+TraceClassLoading";
+					String msg = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
+
+					Dialogs.showOKDialog(JITWatchUI.this.stage, title, msg);
+				}
+			});
+		}
 	}
-	
+
 	private void stopWatching()
 	{
 		if (isReadingLogFile)
@@ -219,7 +250,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			log("Stopped watching " + hsLogFile.getAbsolutePath());
 		}
 	}
-	
+
 	private JITWatchConfig getConfig()
 	{
 		return logParser.getConfig();
@@ -412,7 +443,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				btnSuggest.setDisable(true);
 			}
 		});
-		
+
 		btnSandbox = new Button("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -432,6 +463,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				openTextViewer("Error Log", errorLog.toString(), false);
 			}
 		});
+
+		btnErrorLog.setStyle("-fx-padding: 2 6;");
 
 		lblHeap = new Label();
 
@@ -456,7 +489,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnSuggest);
-		hboxTop.getChildren().add(btnErrorLog);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -506,8 +538,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
-		hboxBottom.setSpacing(0);
+		hboxBottom.setSpacing(4);
 		hboxBottom.getChildren().add(lblHeap);
+		hboxBottom.getChildren().add(btnErrorLog);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
@@ -539,10 +572,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	void openConfigStage()
 	{
 		if (configStage == null)
-		{		
+		{
 			configStage = new ConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
-			
+
 			openPopupStages.add(configStage);
 
 			btnConfigure.setDisable(true);
@@ -568,7 +601,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			triViewStage.setMember(member, force);
 		}
 	}
-	
+
 	public void openSandbox()
 	{
 		if (sandBoxStage == null)
@@ -581,7 +614,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			btnSandbox.setDisable(true);
 		}
-	}	
+	}
 
 	@Override
 	public void openBrowser(String title, String html, String stylesheet)
@@ -600,7 +633,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public IReadOnlyJITDataModel getJITDataModel()
 	{
-		return (IReadOnlyJITDataModel)logParser.getModel();
+		return (IReadOnlyJITDataModel) logParser.getModel();
 	}
 
 	private void updateButtons()
@@ -852,7 +885,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		classTree.showTree();
 	}
 
-	//TODO refactor stages and pass IStageCloseListener instead of JITWatchUI
+	// TODO refactor stages and pass IStageCloseListener instead of JITWatchUI
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
@@ -947,7 +980,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-        logBuffer.append("\n");
+		logBuffer.append("\n");
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)

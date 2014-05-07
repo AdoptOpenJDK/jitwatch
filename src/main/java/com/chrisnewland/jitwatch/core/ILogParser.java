@@ -23,4 +23,6 @@ public interface ILogParser
 	JITWatchConfig getConfig();
 	
 	void reset();
+	
+	boolean hasTraceClassLoading();
 }

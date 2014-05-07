@@ -57,7 +57,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		LOGGER.info("addVariable: {}", count);
+        LOGGER.info("addVariable: {}", count);
 	}
 
 	private void addConstant(int iterations)
@@ -266,7 +266,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		LOGGER.info("testCallChain: {}", count);
+        LOGGER.info("testCallChain: {}", count);
 	}
 
 	private long chainA1(long count)
@@ -315,7 +315,7 @@ public class MakeHotSpotLog
 			count = chainC2(count);
 		}
 
-		LOGGER.warn("testCallChain2: {}", count);
+        LOGGER.warn("testCallChain2: {}", count);
 	}
 	
 	private boolean test(int count, int iterations)
@@ -341,7 +341,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		LOGGER.warn("testCallChain2: {}", count);
+        LOGGER.warn("testCallChain2: {}", count);
 	}
 
 	private long chainC1(long inCount)
@@ -373,7 +373,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		LOGGER.info("testLeaf: {}", count);
+        LOGGER.info("testLeaf: {}", count);
 	}
 
 	private long leaf1(long count)
@@ -398,27 +398,27 @@ public class MakeHotSpotLog
 	
 	private void testToUpperCase(long iterations)
 	{		
-		String sentence = "The quick brown fox jumps over the lazy dog";
+		String sentence = "The quick brown fox jumps over the lazy dog\n";
 		
-		String[] words = sentence.split(S_SPACE);
-		
-		int wordcount = words.length;
-		
-		String[] ucwords = new String[wordcount];
+		String[] lcWords = sentence.split(S_SPACE);
 
-		for (int i = 0; i < iterations; i++)
-		{
-			for (int w = 0; w < wordcount; w++)
-			{
-				ucwords[w] = words[w].toUpperCase();
-			}
-		}
+		int wordCount = lcWords.length;
 
-		for (String ucw : ucwords)
-		{
-			LOGGER.info("upper: {}", ucw);
-		}
+		String[] ucWords = new String[wordCount];
 		
+		for (long l = 0; l < iterations; l++)
+		{
+			toUpper(lcWords, ucWords, wordCount);
+		}
+	}
+	
+	private void toUpper(String[] lcWords, String[] ucWords, int wordCount)
+	{
+		for (int w = 0; w < wordCount; w++)
+		{
+			ucWords[w] = lcWords[w].toUpperCase();
+			LOGGER.info("upper: {}", ucWords[w]);
+		}
 	}
 
 	public static void main(String[] args)

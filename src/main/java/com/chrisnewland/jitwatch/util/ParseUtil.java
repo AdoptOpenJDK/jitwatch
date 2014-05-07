@@ -565,6 +565,36 @@ public class ParseUtil
 			PackageManager pm = model.getPackageManager();
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
+			
+			if (metaClass == null)
+			{
+                LOGGER.warn("metaClass not found: {}. Attempting classload", metaClassName);
+
+                // Possible that TraceClassLoading did not log this class
+                // try to classload and add to model
+                
+        		Class<?> clazz = null;
+
+        		try
+        		{
+        			clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
+        			
+        			if (clazz != null)
+        			{
+        				model.buildMetaClass(metaClassName, clazz);
+        				
+        				metaClass = pm.getMetaClass(metaClassName);
+        			}
+        		}
+        		catch (ClassNotFoundException cnf)
+        		{
+                    LOGGER.error("ClassNotFoundException: '" + metaClassName);
+        		}
+        		catch (NoClassDefFoundError ncdf)
+        		{
+        			LOGGER.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage());
+        		}
+			}
 
 			if (metaClass != null)
 			{
