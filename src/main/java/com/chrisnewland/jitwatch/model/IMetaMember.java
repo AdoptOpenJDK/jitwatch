@@ -8,6 +8,7 @@ package com.chrisnewland.jitwatch.model;
 import java.util.List;
 import java.util.Map;
 
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 
 public interface IMetaMember
@@ -63,9 +64,9 @@ public interface IMetaMember
 
 	boolean matches(String input);
 
-	String getAssembly();
+	AssemblyMethod getAssembly();
 
-	void setAssembly(String assembly);
+	void setAssembly(AssemblyMethod asmMethod);
 
 	String getSignatureRegEx();
 

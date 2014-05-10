@@ -77,7 +77,18 @@ public final class StringUtil
 
 		return sb.toString();
 	}
-
+	public static String repeat(char c, int count)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < count; i++)
+		{
+			builder.append(c);
+		}
+		
+		return builder.toString();		
+	}
+	
 	public static String padLeft(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, true);

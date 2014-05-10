@@ -243,7 +243,18 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("", nfe);
+				if (NEVER.equalsIgnoreCase(probStr))
+				{
+					probability = 0;
+				}
+				else if (ALWAYS.equalsIgnoreCase(probStr))
+				{
+					probability = 1;
+				}
+				else
+				{
+					logger.error("Unrecognised branch probability: {}", probStr, nfe);
+				}
 			}
 		}
 

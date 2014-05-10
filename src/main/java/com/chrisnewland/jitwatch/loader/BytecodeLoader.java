@@ -181,7 +181,7 @@ public final class BytecodeLoader
 
 		String[] lines = bytecode.split(S_NEWLINE);
 
-		final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 		boolean inSwitch = false;
 		BCParamSwitch table = new BCParamSwitch();
@@ -218,7 +218,7 @@ public final class BytecodeLoader
 			{
 				try
 				{
-					Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(line);
+					Matcher matcher = PATTERN_BYTECODE_INSTRUCTION.matcher(line);
 
 					if (matcher.find())
 					{

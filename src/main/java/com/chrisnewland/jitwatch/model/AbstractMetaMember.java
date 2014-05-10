@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.model;
 
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
 import com.chrisnewland.jitwatch.util.ParseUtil;
@@ -22,7 +23,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
 	protected MetaClass methodClass;
-    private String nativeCode = null;
+    private AssemblyMethod asmMethod = null;
 
     private boolean isQueued = false;
     private boolean isCompiled = false;
@@ -206,15 +207,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public String getAssembly()
+	public AssemblyMethod getAssembly()
 	{
-		return nativeCode;
+		return asmMethod;
 	}
 
 	@Override
-	public void setAssembly(String nativecode)
+	public void setAssembly(AssemblyMethod asmMethod)
 	{
-		this.nativeCode = nativecode;
+		this.asmMethod = asmMethod;
 	}
 
 	@Override
