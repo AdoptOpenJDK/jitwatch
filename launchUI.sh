@@ -1,10 +1,10 @@
 #!/bin/sh
 
 unamestr=`uname`
-if [ "$unamestr" = 'Darwin' ]; then
-   export JAVA_HOME=`/usr/libexec/java_home`
-else
-  if [ "$JAVA_HOME" = '' ]; then
+if [ "$JAVA_HOME" = '' ]; then
+  if [ "$unamestr" = 'Darwin' ]; then
+     export JAVA_HOME=`/usr/libexec/java_home`
+  else
      echo "JAVA_HOME has not been set."
      exit 0;
   fi
@@ -19,8 +19,8 @@ fi
 # You may need to set -Xmx (max heap) and -XX:MaxPermSize
 # if your hotspot.log references a lot of classes
 
-CLASSPATH=$CLASSPATH:lib/logback-classic-1.0.1.jar
-CLASSPATH=$CLASSPATH:lib/logback-core-1.0.1.jar
+CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
+CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar

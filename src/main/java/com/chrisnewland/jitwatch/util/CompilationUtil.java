@@ -95,7 +95,6 @@ public final class CompilationUtil
 		
 		for (String part : parts)
 		{
-			logger.info("part: {}", part);
 			builder.append(part).append(File.separatorChar);
 		}
 		
