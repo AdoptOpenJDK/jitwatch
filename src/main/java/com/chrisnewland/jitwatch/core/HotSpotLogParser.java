@@ -6,6 +6,8 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -285,7 +287,9 @@ public class HotSpotLogParser implements ILogParser
 
 		if (currentMember != null)
 		{
-			currentMember.setAssembly(nativeCodeBuilder.toString());
+			AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(nativeCodeBuilder.toString());
+			
+			currentMember.setAssembly(asmMethod);
 		}
 
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
@@ -545,7 +549,6 @@ public class HotSpotLogParser implements ILogParser
 	@Override
 	public boolean hasTraceClassLoading()
 	{
-		logger.info("returning hasTraceClassLoad {}", hasTraceClassLoad);
 		return hasTraceClassLoad;
 	}
 }

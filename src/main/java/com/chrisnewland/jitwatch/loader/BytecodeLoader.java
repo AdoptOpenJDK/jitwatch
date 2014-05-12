@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -187,6 +188,8 @@ public final class BytecodeLoader
 
 		String[] lines = bytecode.split(S_NEWLINE);
 
+		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+
 		boolean inSwitch = false;
 		BCParamSwitch table = new BCParamSwitch();
 		Instruction instruction = null;
@@ -222,7 +225,7 @@ public final class BytecodeLoader
 			{
 				try
 				{
-					Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(line);
+					Matcher matcher = PATTERN_BYTECODE_INSTRUCTION.matcher(line);
 
 					if (matcher.find())
 					{

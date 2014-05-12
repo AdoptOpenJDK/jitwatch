@@ -91,6 +91,9 @@ public final class JITWatchConstants
 	public static final String ATTR_COUNT = "count";
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
 	
+	public static final String ALWAYS = "always";
+	public static final String NEVER = "never";
+	
 	public static final String ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";
 	public static final String S_ENTITY_GT = "&gt;";
@@ -102,6 +105,8 @@ public final class JITWatchConstants
 	public static final String S_CLOSE_PARENTHESES = ")";
     public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
+    public static final String S_OPEN_SQUARE = "[";
+	public static final String S_CLOSE_SQUARE= "]";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
@@ -125,6 +130,8 @@ public final class JITWatchConstants
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
 	public static final char C_CLOSE_ANGLE = '>';
+	public static final char C_OPEN_PARENTHESES = '(';
+	public static final char C_CLOSE_PARENTHESES = ')';
 	public static final char C_SPACE = ' ';
 	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
@@ -139,6 +146,9 @@ public final class JITWatchConstants
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
 	public static final char C_QUESTION = '?';
 	public static final char C_BACKSLASH = '\\';
+	
+	public static final String ASSEMBLY_ADDRESS = "0x";
+
 
 
     public static final String[] MODIFIERS = new String[] {
