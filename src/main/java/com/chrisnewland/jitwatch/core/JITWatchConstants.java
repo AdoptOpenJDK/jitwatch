@@ -107,6 +107,8 @@ public final class JITWatchConstants
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
+	public static final String S_PERCENT = "%";
+	public static final String S_DOLLAR = "$";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
 	public static final String S_NEWLINE = "\n";
@@ -123,6 +125,10 @@ public final class JITWatchConstants
 	public static final String S_DOUBLE_QUOTE = "\"";
 	public static final String S_REGEX_WHITESPACE = "\\s+";
 	public static final String S_BACKSLASH = "\\";
+	public static final String S_XML_COMMENT_START = "<!--";
+	public static final String S_XML_COMMENT_END = "-->";
+	public static final String S_XML_DOC_START = "<?xml";
+	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
@@ -144,7 +150,7 @@ public final class JITWatchConstants
 	public static final char C_QUESTION = '?';
 	public static final char C_BACKSLASH = '\\';
 	
-	public static final String ASSEMBLY_ADDRESS = "0x";
+	public static final String S_ASSEMBLY_ADDRESS = "0x";
 
 
 }

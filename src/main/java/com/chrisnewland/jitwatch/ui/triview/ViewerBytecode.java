@@ -16,6 +16,7 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.util.JVMSUtil;
@@ -23,7 +24,7 @@ import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
 {
-	private List<Instruction> instructions;
+	private MemberBytecode memberBytecode;
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy)
 	{
@@ -32,8 +33,10 @@ public class ViewerBytecode extends Viewer
 
 	public void setContent(IMetaMember member, List<String> classLocations)
 	{
-		instructions = member.getBytecodeForMember(classLocations);
+		memberBytecode = member.getBytecodeForMember(classLocations);
 
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		Map<Integer, LineAnnotation> annotations = null;
 
 		lineAnnotations.clear();

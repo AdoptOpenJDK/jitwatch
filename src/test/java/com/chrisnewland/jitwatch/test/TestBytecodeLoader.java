@@ -49,7 +49,9 @@ public class TestBytecodeLoader
 		
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 		
-		List<Instruction> instructions = classBytecode.getMemberBytecode(bcSig);
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
 				
 		assertNotNull(instructions);		
 	}
@@ -68,8 +70,10 @@ public class TestBytecodeLoader
 		builder.append("10: iconst_0").append("\n");
 		builder.append("11: aaload").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(9, instructions.size());
 		
 		Instruction i0 = instructions.get(0);
@@ -118,8 +122,10 @@ public class TestBytecodeLoader
 		builder.append("4: iinc      4, 1").append("\n");
 		builder.append("7: goto      47").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(6, instructions.size());
 		
 		Instruction i4 = instructions.get(4);
@@ -151,8 +157,10 @@ public class TestBytecodeLoader
 		builder.append("4: iinc      4, -1").append("\n");
 		builder.append("7: goto      47").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(6, instructions.size());
 		
 		Instruction i4 = instructions.get(4);
@@ -179,8 +187,10 @@ public class TestBytecodeLoader
 		StringBuilder builder = new StringBuilder();
 		builder.append("3: newarray       int").append("\n");
 	
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(1, instructions.size());
 		
 		Instruction i0 = instructions.get(0);
@@ -215,8 +225,10 @@ public class TestBytecodeLoader
 		builder.append("}").append("\n");
 		builder.append("99: lstore_2").append("\n");
 		
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(5, instructions.size());
 		
 		Instruction i3 = instructions.get(3);
@@ -248,8 +260,10 @@ public class TestBytecodeLoader
 		builder.append("}").append("\n");
 		builder.append("99: lstore_2").append("\n");
 		
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(5, instructions.size());
 		
 		Instruction i3 = instructions.get(3);

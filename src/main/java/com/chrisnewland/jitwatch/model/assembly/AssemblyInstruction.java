@@ -82,7 +82,7 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)

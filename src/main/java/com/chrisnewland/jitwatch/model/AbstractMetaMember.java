@@ -7,7 +7,7 @@ package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -350,11 +350,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
         journal.addEntry(entry);
     }
     
-	public List<Instruction> getBytecodeForMember(List<String> classLocations)
+	public MemberBytecode getBytecodeForMember(List<String> classLocations)
 	{
 		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
 
-		List<Instruction> result = classBytecode.getMemberBytecode(this);
+		MemberBytecode result = classBytecode.getMemberBytecode(this);
 
 		return result;
 	}

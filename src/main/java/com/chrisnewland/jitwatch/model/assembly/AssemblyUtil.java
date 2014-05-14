@@ -52,7 +52,7 @@ public class AssemblyUtil
 				currentBlock = new AssemblyBlock();
 				currentBlock.setTitle(line);
 			}
-			else if (line.startsWith(ASSEMBLY_ADDRESS))
+			else if (line.startsWith(S_ASSEMBLY_ADDRESS))
 			{
 				AssemblyInstruction instr = createInstruction(line);
 
@@ -99,9 +99,9 @@ public class AssemblyUtil
 			{
 				address = address.trim();
 
-				if (address.startsWith(ASSEMBLY_ADDRESS))
+				if (address.startsWith(S_ASSEMBLY_ADDRESS))
 				{
-					address = address.substring(ASSEMBLY_ADDRESS.length());
+					address = address.substring(S_ASSEMBLY_ADDRESS.length());
 				}
 
 				addressValue = Long.parseLong(address, 16);

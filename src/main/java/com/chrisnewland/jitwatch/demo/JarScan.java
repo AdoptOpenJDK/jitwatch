@@ -8,6 +8,7 @@ package com.chrisnewland.jitwatch.demo;
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,8 +62,10 @@ public class JarScan
 		boolean shownClass = false;
 
 		for (String memberName : classBytecode.getBytecodeMethodSignatures())
-		{
-			List<Instruction> instructions = classBytecode.getMemberBytecode(memberName);
+		{			
+			MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
+			
+			List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
 
 			if (instructions != null && instructions.size() > 0)
 			{

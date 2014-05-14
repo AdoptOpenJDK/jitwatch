@@ -8,6 +8,7 @@ package com.chrisnewland.jitwatch.loader;
 import com.chrisnewland.jitwatch.model.bytecode.*;
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,6 +151,7 @@ public final class BytecodeLoader
 	private static void storeBytecode(ClassBC classBytecode, String inSignature, StringBuilder builder)
 	{
         String signature = inSignature;
+               
 		if (signature != null && builder.length() > 0)
 		{
 			// remove spaces between multiple method parameters
@@ -167,18 +171,19 @@ public final class BytecodeLoader
 				}
 			}
 
-			List<Instruction> instructions = parseInstructions(builder.toString());
+			MemberBytecode memberBytecode = parseInstructions(builder.toString());
 
-			classBytecode.addMemberBytecode(signature, instructions);
+			classBytecode.addMemberBytecode(signature, memberBytecode);
 
 			builder.delete(0, builder.length());
 		}
 	}
 
-	public static List<Instruction> parseInstructions(String bytecode)
+	public static MemberBytecode parseInstructions(String bytecode)
 	{
-		List<Instruction> result = new ArrayList<>();
-
+		List<Instruction> bytecodeInstructions = new ArrayList<>();
+		Map<Integer, Integer> sourceToBytecodeMap = new HashMap<>();
+		
 		String[] lines = bytecode.split(S_NEWLINE);
 
 		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
@@ -197,7 +202,7 @@ public final class BytecodeLoader
 				{
 					instruction.addParameter(table);
 
-					result.add(instruction);
+					bytecodeInstructions.add(instruction);
 					inSwitch = false;
 				}
 				else
@@ -248,7 +253,7 @@ public final class BytecodeLoader
 								processParameters(paramString.trim(), instruction);
 							}
 
-							result.add(instruction);
+							bytecodeInstructions.add(instruction);
 						}
 					}
 					else
@@ -263,7 +268,7 @@ public final class BytecodeLoader
 			}
 		}
 
-		return result;
+		return new MemberBytecode(bytecodeInstructions, sourceToBytecodeMap);		
 	}
 
 	private static void processParameters(String paramString, Instruction instruction)

@@ -223,7 +223,7 @@ public class TriView extends Stage
 		viewerSource = new Viewer(parent);
 		viewerBytecode = new ViewerBytecode(parent);
 		viewerAssembly = new ViewerAssembly(parent);
-
+		
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
 

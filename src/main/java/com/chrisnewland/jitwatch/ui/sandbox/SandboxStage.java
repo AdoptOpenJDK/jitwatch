@@ -269,7 +269,7 @@ public class SandboxStage extends Stage
 
 		if (result == null)
 		{
-			result = "";
+			result = S_EMPTY;
 		}
 
 		return result;
@@ -303,8 +303,9 @@ public class SandboxStage extends Stage
 		return result;
 	}
 
+	//TODO ffs Chris, refactor!
 	private void runTestLoad()
-	{
+	{				
 		try
 		{
 			Platform.runLater(new Runnable()
@@ -397,9 +398,7 @@ public class SandboxStage extends Stage
 			JITWatchConfig config = new JITWatchConfig();
 			config.setSourceLocations(sourceLocations);
 			config.setClassLocations(classLocations);
-
-			// TODO: unload classes? CUSTOM CLASSLOADER
-
+			
 			logParser.reset();
 
 			logParser.setConfig(config);
