@@ -149,43 +149,43 @@ public class ViewerAssembly extends Viewer
 				
 				if (regName.startsWith("e"))
 				{
-					builder.append("32-bit register ").append(register);
+					builder.append("32-bit register ").append(regName);
 				}
 				else if (regName.startsWith("r"))
 				{
-					builder.append("64-bit register ").append(register);
+					builder.append("64-bit register ").append(regName);
 				}
 				else if (regName.startsWith("db"))
 				{
-					builder.append("debug register ").append(register);
+					builder.append("debug register ").append(regName);
 				}
 				else if (regName.startsWith("cr"))
 				{
-					builder.append("processor control register ").append(register);
+					builder.append("processor control register ").append(regName);
 				}
 				else if (regName.startsWith("tr"))
 				{
-					builder.append("test register ").append(register);
+					builder.append("test register ").append(regName);
 				}
 				else if (regName.startsWith("st"))
 				{
-					builder.append("floating point register stack ").append(register);
+					builder.append("floating point register stack ").append(regName);
 				}
 				else if (regName.startsWith("mm"))
 				{
-					builder.append("MMX register ").append(register);
+					builder.append("MMX register ").append(regName);
 				}
 				else if (regName.startsWith("xmm"))
 				{
-					builder.append("SSE register ").append(register);
+					builder.append("SSE register ").append(regName);
 				}
 				else if (regName.endsWith("s"))
 				{
-					builder.append("section register ").append(register);
+					builder.append("section register ").append(regName);
 				}
 				else
 				{
-					builder.append("Register ").append(register);
+					builder.append("Register ").append(regName);
 				}
 				
 				if (regName.endsWith("ax"))

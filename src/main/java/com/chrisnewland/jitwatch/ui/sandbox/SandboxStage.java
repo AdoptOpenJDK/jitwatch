@@ -91,6 +91,8 @@ public class SandboxStage extends Stage
 
 		final RadioButton rbATT = new RadioButton("AT&T");
 		final RadioButton rbIntel = new RadioButton("Intel");
+		
+		rbIntel.setDisable(true); // TODO support Intel format
 
 		final ToggleGroup group = new ToggleGroup();
 
