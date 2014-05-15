@@ -1,4 +1,4 @@
-Copyright (c) 2013, Chris Newland
+Copyright (c) 2013, 2014 Chris Newland
 Website: www.chrisnewland.com
 Twitter: @chriswhocodes
 Email  : chris@chrisnewland.com
@@ -28,3 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the FreeBSD Project.
+
+This software contains an assembly language reference from ref.x86asm.net used with kind permission of Karel Lejska
+and in compliance with the licence at http://ref.x86asm.net/#License
