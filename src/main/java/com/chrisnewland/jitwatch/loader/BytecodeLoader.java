@@ -181,7 +181,7 @@ public final class BytecodeLoader
 
 	public static MemberBytecode parseInstructions(String bytecode)
 	{
-		List<Instruction> bytecodeInstructions = new ArrayList<>();
+		List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 		Map<Integer, Integer> sourceToBytecodeMap = new HashMap<>();
 		
 		String[] lines = bytecode.split(S_NEWLINE);
@@ -190,7 +190,7 @@ public final class BytecodeLoader
 
 		boolean inSwitch = false;
 		BCParamSwitch table = new BCParamSwitch();
-		Instruction instruction = null;
+		BytecodeInstruction instruction = null;
 
 		for (String line : lines)
 		{
@@ -227,7 +227,7 @@ public final class BytecodeLoader
 
 					if (matcher.find())
 					{
-						instruction = new Instruction();
+						instruction = new BytecodeInstruction();
 
 						String offset = matcher.group(1);
 						String mnemonic = matcher.group(2);
@@ -271,7 +271,7 @@ public final class BytecodeLoader
 		return new MemberBytecode(bytecodeInstructions, sourceToBytecodeMap);		
 	}
 
-	private static void processParameters(String paramString, Instruction instruction)
+	private static void processParameters(String paramString, BytecodeInstruction instruction)
 	{
 		String[] parts = paramString.split(S_COMMA);
 

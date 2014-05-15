@@ -18,7 +18,7 @@ import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.Task;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public final class JournalUtil
     private JournalUtil() {
     }
 
-	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<Instruction> instructions)
+	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<BytecodeInstruction> instructions)
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();
 
@@ -60,11 +60,11 @@ public final class JournalUtil
 		return result;
 	}
 
-	private static Instruction getInstructionAtIndex(List<Instruction> instructions, int index)
+	private static BytecodeInstruction getInstructionAtIndex(List<BytecodeInstruction> instructions, int index)
 	{
-		Instruction found = null;
+		BytecodeInstruction found = null;
 
-		for (Instruction instruction : instructions)
+		for (BytecodeInstruction instruction : instructions)
 		{
 			if (instruction.getOffset() == index)
 			{
@@ -76,7 +76,7 @@ public final class JournalUtil
 		return found;
 	}
 
-	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<Instruction> instructions,
+	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<BytecodeInstruction> instructions,
 			CompilerName compilerName)
 	{
 		List<Tag> children = parseTag.getChildren();
@@ -94,7 +94,7 @@ public final class JournalUtil
 		}
 
 		boolean inMethod = true;
-		Instruction currentInstruction = null;
+		BytecodeInstruction currentInstruction = null;
 
 		for (Tag child : children)
 		{

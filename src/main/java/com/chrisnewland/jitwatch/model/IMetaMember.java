@@ -57,6 +57,8 @@ public interface IMetaMember
 	String toStringUnqualifiedMethodName();
 	
 	String getMemberName();
+	String getFullyQualifiedMemberName();
+
 	int getModifier();
 	String getModifierString();
 	String getReturnTypeName();

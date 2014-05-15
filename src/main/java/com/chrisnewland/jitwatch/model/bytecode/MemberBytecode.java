@@ -8,15 +8,15 @@ import java.util.Map;
 public class MemberBytecode
 {
 	private Map<Integer, Integer> sourceToBytecodeMap = new HashMap<>();
-	private List<Instruction> bytecodeInstructions = new ArrayList<>();
+	private List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 	
-	public MemberBytecode(List<Instruction> bytecodeInstructions, Map<Integer, Integer> sourceToBytecodeMap)
+	public MemberBytecode(List<BytecodeInstruction> bytecodeInstructions, Map<Integer, Integer> sourceToBytecodeMap)
 	{
 		this.bytecodeInstructions = bytecodeInstructions;
 		this.sourceToBytecodeMap = sourceToBytecodeMap;
 	}
 
-	public List<Instruction> getBytecodeInstructions()
+	public List<BytecodeInstruction> getBytecodeInstructions()
 	{
 		return bytecodeInstructions;
 	}

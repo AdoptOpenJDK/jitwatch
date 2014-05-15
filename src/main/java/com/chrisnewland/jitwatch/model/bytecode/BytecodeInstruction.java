@@ -13,7 +13,7 @@ import java.util.List;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_COLON;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_SPACE;
 
-public class Instruction
+public class BytecodeInstruction
 {
 	private int offset;
 	private Opcode opcode;

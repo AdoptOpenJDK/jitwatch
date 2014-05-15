@@ -51,6 +51,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 	
 	@Override
+	public String getFullyQualifiedMemberName()
+	{
+		return methodClass.getFullyQualifiedName() + C_DOT + memberName;
+	}
+	
+	@Override
 	public int getModifier()
 	{
 		return modifier;
@@ -166,12 +172,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				
 		if (modifier != 0)
 		{
-			builder.append(Modifier.toString(modifier)).append(' ');
+			builder.append(Modifier.toString(modifier)).append(C_SPACE);
 		}
 		
 		if (returnType != null)
 		{
-			builder.append(expandParam(returnType.getName())).append(' ');
+			builder.append(expandParam(returnType.getName())).append(C_SPACE);
 		}
 
 		builder.append(memberName);
@@ -230,7 +236,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (modifiers.length() > 0)
 		{
-			builder.append(modifiers).append(' ');
+			builder.append(modifiers).append(C_SPACE);
 		}
 
 		// return type of constructor is not declared in signature
@@ -239,7 +245,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			String rt = expandParamRegEx(returnType.getName());
 
 			builder.append(rt);
-			builder.append(' ');
+			builder.append(C_SPACE);
 		}
 
 		if (this instanceof MetaConstructor)

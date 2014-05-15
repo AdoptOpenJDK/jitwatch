@@ -18,7 +18,7 @@ import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
 import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
@@ -1626,7 +1626,7 @@ public class TestJournalUtil
 		
 		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
 		
-		List<Instruction> instructions = memberBytecode.getBytecodeInstructions();
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
 		
 		return JournalUtil.buildBytecodeAnnotations(journal, instructions);		
 	}

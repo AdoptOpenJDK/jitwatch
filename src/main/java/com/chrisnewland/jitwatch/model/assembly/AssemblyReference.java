@@ -84,6 +84,8 @@ public class AssemblyReference
 		// patch up missing descriptions
 		mnemonicMap.put("movabs", "Move a 64-bit value");
 		mnemonicMap.put("ret", mnemonicMap.get("retn"));
+		mnemonicMap.put("movslq", mnemonicMap.get("movsxd"));
+
 	}
 
 	private AssemblyReference()

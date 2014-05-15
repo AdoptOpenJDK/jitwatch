@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public class AssemblyUtil
 {
+	//http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
@@ -65,7 +66,10 @@ public class AssemblyUtil
 				// extended comment
 				if (lastInstruction != null)
 				{
-					lastInstruction.addCommentLine(line);
+					if (line.length() > 0)
+					{
+						lastInstruction.addCommentLine(line);
+					}
 				}
 				else
 				{

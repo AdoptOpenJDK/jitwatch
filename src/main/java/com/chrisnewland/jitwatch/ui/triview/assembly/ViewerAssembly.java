@@ -1,19 +1,19 @@
-package com.chrisnewland.jitwatch.ui.triview;
+package com.chrisnewland.jitwatch.ui.triview.assembly;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 
 import com.chrisnewland.jitwatch.model.assembly.AssemblyBlock;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyInstruction;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyReference;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
+import com.chrisnewland.jitwatch.ui.triview.ILineListener;
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
+import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -24,9 +24,9 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ViewerAssembly extends Viewer
 {
-	public ViewerAssembly(IStageAccessProxy stageAccessProxy)
+	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy);
+		super(stageAccessProxy, lineListener, lineType);
 	}
 
 	public void setAssemblyMethod(AssemblyMethod asmMethod)
@@ -48,45 +48,23 @@ public class ViewerAssembly extends Viewer
 
 			for (final AssemblyInstruction instr : block.getInstructions())
 			{
-				final Label lblLine = createLabel(instr.toString());
-
-				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
-				{
-					@Override
-					public void handle(MouseEvent mouseEvent)
-					{
-						if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-						{
-							if (mouseEvent.getClickCount() == 2)
-							{
-								System.out.println(instr.getMnemonic());
-							}
-						}
-					}
-				});
-
-				lblLine.setOnMouseEntered(new EventHandler<MouseEvent>()
-				{
-					@Override
-					public void handle(MouseEvent arg0)
-					{
-						lblLine.setStyle(STYLE_HIGHLIGHTED);
-					}
-				});
+				List<String> commentLines = instr.getCommentLines();
 				
-				lblLine.setOnMouseExited(new EventHandler<MouseEvent>()
+				if (commentLines.size() == 0)
 				{
-					@Override
-					public void handle(MouseEvent arg0)
+					Label lblLine = createLabel(instr, 0);
+					lblLine.setTooltip(new Tooltip(getToolTip(instr)));
+					labels.add(lblLine);
+				}
+				else
+				{
+					for (int i = 0; i < commentLines.size(); i++)
 					{
-						lblLine.setStyle(STYLE_UNHIGHLIGHTED);
+						Label lblLine = createLabel(instr, i);
+						lblLine.setTooltip(new Tooltip(getToolTip(instr)));
+						labels.add(lblLine);
 					}
-				});
-
-
-				lblLine.setTooltip(new Tooltip(getToolTip(instr)));
-				
-				labels.add(lblLine);
+				}
 			}
 		}
 
@@ -235,6 +213,15 @@ public class ViewerAssembly extends Viewer
 	private Label createLabel(String text)
 	{
 		Label lbl = new Label(text);
+
+		lbl.setStyle(STYLE_UNHIGHLIGHTED);
+
+		return lbl;
+	}
+	
+	private AssemblyLabel createLabel(AssemblyInstruction instruction, int line)
+	{
+		AssemblyLabel lbl = new AssemblyLabel(instruction, line);
 
 		lbl.setStyle(STYLE_UNHIGHLIGHTED);
 
