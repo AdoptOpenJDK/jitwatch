@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.chrisnewland.jitwatch.loader.BytecodeLoader;
 import javafx.scene.paint.Color;
 
 import com.chrisnewland.jitwatch.model.CompilerName;
@@ -62,23 +61,7 @@ public final class JournalUtil
 		return result;
 	}
 
-	private static BytecodeInstruction getInstructionAtIndex(List<BytecodeInstruction> instructions, int index)
-	{
-		BytecodeInstruction found = null;
-
-		for (BytecodeInstruction instruction : instructions)
-		{
-			if (instruction.getOffset() == index)
-			{
-				found = instruction;
-				break;
-			}
-		}
-
-		return found;
-	}
-
-	private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<BytecodeInstruction> instructions,
+    private static void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result, List<BytecodeInstruction> instructions,
                                                  CompilerName compilerName)
     {
 		List<Tag> children = parseTag.getChildren();
@@ -107,28 +90,11 @@ public final class JournalUtil
 			{
 			case TAG_BC:
 			{
-                String bciAttr = tagAttrs.get(ATTR_BCI);
-                String codeAttr = tagAttrs.get(ATTR_CODE);
-
-                Parse_TAG_BC parseTagBc = new Parse_TAG_BC(instructions, callAttrs, tagAttrs).invoke();
-                
-                currentBytecode = Integer.parseInt(bciAttr);
-                int code = Integer.parseInt(codeAttr);
-                callAttrs.clear();
-
-                currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
-
-                inMethod = false;
-
-                if (currentInstruction != null)
-                {
-                    int opcodeValue = currentInstruction.getOpcode().getValue();
-
-                    if (opcodeValue == code)
-                    {
-                        inMethod = true;
-                    }
-                }
+                Parse_TAG_BC parse_TAG_BC = new Parse_TAG_BC(
+                        instructions, callAttrs, tagAttrs).invoke();
+                currentInstruction = parse_TAG_BC.getCurrentInstruction();
+                inMethod = parse_TAG_BC.isInMethod();
+                currentBytecode = parse_TAG_BC.getCurrentBytecode();
 			}
 				break;
 			case TAG_CALL:
@@ -333,6 +299,22 @@ public final class JournalUtil
             this.tagAttrs = tagAttrs;
         }
 
+        private static BytecodeInstruction getInstructionAtIndex(List<BytecodeInstruction> instructions, int index)
+        {
+            BytecodeInstruction found = null;
+
+            for (BytecodeInstruction instruction : instructions)
+            {
+                if (instruction.getOffset() == index)
+                {
+                    found = instruction;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
         public int getCurrentBytecode() {
             return currentBytecode;
         }
@@ -348,6 +330,8 @@ public final class JournalUtil
         public Parse_TAG_BC invoke() {
             String bciAttr = tagAttrs.get(ATTR_BCI);
             String codeAttr = tagAttrs.get(ATTR_CODE);
+
+            Parse_TAG_BC parseTagBc = new Parse_TAG_BC(instructions, callAttrs, tagAttrs).invoke();
 
             currentBytecode = Integer.parseInt(bciAttr);
             int code = Integer.parseInt(codeAttr);
