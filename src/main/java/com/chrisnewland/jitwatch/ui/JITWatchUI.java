@@ -142,23 +142,14 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	// Called by JFX
 	public JITWatchUI()
 	{
-		JITWatchConfig config = new JITWatchConfig();
-		config.loadFromProperties();
-
 		logParser = new HotSpotLogParser(this);
-		logParser.setConfig(config);
+
+		loadConfigFromFile();
 	}
 
 	public JITWatchUI(String[] args)
 	{
 		launch(args);
-	}
-
-	public void setHotSpotLogFile(File file)
-	{
-		hsLogFile = file;
-		log("Set log file: " + hsLogFile);
-		updateButtons();
 	}
 
 	private void readLogFile()
@@ -519,8 +510,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(textAreaHeight);
-		textAreaLog
-				.setText("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
+				
+		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes");
+		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska.\nUsed under licence http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
 		{
@@ -568,11 +560,20 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		updateButtons();
 	}
+	
+	private void loadConfigFromFile()
+	{
+		JITWatchConfig config = new JITWatchConfig();
+		config.loadFromProperties();
+		logParser.setConfig(config);
+	}
 
 	void openConfigStage()
 	{
 		if (configStage == null)
 		{
+			loadConfigFromFile();
+			
 			configStage = new ConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
 
@@ -745,6 +746,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private void chooseHotSpotFile()
 	{
+		loadConfigFromFile();
+		
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 

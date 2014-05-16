@@ -77,6 +77,7 @@ public final class StringUtil
 
 		return sb.toString();
 	}
+	
 	public static String repeat(char c, int count)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -87,6 +88,11 @@ public final class StringUtil
 		}
 		
 		return builder.toString();		
+	}
+	
+	public static String rtrim(String string)
+	{
+		return string.replaceAll("\\s+$","");
 	}
 	
 	public static String padLeft(long num, int width)

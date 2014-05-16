@@ -69,6 +69,11 @@ public class AssemblyInstruction
 
 		return builder.toString();
 	}
+	
+	public List<String> getCommentLines()
+	{
+		return commentLines;
+	}
 
 	public void addCommentLine(String comment)
 	{
@@ -82,7 +87,7 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -129,7 +134,59 @@ public class AssemblyInstruction
 		{
 			builder.append(S_NEWLINE);
 		}
+		
+		return builder.toString().trim();
+	}
+	
+	// Allow splitting an instruction with a multi-line comment across multiple labels
+	// which all contain the instruction
+	public String toString(int line)
+	{
+		StringBuilder builder = new StringBuilder();
 
-		return builder.toString();
+		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		builder.append(C_COLON).append(C_SPACE);
+
+		if (modifier != null)
+		{
+			builder.append(modifier);
+			builder.append(C_SPACE);
+		}
+
+		builder.append(mnemonic);
+
+		if (operands.size() > 0)
+		{
+			builder.append(C_SPACE);
+
+			for (String op : operands)
+			{
+				builder.append(op).append(S_COMMA);
+			}
+
+			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		int lineLength = builder.length();
+		
+		if (commentLines.size() > 0)
+		{
+			if (line == 0)
+			{
+				builder.append(S_DOUBLE_SPACE).append(commentLines.get(0)).append(S_NEWLINE);
+			}
+			else
+			{
+				builder.delete(0, builder.length());
+				builder.append(StringUtil.repeat(C_SPACE, lineLength + 2));
+				builder.append(commentLines.get(line)).append(S_NEWLINE);
+			}
+		}
+		else
+		{
+			builder.append(S_NEWLINE);
+		}
+				
+		return StringUtil.rtrim(builder.toString());
 	}
 }

@@ -15,18 +15,18 @@ public class ClassBC
 	private String sourceFile;
 	private String majorVersion;
 	private String minorVersion;
-	private Map<String, List<Instruction>> memberBytecodeMap = new HashMap<>();
+	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
 
-	public void addMemberBytecode(String memberName, List<Instruction> instructions)
+	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
-		memberBytecodeMap.put(memberName, instructions);
+		memberBytecodeMap.put(memberName, memberBytecode);
 	}
 	
-	public List<Instruction> getMemberBytecode(IMetaMember member)
+	public MemberBytecode getMemberBytecode(IMetaMember member)
 	{
 		String bytecodeSignature = member.getSignatureForBytecode();
 		
-		List<Instruction> result = getMemberBytecode(bytecodeSignature);
+		MemberBytecode result = getMemberBytecode(bytecodeSignature);
 
 		if (result == null)
 		{
@@ -43,7 +43,7 @@ public class ClassBC
 		return result;
 	}
 	
-	public List<Instruction> getMemberBytecode(String memberName)
+	public MemberBytecode getMemberBytecode(String memberName)
 	{		
 		return memberBytecodeMap.get(memberName);
 	}

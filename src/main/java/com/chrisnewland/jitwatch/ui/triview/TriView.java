@@ -7,12 +7,19 @@ package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
+import com.chrisnewland.jitwatch.ui.triview.assembly.ViewerAssembly;
+import com.chrisnewland.jitwatch.ui.triview.bytecode.ViewerBytecode;
+import com.chrisnewland.jitwatch.ui.triview.source.ViewerSource;
+import com.chrisnewland.jitwatch.util.StringUtil;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -38,14 +45,14 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage
+public class TriView extends Stage implements ILineListener
 {
 	private IMetaMember currentMember;
 	private JITWatchConfig config;
 
-	private Viewer viewerSource;
+	private ViewerSource viewerSource;
 	private ViewerBytecode viewerBytecode;
-	private ViewerAssembly viewerAssembly; // TODO ref.x86asm.net
+	private ViewerAssembly viewerAssembly;
 
 	private SplitPane splitViewer;
 
@@ -63,6 +70,8 @@ public class TriView extends Stage
 	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
+
+	private static final Logger logger = LoggerFactory.getLogger(TriView.class);
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -218,9 +227,9 @@ public class TriView extends Stage
 		lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
 		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
 
-		viewerSource = new Viewer(parent);
-		viewerBytecode = new ViewerBytecode(parent);
-		viewerAssembly = new ViewerAssembly(parent);
+		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
+		viewerBytecode = new ViewerBytecode(parent, this, LineType.BYTECODE);
+		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
@@ -408,4 +417,70 @@ public class TriView extends Stage
 			lblMemberInfo.setText(S_EMPTY);
 		}
 	}
+
+	@Override
+	public void lineHighlighted(int index, LineType lineType)
+	{
+		switch (lineType)
+		{
+		case SOURCE:
+			break;
+		case BYTECODE:
+			break;
+		case ASSEMBLY:
+			highlightFromAssembly(index);
+			break;
+		}
+	}
+
+	private void highlightFromAssembly(int index)
+	{
+		Label label = viewerAssembly.getLabelAtIndex(index);
+
+		int sourceHighlight = -1;
+		int bytecodeHighlight = -1;
+
+		if (label != null)
+		{
+			String line = label.getText();
+
+			String className = StringUtil.getSubstringBetween(line, "; - ", "::");
+			
+			//TODO support switching source and bytecode to other classes referred to in assembly
+			if (className != null && className.equals(currentMember.getMetaClass().getFullyQualifiedName()))
+			{
+				String sourceLine = StringUtil.getSubstringBetween(line, "(line ", ")");
+				String bytecodeLine = StringUtil.getSubstringBetween(line, "@", " ");
+
+				if (sourceLine != null)
+				{
+					try
+					{
+						sourceHighlight = Integer.parseInt(sourceLine) - 1;
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Could not parse line number: {}", sourceLine, nfe);
+					}
+				}
+
+				if (bytecodeLine != null)
+				{
+					try
+					{
+						int offset = Integer.parseInt(bytecodeLine);
+						bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(offset);
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Could not parse line number: {}", bytecodeHighlight, nfe);
+					}
+				}
+			}
+		}
+
+		viewerSource.highlightLine(sourceHighlight);
+		viewerBytecode.highlightLine(bytecodeHighlight);
+	}
+
 }

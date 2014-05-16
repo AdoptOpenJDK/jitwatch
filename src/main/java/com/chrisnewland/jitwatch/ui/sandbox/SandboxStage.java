@@ -92,6 +92,8 @@ public class SandboxStage extends Stage
 
 		final RadioButton rbATT = new RadioButton("AT&T");
 		final RadioButton rbIntel = new RadioButton("Intel");
+		
+		rbIntel.setDisable(true); // TODO support Intel format
 
 		final ToggleGroup group = new ToggleGroup();
 
@@ -270,7 +272,7 @@ public class SandboxStage extends Stage
 
 		if (result == null)
 		{
-			result = "";
+			result = S_EMPTY;
 		}
 
 		return result;
@@ -304,8 +306,9 @@ public class SandboxStage extends Stage
 		return result;
 	}
 
+	//TODO ffs Chris, refactor!
 	private void runTestLoad()
-	{
+	{				
 		try
 		{
 			Platform.runLater(new Runnable()
@@ -399,9 +402,7 @@ public class SandboxStage extends Stage
 			JITWatchConfig config = new JITWatchConfig();
 			config.setSourceLocations(sourceLocations);
 			config.setClassLocations(classLocations);
-
-			// TODO: unload classes? CUSTOM CLASSLOADER
-
+			
 			logParser.reset();
 
 			logParser.setConfig(config);

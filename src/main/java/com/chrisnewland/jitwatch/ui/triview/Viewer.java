@@ -15,9 +15,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
+import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -46,21 +50,40 @@ public class Viewer extends VBox
 	public static final String COLOUR_GREEN = "green";
 	public static final String COLOUR_BLUE = "blue";
 
-    private int scrollIndex = 0;
+	private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
-    protected String originalSource;
+	protected String originalSource;
 
 	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
 
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
-    protected IStageAccessProxy stageAccessProxy;
+	protected static final Logger logger = LoggerFactory.getLogger(Viewer.class);
+
+	protected IStageAccessProxy stageAccessProxy;
+	
+	protected ILineListener lineListener;
+	protected LineType lineType;
 	
 	public Viewer(IStageAccessProxy stageAccessProxy)
 	{
 		this.stageAccessProxy = stageAccessProxy;
+
+		setup();
+	}
+	
+	public Viewer(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+	{
+		this.stageAccessProxy = stageAccessProxy;
+		this.lineListener = lineListener;
+		this.lineType = lineType;
 		
+		setup();
+	}
+	
+	private void setup()
+	{
 		vBoxRows = new VBox();
 
 		vBoxRows.heightProperty().addListener(new ChangeListener<Number>()
@@ -71,11 +94,13 @@ public class Viewer extends VBox
 				setScrollBar();
 			}
 		});
-
+		
 		scrollPane = new ScrollPane();
 		scrollPane.setContent(vBoxRows);
 		scrollPane.setStyle("-fx-background:white");
-
+		
+		scrollPane.setFitToHeight(true);
+		
 		scrollPane.prefHeightProperty().bind(heightProperty());
 
 		getChildren().add(scrollPane);
@@ -85,7 +110,7 @@ public class Viewer extends VBox
 
 	public void setContent(String inSource, boolean showLineNumbers)
 	{
-        String source = inSource;
+		String source = inSource;
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
 
@@ -129,8 +154,40 @@ public class Viewer extends VBox
 
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
-	}
+		
+		int pos = 0;
+		
+		for (final Label label : items)
+		{
+			final int finalPos = pos;
+			
+			label.setOnMouseEntered(new EventHandler<MouseEvent>()
+			{
+				@Override
+				public void handle(MouseEvent arg0)
+				{
+					label.setStyle(STYLE_HIGHLIGHTED);
+					lineListener.lineHighlighted(finalPos, lineType);
+				}
+			});
+			
+			label.setOnMouseExited(new EventHandler<MouseEvent>()
+			{
+				@Override
+				public void handle(MouseEvent arg0)
+				{
+					label.setStyle(STYLE_UNHIGHLIGHTED);
+					lineListener.lineHighlighted(-1, lineType);
 
+				}
+			});
+			
+			label.prefWidthProperty().bind(scrollPane.widthProperty());
+			
+			pos++;
+		}
+	}
+	
 	private String padLineNumber(int number, int maxWidth)
 	{
 		int len = Integer.toString(number).length();
@@ -194,7 +251,7 @@ public class Viewer extends VBox
 
 	public void jumpTo(IMetaMember member)
 	{
-		scrollIndex = 0;
+		scrollIndex = -1;
 
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
 
@@ -212,10 +269,18 @@ public class Viewer extends VBox
 		highlightLine(scrollIndex);
 	}
 
-	// ugh! dirty hack for highlighting
-	private void highlightLine(int pos)
+	public void highlightLine(int index)
 	{
-		if (pos != 0)
+		if (index == -1)
+		{
+			if (lastScrollIndex != -1)
+			{
+				// revert to black Label
+				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
+				label.setStyle(STYLE_UNHIGHLIGHTED);
+			}			
+		}
+		else
 		{
 			if (lastScrollIndex != -1)
 			{
@@ -224,17 +289,31 @@ public class Viewer extends VBox
 				label.setStyle(STYLE_UNHIGHLIGHTED);
 			}
 
-			// replace new selected Label with background coloured label
-			Label label = (Label) vBoxRows.getChildren().get(pos);
-			label.prefWidthProperty().bind(vBoxRows.widthProperty());
+			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
 
-			lastScrollIndex = pos;
+			lastScrollIndex = index;
 
+			scrollIndex = index;
+			
 			setScrollBar();
 		}
 	}
 
+	public Label getLabelAtIndex(int index)
+	{
+		ObservableList<Node> items = vBoxRows.getChildren();
+
+		Label result = null;
+		
+		if (index > 0 && index < items.size())
+		{
+			result = (Label)items.get(index);
+		}
+		
+		return result;
+	}
+	
 	private int findPosForRegex(String regex)
 	{
 		int result = -1;
@@ -264,8 +343,16 @@ public class Viewer extends VBox
 
 	private void setScrollBar()
 	{
-		double scrollPos = (double) scrollIndex / (double) vBoxRows.getChildren().size()
-				* (scrollPane.getVmax() - scrollPane.getVmin());
-		scrollPane.setVvalue(scrollPos);
+		if (vBoxRows.getChildren().size() > 0)
+		{
+			double scrollMin = scrollPane.getVmin();
+			double scrollMax = scrollPane.getVmax();
+			
+			double scrollPercent = (double) scrollIndex / (double) vBoxRows.getChildren().size();
+
+			double scrollPos = scrollPercent * (scrollMax - scrollMin);
+
+			scrollPane.setVvalue(scrollPos);
+		}
 	}
 }

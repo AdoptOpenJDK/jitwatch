@@ -144,7 +144,6 @@ public class HotSpotLogParser implements ILogParser
 
 		while (reading && currentLine != null)
 		{
-
 			try
 			{
 				handleLine(currentLine);

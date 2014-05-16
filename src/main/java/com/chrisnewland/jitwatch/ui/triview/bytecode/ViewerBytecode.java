@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.ui.triview;
+package com.chrisnewland.jitwatch.ui.triview.bytecode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,25 +15,31 @@ import javafx.scene.paint.Color;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
+import com.chrisnewland.jitwatch.ui.triview.ILineListener;
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
+import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
 import com.chrisnewland.jitwatch.util.JVMSUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
 {
-	private List<Instruction> instructions;
+	private MemberBytecode memberBytecode;
 
-	public ViewerBytecode(IStageAccessProxy stageAccessProxy)
+	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy);
+		super(stageAccessProxy, lineListener, lineType);
 	}
 
 	public void setContent(IMetaMember member, List<String> classLocations)
 	{
-		instructions = member.getBytecodeForMember(classLocations);
+		memberBytecode = member.getBytecodeForMember(classLocations);
 
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		Map<Integer, LineAnnotation> annotations = null;
 
 		lineAnnotations.clear();
@@ -49,7 +55,7 @@ public class ViewerBytecode extends Viewer
 			
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
-			for (final Instruction instruction : instructions)
+			for (final BytecodeInstruction instruction : instructions)
 			{
 				Label lblLine = new Label(instruction.toString(maxOffset));
 
@@ -96,6 +102,26 @@ public class ViewerBytecode extends Viewer
 		}
 
 		setContent(labels);
+	}
+	
+	public int getLineIndexForBytecodeOffset(int offset)
+	{
+		int result = -1;
+		
+		int pos = 0;
+		
+		for (BytecodeInstruction instruction : memberBytecode.getBytecodeInstructions())
+		{
+			if (instruction.getOffset() == offset)
+			{
+				result = pos;
+				break;
+			}
+			
+			pos++;
+		}
+		
+		return result;
 	}
 
 	private String toRGBCode(Color color)
