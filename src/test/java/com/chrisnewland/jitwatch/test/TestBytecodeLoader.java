@@ -49,7 +49,9 @@ public class TestBytecodeLoader
 		
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 		
-		List<Instruction> instructions = classBytecode.getMemberBytecode(bcSig);
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
 				
 		assertNotNull(instructions);		
 	}
@@ -68,11 +70,13 @@ public class TestBytecodeLoader
 		builder.append("10: iconst_0").append("\n");
 		builder.append("11: aaload").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(9, instructions.size());
 		
-		Instruction i0 = instructions.get(0);
+		BytecodeInstruction i0 = instructions.get(0);
 		assertEquals(0, i0.getOffset());
 		assertEquals(Opcode.LDC, i0.getOpcode());
 		assertEquals(true, i0.hasParameters());
@@ -85,7 +89,7 @@ public class TestBytecodeLoader
 		assertEquals(true, i0.hasComment());
 		assertEquals("// int 1000000", i0.getComment());
 		
-		Instruction i1 = instructions.get(1);
+		BytecodeInstruction i1 = instructions.get(1);
 		assertEquals(2, i1.getOffset());
 		assertEquals(Opcode.ISTORE_1, i1.getOpcode());
 		assertEquals(false, i1.hasParameters());
@@ -93,7 +97,7 @@ public class TestBytecodeLoader
 		assertEquals(false, i1.hasComment());
 		assertEquals(null, i1.getComment());
 		
-		Instruction i5 = instructions.get(5);
+		BytecodeInstruction i5 = instructions.get(5);
 		assertEquals(6, i5.getOffset());
 		assertEquals(Opcode.IF_ICMPNE, i5.getOpcode());
 		assertEquals(1, i5.getParameters().size());
@@ -118,11 +122,13 @@ public class TestBytecodeLoader
 		builder.append("4: iinc      4, 1").append("\n");
 		builder.append("7: goto      47").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(6, instructions.size());
 		
-		Instruction i4 = instructions.get(4);
+		BytecodeInstruction i4 = instructions.get(4);
 		assertEquals(4, i4.getOffset());
 		assertEquals(Opcode.IINC, i4.getOpcode());
 		assertEquals(true, i4.hasParameters());
@@ -151,11 +157,13 @@ public class TestBytecodeLoader
 		builder.append("4: iinc      4, -1").append("\n");
 		builder.append("7: goto      47").append("\n");
 
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(6, instructions.size());
 		
-		Instruction i4 = instructions.get(4);
+		BytecodeInstruction i4 = instructions.get(4);
 		assertEquals(4, i4.getOffset());
 		assertEquals(Opcode.IINC, i4.getOpcode());
 		assertEquals(true, i4.hasParameters());
@@ -179,11 +187,13 @@ public class TestBytecodeLoader
 		StringBuilder builder = new StringBuilder();
 		builder.append("3: newarray       int").append("\n");
 	
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(1, instructions.size());
 		
-		Instruction i0 = instructions.get(0);
+		BytecodeInstruction i0 = instructions.get(0);
 		assertEquals(3, i0.getOffset());
 		assertEquals(Opcode.NEWARRAY, i0.getOpcode());
 		assertEquals(true, i0.hasParameters());
@@ -215,11 +225,13 @@ public class TestBytecodeLoader
 		builder.append("}").append("\n");
 		builder.append("99: lstore_2").append("\n");
 		
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(5, instructions.size());
 		
-		Instruction i3 = instructions.get(3);
+		BytecodeInstruction i3 = instructions.get(3);
 		assertEquals(3, i3.getOffset());
 		assertEquals(Opcode.TABLESWITCH, i3.getOpcode());
 		assertEquals(true, i3.hasParameters());
@@ -248,11 +260,13 @@ public class TestBytecodeLoader
 		builder.append("}").append("\n");
 		builder.append("99: lstore_2").append("\n");
 		
-		List<Instruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
+		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(builder.toString());
+		
+		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		
 		assertEquals(5, instructions.size());
 		
-		Instruction i3 = instructions.get(3);
+		BytecodeInstruction i3 = instructions.get(3);
 		assertEquals(3, i3.getOffset());
 		assertEquals(Opcode.LOOKUPSWITCH, i3.getOpcode());
 		assertEquals(true, i3.hasParameters());

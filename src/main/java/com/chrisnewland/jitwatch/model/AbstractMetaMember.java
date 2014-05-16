@@ -7,7 +7,7 @@ package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -48,6 +48,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public String getMemberName()
 	{
 		return memberName;
+	}
+	
+	@Override
+	public String getFullyQualifiedMemberName()
+	{
+		return methodClass.getFullyQualifiedName() + C_DOT + memberName;
 	}
 	
 	@Override
@@ -166,12 +172,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				
 		if (modifier != 0)
 		{
-			builder.append(Modifier.toString(modifier)).append(' ');
+			builder.append(Modifier.toString(modifier)).append(C_SPACE);
 		}
 		
 		if (returnType != null)
 		{
-			builder.append(expandParam(returnType.getName())).append(' ');
+			builder.append(expandParam(returnType.getName())).append(C_SPACE);
 		}
 
 		builder.append(memberName);
@@ -230,7 +236,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (modifiers.length() > 0)
 		{
-			builder.append(modifiers).append(' ');
+			builder.append(modifiers).append(C_SPACE);
 		}
 
 		// return type of constructor is not declared in signature
@@ -239,7 +245,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			String rt = expandParamRegEx(returnType.getName());
 
 			builder.append(rt);
-			builder.append(' ');
+			builder.append(C_SPACE);
 		}
 
 		if (this instanceof MetaConstructor)
@@ -350,11 +356,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
         journal.addEntry(entry);
     }
     
-	public List<Instruction> getBytecodeForMember(List<String> classLocations)
+	public MemberBytecode getBytecodeForMember(List<String> classLocations)
 	{
 		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
 
-		List<Instruction> result = classBytecode.getMemberBytecode(this);
+		MemberBytecode result = classBytecode.getMemberBytecode(this);
 
 		return result;
 	}

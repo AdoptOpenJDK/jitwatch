@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
-import com.chrisnewland.jitwatch.model.bytecode.Instruction;
+import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 
 public interface IMetaMember
 {
@@ -56,6 +56,8 @@ public interface IMetaMember
 	String toStringUnqualifiedMethodName();
 	
 	String getMemberName();
+	String getFullyQualifiedMemberName();
+
 	int getModifier();
 	String getModifierString();
 	String getReturnTypeName();
@@ -73,6 +75,5 @@ public interface IMetaMember
 	
 	List<String> getTreePath();
 	
-	List<Instruction> getBytecodeForMember(List<String> classLocations);
-
+	MemberBytecode getBytecodeForMember(List<String> classLocations);
 }

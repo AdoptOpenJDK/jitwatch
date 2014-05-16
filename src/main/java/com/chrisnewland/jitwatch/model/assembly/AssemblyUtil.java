@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public class AssemblyUtil
 {
+	//http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
@@ -52,7 +53,7 @@ public class AssemblyUtil
 				currentBlock = new AssemblyBlock();
 				currentBlock.setTitle(line);
 			}
-			else if (line.startsWith(ASSEMBLY_ADDRESS))
+			else if (line.startsWith(S_ASSEMBLY_ADDRESS))
 			{
 				AssemblyInstruction instr = createInstruction(line);
 
@@ -65,7 +66,10 @@ public class AssemblyUtil
 				// extended comment
 				if (lastInstruction != null)
 				{
-					lastInstruction.addCommentLine(line);
+					if (line.length() > 0)
+					{
+						lastInstruction.addCommentLine(line);
+					}
 				}
 				else
 				{
@@ -99,9 +103,9 @@ public class AssemblyUtil
 			{
 				address = address.trim();
 
-				if (address.startsWith(ASSEMBLY_ADDRESS))
+				if (address.startsWith(S_ASSEMBLY_ADDRESS))
 				{
-					address = address.substring(ASSEMBLY_ADDRESS.length());
+					address = address.substring(S_ASSEMBLY_ADDRESS.length());
 				}
 
 				addressValue = Long.parseLong(address, 16);

@@ -73,8 +73,11 @@ public final class DisassemblyUtil
 			builder.append("hsdis-i386");
 			break;
 		case BIT64:
-			builder.append(File.separator);
-			builder.append("amd64");
+			if (os != null && !os.equals(OperatingSystem.MAC))
+			{
+				builder.append(File.separator);
+				builder.append("amd64");
+			}
 			builder.append(File.separator);
 			builder.append("server");
 			builder.append(File.separator);
