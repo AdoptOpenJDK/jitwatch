@@ -5,6 +5,9 @@
  */
 package com.chrisnewland.jitwatch.model.assembly;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,6 +24,8 @@ public class AssemblyReference
 	private static final String TAG_MNEM_CLOSE = "</mnem>";
 	private static final String TAG_BRIEF_OPEN = "<brief>";
 	private static final String TAG_BRIEF_CLOSE = "</brief>";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	static
 	{
@@ -78,14 +83,13 @@ public class AssemblyReference
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+            LOGGER.error("", ioe);
 		}
 		
 		// patch up missing descriptions
 		mnemonicMap.put("movabs", "Move a 64-bit value");
 		mnemonicMap.put("ret", mnemonicMap.get("retn"));
 		mnemonicMap.put("movslq", mnemonicMap.get("movsxd"));
-
 	}
 
 	private AssemblyReference()
