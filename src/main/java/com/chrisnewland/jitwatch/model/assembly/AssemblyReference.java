@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class AssemblyReference
+public final class AssemblyReference
 {
 	private static Map<String, String> mnemonicMap = new HashMap<>();
 	

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class AssemblyUtil
+public final class AssemblyUtil
 {
 	//http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
