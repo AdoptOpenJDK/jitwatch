@@ -165,8 +165,8 @@ public class TagProcessor
 		    (name.equals(currentTag.getName())) &&
 		    (currentTag.getParent() == null))
         {
-            result = currentTag;
-		}
+                result = currentTag;
+        }
 		else
 		{
 			// not closed
