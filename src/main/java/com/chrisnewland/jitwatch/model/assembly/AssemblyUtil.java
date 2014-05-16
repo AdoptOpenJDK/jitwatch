@@ -205,7 +205,8 @@ public final class AssemblyUtil
         }
     }
 
-    private static long getValueFromAddress(String address) {
+    private static long getValueFromAddress(String inAddress) {
+        String address = inAddress;
         long addressValue = 0;
 
         if (address != null)
