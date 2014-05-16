@@ -425,7 +425,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
         hboxTop.getChildren().add(btnCodeCache);
         hboxTop.getChildren().add(btnTriView);
         hboxTop.getChildren().add(btnSuggest);
-        //hboxTop.getChildren().add(btnLiveView);
         hboxTop.getChildren().add(btnErrorLog);
 
         return hboxTop;

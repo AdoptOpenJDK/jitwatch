@@ -5,15 +5,15 @@
  */
 package com.chrisnewland.jitwatch.model.assembly;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyUtil
 {
@@ -97,19 +97,7 @@ public class AssemblyUtil
 			String middle = matcher.group(2);
 			String comment = matcher.group(3);
 
-			long addressValue = 0;
-
-			if (address != null)
-			{
-				address = address.trim();
-
-				if (address.startsWith(S_ASSEMBLY_ADDRESS))
-				{
-					address = address.substring(S_ASSEMBLY_ADDRESS.length());
-				}
-
-				addressValue = Long.parseLong(address, 16);
-			}
+            long addressValue = getValueFromAddress(address);
 
 			String modifier = null;
 			String mnemonic = null;
@@ -136,14 +124,7 @@ public class AssemblyUtil
 				}
 				else if (midParts.length >= 3)
 				{
-					StringBuilder modBuilder = new StringBuilder();
-
-					for (int i = 0; i < midParts.length - 2; i++)
-					{
-						modBuilder.append(midParts[i]).append(S_SPACE);
-					}
-
-					modifier = modBuilder.toString().trim();
+                    modifier = getModFor_3_OrMoreOperands(midParts);
 
 					mnemonic = midParts[midParts.length - 2];
 					opString = midParts[midParts.length - 1];
@@ -153,50 +134,9 @@ public class AssemblyUtil
 					logger.error("Don't know how to parse this: {} {}", line, midParts.length);
 				}
 
-				if (opString != null)
-				{
-					StringBuilder opBuilder = new StringBuilder();
+                addValidOperandsToList(operands, opString);
 
-					// can't tokenise on comma because
-					// address operand such as 0x0(%rax,%rax,1)
-					// is a single parameter
-					boolean inParentheses = false;
-
-					for (int pos = 0; pos < opString.length(); pos++)
-					{
-						char c = opString.charAt(pos);
-
-						if (c == C_OPEN_PARENTHESES)
-						{
-							inParentheses = true;
-							opBuilder.append(c);
-						}
-						else if (c == C_CLOSE_PARENTHESES)
-						{
-							inParentheses = false;
-							opBuilder.append(c);
-						}
-						else if (c == C_COMMA && !inParentheses)
-						{
-							String operand = opBuilder.toString();
-							opBuilder.delete(0, opBuilder.length());
-							operands.add(operand);
-						}
-						else
-						{
-							opBuilder.append(c);
-						}
-					}
-
-					if (opBuilder.length() > 0)
-					{
-						String operand = opBuilder.toString();
-						opBuilder.delete(0, opBuilder.length() - 1);
-						operands.add(operand);
-					}
-				}
-
-				instr = new AssemblyInstruction(addressValue, modifier, mnemonic, operands, comment);
+                instr = new AssemblyInstruction(addressValue, modifier, mnemonic, operands, comment);
 			}
 		}
 		else
@@ -206,4 +146,79 @@ public class AssemblyUtil
 
 		return instr;
 	}
+
+    private static String getModFor_3_OrMoreOperands(String[] midParts) {
+        String modifier;
+        StringBuilder modBuilder = new StringBuilder();
+
+        for (int i = 0; i < midParts.length - 2; i++)
+        {
+            modBuilder.append(midParts[i]).append(S_SPACE);
+        }
+
+        modifier = modBuilder.toString().trim();
+        return modifier;
+    }
+
+    private static void addValidOperandsToList(List<String> operands, String opString) {
+        if (opString != null)
+        {
+            StringBuilder opBuilder = new StringBuilder();
+
+            // can't tokenise on comma because
+            // address operand such as 0x0(%rax,%rax,1)
+            // is a single parameter
+            boolean inParentheses = false;
+
+            for (int pos = 0; pos < opString.length(); pos++)
+            {
+                char c = opString.charAt(pos);
+
+                if (c == C_OPEN_PARENTHESES)
+                {
+                    inParentheses = true;
+                    opBuilder.append(c);
+                }
+                else if (c == C_CLOSE_PARENTHESES)
+                {
+                    inParentheses = false;
+                    opBuilder.append(c);
+                }
+                else if (c == C_COMMA && !inParentheses)
+                {
+                    String operand = opBuilder.toString();
+                    opBuilder.delete(0, opBuilder.length());
+                    operands.add(operand);
+                }
+                else
+                {
+                    opBuilder.append(c);
+                }
+            }
+
+            if (opBuilder.length() > 0)
+            {
+                String operand = opBuilder.toString();
+                opBuilder.delete(0, opBuilder.length() - 1);
+                operands.add(operand);
+            }
+        }
+    }
+
+    private static long getValueFromAddress(String address) {
+        long addressValue = 0;
+
+        if (address != null)
+        {
+            address = address.trim();
+
+            if (address.startsWith(S_ASSEMBLY_ADDRESS))
+            {
+                address = address.substring(S_ASSEMBLY_ADDRESS.length());
+            }
+
+            addressValue = Long.parseLong(address, 16);
+        }
+        return addressValue;
+    }
 }
