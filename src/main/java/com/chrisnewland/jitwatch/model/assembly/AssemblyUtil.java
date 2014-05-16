@@ -124,7 +124,7 @@ public final class AssemblyUtil
 				}
 				else if (midParts.length >= 3)
 				{
-                    modifier = getModFor_3_OrMoreOperands(midParts);
+                    modifier = getModForThreeOrMoreOperands(midParts);
 
 					mnemonic = midParts[midParts.length - 2];
 					opString = midParts[midParts.length - 1];
@@ -147,7 +147,7 @@ public final class AssemblyUtil
 		return instr;
 	}
 
-    private static String getModFor_3_OrMoreOperands(String[] midParts) {
+    private static String getModForThreeOrMoreOperands(String[] midParts) {
         String modifier;
         StringBuilder modBuilder = new StringBuilder();
 

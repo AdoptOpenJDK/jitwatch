@@ -90,11 +90,11 @@ public final class JournalUtil
 			{
 			case TAG_BC:
 			{
-                Parse_TAG_BC parse_TAG_BC = new Parse_TAG_BC(
+                Parse_TAG_BC parseTagBC = new Parse_TAG_BC(
                         instructions, callAttrs, tagAttrs).invoke();
-                currentInstruction = parse_TAG_BC.getCurrentInstruction();
-                inMethod = parse_TAG_BC.isInMethod();
-                currentBytecode = parse_TAG_BC.getCurrentBytecode();
+                currentInstruction = parseTagBC.getCurrentInstruction();
+                inMethod = parseTagBC.isInMethod();
+                currentBytecode = parseTagBC.getCurrentBytecode();
 			}
 				break;
 			case TAG_CALL:
@@ -330,8 +330,6 @@ public final class JournalUtil
         public Parse_TAG_BC invoke() {
             String bciAttr = tagAttrs.get(ATTR_BCI);
             String codeAttr = tagAttrs.get(ATTR_CODE);
-
-            Parse_TAG_BC parseTagBc = new Parse_TAG_BC(instructions, callAttrs, tagAttrs).invoke();
 
             currentBytecode = Integer.parseInt(bciAttr);
             int code = Integer.parseInt(codeAttr);
