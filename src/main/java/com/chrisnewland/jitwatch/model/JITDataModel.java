@@ -24,7 +24,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
-	private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JITDataModel.class);
 
 	private PackageManager pm;
 	private JITStats stats;
@@ -124,14 +124,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 					MethodHandle mh = MethodHandles.lookup().findVirtual(JITStats.class, incMethodName, mt);
 
-					mh.invokeExact(stats);
-				}
-				catch (Throwable t)
-				{
-					logger.error("Exception: {}", t.getMessage(), t);
-				}
-			}
-		}
+                    mh.invokeExact(stats);
+                }
+                catch (Throwable t)
+                {
+                    LOGGER.error("Exception: {}", t.getMessage(), t);
+                }
+            }
+        }
 
 		String compiler = meta.getCompiledAttribute(ATTR_COMPILER);
 

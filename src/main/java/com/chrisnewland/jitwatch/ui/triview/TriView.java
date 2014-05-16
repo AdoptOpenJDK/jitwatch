@@ -144,13 +144,11 @@ public class TriView extends Stage implements ILineListener
 			{
 				// TODO Looks like a bug in JavaFX 2.2 here
 				// sometimes combo contains only selected member
-				if (!ignoreComboChanged)
-				{
-					if (newVal != null)
-					{
-						TriView.this.setMember(newVal, false);
-					}
-				}
+				if ((!ignoreComboChanged) &&
+                        (newVal != null))
+                {
+                    TriView.this.setMember(newVal, false);
+                }
 			}
 		});
 
@@ -346,13 +344,11 @@ public class TriView extends Stage implements ILineListener
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if (!force)
-		{
-			if ((previousClass != null) && previousClass.equals(memberClass))
-			{
-				sameClass = true;
-			}
-		}
+		if ((!force) &&
+            ((previousClass != null) && previousClass.equals(memberClass)))
+        {
+            sameClass = true;
+        }
 
 		if (!sameClass)
 		{
@@ -420,7 +416,6 @@ public class TriView extends Stage implements ILineListener
 
 			lblMemberInfo.setText(S_EMPTY);
 		}
-
 	}
 
 	@Override

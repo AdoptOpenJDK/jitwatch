@@ -36,7 +36,8 @@ public class TextViewerStage extends AbstractTextViewerStage
 			source = "Empty";
 		}
 
-		source = source.replace("\t", "    "); // 4 spaces
+        // 4 spaces
+		source = source.replace("\t", "    ");
 
 		String[] lines = source.split(S_NEWLINE);
 

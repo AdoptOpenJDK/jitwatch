@@ -98,13 +98,12 @@ public class Tag
 
 		for (Tag child : children)
 		{
-			if (child.getName().equals(tagName))
-			{
-				if (child.getAttrs().containsKey(attrName) && child.getAttribute(attrName).equals(attrValue))
-				{
-					result.add(child);
-				}
-			}
+			if ((child.getName().equals(tagName)) &&
+                (child.getAttrs().containsKey(attrName) &&
+                 child.getAttribute(attrName).equals(attrValue)))
+            {
+                result.add(child);
+            }
 		}
 
 		return result;

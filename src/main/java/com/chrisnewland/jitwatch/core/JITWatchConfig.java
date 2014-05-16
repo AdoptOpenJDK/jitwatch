@@ -6,6 +6,8 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -13,14 +15,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_COMMA;
 
 public class JITWatchConfig
 {
-	private static final Logger logger = LoggerFactory.getLogger(JITWatchConfig.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JITWatchConfig.class);
 
 	private static final String PROPERTIES_FILENAME = "jitwatch.properties";
 
@@ -55,11 +54,11 @@ public class JITWatchConfig
 		}
 		catch (FileNotFoundException fnf)
 		{
-			logger.error("Could not find config file", fnf);
+			LOGGER.error("Could not find config file", fnf);
 		}
 		catch (IOException ioe)
 		{
-			logger.error("Could not load config file", ioe);
+			LOGGER.error("Could not load config file", ioe);
 		}
 
 		String confClasses = loadProps.getProperty(KEY_CLASS_LOCATIONS);
@@ -106,7 +105,7 @@ public class JITWatchConfig
 		}
 		catch (IOException ioe)
 		{
-			logger.error("Could not save config file", ioe);
+			LOGGER.error("Could not save config file", ioe);
 		}
 	}
 

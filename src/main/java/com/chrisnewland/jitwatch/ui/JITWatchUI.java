@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
 
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
-	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT;
@@ -215,7 +215,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		if (!logParser.hasTraceClassLoading())
 		{
-			logger.error("Required VM switch -XX:+TraceClassLoading was not enabled");
+            LOGGER.error("Required VM switch -XX:+TraceClassLoading was not enabled");
 
 			Platform.runLater(new Runnable()
 			{
@@ -295,18 +295,16 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 					int classCount = getConfig().getClassLocations().size();
 					int sourceCount = getConfig().getSourceLocations().size();
 
-					if (classCount == 0 && sourceCount == 0)
-					{
-						if (getConfig().isShowNothingMounted())
-						{
-							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-							nothingMountedStage.show();
+					if ((classCount == 0 && sourceCount == 0)
+					    && (getConfig().isShowNothingMounted()))
+                    {
+                        nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
+                        nothingMountedStage.show();
 
-							openPopupStages.add(nothingMountedStage);
+                        openPopupStages.add(nothingMountedStage);
 
-							startDelayedByConfig = true;
-						}
-					}
+                        startDelayedByConfig = true;
+                    }
 				}
 
 				if (!startDelayedByConfig)
@@ -544,7 +542,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		stage.setScene(scene);
 		stage.show();
 
-		int refresh = 1000; // ms
+        // refresh rate in ms
+		int refresh = 1000;
 
 		final Duration oneFrameAmt = Duration.millis(refresh);
 
@@ -734,7 +733,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 		else
 		{
-			logger.error("Could not open CompileChain - root node was null");
+            LOGGER.error("Could not open CompileChain - root node was null");
 		}
 	}
 

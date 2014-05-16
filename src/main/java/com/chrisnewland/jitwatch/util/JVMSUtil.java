@@ -18,7 +18,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 
 public class JVMSUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JVMSUtil.class);
 
     private static Map<String, String> bcDescriptionMap = new HashMap<>();
 
@@ -72,7 +72,7 @@ public class JVMSUtil
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+                LOGGER.error("", ioe);
 			}
 		}
 
@@ -117,7 +117,7 @@ public class JVMSUtil
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+            LOGGER.error("", ioe);
 		}
 	}
 
@@ -147,20 +147,18 @@ public class JVMSUtil
 
 				// ifge => if<cond>
 				// lconst_1 => lconst_<n>
-				if (ltPos != -1)
-				{
-					if (ltPos < opcodeText.length())
-					{
-						String subOpcodeText = opcodeText.substring(0, ltPos);
-						String subKey = key.substring(0, ltPos);
+				if ((ltPos != -1) &&
+				    (ltPos < opcodeText.length()))
+                {
+                    String subOpcodeText = opcodeText.substring(0, ltPos);
+                    String subKey = key.substring(0, ltPos);
 
-						if (subOpcodeText.equals(subKey))
-						{
-							desc = entry.getValue();
-							break;
-						}
-					}
-				}
+                    if (subOpcodeText.equals(subKey))
+                    {
+                        desc = entry.getValue();
+                        break;
+                    }
+                }
 			}
 		}
 

@@ -161,7 +161,8 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		long yInc = findScale(maxY - minY);
 
-		long minYCopy = (minY / yInc) * yInc; // quantise start value
+        // quantise start value
+		long minYCopy = (minY / yInc) * yInc;
 
 		long gridY = minYCopy;
 

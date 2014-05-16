@@ -25,7 +25,7 @@ public class MemberSignatureParts
 	private List<String> paramTypeList;
 
 	// LinkedHashMap to ensure entry set iteration matches insertion order
-	private static final Map<String, Integer> modifierMap = new LinkedHashMap<String, Integer>();
+	private static final Map<String, Integer> MODIFIER_MAP = new LinkedHashMap<String, Integer>();
 
 	static
 	{
@@ -42,7 +42,7 @@ public class MemberSignatureParts
 
 	private static void addModifierMapping(int modifier)
 	{
-		modifierMap.put(Modifier.toString(modifier), modifier);
+		MODIFIER_MAP.put(Modifier.toString(modifier), modifier);
 	}
 
 	public MemberSignatureParts(String toParse)
@@ -56,13 +56,14 @@ public class MemberSignatureParts
 
 		builder.append("^[ ]*");
 
-		for (String mod : modifierMap.keySet())
+		for (String mod : MODIFIER_MAP.keySet())
 		{
 			builder.append(S_OPEN_PARENTHESES).append(mod).append(S_SPACE).append(S_CLOSE_PARENTHESES).append(C_QUESTION);
 		}
 
 		String regexGenerics = "(<.*> )?";
-		String regexReturnType = "(.* )?"; // optional could be constructor
+        // optional could be constructor
+		String regexReturnType = "(.* )?";
 		String regexMethodName = "([\\p{L}0-9\\.]+)";
 		String regexParams = "(\\(.*\\))";
 		String regexRest = "(.*)";
@@ -77,7 +78,7 @@ public class MemberSignatureParts
 
 		Matcher matcher = PATTERN_BC_SIGNATURE.matcher(toParse);
 
-		int modifierCount = modifierMap.size();
+		int modifierCount = MODIFIER_MAP.size();
 
 		if (matcher.find())
 		{
@@ -97,40 +98,32 @@ public class MemberSignatureParts
 					modifierList.add(group);
 
 					// add bitset value for this modifier
-					modifier += modifierMap.get(group);
+					modifier += MODIFIER_MAP.get(group);
 				}
 
-				if (i == modifierCount + 1)
-				{
-					if (group != null)
-					{
-						buildGenerics(group);
-					}
+				if ((i == modifierCount + 1) &&
+                    (group != null))
+                {
+                    buildGenerics(group);
+                }
+
+				if ((i == modifierCount + 2) &&
+                    (group != null))
+                {
+                    returnType = group;
 				}
 
-				if (i == modifierCount + 2)
-				{
-					if (group != null)
-					{
-						returnType = group;
-					}
+				if ((i == modifierCount + 3) &&
+                    (group != null))
+                {
+                    memberName = group;
 				}
 
-				if (i == modifierCount + 3)
-				{
-					if (group != null)
-					{
-						memberName = group;
-					}
-				}
-
-				if (i == modifierCount + 4)
-				{
-					if (group != null)
-					{
-						buildParamTypes(group);
-					}
-				}
+				if ((i == modifierCount + 4) &&
+                    (group != null))
+                {
+                    buildParamTypes(group);
+                }
 			}
 		}
 	}
@@ -142,7 +135,8 @@ public class MemberSignatureParts
 
 		for (String sub : substitutions)
 		{
-			sub = sub.replace(S_SLASH, S_DOT); // in package names
+            // in package names
+			sub = sub.replace(S_SLASH, S_DOT);
 			
 			if (sub.contains(" extends "))
 			{

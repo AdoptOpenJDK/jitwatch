@@ -234,12 +234,11 @@ public class ClassTree extends VBox
                 allowed = false;
             }
 
-            if (allowed)
+            if (allowed &&
+                    (!packageClass.hasCompiledMethods()
+                            && config.isShowOnlyCompiledClasses()))
             {
-                if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
-                {
-                    allowed = false;
-                }
+                allowed = false;
             }
 
             if (allowed)

@@ -18,7 +18,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
-    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TagProcessor.class);
 
 	// feed it lines until it completes a tag
 	private Tag currentTag;
@@ -53,7 +53,7 @@ public class TagProcessor
 			}
 			else
 			{
-                logger.error("Did not handle: {}", line);
+                LOGGER.error("Did not handle: {}", line);
 			}
 		}
 
@@ -161,16 +161,13 @@ public class TagProcessor
 			}
 		}
 
-		if (selfClosing)
-		{
-			if (name.equals(currentTag.getName()))
-			{
-				if (currentTag.getParent() == null)
-				{
-					result = currentTag;
-				}
-			}
-		}
+		if (selfClosing) {
+            if (name.equals(currentTag.getName()) &&
+               (currentTag.getParent() == null))
+            {
+                result = currentTag;
+            }
+        }
 		else
 		{
 			// not closed
@@ -179,5 +176,4 @@ public class TagProcessor
 
 		return result;
 	}
-
 }

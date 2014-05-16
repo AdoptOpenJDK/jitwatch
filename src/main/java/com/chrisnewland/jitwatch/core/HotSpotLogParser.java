@@ -6,11 +6,12 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class HotSpotLogParser implements ILogParser
 		READY, IN_TAG, IN_NATIVE
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
@@ -149,7 +150,7 @@ public class HotSpotLogParser implements ILogParser
 			}
 			catch (Exception ex)
 			{
-				logger.error("Exception handling: '{}'", currentLine, ex);
+				LOGGER.error("Exception handling: '{}'", currentLine, ex);
 			}
 
 			currentLine = input.readLine();
@@ -301,7 +302,7 @@ public class HotSpotLogParser implements ILogParser
 
 		if (theThreadIsNotFound(threadName))
 		{
-			logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+			LOGGER.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
 			return;
 		}
 
@@ -315,7 +316,7 @@ public class HotSpotLogParser implements ILogParser
 		}
 		else
 		{
-			logger.error("Unexpected compiler name: {}", threadName);
+			LOGGER.error("Unexpected compiler name: {}", threadName);
 		}
 	}
 
@@ -548,6 +549,7 @@ public class HotSpotLogParser implements ILogParser
 	@Override
 	public boolean hasTraceClassLoading()
 	{
+		LOGGER.info("returning hasTraceClassLoad {}", hasTraceClassLoad);
 		return hasTraceClassLoad;
 	}
 }

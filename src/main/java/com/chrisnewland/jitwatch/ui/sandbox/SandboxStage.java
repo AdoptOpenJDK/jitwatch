@@ -49,7 +49,7 @@ import javafx.stage.WindowEvent;
 
 public class SandboxStage extends Stage
 {
-	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SandboxStage.class);
 
 	private TextArea taSource;
 	private TextArea taLoad;
@@ -61,6 +61,7 @@ public class SandboxStage extends Stage
 	private ILogParser logParser;
 	private IStageAccessProxy accessProxy;
 	
+	private static final boolean HSDIS_AVAILABLE = DisassemblyUtil.isDisassemblerAvailable();
 	private boolean intelMode = false;
 
 	private static final boolean hsdisAvailable = DisassemblyUtil.isDisassemblerAvailable();
@@ -193,7 +194,7 @@ public class SandboxStage extends Stage
 		splitVertical.setDividerPositions(0.7, 0.3);
 
 		log("Sandbox Ready");
-		log("HotSpot disassembler (hsdis) available: " + hsdisAvailable);
+		log("HotSpot disassembler (hsdis) available: " + HSDIS_AVAILABLE);
 
 		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
@@ -372,7 +373,8 @@ public class SandboxStage extends Stage
 			options.add("-XX:+LogCompilation");
 			options.add("-XX:LogFile=live.log");
 
-			if (hsdisAvailable)
+
+			if (HSDIS_AVAILABLE)
 			{
 				options.add("-XX:+PrintAssembly");
 				
@@ -451,7 +453,7 @@ public class SandboxStage extends Stage
 		}
 		catch (IOException ioe)
 		{
-			logger.error("Compile failure", ioe);
+			LOGGER.error("Compile failure", ioe);
 		}
 	}
 

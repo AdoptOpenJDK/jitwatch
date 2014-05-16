@@ -1,28 +1,20 @@
 package com.chrisnewland.jitwatch.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.tools.*;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_BACKSLASH;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class CompilationUtil
 {
-	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CompilationUtil.class);
 
 	public static final Path SANDBOX_SOURCE_DIR;
 	public static final Path SANDBOX_CLASS_DIR;
@@ -53,7 +45,7 @@ public class CompilationUtil
 	{
 		if (SANDBOX_SOURCE_DIR == null || SANDBOX_CLASS_DIR == null)
 		{
-			logger.error("Compile dirs have not been created, bailing out");
+			LOGGER.error("Compile dirs have not been created, bailing out");
 			return false;
 		}
 
@@ -76,11 +68,11 @@ public class CompilationUtil
 
 		String compilationMessages = compilerOutputStream.toString();
 
-		logger.info("Compilation Success: {}", success);
+		LOGGER.info("Compilation Success: {}", success);
 
 		if (compilationMessages.length() > 0)
 		{
-			logger.info("Compilation Message: {}", compilationMessages);
+			LOGGER.info("Compilation Message: {}", compilationMessages);
 		}
 
 		return success;
@@ -96,6 +88,7 @@ public class CompilationUtil
 		
 		for (String part : parts)
 		{
+			LOGGER.info("part: {}", part);
 			builder.append(part).append(File.separatorChar);
 		}
 		
@@ -127,7 +120,7 @@ public class CompilationUtil
 			sourceFile = new File(filePathString);
 		}
 		
-		logger.info("Writing source file: {}", sourceFile.getAbsolutePath());
+		LOGGER.info("Writing source file: {}", sourceFile.getAbsolutePath());
 
 		BufferedWriter fout = new BufferedWriter(new FileWriter(sourceFile));
 

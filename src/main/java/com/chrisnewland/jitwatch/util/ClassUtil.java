@@ -15,7 +15,7 @@ import java.net.URLClassLoader;
 
 public final class ClassUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassUtil.class);
 
     /*
         Hide Utility Class Constructor
@@ -49,7 +49,7 @@ public final class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error("Exception: {}", ex.getMessage(), ex);
+            LOGGER.error("Exception: {}", ex.getMessage(), ex);
 		}
 	}
 	
@@ -67,7 +67,7 @@ public final class ClassUtil
 		}
 		catch (Exception ex)
 		{
-            logger.error("Exception: {}", ex.getMessage(), ex);
+            LOGGER.error("Exception: {}", ex.getMessage(), ex);
 		}
 		
 		return null;

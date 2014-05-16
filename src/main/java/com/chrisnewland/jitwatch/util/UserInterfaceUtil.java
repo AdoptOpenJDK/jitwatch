@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public final class UserInterfaceUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
     // icon from https://www.iconfinder.com/icons/173960/tick_icon#size=16
     private static Image tick = null;
@@ -39,7 +39,7 @@ public final class UserInterfaceUtil
         else
         {
         	//TODO make this a dialog, format too easy to miss in an IDE
-            logger.error("If running in an IDE please add src/main/resources to your classpath");
+            LOGGER.error("If running in an IDE please add src/main/resources to your classpath");
         }
     }
 
