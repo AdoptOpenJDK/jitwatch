@@ -28,6 +28,8 @@ import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 import com.chrisnewland.jitwatch.util.ExecutionUtil;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -35,8 +37,11 @@ import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -57,6 +62,9 @@ public class SandboxStage extends Stage
 	private IStageAccessProxy accessProxy;
 	
 	private static final boolean HSDIS_AVAILABLE = DisassemblyUtil.isDisassemblerAvailable();
+	private boolean intelMode = false;
+
+	private static final boolean hsdisAvailable = DisassemblyUtil.isDisassemblerAvailable();
 
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
 	{
@@ -82,6 +90,38 @@ public class SandboxStage extends Stage
 			}
 		});
 
+		final RadioButton rbATT = new RadioButton("AT&T");
+		final RadioButton rbIntel = new RadioButton("Intel");
+
+		final ToggleGroup group = new ToggleGroup();
+
+		rbATT.setToggleGroup(group);
+		rbIntel.setToggleGroup(group);
+
+		rbATT.setSelected(!intelMode);
+		rbIntel.setSelected(intelMode);
+
+		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				if (group.getSelectedToggle() != null)
+				{
+					intelMode = group.getSelectedToggle().equals(rbIntel);
+				
+					if (intelMode)
+					{
+						log("Intel syntax assembly");
+					}
+					else
+					{
+						log("AT&T syntax assembly");
+					}				
+				}
+			}
+		});
+
 		SplitPane splitHorizontal = new SplitPane();
 		splitHorizontal.setOrientation(Orientation.HORIZONTAL);
 
@@ -93,12 +133,17 @@ public class SandboxStage extends Stage
 
 		Label lblSource = new Label("Source");
 		Label lblLoad = new Label("Test Load");
+		Label lblSyntax = new Label("Assembly syntax:");
+
 
 		HBox hBoxLoad = new HBox();
 		hBoxLoad.setSpacing(10);
 		hBoxLoad.setPadding(new Insets(0, 10, 0, 10));
 		hBoxLoad.getChildren().add(lblLoad);
 		hBoxLoad.getChildren().add(btnRunTestLoad);
+		hBoxLoad.getChildren().add(lblSyntax);
+		hBoxLoad.getChildren().add(rbATT);
+		hBoxLoad.getChildren().add(rbIntel);
 
 		HBox hBoxSource = new HBox();
 		hBoxSource.setSpacing(10);
@@ -119,7 +164,7 @@ public class SandboxStage extends Stage
 		taSource = new TextArea();
 		taLoad = new TextArea();
 		taLog = new TextArea();
-		
+
 		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 
 		taSource.setStyle(style);
@@ -329,6 +374,11 @@ public class SandboxStage extends Stage
 			if (HSDIS_AVAILABLE)
 			{
 				options.add("-XX:+PrintAssembly");
+				
+				if (intelMode)
+				{
+					options.add("-XX:PrintAssemblyOptions=intel");
+				}
 			}
 
 			log("Executing: " + fqNameLoad);

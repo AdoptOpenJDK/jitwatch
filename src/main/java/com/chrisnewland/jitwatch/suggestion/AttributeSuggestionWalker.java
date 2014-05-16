@@ -242,17 +242,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
                 LOGGER.error("", nfe);
 			}
 		}
-        if (countStr != null)
-        {
-            try
-            {
-                count = Integer.parseInt(countStr);
-            }
-            catch (NumberFormatException nfe)
-            {
-                LOGGER.error("", nfe);
-            }
-        }
 
 		if (probStr != null)
 		{
@@ -263,19 +252,20 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			catch (NumberFormatException nfe)
 			{
                 LOGGER.error("", nfe);
+				if (NEVER.equalsIgnoreCase(probStr))
+				{
+					probability = 0;
+				}
+				else if (ALWAYS.equalsIgnoreCase(probStr))
+				{
+					probability = 1;
+				}
+				else
+				{
+					LOGGER.error("Unrecognised branch probability: {}", probStr, nfe);
+				}
 			}
 		}
-        if (probStr != null)
-        {
-            try
-            {
-                probability = Double.parseDouble(probStr);
-            }
-            catch (NumberFormatException nfe)
-            {
-                LOGGER.error("", nfe);
-            }
-        }
 
 		double score = 0;
 

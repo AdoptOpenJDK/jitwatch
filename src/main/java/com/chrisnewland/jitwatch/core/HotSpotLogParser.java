@@ -10,6 +10,9 @@ import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -285,7 +288,9 @@ public class HotSpotLogParser implements ILogParser
 
 		if (currentMember != null)
 		{
-			currentMember.setAssembly(nativeCodeBuilder.toString());
+			AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(nativeCodeBuilder.toString());
+			
+			currentMember.setAssembly(asmMethod);
 		}
 
 		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());

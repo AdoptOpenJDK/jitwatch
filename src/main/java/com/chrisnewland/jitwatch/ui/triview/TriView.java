@@ -6,10 +6,12 @@
 package com.chrisnewland.jitwatch.ui.triview;
 
 import java.util.List;
+
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
@@ -43,8 +45,7 @@ public class TriView extends Stage
 
 	private Viewer viewerSource;
 	private ViewerBytecode viewerBytecode;
-    // TODO ref.x86asm.net
-	private Viewer viewerAssembly;
+	private ViewerAssembly viewerAssembly; // TODO ref.x86asm.net
 
 	private SplitPane splitViewer;
 
@@ -219,7 +220,7 @@ public class TriView extends Stage
 
 		viewerSource = new Viewer(parent);
 		viewerBytecode = new ViewerBytecode(parent);
-		viewerAssembly = new Viewer(parent);
+		viewerAssembly = new ViewerAssembly(parent);
 
 		colSource.getChildren().add(lblSource);
 		colSource.getChildren().add(viewerSource);
@@ -367,11 +368,11 @@ public class TriView extends Stage
 
 		viewerBytecode.setContent(currentMember, classLocations);
 
-		String assembly;
+		AssemblyMethod asmMethod = null;
 
 		if (currentMember.isCompiled())
 		{
-			assembly = currentMember.getAssembly();
+			asmMethod = currentMember.getAssembly();
 
 			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
 
@@ -389,17 +390,22 @@ public class TriView extends Stage
 				}
 			}
 
-			if (assembly == null)
+			if (asmMethod == null)
 			{
-				assembly = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				viewerAssembly.setContent(msg, false);
+			}
+			else
+			{
+				viewerAssembly.setAssemblyMethod(asmMethod);
 			}
 		}
 		else
 		{
-			assembly = "Not JIT-compiled";
+			String msg = "Not JIT-compiled";
+			viewerAssembly.setContent(msg, false);
+
 			lblMemberInfo.setText(S_EMPTY);
 		}
-
-		viewerAssembly.setContent(assembly, false);
 	}
 }
