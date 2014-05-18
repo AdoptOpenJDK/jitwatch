@@ -5,15 +5,10 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 // Demo class to generate an example hotspot.log
 // run with VM arguments
@@ -30,8 +25,6 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MakeHotSpotLog
 {
-	private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
-
 	public MakeHotSpotLog(int iterations)
 	{
 		addVariable(iterations);
@@ -57,7 +50,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		logger.info("addVariable: {}", count);
+		System.out.println("addVariable: " + count);
 	}
 
 	private void addConstant(int iterations)
@@ -69,7 +62,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		logger.info("addConstant: {}", count);
+		System.out.println("addConstant: " + count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -92,7 +85,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("randomBranchTest: {} {} {}", count, adds, subs);
+		System.out.println("randomBranchTest: " + count + " " + adds + " " + subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -115,7 +108,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("changingBranchTest: {} {} {}", count, adds, subs);
+		System.out.println("changingBranchTest: " + count + " " + adds + " " + subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -136,7 +129,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("intrinsicTest: {}", dstSum);
+		System.out.println("intrinsicTest: " + dstSum);
 	}
 
 	private long add(long a, long b)
@@ -158,7 +151,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		logger.warn("tooBigToInline: {}", count);
+		System.out.println("tooBigToInline: " + count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -253,7 +246,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("list sum: {}", sum);
+		System.out.println("list sum: " + sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -266,7 +259,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		logger.info("testCallChain: {}", count);
+		System.out.println("testCallChain: " + count);
 	}
 
 	private long chainA1(long count)
@@ -315,12 +308,12 @@ public class MakeHotSpotLog
 			count = chainC2(count);
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		System.out.println("testCallChain2: " + count);
 	}
-	
+
 	private boolean test(int count, int iterations)
 	{
-		return count < (0.9 * (double)iterations);
+		return count < (0.9 * (double) iterations);
 	}
 
 	private void testCallChain3()
@@ -341,7 +334,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		System.out.println("testCallChain2: " + count);
 	}
 
 	private long chainC1(long inCount)
@@ -373,7 +366,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		logger.info("testLeaf: {}", count);
+		System.out.println("testLeaf: " + count);
 	}
 
 	private long leaf1(long count)
@@ -395,23 +388,23 @@ public class MakeHotSpotLog
 	{
 		return count + 4;
 	}
-	
+
 	private void testToUpperCase(long iterations)
-	{		
+	{
 		String sentence = "The quick brown fox jumps over the lazy dog\n";
-		
-		String[] lcWords = sentence.split(S_SPACE);
+
+		String[] lcWords = sentence.split(" ");
 
 		int wordCount = lcWords.length;
 
 		String[] ucWords = new String[wordCount];
-		
+
 		for (long l = 0; l < iterations; l++)
 		{
 			toUpper(lcWords, ucWords, wordCount);
 		}
 	}
-	
+
 	private void toUpper(String[] lcWords, String[] ucWords, int wordCount)
 	{
 		for (int w = 0; w < wordCount; w++)
@@ -432,7 +425,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("usage: MakeHotSpotLog [iterations]", nfe);
+				System.out.println("usage: MakeHotSpotLog [iterations]");
 			}
 		}
 
