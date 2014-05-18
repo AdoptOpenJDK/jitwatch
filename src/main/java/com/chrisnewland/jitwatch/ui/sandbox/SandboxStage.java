@@ -132,6 +132,16 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 		taLog.setStyle(style);
 
+		Button btnNewEditor = new Button("New Editor");
+		btnNewEditor.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				addEditor(null);
+			}
+		});
+
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(10);
@@ -141,6 +151,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 		hBoxTools.getChildren().add(rbATT);
 		hBoxTools.getChildren().add(rbIntel);
 		hBoxTools.getChildren().add(btnRunTestLoad);
+		hBoxTools.getChildren().add(btnNewEditor);
 
 		splitVertical.getItems().add(hBoxTools);
 		splitVertical.getItems().add(splitEditorPanes);
@@ -176,10 +187,36 @@ public class SandboxStage extends Stage implements ISandboxStage
 	private void addEditor(String filename)
 	{
 		EditorPane editor = new EditorPane(this);
-		editor.loadSource(SANDBOX_EXAMPLE_DIR, filename);
+
+		if (filename != null)
+		{
+			editor.loadSource(SANDBOX_EXAMPLE_DIR, filename);
+		}
 
 		editorPanes.add(editor);
 		splitEditorPanes.getItems().add(editor);
+		setEditorDividers();
+	}
+
+	private void setEditorDividers()
+	{
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				int editorCount = editorPanes.size();
+
+				double widthFraction = 1.0 / editorCount;
+				double dividerPos = widthFraction;
+
+				for (int i = 0; i < editorCount - 1; i++)
+				{
+					splitEditorPanes.setDividerPosition(i, dividerPos);
+					dividerPos += widthFraction;
+				}
+			}
+		});
 	}
 
 	private void runTestLoad()
@@ -218,6 +255,13 @@ public class SandboxStage extends Stage implements ISandboxStage
 		{
 			logger.error("Sandbox failure", e);
 		}
+	}
+
+	void editorClosed(EditorPane editor)
+	{
+		editorPanes.remove(editor);
+		splitEditorPanes.getItems().remove(editor);
+		setEditorDividers();
 	}
 
 	@Override

@@ -415,7 +415,7 @@ public class MakeHotSpotLog
 
 	public static void main(String[] args)
 	{
-		int iterations = 1_000_000;
+		int iterations = 20_000;
 
 		if (args.length == 1)
 		{
