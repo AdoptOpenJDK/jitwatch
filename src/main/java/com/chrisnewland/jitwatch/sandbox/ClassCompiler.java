@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.util;
+package com.chrisnewland.jitwatch.sandbox;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,12 +20,15 @@ import org.slf4j.LoggerFactory;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class CompilationUtil
+public class ClassCompiler
 {
-	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(ClassCompiler.class);
 
+	public static final Path SANDBOX_DIR;
 	public static final Path SANDBOX_SOURCE_DIR;
 	public static final Path SANDBOX_CLASS_DIR;
+	
+	private String compilationMessages;
 
 	static
 	{
@@ -45,11 +48,12 @@ public class CompilationUtil
 			sandboxClasses.mkdirs();
 		}
 
+		SANDBOX_DIR = sandbox.toPath();
 		SANDBOX_SOURCE_DIR = sandboxSources.toPath();
 		SANDBOX_CLASS_DIR = sandboxClasses.toPath();
 	}
 
-	public static boolean compile(List<File> sourceFiles) throws IOException
+	public boolean compile(List<File> sourceFiles) throws IOException
 	{
 		if (SANDBOX_SOURCE_DIR == null || SANDBOX_CLASS_DIR == null)
 		{
@@ -74,16 +78,14 @@ public class CompilationUtil
 
 		boolean success = task.call();
 
-		String compilationMessages = compilerOutputStream.toString();
-
-		logger.info("Compilation Success: {}", success);
-
-		if (compilationMessages.length() > 0)
-		{
-			logger.info("Compilation Message: {}", compilationMessages);
-		}
+		compilationMessages = compilerOutputStream.toString();
 
 		return success;
+	}
+	
+	public String getCompilationMessages()
+	{
+		return compilationMessages;
 	}
 
 	public static File writeSource(String fqClassName, String sourceCode) throws IOException

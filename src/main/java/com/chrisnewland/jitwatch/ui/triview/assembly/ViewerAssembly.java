@@ -26,7 +26,7 @@ public class ViewerAssembly extends Viewer
 {
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy, lineListener, lineType);
+		super(stageAccessProxy, lineListener, lineType, true);
 	}
 
 	public void setAssemblyMethod(AssemblyMethod asmMethod)

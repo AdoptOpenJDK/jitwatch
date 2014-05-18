@@ -60,7 +60,7 @@ public class ResourceLoader
 			{
 				if (lf.isDirectory())
 				{
-					source = searchFileInDirectory(lf, fileName);
+					source = readFileInDirectory(lf, fileName);
 
 					if (source != null)
 					{
@@ -82,7 +82,7 @@ public class ResourceLoader
 		return source;
 	}
 
-	public static String searchFileInDirectory(File dir, String fileName)
+	public static String readFileInDirectory(File dir, String fileName)
 	{
 		String result = null;
 

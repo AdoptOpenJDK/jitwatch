@@ -31,7 +31,7 @@ public class ViewerBytecode extends Viewer
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy, lineListener, lineType);
+		super(stageAccessProxy, lineListener, lineType, true);
 	}
 
 	public void setContent(IMetaMember member, List<String> classLocations)

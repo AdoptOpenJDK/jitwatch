@@ -377,4 +377,16 @@ public final class StringUtil
 
 		return value;
 	}
+	
+	public static String listToString(List<?> list)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (Object item : list)
+		{
+			builder.append(item.toString()).append(C_SPACE);
+		}
+
+		return builder.toString().trim();
+	}
 }

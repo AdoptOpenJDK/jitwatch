@@ -96,10 +96,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TextArea textAreaLog;
 
 	private File hsLogFile = null;
+
 	private boolean isReadingLogFile = false;
 
-	private Button btnStartWatching;
-	private Button btnStopWatching;
+	private Button btnStart;
+	private Button btnStop;
 	private Button btnConfigure;
 	private Button btnTimeLine;
 	private Button btnStats;
@@ -230,7 +231,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
-	private void stopWatching()
+	private void stopParsing()
 	{
 		if (isReadingLogFile)
 		{
@@ -238,7 +239,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			isReadingLogFile = false;
 			updateButtons();
 
-			log("Stopped watching " + hsLogFile.getAbsolutePath());
+			log("Stopped parsing " + hsLogFile.getAbsolutePath());
 		}
 	}
 
@@ -265,7 +266,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 					}
 				}
 
-				stopWatching();
+				stopParsing();
 			}
 		});
 
@@ -279,13 +280,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(ActionEvent e)
 			{
-				stopWatching();
+				stopParsing();
 				chooseHotSpotFile();
 			}
 		});
 
-		btnStartWatching = new Button("Start");
-		btnStartWatching.setOnAction(new EventHandler<ActionEvent>()
+		btnStart = new Button("Start");
+		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
@@ -316,13 +317,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			}
 		});
 
-		btnStopWatching = new Button("Stop");
-		btnStopWatching.setOnAction(new EventHandler<ActionEvent>()
+		btnStop = new Button("Stop");
+		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				stopWatching();
+				stopParsing();
 			}
 		});
 
@@ -453,7 +454,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(ActionEvent e)
 			{
-				openTextViewer("Error Log", errorLog.toString(), false);
+				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
 		});
 
@@ -472,8 +473,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.setSpacing(10);
 		hboxTop.getChildren().add(btnSandbox);
 		hboxTop.getChildren().add(btnChooseWatchFile);
-		hboxTop.getChildren().add(btnStartWatching);
-		hboxTop.getChildren().add(btnStopWatching);
+		hboxTop.getChildren().add(btnStart);
+		hboxTop.getChildren().add(btnStop);
 		hboxTop.getChildren().add(btnConfigure);
 		hboxTop.getChildren().add(btnTimeLine);
 		hboxTop.getChildren().add(btnStats);
@@ -512,13 +513,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(textAreaHeight);
-				
+
 		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes");
-		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska.\nUsed under licence http://ref.x86asm.net/index.html#License\n");
+		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
 		{
-			log("Please choose a HotSpot log file");
+			log("Choose a HotSpot log file or open the Sandbox");
 		}
 		else
 		{
@@ -561,7 +562,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		updateButtons();
 	}
-	
+
 	private void loadConfigFromFile()
 	{
 		JITWatchConfig config = new JITWatchConfig();
@@ -574,7 +575,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		if (configStage == null)
 		{
 			loadConfigFromFile();
-			
+
 			configStage = new ConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
 
@@ -640,8 +641,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private void updateButtons()
 	{
-		btnStartWatching.setDisable(hsLogFile == null || isReadingLogFile);
-		btnStopWatching.setDisable(!isReadingLogFile);
+		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
+		btnStop.setDisable(!isReadingLogFile);
 	}
 
 	public void openTreeAtMember(IMetaMember member)
@@ -704,18 +705,17 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
-	TextViewerStage openTextViewer(String title, String content)
+	@Override
+	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
-		return openTextViewer(title, content, false);
-	}
-
-	TextViewerStage openTextViewer(String title, String content, boolean lineNumbers)
-	{
-		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
+		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		tvs.show();
 		openPopupStages.add(tvs);
+	}
 
-		return tvs;
+	public void openTextViewer(String title, String content)
+	{
+		openTextViewer(title, content, false, false);
 	}
 
 	public void openCompileChain(IMetaMember member)
@@ -748,7 +748,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private void chooseHotSpotFile()
 	{
 		loadConfigFromFile();
-		
+
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 

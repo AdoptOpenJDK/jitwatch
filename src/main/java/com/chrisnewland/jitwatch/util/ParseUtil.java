@@ -657,4 +657,57 @@ public class ParseUtil
 
 		return result;
 	}
+	
+	public static String getPackageFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			if (line.startsWith(S_PACKAGE) && line.endsWith(S_SEMICOLON))
+			{
+				result = line.substring(S_PACKAGE.length(), line.length() - 1).trim();
+			}
+		}
+
+		if (result == null)
+		{
+			result = S_EMPTY;
+		}
+
+		return result;
+	}
+	
+	public static String getClassFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		String classToken = S_SPACE + S_CLASS + S_SPACE;
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			int classTokenPos = line.indexOf(classToken);
+
+			if (classTokenPos != -1)
+			{
+				result = line.substring(classTokenPos + classToken.length());
+			}
+		}
+
+		if (result == null)
+		{
+			result = "";
+		}
+
+		return result;
+	}
+
 }

@@ -12,10 +12,8 @@ import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
 
 public class ViewerSource extends Viewer
 {
-
 	public ViewerSource(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy, lineListener, lineType);
+		super(stageAccessProxy, lineListener, lineType, true);
 	}
-
 }

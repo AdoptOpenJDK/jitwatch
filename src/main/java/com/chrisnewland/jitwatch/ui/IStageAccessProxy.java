@@ -12,4 +12,6 @@ public interface IStageAccessProxy
 	void openTriView(IMetaMember member, boolean force);
 	
 	void openBrowser(String title, String html, String stylesheet);
+	
+	void openTextViewer(String title, String contents, boolean lineNumbers, boolean highlighting);
 }

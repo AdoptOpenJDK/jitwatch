@@ -6,7 +6,6 @@
 package com.chrisnewland.jitwatch.ui.sandbox;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,16 +15,12 @@ import org.slf4j.LoggerFactory;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.core.ILogParser;
-import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.MetaClass;
+import com.chrisnewland.jitwatch.sandbox.Sandbox;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-import com.chrisnewland.jitwatch.util.CompilationUtil;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
-import com.chrisnewland.jitwatch.util.ExecutionUtil;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -43,32 +38,32 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class SandboxStage extends Stage
+public class SandboxStage extends Stage implements ISandboxStage
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
-	private TextArea taSource;
-	private TextArea taLoad;
+	private List<EditorPane> editorPanes = new ArrayList<>();
+
 	private TextArea taLog;
 
-	private VBox colSource;
-	private VBox colLoad;
-
-	private ILogParser logParser;
 	private IStageAccessProxy accessProxy;
-	
+
 	private boolean intelMode = false;
 
-	private static final boolean hsdisAvailable = DisassemblyUtil.isDisassemblerAvailable();
+	private Sandbox sandbox;
+
+	private SplitPane splitEditorPanes;
+
+	static final File SANDBOX_EXAMPLE_DIR = new File("src/main/java/com/chrisnewland/jitwatch/demo");
 
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
 	{
-		this.logParser = parser;
 		this.accessProxy = proxy;
+
+		sandbox = new Sandbox(parser, this);
 
 		setTitle("JIT Sandbox");
 
@@ -91,7 +86,7 @@ public class SandboxStage extends Stage
 
 		final RadioButton rbATT = new RadioButton("AT&T");
 		final RadioButton rbIntel = new RadioButton("Intel");
-		
+
 		rbIntel.setDisable(true); // TODO support Intel format
 
 		final ToggleGroup group = new ToggleGroup();
@@ -110,7 +105,7 @@ public class SandboxStage extends Stage
 				if (group.getSelectedToggle() != null)
 				{
 					intelMode = group.getSelectedToggle().equals(rbIntel);
-				
+
 					if (intelMode)
 					{
 						log("Intel syntax assembly");
@@ -118,82 +113,43 @@ public class SandboxStage extends Stage
 					else
 					{
 						log("AT&T syntax assembly");
-					}				
+					}
 				}
 			}
 		});
 
-		SplitPane splitHorizontal = new SplitPane();
-		splitHorizontal.setOrientation(Orientation.HORIZONTAL);
+		splitEditorPanes = new SplitPane();
+		splitEditorPanes.setOrientation(Orientation.HORIZONTAL);
 
 		SplitPane splitVertical = new SplitPane();
 		splitVertical.setOrientation(Orientation.VERTICAL);
 
-		colSource = new VBox();
-		colLoad = new VBox();
-
-		Label lblSource = new Label("Source");
-		Label lblLoad = new Label("Test Load");
 		Label lblSyntax = new Label("Assembly syntax:");
 
-
-		HBox hBoxLoad = new HBox();
-		hBoxLoad.setSpacing(10);
-		hBoxLoad.setPadding(new Insets(0, 10, 0, 10));
-		hBoxLoad.getChildren().add(lblLoad);
-		hBoxLoad.getChildren().add(btnRunTestLoad);
-		hBoxLoad.getChildren().add(lblSyntax);
-		hBoxLoad.getChildren().add(rbATT);
-		hBoxLoad.getChildren().add(rbIntel);
-
-		HBox hBoxSource = new HBox();
-		hBoxSource.setSpacing(10);
-		hBoxSource.setPadding(new Insets(0, 10, 0, 10));
-		hBoxSource.getChildren().add(lblSource);
-
-		hBoxSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-		hBoxLoad.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-
-		hBoxSource.prefWidthProperty().bind(colSource.widthProperty());
-		hBoxLoad.prefWidthProperty().bind(colLoad.widthProperty());
-
-		double headerFraction = 0.1;
-
-		hBoxSource.prefHeightProperty().bind(colSource.heightProperty().multiply(headerFraction));
-		hBoxLoad.prefHeightProperty().bind(colLoad.heightProperty().multiply(headerFraction));
-
-		taSource = new TextArea();
-		taLoad = new TextArea();
 		taLog = new TextArea();
 
 		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 
-		taSource.setStyle(style);
-		taLoad.setStyle(style);
 		taLog.setStyle(style);
 
-		colSource.getChildren().add(hBoxSource);
-		colSource.getChildren().add(taSource);
+		HBox hBoxTools = new HBox();
 
-		colLoad.getChildren().add(hBoxLoad);
-		colLoad.getChildren().add(taLoad);
+		hBoxTools.setSpacing(10);
+		hBoxTools.setPadding(new Insets(10));
 
-		taSource.prefWidthProperty().bind(colSource.widthProperty());
-		taSource.prefHeightProperty().bind(colSource.heightProperty().multiply(1 - headerFraction));
+		hBoxTools.getChildren().add(lblSyntax);
+		hBoxTools.getChildren().add(rbATT);
+		hBoxTools.getChildren().add(rbIntel);
+		hBoxTools.getChildren().add(btnRunTestLoad);
 
-		taLoad.prefWidthProperty().bind(colLoad.widthProperty());
-		taLoad.prefHeightProperty().bind(colLoad.heightProperty().multiply(1 - headerFraction));
-
-		splitHorizontal.getItems().add(colSource);
-		splitHorizontal.getItems().add(colLoad);
-
-		splitVertical.getItems().add(splitHorizontal);
+		splitVertical.getItems().add(hBoxTools);
+		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
-		splitVertical.setDividerPositions(0.7, 0.3);
+		splitVertical.setDividerPositions(0.1, 0.7, 0.2);
 
-		log("Sandbox Ready");
-		log("HotSpot disassembler (hsdis) available: " + hsdisAvailable);
+		log("Sandbox ready");
+		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
 
 		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
@@ -213,101 +169,21 @@ public class SandboxStage extends Stage
 
 	private void setup()
 	{
-		StringBuilder sourceBuilder = new StringBuilder();
-
-		sourceBuilder.append("package com.chrisnewland.jitwatch.sandbox;\n\n");
-
-		sourceBuilder.append("public class Test\n");
-		sourceBuilder.append("{\n");
-
-		sourceBuilder.append("    public int add(int a, int b)\n");
-		sourceBuilder.append("    {\n");
-		sourceBuilder.append("        return a + b;\n");
-		sourceBuilder.append("    }\n");
-
-		sourceBuilder.append("}\n");
-
-		taSource.setText(sourceBuilder.toString());
-
-		StringBuilder loadBuilder = new StringBuilder();
-
-		loadBuilder.append("package com.chrisnewland.jitwatch.sandbox;\n\n");
-
-		loadBuilder.append("public class TestLoad\n");
-		loadBuilder.append("{\n");
-
-		loadBuilder.append("    public static void main(String[] args)\n");
-		loadBuilder.append("    {\n");
-		loadBuilder.append("        Test test = new Test();\n\n");
-		loadBuilder.append("        int sum = 0;\n\n");
-		loadBuilder.append("        for (int i = 0 ; i < 1_000_000; i++)\n");
-		loadBuilder.append("        {\n");
-		loadBuilder.append("            sum = test.add(sum, 1);\n");
-		loadBuilder.append("        }\n\n");
-		loadBuilder.append("        System.out.println(\"Sum:\" + sum);\n");
-		loadBuilder.append("    }\n");
-
-		loadBuilder.append("}\n");
-
-		taLoad.setText(loadBuilder.toString());
-
+		addEditor("SandboxTest.java");
+		addEditor("SandboxTestLoad.java");
 	}
 
-	private String getPackageFromSource(String source)
+	private void addEditor(String filename)
 	{
-		String result = null;
+		EditorPane editor = new EditorPane(this);
+		editor.loadSource(SANDBOX_EXAMPLE_DIR, filename);
 
-		String[] lines = source.split(S_NEWLINE);
-
-		for (String line : lines)
-		{
-			line = line.trim();
-
-			if (line.startsWith(S_PACKAGE) && line.endsWith(S_SEMICOLON))
-			{
-				result = line.substring(S_PACKAGE.length(), line.length() - 1).trim();
-			}
-		}
-
-		if (result == null)
-		{
-			result = S_EMPTY;
-		}
-
-		return result;
+		editorPanes.add(editor);
+		splitEditorPanes.getItems().add(editor);
 	}
 
-	private String getClassFromSource(String source)
-	{
-		String result = null;
-
-		String[] lines = source.split(S_NEWLINE);
-
-		String classToken = S_SPACE + S_CLASS + S_SPACE;
-
-		for (String line : lines)
-		{
-			line = line.trim();
-
-			int classTokenPos = line.indexOf(classToken);
-
-			if (classTokenPos != -1)
-			{
-				result = line.substring(classTokenPos + classToken.length());
-			}
-		}
-
-		if (result == null)
-		{
-			result = "";
-		}
-
-		return result;
-	}
-
-	//TODO ffs Chris, refactor!
 	private void runTestLoad()
-	{				
+	{
 		try
 		{
 			Platform.runLater(new Runnable()
@@ -319,155 +195,33 @@ public class SandboxStage extends Stage
 				}
 			});
 
-			String source = taSource.getText();
-			String load = taLoad.getText();
+			List<String> sources = new ArrayList<>();
 
-			String sourcePackage = getPackageFromSource(source);
-			String loadPackage = getPackageFromSource(load);
-
-			String sourceClass = getClassFromSource(source);
-			String loadClass = getClassFromSource(load);
-
-			StringBuilder fqNameSourceBuilder = new StringBuilder();
-
-			if (sourcePackage.length() > 0)
+			for (EditorPane editor : editorPanes)
 			{
-				fqNameSourceBuilder.append(sourcePackage).append(S_DOT);
-			}
-
-			fqNameSourceBuilder.append(sourceClass);
-
-			StringBuilder fqNameLoadBuilder = new StringBuilder();
-
-			if (loadPackage.length() > 0)
-			{
-				fqNameLoadBuilder.append(loadPackage).append(S_DOT);
-			}
-
-			fqNameLoadBuilder.append(loadClass);
-
-			String fqNameSource = fqNameSourceBuilder.toString();
-			String fqNameLoad = fqNameLoadBuilder.toString();
-
-			log("Writing source file: " + fqNameSource);
-			File sourceFile = CompilationUtil.writeSource(fqNameSource, source);
-
-			log("Writing load file: " + fqNameLoad);
-			File loadFile = CompilationUtil.writeSource(fqNameLoad, load);
-
-			List<File> toCompile = new ArrayList<>();
-			toCompile.add(sourceFile);
-			toCompile.add(loadFile);
-
-			log("Compiling: " + listToString(toCompile));
-			CompilationUtil.compile(toCompile);
-
-			List<String> cp = new ArrayList<>();
-
-			cp.add(CompilationUtil.SANDBOX_CLASS_DIR.toString());
-
-			List<String> options = new ArrayList<>();
-			options.add("-XX:+UnlockDiagnosticVMOptions");
-			options.add("-XX:+TraceClassLoading");
-			options.add("-XX:+LogCompilation");
-			options.add("-XX:LogFile=live.log");
-
-			if (hsdisAvailable)
-			{
-				options.add("-XX:+PrintAssembly");
-				
-				if (intelMode)
+				if (editor.getSource().length() > 0)
 				{
-					options.add("-XX:PrintAssemblyOptions=intel");
+					sources.add(editor.getSource());
 				}
 			}
 
-			log("Executing: " + fqNameLoad);
-			log("VM options: " + listToString(options));
-
-			boolean success = ExecutionUtil.execute(fqNameLoad, cp, options);
-
-			log("Success: " + success);
-
-			File logFile = new File("live.log");
-
-			List<String> sourceLocations = new ArrayList<>();
-			List<String> classLocations = new ArrayList<>();
-
-			sourceLocations.add(CompilationUtil.SANDBOX_SOURCE_DIR.toString());
-			classLocations.add(CompilationUtil.SANDBOX_CLASS_DIR.toString());
-
-			JITWatchConfig config = new JITWatchConfig();
-			config.setSourceLocations(sourceLocations);
-			config.setClassLocations(classLocations);
-			
-			logParser.reset();
-
-			logParser.setConfig(config);
-
-			logParser.readLogFile(logFile);
-
-			log("Parsing complete");
-
-			IReadOnlyJITDataModel model = logParser.getModel();
-
-			log("Looking up class: " + fqNameSource);
-
-			MetaClass metaClass = model.getPackageManager().getMetaClass(fqNameSource);
-
-			IMetaMember firstCompiled = null;
-
-			if (metaClass != null)
+			if (sources.size() > 0)
 			{
-				log("Found: " + metaClass.getFullyQualifiedName());
-
-				log("looking for compiled members");
-
-				// select first compiled member if any
-				List<IMetaMember> memberList = metaClass.getMetaMembers();
-
-				for (IMetaMember mm : memberList)
-				{
-					if (mm.isCompiled())
-					{
-						firstCompiled = mm;
-						break;
-					}
-				}
+				sandbox.runSandbox(sources, intelMode);
 			}
-
-			final IMetaMember member = firstCompiled;
-
-			log("Launching TriView for " + member);
-
-			Platform.runLater(new Runnable()
+			else
 			{
-				@Override
-				public void run()
-				{
-					accessProxy.openTriView(member, true);
-				}
-			});
+				log("All editors are empty");
+			}
 		}
-		catch (IOException ioe)
+		catch (Exception e)
 		{
-			logger.error("Compile failure", ioe);
+			logger.error("Sandbox failure", e);
 		}
 	}
 
-	private String listToString(List<?> list)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		for (Object item : list)
-		{
-			builder.append(item.toString()).append(C_SPACE);
-		}
-
-		return builder.toString().trim();
-	}
-
-	private void log(final String text)
+	@Override
+	public void log(final String text)
 	{
 		Platform.runLater(new Runnable()
 		{
@@ -475,6 +229,34 @@ public class SandboxStage extends Stage
 			public void run()
 			{
 				taLog.appendText(text + S_NEWLINE);
+			}
+		});
+	}
+
+	@Override
+	public void openTriView(final IMetaMember member)
+	{
+		log("Launching TriView for " + member);
+
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				accessProxy.openTriView(member, true);
+			}
+		});
+	}
+
+	@Override
+	public void showError(final String error)
+	{
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				accessProxy.openTextViewer("Error", error, false, false);
 			}
 		});
 	}

@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.util;
+package com.chrisnewland.jitwatch.sandbox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,11 +6,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ExecutionUtil
-{
-	private static final Logger logger = LoggerFactory.getLogger(ExecutionUtil.class);
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-	public static boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
+public class ClassExecutor
+{
+	private static final Logger logger = LoggerFactory.getLogger(ClassExecutor.class);
+
+	private StreamCollector outBuilder;
+	private StreamCollector errBuilder;
+	
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
 	{
 		List<String> commands = new ArrayList<>();
 
@@ -29,22 +34,19 @@ public class ExecutionUtil
 
 			for (String cp : classpathEntries)
 			{
-				cpBuilder.append(cp).append(":");
+				cpBuilder.append(cp).append(C_COLON);
 			}
 
 			commands.add(cpBuilder.toString());
 		}
 
 		commands.add(className);
-		
-		//--------------------
-		
+				
 		StringBuilder cmdBuilder = new StringBuilder();
-
 
 		for (String part : commands)
 		{
-			cmdBuilder.append(part).append(" ");
+			cmdBuilder.append(part).append(C_SPACE);
 		}
 		
 		logger.info("Executing: {}", cmdBuilder.toString());
@@ -58,14 +60,10 @@ public class ExecutionUtil
 			Process proc = pb.start();
 
 			//TODO: how to not miss start of output?
-			StreamCollector outBuilder = new StreamCollector(proc.getInputStream());
-			StreamCollector errBuilder = new StreamCollector(proc.getErrorStream());
+			outBuilder = new StreamCollector(proc.getInputStream());
+			errBuilder = new StreamCollector(proc.getErrorStream());
 
 			result = proc.waitFor();
-
-			logger.info("Execution complete: {}", result);
-			logger.info("Process out: {}", outBuilder.getStreamString());
-			logger.info("Process err: {}", errBuilder.getStreamString());
 		}
 		catch (Exception e)
 		{
@@ -73,5 +71,29 @@ public class ExecutionUtil
 		}
 		
 		return result == 0; // normal completion
+	}
+	
+	public String getOutputStream()
+	{
+		String result = null;
+		
+		if (outBuilder != null)
+		{
+			result = outBuilder.getStreamString();
+		}
+		
+		return result;
+	}
+	
+	public String getErrorStream()
+	{
+		String result = null;
+		
+		if (errBuilder != null)
+		{
+			result = errBuilder.getStreamString();
+		}
+		
+		return result;
 	}
 }

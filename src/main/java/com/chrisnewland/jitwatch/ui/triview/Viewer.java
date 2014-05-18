@@ -62,26 +62,30 @@ public class Viewer extends VBox
 	protected static final Logger logger = LoggerFactory.getLogger(Viewer.class);
 
 	protected IStageAccessProxy stageAccessProxy;
-	
+
 	protected ILineListener lineListener;
 	protected LineType lineType;
-	
-	public Viewer(IStageAccessProxy stageAccessProxy)
+
+	private boolean isHighlighting;
+
+	public Viewer(IStageAccessProxy stageAccessProxy, boolean highlighting)
 	{
 		this.stageAccessProxy = stageAccessProxy;
+		this.isHighlighting = highlighting;
 
 		setup();
 	}
-	
-	public Viewer(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+
+	public Viewer(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType, boolean highlighting)
 	{
 		this.stageAccessProxy = stageAccessProxy;
 		this.lineListener = lineListener;
 		this.lineType = lineType;
-		
+		this.isHighlighting = highlighting;
+
 		setup();
 	}
-	
+
 	private void setup()
 	{
 		vBoxRows = new VBox();
@@ -94,13 +98,13 @@ public class Viewer extends VBox
 				setScrollBar();
 			}
 		});
-		
+
 		scrollPane = new ScrollPane();
 		scrollPane.setContent(vBoxRows);
 		scrollPane.setStyle("-fx-background:white");
-		
+
 		scrollPane.setFitToHeight(true);
-		
+
 		scrollPane.prefHeightProperty().bind(heightProperty());
 
 		getChildren().add(scrollPane);
@@ -154,40 +158,45 @@ public class Viewer extends VBox
 
 		vBoxRows.getChildren().clear();
 		vBoxRows.getChildren().addAll(items);
-		
+
 		int pos = 0;
-		
+
 		for (final Label label : items)
 		{
 			final int finalPos = pos;
-			
-			label.setOnMouseEntered(new EventHandler<MouseEvent>()
-			{
-				@Override
-				public void handle(MouseEvent arg0)
-				{
-					label.setStyle(STYLE_HIGHLIGHTED);
-					lineListener.lineHighlighted(finalPos, lineType);
-				}
-			});
-			
-			label.setOnMouseExited(new EventHandler<MouseEvent>()
-			{
-				@Override
-				public void handle(MouseEvent arg0)
-				{
-					label.setStyle(STYLE_UNHIGHLIGHTED);
-					lineListener.lineHighlighted(-1, lineType);
 
-				}
-			});
-			
+			label.setStyle(STYLE_UNHIGHLIGHTED);
+
+			if (isHighlighting)
+			{
+				label.setOnMouseEntered(new EventHandler<MouseEvent>()
+				{
+					@Override
+					public void handle(MouseEvent arg0)
+					{
+						label.setStyle(STYLE_HIGHLIGHTED);
+						lineListener.lineHighlighted(finalPos, lineType);
+					}
+				});
+
+				label.setOnMouseExited(new EventHandler<MouseEvent>()
+				{
+					@Override
+					public void handle(MouseEvent arg0)
+					{
+						label.setStyle(STYLE_UNHIGHLIGHTED);
+						lineListener.lineHighlighted(-1, lineType);
+
+					}
+				});
+			}
+
 			label.prefWidthProperty().bind(scrollPane.widthProperty());
-			
+
 			pos++;
 		}
 	}
-	
+
 	private String padLineNumber(int number, int maxWidth)
 	{
 		int len = Integer.toString(number).length();
@@ -278,7 +287,7 @@ public class Viewer extends VBox
 				// revert to black Label
 				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 				label.setStyle(STYLE_UNHIGHLIGHTED);
-			}			
+			}
 		}
 		else
 		{
@@ -295,7 +304,7 @@ public class Viewer extends VBox
 			lastScrollIndex = index;
 
 			scrollIndex = index;
-			
+
 			setScrollBar();
 		}
 	}
@@ -305,15 +314,15 @@ public class Viewer extends VBox
 		ObservableList<Node> items = vBoxRows.getChildren();
 
 		Label result = null;
-		
+
 		if (index > 0 && index < items.size())
 		{
-			result = (Label)items.get(index);
+			result = (Label) items.get(index);
 		}
-		
+
 		return result;
 	}
-	
+
 	private int findPosForRegex(String regex)
 	{
 		int result = -1;
@@ -347,7 +356,7 @@ public class Viewer extends VBox
 		{
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
-			
+
 			double scrollPercent = (double) scrollIndex / (double) vBoxRows.getChildren().size();
 
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);

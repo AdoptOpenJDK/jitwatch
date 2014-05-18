@@ -1,4 +1,4 @@
-package com.chrisnewland.jitwatch.util;
+package com.chrisnewland.jitwatch.sandbox;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

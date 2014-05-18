@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.chrisnewland.jitwatch.util.ExecutionUtil;
+import com.chrisnewland.jitwatch.sandbox.ClassExecutor;
 
 public class TestExecutionUtil
 {
@@ -47,7 +47,9 @@ public class TestExecutionUtil
 
 		List<String> options = new ArrayList<>();
 
-		boolean success = ExecutionUtil.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
+		ClassExecutor executor = new ClassExecutor();
+		
+		boolean success = executor.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
 
 		assertTrue(success);
 	}

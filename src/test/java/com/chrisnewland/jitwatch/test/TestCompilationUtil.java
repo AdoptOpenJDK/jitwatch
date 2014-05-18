@@ -13,8 +13,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.chrisnewland.jitwatch.util.CompilationUtil;
-import static com.chrisnewland.jitwatch.util.CompilationUtil.*;
+import com.chrisnewland.jitwatch.sandbox.ClassCompiler;
+
+import static com.chrisnewland.jitwatch.sandbox.ClassCompiler.*;
 
 public class TestCompilationUtil
 {
@@ -33,7 +34,7 @@ public class TestCompilationUtil
 
 		try
 		{
-			File f = CompilationUtil.writeSource("com.chrisnewland.jitwatch.compiletest.CompileTest", builder.toString());
+			File f = ClassCompiler.writeSource("com.chrisnewland.jitwatch.compiletest.CompileTest", builder.toString());
 
 			File expectedSourceFile = new File(SANDBOX_SOURCE_DIR.toFile(), "com" + File.separator + "chrisnewland"
 					+ File.separator + "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.java");
@@ -43,7 +44,9 @@ public class TestCompilationUtil
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
 
-			boolean success = CompilationUtil.compile(sources);
+			ClassCompiler compiler = new ClassCompiler();
+			
+			boolean success = compiler.compile(sources);
 
 			assertTrue(success);
 
