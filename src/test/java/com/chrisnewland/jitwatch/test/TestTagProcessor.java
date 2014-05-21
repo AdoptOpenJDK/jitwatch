@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.test;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
 import org.junit.Test;
@@ -242,6 +243,23 @@ public class TestTagProcessor
         // When
         TagProcessor tagProcessor = new TagProcessor();
         Tag actualParseResult = tagProcessor.processLine(line);
+
+        // Then
+        assertThat("No tags should have been returned",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
+
+    @Test
+    public void givenAThreeCharatersLineStartingWithOpenBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
+        // Given
+        Tag expectedParseResult = null;
+        String lineWith3LettersStartingWithOpenAngleBracket =
+                JITWatchConstants.C_OPEN_ANGLE + "12";
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(lineWith3LettersStartingWithOpenAngleBracket);
 
         // Then
         assertThat("No tags should have been returned",
