@@ -13,6 +13,8 @@ import java.util.List;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class TestTagProcessor
@@ -230,4 +232,20 @@ public class TestTagProcessor
 		assertEquals(TAG_RELEASE, tagRelease.getName());	
 		assertEquals(line5, tagRelease.getTextContent());
 	}
+
+    @Test
+    public void givenAnUndefinedLineIsAvailable_WhenTheTagProcessorProcessesIt_ThenNoTagsAreReturned() {
+        // Given
+        Tag expectedParseResult = null;
+        String line = null;
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(line);
+
+        // Then
+        assertThat("No tags should have been returned",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
 }
