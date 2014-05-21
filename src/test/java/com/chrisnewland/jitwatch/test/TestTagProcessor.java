@@ -8,9 +8,11 @@ package com.chrisnewland.jitwatch.test;
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.util.StringUtil;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
@@ -263,6 +265,24 @@ public class TestTagProcessor
 
         // Then
         assertThat("No tags should have been returned",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
+
+    @Test
+    public void givenLineContainingATypeTag_WhenTheTagProcessorParsesIt_ThenAResultIsReturned() {
+        // Given
+        String withTypeTag = "<type id='622' name='void'/>";
+        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTag);
+        boolean selfClosing = true;
+        Tag expectedParseResult = new Tag("type", attrs, selfClosing);
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(withTypeTag);
+
+        // Then
+        assertThat("The tag in the line should have been parse correctly",
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
