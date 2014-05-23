@@ -236,6 +236,12 @@ public class TestTagProcessor
 		assertEquals(line5, tagRelease.getTextContent());
 	}
 
+    /*
+        Scenario: Parsing an undefined line
+            Given an undefined line is available
+            When the tag processor parses such a line
+            Then no tag objects are returned
+     */
     @Test
     public void givenAnUndefinedLineIsAvailable_WhenTheTagProcessorProcessesIt_ThenNoTagsAreReturned() {
         // Given
@@ -247,11 +253,17 @@ public class TestTagProcessor
         Tag actualParseResult = tagProcessor.processLine(line);
 
         // Then
-        assertThat("No tags should have been returned",
+        assertThat("No tags should have been returned.",
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
 
+    /*
+        Scenario: Parsing a line containing partially completed tag
+            Given an line containing a partially completed tag is available
+            When the tag processor parses such a line
+            Then no tag objects are returned
+     */
     @Test
     public void givenAThreeCharatersLineStartingWithOpenBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
         // Given
@@ -264,11 +276,17 @@ public class TestTagProcessor
         Tag actualParseResult = tagProcessor.processLine(lineWith3LettersStartingWithOpenAngleBracket);
 
         // Then
-        assertThat("No tags should have been returned",
+        assertThat("No tags should have been returned.",
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
 
+    /*
+        Scenario: Parsing a line containing a tag
+            Given an line containing a tag is available
+            When the tag processor parses such a line
+            Then a tag object is returned
+     */
     @Test
     public void givenLineContainingATypeTag_WhenTheTagProcessorParsesIt_ThenAResultIsReturned() {
         // Given
@@ -282,7 +300,7 @@ public class TestTagProcessor
         Tag actualParseResult = tagProcessor.processLine(withTypeTag);
 
         // Then
-        assertThat("The tag in the line should have been parse correctly",
+        assertThat("The line should have been parsed correctly, producing a tag.",
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
