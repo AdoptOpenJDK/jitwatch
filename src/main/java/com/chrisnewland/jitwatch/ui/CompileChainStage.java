@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 public class CompileChainStage extends Stage
 {
     private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
+    private static final int TWENTY_UNITS = 20;
+    private static final int SIXTEEN_UNITS = 16;
 
     private ScrollPane scrollPane;
     private Pane pane;
@@ -114,11 +116,11 @@ public class CompileChainStage extends Stage
         double textWidth = text.getLayoutBounds().getWidth();
         double textHeight = text.getLayoutBounds().getHeight();
 
-        double rectWidth = textWidth + 20;
+        double rectWidth = textWidth + TWENTY_UNITS;
 
         Rectangle rect = new Rectangle(x, y, rectWidth, RECT_HEIGHT);
-        rect.setArcWidth(16);
-        rect.setArcHeight(16);
+        rect.setArcWidth(SIXTEEN_UNITS);
+        rect.setArcHeight(SIXTEEN_UNITS);
 
         text.setX(x + (rectWidth / 2 - textWidth / 2));
 
