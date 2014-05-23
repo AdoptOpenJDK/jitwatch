@@ -64,6 +64,10 @@ public class ParseUtil
     private static final int ARRAY_INDEX_PARAM_TYPES = PARAM_TYPES - 1;
     private static final int ARRAY_INDEX_RETURN_TYPES = RETURN_TYPES - 1;
 
+    private static final int ASSEMBLY_MEMBER = 2;
+    private static final int ASSEMBLY_PARAMS = 3;
+    private static final int ASSEMBLY_CLASS_NAME = 4;
+
     /*
         Hide Utility Class Constructor
         Utility classes should not have a public or default constructor.
@@ -656,9 +660,9 @@ public class ParseUtil
 
 		if (matcher.find())
 		{
-			String memberName = matcher.group(2);
-			String params = matcher.group(3).replace(S_SLASH, S_DOT);
-			String className = matcher.group(4).replace(S_SLASH, S_DOT);
+			String memberName = matcher.group(ASSEMBLY_MEMBER);
+			String params = matcher.group(ASSEMBLY_PARAMS).replace(S_SLASH, S_DOT);
+			String className = matcher.group(ASSEMBLY_CLASS_NAME).replace(S_SLASH, S_DOT);
 
 			StringBuilder builder = new StringBuilder();
 			builder.append(className).append(C_SPACE);
