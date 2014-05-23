@@ -15,7 +15,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_SPACE;
 
 public class BytecodeInstruction
 {
-	private int offset;
+    private static final int SIXTEEN_ZEROS = 16;
+    private static final int FIVE_ZEROS = 5;
+
+    private int offset;
 	private Opcode opcode;
 
 	private List<IBytecodeParam> parameters = new ArrayList<>();
@@ -87,7 +90,7 @@ public class BytecodeInstruction
 		int offsetWidth = Integer.toString(maxOffset).length();
 
 		builder.append(StringUtil.padLeft(offset, offsetWidth)).append(C_COLON).append(C_SPACE);
-		builder.append(StringUtil.padRight(opcode.getMnemonic(), 16));
+		builder.append(StringUtil.padRight(opcode.getMnemonic(), SIXTEEN_ZEROS));
 
 		if (hasParameters())
 		{
@@ -103,7 +106,7 @@ public class BytecodeInstruction
 			
 			paramBuilder.delete(paramLength - 2, paramLength);
 
-			builder.append(StringUtil.padRight(paramBuilder.toString(), 5));
+			builder.append(StringUtil.padRight(paramBuilder.toString(), FIVE_ZEROS));
 		}
 
 		if (hasComment)

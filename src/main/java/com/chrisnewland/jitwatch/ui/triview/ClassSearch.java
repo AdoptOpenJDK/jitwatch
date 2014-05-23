@@ -5,13 +5,9 @@
  */
 package com.chrisnewland.jitwatch.ui.triview;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.PackageManager;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -24,9 +20,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClassSearch extends Region
 {
-	private TextField tfSearch;
+    private static final int OFFSET_FOR_X = 10;
+    private static final int OFFSET_FOR_Y = -5;
+    private TextField tfSearch;
 	private ContextMenu dropMenu = new ContextMenu();
 	private PackageManager pm;
 	private TriView triView;
@@ -82,7 +83,7 @@ public class ClassSearch extends Region
 
 							if (!dropMenu.isShowing())
 							{
-								dropMenu.show(ClassSearch.this, Side.BOTTOM, 10, -5);
+								dropMenu.show(ClassSearch.this, Side.BOTTOM, OFFSET_FOR_X, OFFSET_FOR_Y);
 							}
 						}
 						else

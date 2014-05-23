@@ -15,7 +15,10 @@ import javafx.stage.WindowEvent;
 
 public class BrowserStage extends Stage
 {
-	private WebView web;
+    private static final int MAX_WIDTH = 800;
+    private static final int MAX_HEIGHT = 480;
+
+    private WebView web;
 
 	private WebEngine webEngine;
 
@@ -25,7 +28,7 @@ public class BrowserStage extends Stage
 
 		web = new WebView();
 
-		Scene scene = new Scene(web, 800, 480);
+		Scene scene = new Scene(web, MAX_WIDTH, MAX_HEIGHT);
 
 		webEngine = web.getEngine();
 
