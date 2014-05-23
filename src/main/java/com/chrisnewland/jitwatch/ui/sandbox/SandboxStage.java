@@ -5,15 +5,6 @@
  */
 package com.chrisnewland.jitwatch.ui.sandbox;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.sandbox.Sandbox;
@@ -21,7 +12,6 @@ import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -30,22 +20,30 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 public class SandboxStage extends Stage implements ISandboxStage
 {
-	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
+    private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
+    public static final int TEN_SPACES = 10;
+    public static final int TEN_INSETS = 10;
+    public static final double DIVIDER_POSITION_ONE = 0.1;
+    public static final double DIVIDER_POSITION_TWO = 0.7;
+    public static final double DIVIDER_POSITION_THREE = 0.2;
 
-	private List<EditorPane> editorPanes = new ArrayList<>();
+    private List<EditorPane> editorPanes = new ArrayList<>();
 
 	private TextArea taLog;
 
@@ -144,8 +142,8 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 		HBox hBoxTools = new HBox();
 
-		hBoxTools.setSpacing(10);
-		hBoxTools.setPadding(new Insets(10));
+		hBoxTools.setSpacing(TEN_SPACES);
+		hBoxTools.setPadding(new Insets(TEN_INSETS));
 
 		hBoxTools.getChildren().add(lblSyntax);
 		hBoxTools.getChildren().add(rbATT);
@@ -157,7 +155,10 @@ public class SandboxStage extends Stage implements ISandboxStage
 		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
-		splitVertical.setDividerPositions(0.1, 0.7, 0.2);
+		splitVertical.setDividerPositions(
+                DIVIDER_POSITION_ONE,
+                DIVIDER_POSITION_TWO,
+                DIVIDER_POSITION_THREE);
 
 		log("Sandbox ready");
 		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());

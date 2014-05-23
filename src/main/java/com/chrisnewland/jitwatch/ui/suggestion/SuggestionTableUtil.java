@@ -16,10 +16,16 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public final class SuggestionTableUtil
 {
+
+    private static final double WITH_ADJUSTMENT_FOR_SCORE = 0.07;
+    private static final double WITH_ADJUSTMENT_FOR_TYPE = 0.08;
+    private static final double WITH_ADJUSTMENT_FOR_CALLER = 0.35;
+    private static final double WITH_ADJUSTMENT_FOR_SUGGESTION = 0.48;
+
     /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
+                Hide Utility Class Constructor
+                Utility classes should not have a public or default constructor.
+            */
     private SuggestionTableUtil() {
     }
 
@@ -71,10 +77,10 @@ public final class SuggestionTableUtil
 			}
 		});
 		
-		score.prefWidthProperty().bind(tv.widthProperty().multiply(0.07));
-		type.prefWidthProperty().bind(tv.widthProperty().multiply(0.08));
-		caller.prefWidthProperty().bind(tv.widthProperty().multiply(0.35));
-		suggestion.prefWidthProperty().bind(tv.widthProperty().multiply(0.48));
+		score.prefWidthProperty().bind(tv.widthProperty().multiply(WITH_ADJUSTMENT_FOR_SCORE));
+		type.prefWidthProperty().bind(tv.widthProperty().multiply(WITH_ADJUSTMENT_FOR_TYPE));
+		caller.prefWidthProperty().bind(tv.widthProperty().multiply(WITH_ADJUSTMENT_FOR_CALLER));
+		suggestion.prefWidthProperty().bind(tv.widthProperty().multiply(WITH_ADJUSTMENT_FOR_SUGGESTION));
 		
 		tv.getColumns().add(score);
 		tv.getColumns().add(type);

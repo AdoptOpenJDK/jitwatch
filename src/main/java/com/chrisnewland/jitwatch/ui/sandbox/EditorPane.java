@@ -1,11 +1,6 @@
 package com.chrisnewland.jitwatch.ui.sandbox;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -15,11 +10,23 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 public class EditorPane extends VBox
 {
-	private Label lblTitle;
+    public static final int TEN_SPACES = 10;
+    public static final int TOP_POSITION = 0;
+    public static final int RIGHT_POSITION = 10;
+    public static final int BOTTOM_POSITION = 0;
+    public static final int LEFT_POSITION = 10;
+    public static final double TITLE_HEIGHT_MULTIPLIER = 0.1;
+    public static final double TEXTAREA_HEIGHT_MULTIPLIER = 0.9;
+    private Label lblTitle;
 	private TextArea textArea;
 	private HBox hBoxTitle;
 
@@ -73,8 +80,12 @@ public class EditorPane extends VBox
 		});
 
 		hBoxTitle = new HBox();
-		hBoxTitle.setSpacing(10);
-		hBoxTitle.setPadding(new Insets(0, 10, 0, 10));
+		hBoxTitle.setSpacing(TEN_SPACES);
+		hBoxTitle.setPadding(new Insets(
+                TOP_POSITION,
+                RIGHT_POSITION,
+                BOTTOM_POSITION,
+                LEFT_POSITION));
 		hBoxTitle.getChildren().add(lblTitle);
 		hBoxTitle.getChildren().add(btnOpen);
 		hBoxTitle.getChildren().add(btnSave);
@@ -91,10 +102,10 @@ public class EditorPane extends VBox
 		getChildren().add(textArea);
 
 		hBoxTitle.prefWidthProperty().bind(widthProperty());
-		hBoxTitle.prefHeightProperty().bind(heightProperty().multiply(0.1));
+		hBoxTitle.prefHeightProperty().bind(heightProperty().multiply(TITLE_HEIGHT_MULTIPLIER));
 
 		textArea.prefWidthProperty().bind(widthProperty());
-		textArea.prefHeightProperty().bind(heightProperty().multiply(0.9));
+		textArea.prefHeightProperty().bind(heightProperty().multiply(TEXTAREA_HEIGHT_MULTIPLIER));
 	}
 
 	public String getSource()
