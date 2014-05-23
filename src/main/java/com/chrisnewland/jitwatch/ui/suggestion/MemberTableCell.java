@@ -17,7 +17,8 @@ import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 
 public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 {
-	private VBox vb;
+    private static final int FIVE_SPACES = 5;
+    private VBox vb;
 	private Label lblMetaClass;
 	private Label lblMetaMember;
 	private Button btnTriView;
@@ -42,7 +43,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 		vb.getChildren().add(lblMetaMember);
 		vb.getChildren().add(btnTriView);
 		
-		vb.setSpacing(5);
+		vb.setSpacing(FIVE_SPACES);
 
 		setGraphic(vb);
 	}

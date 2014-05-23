@@ -26,7 +26,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser implements ILogParser
 {
-	enum ParseState
+
+    private static final int INPUT_BUFFER_SIZE = 65536;
+
+    enum ParseState
 	{
 		READY, IN_TAG, IN_NATIVE
 	}
@@ -137,7 +140,7 @@ public class HotSpotLogParser implements ILogParser
 
 		reading = true;
 
-		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
+		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), INPUT_BUFFER_SIZE);
 
 		String currentLine = input.readLine();
 

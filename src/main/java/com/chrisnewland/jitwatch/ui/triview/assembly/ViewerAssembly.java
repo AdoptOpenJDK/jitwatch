@@ -24,7 +24,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class ViewerAssembly extends Viewer
 {
 
-    public static final int MINIMUM_REGISTER_LENGTH = 3;
+    private static final int MINIMUM_REGISTER_LENGTH = 3;
 
     public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
