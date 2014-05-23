@@ -1,17 +1,5 @@
 package com.chrisnewland.jitwatch.ui.triview.bytecode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
@@ -20,14 +8,28 @@ import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener;
-import com.chrisnewland.jitwatch.ui.triview.Viewer;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
 import com.chrisnewland.jitwatch.util.JVMSUtil;
 import com.chrisnewland.jitwatch.util.JournalUtil;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ViewerBytecode extends Viewer
 {
-	private MemberBytecode memberBytecode;
+    private static final int MAX_RED_COLOUR = 255;
+    private static final int MAX_GREEN_COLOUR = 255;
+    private static final int MAX_BLUE_COLOUR = 255;
+    private MemberBytecode memberBytecode;
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
@@ -128,8 +130,10 @@ public class ViewerBytecode extends Viewer
 
 	private String toRGBCode(Color color)
 	{
-		return String.format("#%02X%02X%02X", (int) (color.getRed() * 255), (int) (color.getGreen() * 255),
-				(int) (color.getBlue() * 255));
+		return String.format("#%02X%02X%02X",
+                (int) (color.getRed() * MAX_RED_COLOUR),
+                (int) (color.getGreen() * MAX_GREEN_COLOUR),
+				(int) (color.getBlue() * MAX_BLUE_COLOUR));
 	}
 
 	private void browseMnemonic(final Opcode opcode)
