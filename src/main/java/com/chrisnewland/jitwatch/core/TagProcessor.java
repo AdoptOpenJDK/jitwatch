@@ -19,8 +19,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class TagProcessor
 {
     private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+    public static final int THREE_CHARACTERS = 3;
+    public static final int POSITION_ZERO = 0;
 
-	// feed it lines until it completes a tag
+    // feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
@@ -43,7 +45,8 @@ public class TagProcessor
 
 		if (line != null)
 		{
-			if (line.length() > 3 && line.charAt(0) == C_OPEN_ANGLE)
+			if (line.length() > THREE_CHARACTERS
+                    && line.charAt(POSITION_ZERO) == C_OPEN_ANGLE)
 			{
 				result = handleTag(line);
 			}
