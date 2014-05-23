@@ -28,13 +28,13 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public final class BytecodeLoader
 {
     private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
-    public static final int INITIAL_SIZE_IN_BYTES = 65536;
-    public static final int SECOND_POSITION = 2;
-    public static final int THREE_POSITIONS = 3;
-    public static final int OFFSET = 1;
-    public static final int MNEMONIC = 2;
-    public static final int PARAM = 3;
-    public static final int CONSTANT = 4;
+    private static final int INITIAL_SIZE_IN_BYTES = 65536;
+    private static final int SECOND_POSITION = 2;
+    private static final int THREE_POSITIONS = 3;
+    private static final int OFFSET = 1;
+    private static final int MNEMONIC = 2;
+    private static final int PARAM = 3;
+    private static final int CONSTANT = 4;
 
     public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{

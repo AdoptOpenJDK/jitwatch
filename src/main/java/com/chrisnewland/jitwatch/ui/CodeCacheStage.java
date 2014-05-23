@@ -5,24 +5,26 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ParseUtil;
-
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.StageStyle;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 public class CodeCacheStage extends AbstractGraphStage
 {
-	public CodeCacheStage(JITWatchUI parent)
+
+    private static final int GC_MONOSPACE_FONT_SIZE = 10;
+
+    public CodeCacheStage(JITWatchUI parent)
 	{
 		super(parent, 640, 480, true);
 
@@ -92,7 +94,7 @@ public class CodeCacheStage extends AbstractGraphStage
 			double lastCY = GRAPH_GAP_Y + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
 			gc.setStroke(Color.BLACK);
-			gc.setFont(new Font("monospace", 10));
+			gc.setFont(new Font("monospace", GC_MONOSPACE_FONT_SIZE));
 
 			Color colourLine = Color.BLUE;
 

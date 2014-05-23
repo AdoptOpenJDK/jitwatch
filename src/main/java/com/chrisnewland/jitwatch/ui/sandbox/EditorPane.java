@@ -19,13 +19,14 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 public class EditorPane extends VBox
 {
-    public static final int TEN_SPACES = 10;
-    public static final int TOP_POSITION = 0;
-    public static final int RIGHT_POSITION = 10;
-    public static final int BOTTOM_POSITION = 0;
-    public static final int LEFT_POSITION = 10;
-    public static final double TITLE_HEIGHT_MULTIPLIER = 0.1;
-    public static final double TEXTAREA_HEIGHT_MULTIPLIER = 0.9;
+    private static final int TEN_SPACES = 10;
+    private static final int TOP_POSITION = 0;
+    private static final int RIGHT_POSITION = 10;
+    private static final int BOTTOM_POSITION = 0;
+    private static final int LEFT_POSITION = 10;
+    private static final double TITLE_HEIGHT_MULTIPLIER = 0.1;
+    private static final double TEXTAREA_HEIGHT_MULTIPLIER = 0.9;
+
     private Label lblTitle;
 	private TextArea textArea;
 	private HBox hBoxTitle;

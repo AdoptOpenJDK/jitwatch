@@ -37,11 +37,11 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_NEWLINE;
 public class SandboxStage extends Stage implements ISandboxStage
 {
     private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
-    public static final int TEN_SPACES = 10;
-    public static final int TEN_INSETS = 10;
-    public static final double DIVIDER_POSITION_ONE = 0.1;
-    public static final double DIVIDER_POSITION_TWO = 0.7;
-    public static final double DIVIDER_POSITION_THREE = 0.2;
+    private static final int TEN_SPACES = 10;
+    private static final int TEN_INSETS = 10;
+    private static final double DIVIDER_POSITION_ONE = 0.1;
+    private static final double DIVIDER_POSITION_TWO = 0.7;
+    private static final double DIVIDER_POSITION_THREE = 0.2;
 
     private List<EditorPane> editorPanes = new ArrayList<>();
 

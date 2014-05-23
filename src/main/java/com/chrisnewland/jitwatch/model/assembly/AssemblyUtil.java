@@ -22,14 +22,14 @@ public class AssemblyUtil
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^([a-f0-9x]+):\\s+([0-9a-z\\(\\)\\$,\\-%\\s]+)([;#].*)?");
-    public static final int COUNT_OF_THREE = 3;
-    public static final int ADDRESS_GROUP = 1;
-    public static final int MIDDLE_GROUP = 2;
-    public static final int COMMENT_GROUP = 3;
-    public static final int RADIX_OF_SIXTEEN = 16;
-    public static final int ONE_PART = 1;
-    public static final int TWO_PARTS = 2;
-    public static final int THREE_PARTS = 3;
+    private static final int COUNT_OF_THREE = 3;
+    private static final int ADDRESS_GROUP = 1;
+    private static final int MIDDLE_GROUP = 2;
+    private static final int COMMENT_GROUP = 3;
+    private static final int RADIX_OF_SIXTEEN = 16;
+    private static final int ONE_PART = 1;
+    private static final int TWO_PARTS = 2;
+    private static final int THREE_PARTS = 3;
 
     private AssemblyUtil()
 	{

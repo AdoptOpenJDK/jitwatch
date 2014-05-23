@@ -19,8 +19,8 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class TagProcessor
 {
     private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
-    public static final int THREE_CHARACTERS = 3;
-    public static final int POSITION_ZERO = 0;
+    private static final int THREE_CHARACTERS = 3;
+    private static final int POSITION_ZERO = 0;
 
     // feed it lines until it completes a tag
 	private Tag currentTag;
