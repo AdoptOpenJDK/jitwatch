@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 public class Histo
 {
     private static final int ONE_HUNDRED_PERCENTILE = 100;
+    public static final double HALF_PERCENTILE = 0.5;
 
     private Map<Long, Integer> bucketMap = new HashMap<>();
 
@@ -126,7 +127,7 @@ public class Histo
 		}
 		else
 		{
-			double position = 0.5 + (percentile) / ONE_HUNDRED_PERCENTILE * count;
+			double position = HALF_PERCENTILE + (percentile) / ONE_HUNDRED_PERCENTILE * count;
 			int index = (int) Math.round(position) - 1;
 
 			result = valuesCopy.get(index);

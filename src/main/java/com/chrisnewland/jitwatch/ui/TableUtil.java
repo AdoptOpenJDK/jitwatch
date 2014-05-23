@@ -13,10 +13,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 // TODO prob better with own caller
 public class TableUtil
 {
+
+    private static final int BY_THREE = 3;
+    private static final double BY_ONE_THIRD = 0.33;
+    private static final double BY_TWO_THIRDS = 0.66;
+
     /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
+                Hide Utility Class Constructor
+                Utility classes should not have a public or default constructor.
+            */
     private TableUtil() {
     }
 
@@ -26,15 +31,15 @@ public class TableUtil
 
 		TableColumn<AttributeTableRow, String> colType = new TableColumn<AttributeTableRow, String>("Type");
 		colType.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("type"));
-		colType.prefWidthProperty().bind(tv.widthProperty().divide(3));
+		colType.prefWidthProperty().bind(tv.widthProperty().divide(BY_THREE));
 
 		TableColumn<AttributeTableRow, String> colName = new TableColumn<AttributeTableRow, String>("Name");
 		colName.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("name"));
-		colName.prefWidthProperty().bind(tv.widthProperty().divide(3));
+		colName.prefWidthProperty().bind(tv.widthProperty().divide(BY_THREE));
 
 		TableColumn<AttributeTableRow, String> colValue = new TableColumn<AttributeTableRow, String>("Value");
 		colValue.setCellValueFactory(new PropertyValueFactory<AttributeTableRow, String>("value"));
-		colValue.prefWidthProperty().bind(tv.widthProperty().divide(3));
+		colValue.prefWidthProperty().bind(tv.widthProperty().divide(BY_THREE));
 
 		tv.getColumns().add(colType);
 		tv.getColumns().add(colName);
@@ -51,11 +56,11 @@ public class TableUtil
 
 		TableColumn<StatsTableRow, String> colName = new TableColumn<StatsTableRow, String>("Name");
 		colName.setCellValueFactory(new PropertyValueFactory<StatsTableRow, String>("name"));
-		colName.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
+		colName.prefWidthProperty().bind(tv.widthProperty().multiply(BY_ONE_THIRD));
 
 		TableColumn<StatsTableRow, Long> colValue = new TableColumn<StatsTableRow, Long>("Value");
 		colValue.setCellValueFactory(new PropertyValueFactory<StatsTableRow, Long>("value"));
-		colValue.prefWidthProperty().bind(tv.widthProperty().multiply(0.66));
+		colValue.prefWidthProperty().bind(tv.widthProperty().multiply(BY_TWO_THIRDS));
 
 		tv.getColumns().add(colName);
 		tv.getColumns().add(colValue);
