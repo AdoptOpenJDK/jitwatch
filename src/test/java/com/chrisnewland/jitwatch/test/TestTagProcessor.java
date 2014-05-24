@@ -5,14 +5,19 @@
  */
 package com.chrisnewland.jitwatch.test;
 
+import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.util.StringUtil;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class TestTagProcessor
@@ -230,4 +235,73 @@ public class TestTagProcessor
 		assertEquals(TAG_RELEASE, tagRelease.getName());	
 		assertEquals(line5, tagRelease.getTextContent());
 	}
+
+    /*
+        Scenario: Parsing an undefined line
+            Given an undefined line is available
+            When the tag processor parses such a line
+            Then no tag objects are returned
+     */
+    @Test
+    public void givenAnUndefinedLineIsAvailable_WhenTheTagProcessorProcessesIt_ThenNoTagsAreReturned() {
+        // Given
+        Tag expectedParseResult = null;
+        String line = null;
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(line);
+
+        // Then
+        assertThat("No tags should have been returned.",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
+
+    /*
+        Scenario: Parsing a line containing partially completed tag
+            Given an line containing a partially completed tag is available
+            When the tag processor parses such a line
+            Then no tag objects are returned
+     */
+    @Test
+    public void givenAThreeCharatersLineStartingWithOpenBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
+        // Given
+        Tag expectedParseResult = null;
+        String lineWith3LettersStartingWithOpenAngleBracket =
+                JITWatchConstants.C_OPEN_ANGLE + "12";
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(lineWith3LettersStartingWithOpenAngleBracket);
+
+        // Then
+        assertThat("No tags should have been returned.",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
+
+    /*
+        Scenario: Parsing a line containing a tag
+            Given an line containing a tag is available
+            When the tag processor parses such a line
+            Then a tag object is returned
+     */
+    @Test
+    public void givenLineContainingATypeTag_WhenTheTagProcessorParsesIt_ThenAResultIsReturned() {
+        // Given
+        String withTypeTag = "<type id='622' name='void'/>";
+        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTag);
+        boolean selfClosing = true;
+        Tag expectedParseResult = new Tag("type", attrs, selfClosing);
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(withTypeTag);
+
+        // Then
+        assertThat("The line should have been parsed correctly, producing a tag.",
+                actualParseResult,
+                is(equalTo(expectedParseResult)));
+    }
 }
