@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +25,12 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class BytecodeLoader
 {
-    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+
+	enum ParseState
+	{
+		OTHER, BYTECODE, LINETABLE
+	}
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
@@ -70,7 +73,7 @@ public final class BytecodeLoader
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+			logger.error("", ioe);
 		}
 
 		if (byteCodeString != null)
@@ -81,25 +84,40 @@ public final class BytecodeLoader
 		return result;
 	}
 
-	private static ClassBC parse(String result)
+	public static ClassBC parse(String bytecode)
 	{
 		ClassBC classBytecode = new ClassBC();
 
-		String[] lines = result.split(S_NEWLINE);
+		String[] lines = bytecode.split(S_NEWLINE);
 
 		int pos = 0;
 
-		String signature = null;
 		StringBuilder builder = new StringBuilder();
 
-		boolean inMethod = false;
+		ParseState parseState = ParseState.OTHER;
+
+		String memberSignature = null;
+
+		MemberBytecode memberBytecode = null;
 
 		while (pos < lines.length)
 		{
 			String line = lines[pos].trim();
 
-			if (inMethod)
+			switch (parseState)
 			{
+			case OTHER:
+				if (line.endsWith(");"))
+				{
+					memberSignature = fixSignature(line);
+				}
+				else if (line.startsWith("0:"))
+				{
+					parseState = ParseState.BYTECODE;
+					pos--;
+				}
+				break;
+			case BYTECODE:
 				int firstColonIndex = line.indexOf(C_COLON);
 
 				if (firstColonIndex != -1)
@@ -115,44 +133,51 @@ public final class BytecodeLoader
 					}
 					catch (NumberFormatException nfe)
 					{
-						inMethod = false;
-						storeBytecode(classBytecode, signature, builder);
-					}
-				}
-			}
-			else
-			{
-				if (line.startsWith("Code:") && pos >= 2)
-				{
-					for (int i = 1; i <= 3; i++)
-					{
-						signature = lines[pos - i].trim();
+						List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
 
-						if (signature.indexOf(C_COLON) == -1)
+						memberBytecode = new MemberBytecode();
+						memberBytecode.setInstructions(instructions);
+						builder.delete(0, builder.length());
+
+						if (line.startsWith("LineNumberTable:"))
 						{
-							break;
+							parseState = ParseState.LINETABLE;
+						}
+						else
+						{
+							classBytecode.addMemberBytecode(memberSignature, memberBytecode);
+							parseState = ParseState.OTHER;
 						}
 					}
-
-					signature = signature.substring(0, signature.length() - 1);
-					inMethod = true;
-					pos++; // skip over stack info
 				}
+				break;
+			case LINETABLE:
+				if (line.startsWith("line "))
+				{
+					builder.append(line).append(C_NEWLINE);
+				}
+				else
+				{
+					updateLineNumberTable(classBytecode, builder.toString(), memberSignature);
+					builder.delete(0, builder.length());
+
+					classBytecode.addMemberBytecode(memberSignature, memberBytecode);
+					parseState = ParseState.OTHER;
+				}
+				break;
 			}
 
 			pos++;
 		}
 
-		storeBytecode(classBytecode, signature, builder);
-
 		return classBytecode;
 	}
 
-	private static void storeBytecode(ClassBC classBytecode, String inSignature, StringBuilder builder)
+	private static String fixSignature(String signature)
 	{
-        String signature = inSignature;
-               
-		if (signature != null && builder.length() > 0)
+		String result = null;
+
+		if (signature != null)
 		{
 			// remove spaces between multiple method parameters
 
@@ -167,26 +192,22 @@ public final class BytecodeLoader
 					String params = signature.substring(openParentheses, closeParentheses);
 					params = params.replace(S_SPACE, S_EMPTY);
 
-					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
+					result = signature.substring(0, openParentheses) + params + S_CLOSE_PARENTHESES;
 				}
 			}
-
-			MemberBytecode memberBytecode = parseInstructions(builder.toString());
-
-			classBytecode.addMemberBytecode(signature, memberBytecode);
-
-			builder.delete(0, builder.length());
 		}
+
+		return result;
 	}
 
-	public static MemberBytecode parseInstructions(String bytecode)
+	public static List<BytecodeInstruction> parseInstructions(String bytecode)
 	{
 		List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
-		Map<Integer, Integer> sourceToBytecodeMap = new HashMap<>();
-		
+
 		String[] lines = bytecode.split(S_NEWLINE);
 
-		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
+				.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 		boolean inSwitch = false;
 		BCParamSwitch table = new BCParamSwitch();
@@ -215,7 +236,7 @@ public final class BytecodeLoader
 					}
 					else
 					{
-                        logger.error("Unexpected tableswitch entry: " + line);
+						logger.error("Unexpected tableswitch entry: " + line);
 					}
 				}
 			}
@@ -258,17 +279,50 @@ public final class BytecodeLoader
 					}
 					else
 					{
-                        logger.error("could not parse bytecode: '" + line + "'");
+						logger.error("could not parse bytecode: '" + line + "'");
 					}
 				}
 				catch (Exception e)
 				{
-                    logger.error("Error parsing bytecode line: '" + line + "'", e);
+					logger.error("Error parsing bytecode line: '" + line + "'", e);
 				}
 			}
 		}
 
-		return new MemberBytecode(bytecodeInstructions, sourceToBytecodeMap);		
+		return bytecodeInstructions;
+	}
+
+	private static void updateLineNumberTable(ClassBC classBytecode, String tableLines, String memberSignature)
+	{
+		String[] lines = tableLines.split(S_NEWLINE);
+
+		for (String line : lines)
+		{
+			// strip off 'line '
+			line = line.trim().substring(5);
+
+			String[] parts = line.split(S_COLON);
+
+			if (parts.length == 2)
+			{
+				String source = parts[0].trim();
+				String offset = parts[1].trim();
+
+				try
+				{
+					LineTableEntry entry = new LineTableEntry(memberSignature, Integer.parseInt(offset));
+					classBytecode.getLineTable().put(Integer.parseInt(source), entry);
+				}
+				catch (NumberFormatException nfe)
+				{
+					logger.error("Could not parse line number {}", line, nfe);
+				}
+			}
+			else
+			{
+				logger.error("Could not split line: {}", line);
+			}
+		}
 	}
 
 	private static void processParameters(String paramString, BytecodeInstruction instruction)

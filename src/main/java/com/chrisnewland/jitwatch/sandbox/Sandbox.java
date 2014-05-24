@@ -118,7 +118,7 @@ public class Sandbox
 			firstClassName = fqNameSource;
 		}
 
-		sandboxStage.log("Writing source file: " + fqNameSource);
+		sandboxStage.log("Writing source file: " + fqNameSource + ".java");
 
 		return ClassCompiler.writeSource(fqNameSource, source);
 	}

@@ -5,20 +5,33 @@
  */
 package com.chrisnewland.jitwatch.ui.triview.bytecode;
 
-import com.chrisnewland.jitwatch.model.assembly.AssemblyInstruction;
+import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
 
 import javafx.scene.control.Label;
 
 public class BytecodeLabel extends Label
 {
-	private AssemblyInstruction instruction;
+	private BytecodeInstruction instruction;
+	private String unhighlightedStyle;
 	
-	public void setInstruction(AssemblyInstruction instr)
+	public BytecodeLabel(BytecodeInstruction instr, int maxOffset)
 	{
+		setText(instr.toString(maxOffset));
 		instruction = instr;
 	}
 	
-	public AssemblyInstruction getInstruction()
+	public void setUnhighlightedStyle(String style)
+	{
+		unhighlightedStyle = style;
+		setStyle(unhighlightedStyle);
+	}
+	
+	public String getUnhighlightedStyle()
+	{
+		return unhighlightedStyle;
+	}
+	
+	public BytecodeInstruction getInstruction()
 	{
 		return instruction;
 	}

@@ -29,10 +29,12 @@ public final class JITWatchConstants
 	public static final Set<String> SKIP_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_TTY, TAG_TTY_CLOSE,
 			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG, TAG_HOTSPOT_LOG_CLOSE }));
 
+	public static final String NATIVE_CODE_START = "Decoding compiled method";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 	public static final String LOADED = "[Loaded ";
 	public static final String METHOD = "method";
 	public static final String PARSE = "parse";
+	public static final String S_CODE_COLON = "Code:";
 
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
@@ -54,6 +56,7 @@ public final class JITWatchConstants
 	public static final String TAG_INLINE_FAIL = "inline_fail";
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
 	public static final String TAG_BRANCH = "branch";
+	public static final String TAG_WRITER = "writer";
 
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";

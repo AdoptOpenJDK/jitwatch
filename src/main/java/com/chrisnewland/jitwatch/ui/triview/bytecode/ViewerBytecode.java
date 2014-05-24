@@ -16,6 +16,7 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
@@ -36,10 +37,20 @@ public class ViewerBytecode extends Viewer
 
 	public void setContent(IMetaMember member, List<String> classLocations)
 	{
-		memberBytecode = member.getBytecodeForMember(classLocations);
+		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode(classLocations);
 
-		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
-		
+		List<BytecodeInstruction> instructions = null;
+
+		if (metaClassBytecode != null)
+		{
+			memberBytecode = metaClassBytecode.getMemberBytecode(member);
+
+			if (memberBytecode != null)
+			{
+				instructions = memberBytecode.getInstructions();
+			}
+		}
+
 		Map<Integer, LineAnnotation> annotations = null;
 
 		lineAnnotations.clear();
@@ -52,12 +63,12 @@ public class ViewerBytecode extends Viewer
 			Journal journal = member.getJournal();
 
 			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
-			
+
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
 			for (final BytecodeInstruction instruction : instructions)
 			{
-				Label lblLine = new Label(instruction.toString(maxOffset));
+				BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset);
 
 				labels.add(lblLine);
 
@@ -69,19 +80,19 @@ public class ViewerBytecode extends Viewer
 				{
 					LineAnnotation annotation = annotations.get(offset);
 
+					String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+					
 					if (annotation != null)
 					{
 						annotationText = annotation.getAnnotation();
 						Color colour = annotation.getColour();
 
-						lblLine.setStyle(STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";");
+						unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";";
 
 						lblLine.setTooltip(new Tooltip(annotationText));
 					}
-					else
-					{
-						lblLine.setStyle(STYLE_UNHIGHLIGHTED);
-					}
+					
+					lblLine.setUnhighlightedStyle(unhighlightedStyle);
 				}
 
 				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
@@ -105,24 +116,24 @@ public class ViewerBytecode extends Viewer
 
 		setContent(labels);
 	}
-	
+
 	public int getLineIndexForBytecodeOffset(int offset)
 	{
 		int result = -1;
-		
+
 		int pos = 0;
-		
-		for (BytecodeInstruction instruction : memberBytecode.getBytecodeInstructions())
+
+		for (BytecodeInstruction instruction : memberBytecode.getInstructions())
 		{
 			if (instruction.getOffset() == offset)
 			{
 				result = pos;
 				break;
 			}
-			
+
 			pos++;
 		}
-		
+
 		return result;
 	}
 

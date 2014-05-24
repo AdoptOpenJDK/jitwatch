@@ -6,8 +6,6 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -24,24 +22,15 @@ import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class HotSpotLogParser implements ILogParser
+public class HotSpotLogParser implements ILogParser, IMemberFinder
 {
-	enum ParseState
-	{
-		READY, IN_TAG, IN_NATIVE
-	}
-
 	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
 	private boolean reading = false;
-	
+
 	private boolean hasTraceClassLoad = false;
-
-	private ParseState parseState = ParseState.READY;
-
-	private StringBuilder nativeCodeBuilder = new StringBuilder();
 
 	private IMetaMember currentMember = null;
 
@@ -52,6 +41,8 @@ public class HotSpotLogParser implements ILogParser
 	private JITWatchConfig config;
 
 	private TagProcessor tagProcessor;
+	
+	private AssemblyProcessor asmProcessor;
 
 	public HotSpotLogParser(IJITListener logListener)
 	{
@@ -109,15 +100,11 @@ public class HotSpotLogParser implements ILogParser
 	public void reset()
 	{
 		getModel().reset();
-		
+
 		hasTraceClassLoad = false;
-		
-		parseState = ParseState.READY;
-		
-		nativeCodeBuilder = new StringBuilder();
-		
+
 		reading = false;
-		
+
 		currentMember = null;
 
 		// tell listener to reset any data
@@ -128,6 +115,8 @@ public class HotSpotLogParser implements ILogParser
 		currentLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
+		
+		asmProcessor = new AssemblyProcessor(this);
 	}
 
 	@Override
@@ -155,6 +144,8 @@ public class HotSpotLogParser implements ILogParser
 			currentLine = input.readLine();
 		}
 
+		asmProcessor.complete();
+		
 		input.close();
 
 		logListener.handleReadComplete();
@@ -176,7 +167,7 @@ public class HotSpotLogParser implements ILogParser
 		{
 			boolean isSkip = false;
 
-			for (String skip : JITWatchConstants.SKIP_TAGS)
+			for (String skip : SKIP_TAGS)
 			{
 				if (currentLine.startsWith(skip))
 				{
@@ -192,40 +183,16 @@ public class HotSpotLogParser implements ILogParser
 				if (tag != null)
 				{
 					handleTag(tag);
-
-					parseState = ParseState.READY;
-				}
-				else
-				{
-					parseState = ParseState.IN_TAG;
 				}
 			}
 		}
-		else if (currentLine.startsWith(JITWatchConstants.LOADED))
+		else if (currentLine.startsWith(LOADED))
 		{
-			if (parseState == ParseState.IN_NATIVE)
-			{
-				completeNativeCode();
-			}
 			handleLoaded(currentLine);
 		}
-		else if (parseState == ParseState.IN_NATIVE)
+		else
 		{
-			appendNativeCode(currentLine);
-		}
-		else if (parseState == ParseState.IN_TAG)
-		{
-			tagProcessor.processLine(currentLine);
-		}
-		else if (currentLine.contains(JITWatchConstants.NATIVE_CODE_METHOD_MARK))
-		{
-			String sig = ParseUtil.convertNativeCodeMethodName(currentLine);
-
-			currentMember = findMemberWithSignature(sig);
-
-			parseState = ParseState.IN_NATIVE;
-
-			appendNativeCode(currentLine);
+			asmProcessor.handleLine(currentLine);
 		}
 
 		currentLineNumber++;
@@ -233,33 +200,27 @@ public class HotSpotLogParser implements ILogParser
 
 	private void handleTag(Tag tag)
 	{
-		if (parseState == ParseState.IN_NATIVE)
-		{
-			// TODO: chase up bug report for mangled hotspot output
-			completeNativeCode();
-		}
-
 		String tagName = tag.getName();
 
 		switch (tagName)
 		{
-		case JITWatchConstants.TAG_VM_VERSION:
+		case TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
 
-		case JITWatchConstants.TAG_TASK_QUEUED:
+		case TAG_TASK_QUEUED:
 			handleTagQueued(tag);
 			break;
 
-		case JITWatchConstants.TAG_NMETHOD:
+		case TAG_NMETHOD:
 			handleTagNMethod(tag);
 			break;
 
-		case JITWatchConstants.TAG_TASK:
+		case TAG_TASK:
 			handleTagTask(tag);
 			break;
 
-		case JITWatchConstants.TAG_START_COMPILE_THREAD:
+		case TAG_START_COMPILE_THREAD:
 			handleStartCompileThread(tag);
 			break;
 
@@ -273,25 +234,6 @@ public class HotSpotLogParser implements ILogParser
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
 		model.setVmVersionRelease(release);
-	}
-
-	private void appendNativeCode(String line)
-	{
-		nativeCodeBuilder.append(line).append("\n");
-	}
-
-	private void completeNativeCode()
-	{
-		parseState = ParseState.READY;
-
-		if (currentMember != null)
-		{
-			AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(nativeCodeBuilder.toString());
-			
-			currentMember.setAssembly(asmMethod);
-		}
-
-		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -324,7 +266,7 @@ public class HotSpotLogParser implements ILogParser
 		return threadName == null;
 	}
 
-	private IMetaMember findMemberWithSignature(String logSignature)
+	public IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
 
@@ -400,19 +342,19 @@ public class HotSpotLogParser implements ILogParser
 	{
 		handleMethodLine(tag, EventType.TASK);
 
-		Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+		Tag tagCodeCache = tag.getFirstNamedChild(TAG_CODE_CACHE);
 
 		if (tagCodeCache != null)
 		{
 			// copy timestamp from parent <task> tag used for graphing code
 			// cache
-			String stamp = tag.getAttribute(JITWatchConstants.ATTR_STAMP);
-			tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+			String stamp = tag.getAttribute(ATTR_STAMP);
+			tagCodeCache.getAttrs().put(ATTR_STAMP, stamp);
 
 			model.addCodeCacheTag(tagCodeCache);
 		}
 
-		Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
+		Tag tagTaskDone = tag.getFirstNamedChild(TAG_TASK_DONE);
 
 		if (tagTaskDone != null)
 		{
@@ -513,7 +455,7 @@ public class HotSpotLogParser implements ILogParser
 		{
 			hasTraceClassLoad = true;
 		}
-		
+
 		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
@@ -529,7 +471,7 @@ public class HotSpotLogParser implements ILogParser
 		try
 		{
 			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-			
+
 			if (clazz != null)
 			{
 				model.buildMetaClass(fqClassName, clazz);
