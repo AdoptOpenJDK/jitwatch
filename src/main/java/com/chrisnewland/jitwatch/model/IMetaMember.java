@@ -53,7 +53,9 @@ public interface IMetaMember
 
 	boolean isCompiled();
 
-	String toStringUnqualifiedMethodName();
+	String toStringUnqualifiedMethodName(boolean fqParamTypes);
+	
+	boolean matchesBytecodeSignature(String signature);
 	
 	String getMemberName();
 	String getFullyQualifiedMemberName();

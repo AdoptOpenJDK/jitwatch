@@ -14,9 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
@@ -34,8 +31,6 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private ClassBC classBytecode = null;
 	
-	private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
-
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;
@@ -174,8 +169,7 @@ public class MetaClass implements Comparable<MetaClass>
 		{
 			for (IMetaMember mm : getMetaMembers())
 			{
-				// constructor sigs are fully qualified in bytecode
-				if (bytecodeSignature.equals(mm.toStringUnqualifiedMethodName()) || bytecodeSignature.equals(mm.toString()))
+				if (mm.matchesBytecodeSignature(bytecodeSignature))
 				{
 					result = mm;
 					break;
