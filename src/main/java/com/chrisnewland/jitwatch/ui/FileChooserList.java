@@ -27,13 +27,13 @@ import java.util.List;
 public class FileChooserList extends VBox
 {
     private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
-    public static final int TEN_SPACES = 10;
-    public static final double BY_RATIO_OF_85_BY_100 = 0.85;
-    public static final double BY_RATIO_OF_15_BY_100 = 0.15;
-    public static final int TOP_POSITION = 10;
-    public static final int LEFT_POSITION = 10;
-    public static final int RIGHT_POSITION = 10;
-    public static final int BOTTOM_POSITION = 10;
+    private static final int TEN_SPACES = 10;
+    private static final double BY_RATIO_OF_85_BY_100 = 0.85;
+    private static final double BY_RATIO_OF_15_BY_100 = 0.15;
+    private static final int TOP_POSITION = 10;
+    private static final int LEFT_POSITION = 10;
+    private static final int RIGHT_POSITION = 10;
+    private static final int BOTTOM_POSITION = 10;
 
     private Stage stage;
 

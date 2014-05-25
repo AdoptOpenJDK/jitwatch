@@ -16,11 +16,11 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public final class StringUtil
 {
     private static final DecimalFormat DF = new DecimalFormat("#,###");
-    public static final long TWENTY_FOUR_HOURS = 24L;
-    public static final long SIXTY_MINUTES = 60L;
-    public static final long SIXTY_SECONDS_IN_MILLISECONDS = 60_000L;
-    public static final long ONE_SECOND_IN_MILLISECONDS = 1_000L;
-    public static final int THREE_PLACES = 3;
+    private static final long TWENTY_FOUR_HOURS = 24L;
+    private static final long SIXTY_MINUTES = 60L;
+    private static final long SIXTY_SECONDS_IN_MILLISECONDS = 60_000L;
+    private static final long ONE_SECOND_IN_MILLISECONDS = 1_000L;
+    private static final int THREE_PLACES = 3;
 
     /*
         Hide Utility Class Constructor
