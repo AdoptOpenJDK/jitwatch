@@ -5,19 +5,12 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import com.chrisnewland.jitwatch.model.EventType;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.JITStats;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
-
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
@@ -25,11 +18,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.StageStyle;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 public class TimeLineStage extends AbstractGraphStage
 {
-	public TimeLineStage(final JITWatchUI parent)
+
+    private static final int VIEW_WIDTH = 640;
+    private static final int VIEW_HEIGHT = 480;
+    private static final int DEFAULT_FONT_SIZE = 10;
+    private static final int DEFAULT_MARKER_DIAMETER = 8;
+    private static final int Y_AXIS_MARGIN = 32;
+    private static final int X_AXIS_MARGIN = 10;
+    private static final int TWELVE_PIXELS = 12;
+
+    public TimeLineStage(final JITWatchUI parent)
 	{
-		super(parent, 640, 480, true);
+		super(parent, VIEW_WIDTH, VIEW_HEIGHT, true);
 
 		initStyle(StageStyle.DECORATED);
 
@@ -39,7 +47,7 @@ public class TimeLineStage extends AbstractGraphStage
 		canvas.widthProperty().bind(root.widthProperty());
 		canvas.heightProperty().bind(root.heightProperty());
 
-		gc.setFont(new Font("monospace", 10));
+		gc.setFont(new Font("monospace", DEFAULT_FONT_SIZE));
 
 		root.getChildren().add(canvas);
 
@@ -109,7 +117,7 @@ public class TimeLineStage extends AbstractGraphStage
 			gc.setStroke(colourMarker);
 			
 			int cumC = 0;
-			int markerDiameter = 8;
+			int markerDiameter = DEFAULT_MARKER_DIAMETER;
 
 			for (JITEvent event : events)
 			{
@@ -162,13 +170,14 @@ public class TimeLineStage extends AbstractGraphStage
 
 						double legendY = y;
 
-						if (legendY > GRAPH_GAP_Y + chartHeight - 32)
+						if (legendY > GRAPH_GAP_Y + chartHeight - Y_AXIS_MARGIN)
 						{
-							legendY = GRAPH_GAP_Y + chartHeight - 32;
+							legendY = GRAPH_GAP_Y + chartHeight - Y_AXIS_MARGIN;
 						}
 
-						gc.strokeText(line1, fix(smX + 10), fix(legendY));
-						gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
+						gc.strokeText(line1, fix(smX + X_AXIS_MARGIN), fix(legendY));
+						gc.strokeText(line2, fix(smX + X_AXIS_MARGIN),
+                                fix(legendY + (Y_AXIS_MARGIN / 2)));
 
 						compiledStampTime = -1;
 					}
@@ -190,6 +199,6 @@ public class TimeLineStage extends AbstractGraphStage
 		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(S_CLOSE_PARENTHESES);
 		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(S_CLOSE_PARENTHESES);
 		gc.setStroke(Color.BLACK);
-		gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(12));
+		gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(TWELVE_PIXELS));
 	}
 }

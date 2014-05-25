@@ -21,6 +21,13 @@ public abstract class AbstractTextViewerStage extends Stage
     private static final int SCENE_WIDTH = 640;
     private static final int SCENE_HEIGHT = 480;
 
+    private static final int DEFAULT_LINE_LENGTH = 80;
+    private static final int DEFAULT_NUMBER_OF_ITEMS = 30;
+    private static final int DEFAULT_X_POSITION = 20;
+    private static final int DEFAULT_Y_POSITION = 20;
+    private static final int BY_TWELVE = 12;
+    private static final int BY_NINETEEN = 19;
+
     private Viewer viewer;
 
 	public AbstractTextViewerStage(final JITWatchUI parent, String title, boolean highlighting)
@@ -49,14 +56,14 @@ public abstract class AbstractTextViewerStage extends Stage
 	{
 		viewer.setContent(items);
 
-		int x = Math.min(80, maxLineLength);
-		int y = Math.min(30, items.size());
+		int x = Math.min(DEFAULT_LINE_LENGTH, maxLineLength);
+		int y = Math.min(DEFAULT_NUMBER_OF_ITEMS, items.size());
 
-		x = Math.max(x, 20);
-		y = Math.max(y, 20);
+		x = Math.max(x, DEFAULT_X_POSITION);
+		y = Math.max(y, DEFAULT_Y_POSITION);
 
-		setWidth(x * 12);
-		setHeight(y * 19);
+		setWidth(x * BY_TWELVE);
+		setHeight(y * BY_NINETEEN);
 	}
 
 	public void jumpTo(IMetaMember member)
