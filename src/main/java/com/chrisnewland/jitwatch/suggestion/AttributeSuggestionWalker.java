@@ -42,15 +42,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
 
-    public static final double SCORE_OF_HALF = 0.5;
-
-    public static final double SCORE_OF_ZERO = 0.0;
-
-    public static final double SCORE_OF_2_BY_10 = 0.2;
-
-    public static final double SCORE_OF_4_BY_10 = 0.4;
-
-    public static final double SCORE_OF_ONE = 1.0;
+    private static final double SCORE_OF_HALF = 0.5;
+    private static final double SCORE_OF_ZERO = 0.0;
+    private static final double SCORE_OF_2_BY_10 = 0.2;
+    private static final double SCORE_OF_4_BY_10 = 0.4;
+    private static final double SCORE_OF_ONE = 1.0;
 
     static
 	{

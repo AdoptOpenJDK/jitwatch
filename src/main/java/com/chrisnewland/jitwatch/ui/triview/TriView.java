@@ -56,6 +56,10 @@ public class TriView extends Stage implements ILineListener
     private static final double RATIO_OF_TWO_THIRD = 0.666;
     private static final int RATIO_ZERO = 0;
     private static final int RATIO_ONE = 1;
+    private static final int FIRST_COLUMN = 0;
+    private static final int SECOND_COLUMN = 1;
+    private static final int FOURTH_COLUMN = 3;
+    private static final int THIRD_COLUMN = 2;
 
     private IMetaMember currentMember;
 	private JITWatchConfig config;
@@ -310,16 +314,16 @@ public class TriView extends Stage implements ILineListener
 
 		switch (colCount)
 		{
-		case 0:
+		case FIRST_COLUMN:
 			splitViewer.setDividerPositions(RATIO_ZERO);
 			break;
-		case 1:
+		case SECOND_COLUMN:
 			splitViewer.setDividerPositions(RATIO_ONE);
 			break;
-		case 2:
+		case THIRD_COLUMN:
 			splitViewer.setDividerPositions(BY_RATIO_OF_5_BY_10);
 			break;
-		case 3:
+		case FOURTH_COLUMN:
 			splitViewer.setDividerPositions(RATIO_OF_ONE_THIRD, RATIO_OF_TWO_THIRD);
 			break;
 		default:

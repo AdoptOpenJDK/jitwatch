@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 public class Histo
 {
     private static final int ONE_HUNDRED_PERCENTILE = 100;
-    public static final double HALF_PERCENTILE = 0.5;
+    private static final double HALF_PERCENTILE = 0.5;
 
     private Map<Long, Integer> bucketMap = new HashMap<>();
 
