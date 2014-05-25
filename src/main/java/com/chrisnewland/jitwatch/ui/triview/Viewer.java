@@ -22,6 +22,7 @@ import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
+import com.chrisnewland.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -43,7 +44,7 @@ import javafx.scene.input.MouseEvent;
 public class Viewer extends VBox
 {
 	private ScrollPane scrollPane;
-	private VBox vBoxRows;
+	protected VBox vBoxRows;
 
 	public static final String COLOUR_BLACK = "black";
 	public static final String COLOUR_RED = "red";
@@ -165,7 +166,7 @@ public class Viewer extends VBox
 		{
 			final int finalPos = pos;
 
-			label.setStyle(STYLE_UNHIGHLIGHTED);
+			unhighlightLabel(label);
 
 			if (isHighlighting)
 			{
@@ -184,15 +185,12 @@ public class Viewer extends VBox
 					@Override
 					public void handle(MouseEvent arg0)
 					{
-						label.setStyle(STYLE_UNHIGHLIGHTED);
-						lineListener.lineHighlighted(-1, lineType);
-
+						unhighlightLabel(label);
 					}
 				});
 			}
 
-			label.prefWidthProperty().bind(scrollPane.widthProperty());
-
+			label.minWidthProperty().bind(scrollPane.widthProperty());
 			pos++;
 		}
 	}
@@ -274,30 +272,32 @@ public class Viewer extends VBox
 		{
 			scrollIndex = regexPos;
 		}
+	}
 
-		highlightLine(scrollIndex);
+	private void unhighlightLabel(Label label)
+	{
+		if (label instanceof BytecodeLabel)
+		{
+			label.setStyle(((BytecodeLabel) label).getUnhighlightedStyle());
+		}
+		else
+		{
+			label.setStyle(STYLE_UNHIGHLIGHTED);
+		}
 	}
 
 	public void highlightLine(int index)
 	{
-		if (index == -1)
+		if (lastScrollIndex != -1)
 		{
-			if (lastScrollIndex != -1)
-			{
-				// revert to black Label
-				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
-				label.setStyle(STYLE_UNHIGHLIGHTED);
-			}
-		}
-		else
-		{
-			if (lastScrollIndex != -1)
-			{
-				// revert to black Label
-				Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
-				label.setStyle(STYLE_UNHIGHLIGHTED);
-			}
+			// revert to black Label
+			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
+			unhighlightLabel(label);
+		}
+
+		if (index != -1)
+		{
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
 
@@ -315,7 +315,7 @@ public class Viewer extends VBox
 
 		Label result = null;
 
-		if (index > 0 && index < items.size())
+		if (index >= 0 && index < items.size())
 		{
 			result = (Label) items.get(index);
 		}

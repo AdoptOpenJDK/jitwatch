@@ -17,15 +17,17 @@ public class ClassBC
 	private String minorVersion;
 	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
 
+	private LineTable lineTable = new LineTable();
+
 	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		memberBytecodeMap.put(memberName, memberBytecode);
 	}
-	
+
 	public MemberBytecode getMemberBytecode(IMetaMember member)
 	{
 		String bytecodeSignature = member.getSignatureForBytecode();
-		
+
 		MemberBytecode result = getMemberBytecode(bytecodeSignature);
 
 		if (result == null)
@@ -39,20 +41,20 @@ public class ClassBC
 				result = getMemberBytecode(bytecodeSignature);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	public MemberBytecode getMemberBytecode(String memberName)
-	{		
+	{
 		return memberBytecodeMap.get(memberName);
 	}
-	
+
 	public Set<String> getBytecodeMethodSignatures()
 	{
 		return memberBytecodeMap.keySet();
 	}
-	
+
 	public ConstantPool getConstantPool()
 	{
 		return constantPool;
@@ -91,6 +93,16 @@ public class ClassBC
 	public void setMinorVersion(String minorVersion)
 	{
 		this.minorVersion = minorVersion;
+	}
+
+	public void setLineTable(LineTable table)
+	{
+		this.lineTable = table;
+	}
+
+	public LineTable getLineTable()
+	{
+		return lineTable;
 	}
 
 }

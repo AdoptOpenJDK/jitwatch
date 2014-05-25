@@ -210,4 +210,32 @@ public class Tag
 
 		return builder.toString();
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tag tag = (Tag) o;
+
+        if (selfClosing != tag.selfClosing) return false;
+        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null) return false;
+        if (children != null ? !children.equals(tag.children) : tag.children != null) return false;
+        if (name != null ? !name.equals(tag.name) : tag.name != null) return false;
+        if (parent != null ? !parent.equals(tag.parent) : tag.parent != null) return false;
+        if (textContent != null ? !textContent.equals(tag.textContent) : tag.textContent != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
+        result = 31 * result + (children != null ? children.hashCode() : 0);
+        result = 31 * result + (parent != null ? parent.hashCode() : 0);
+        result = 31 * result + (selfClosing ? 1 : 0);
+        result = 31 * result + (textContent != null ? textContent.hashCode() : 0);
+        return result;
+    }
 }

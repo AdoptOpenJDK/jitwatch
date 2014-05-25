@@ -48,7 +48,7 @@ public class AssemblyUtil
 		AssemblyInstruction lastInstruction = null;
 
 		for (String line : lines)
-		{
+		{			
 			line = line.trim();
 
 			if (line.startsWith(S_HASH))

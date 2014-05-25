@@ -69,7 +69,7 @@ public class JarScan
 		{			
 			MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
 			
-			List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+			List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 			if (instructions != null && instructions.size() > 0)
 			{
