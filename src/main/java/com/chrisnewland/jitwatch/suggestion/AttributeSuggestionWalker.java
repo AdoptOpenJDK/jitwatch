@@ -20,7 +20,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
-	private IParseDictionary parseDictionary;
+    private static final double FOURTY_FIVE_OUT_OF_HUNDRED = 0.45;
+    private static final double FIFTY_FIVE_OUT_OF_HUNDRED = 0.55;
+
+    private IParseDictionary parseDictionary;
 
 	private static final Map<String, Double> scoreMap = new HashMap<>();
 	private static final Map<String, String> explanationMap = new HashMap<>();
@@ -270,7 +273,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 		double score = 0;
 
-		if (probability > 0.45 && probability < 0.55 && count >= MIN_BRANCH_INVOCATIONS)
+		if ((probability > FOURTY_FIVE_OUT_OF_HUNDRED) &&
+                (probability < FIFTY_FIVE_OUT_OF_HUNDRED) &&
+                (count >= MIN_BRANCH_INVOCATIONS))
 		{
 			score = scoreMap.get(REASON_UNCERTAIN_BRANCH);
 

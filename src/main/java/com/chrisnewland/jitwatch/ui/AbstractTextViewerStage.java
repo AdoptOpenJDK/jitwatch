@@ -5,11 +5,8 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.List;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.ui.triview.Viewer;
-
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -17,9 +14,14 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import java.util.List;
+
 public abstract class AbstractTextViewerStage extends Stage
 {
-	private Viewer viewer;
+    private static final int SCENE_WIDTH = 640;
+    private static final int SCENE_HEIGHT = 480;
+
+    private Viewer viewer;
 
 	public AbstractTextViewerStage(final JITWatchUI parent, String title, boolean highlighting)
 	{
@@ -38,7 +40,7 @@ public abstract class AbstractTextViewerStage extends Stage
 
 		setTitle(title);
 
-		Scene scene = new Scene(viewer, 640, 480);
+		Scene scene = new Scene(viewer, SCENE_WIDTH, SCENE_HEIGHT);
 
 		setScene(scene);
 	}

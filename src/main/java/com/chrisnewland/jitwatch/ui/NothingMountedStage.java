@@ -27,7 +27,7 @@ public class NothingMountedStage extends Stage
 {
 
     private static final int TWENTY_SPACES = 20;
-    private static final int TEN_INSETS = 10;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
     private static final int SCENE_WIDTH = 360;
     private static final int SCENE_HEIGHT = 160;
 
@@ -37,7 +37,7 @@ public class NothingMountedStage extends Stage
 			
 		VBox vbox = new VBox();
 		vbox.setSpacing(TWENTY_SPACES);
-		vbox.setPadding(new Insets(TEN_INSETS));
+		vbox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 		
 		Scene scene = new Scene(vbox, SCENE_WIDTH, SCENE_HEIGHT);
 	
@@ -61,7 +61,7 @@ public class NothingMountedStage extends Stage
         
         HBox hboxButtons = new HBox();
         hboxButtons.setSpacing(TWENTY_SPACES);
-        hboxButtons.setPadding(new Insets(TEN_INSETS));
+        hboxButtons.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
         hboxButtons.setAlignment(Pos.CENTER);
 
         Button btnOpenConfig = new Button("Open Config");

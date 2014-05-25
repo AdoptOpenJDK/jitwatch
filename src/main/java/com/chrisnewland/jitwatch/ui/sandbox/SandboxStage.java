@@ -38,7 +38,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 {
     private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
     private static final int TEN_SPACES = 10;
-    private static final int TEN_INSETS = 10;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
     private static final double DIVIDER_POSITION_ONE = 0.1;
     private static final double DIVIDER_POSITION_TWO = 0.7;
     private static final double DIVIDER_POSITION_THREE = 0.2;
@@ -143,7 +143,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(TEN_SPACES);
-		hBoxTools.setPadding(new Insets(TEN_INSETS));
+		hBoxTools.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		hBoxTools.getChildren().add(lblSyntax);
 		hBoxTools.getChildren().add(rbATT);

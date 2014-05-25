@@ -19,9 +19,10 @@ public final class Dialogs
 {
     private static final int SCENE_WIDTH = 640;
     private static final int SCENE_HEIGHT = 320;
-    private static final int INSETS_TEN = 10;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
     private static final int SIXTY_FROM_TOP = 60;
     private static final int LINE_HEIGHT = 20;
+    private static final int TEN_SPACES = 10;
 
     /*
        Hide Utility Class Constructor Utility classes should not have a public
@@ -117,9 +118,9 @@ public final class Dialogs
 	public static void showOKDialog(Stage owner, String title, String message)
 	{
 		VBox vBox = new VBox();
-		vBox.setSpacing(10);
+		vBox.setSpacing(TEN_SPACES);
 		vBox.setAlignment(Pos.CENTER);
-		vBox.setPadding(new Insets(INSETS_TEN));
+		vBox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		String[] lines = message.split(S_NEWLINE);
 

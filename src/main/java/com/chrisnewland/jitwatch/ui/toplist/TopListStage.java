@@ -33,7 +33,7 @@ public class TopListStage extends Stage
     private static final String MEMBER = "Member";
     private static final int VIEW_WIDTH = 800;
     private static final int VIEW_HEIGHT = 480;
-    private static final int INSET_PADDING = 8;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 8;
     private static final int EIGHT_SPACES = 8;
     private static final int BY_EIGHT = 8;
     private static final int BY_SEVEN = 7;
@@ -117,7 +117,7 @@ public class TopListStage extends Stage
 		attrMap.put(tlCompilationOrderOSR.getTitle(), tlCompilationOrderOSR);
 
 		VBox vbox = new VBox();
-		vbox.setPadding(new Insets(INSET_PADDING));
+		vbox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 		vbox.setSpacing(EIGHT_SPACES);
 
 		List<String> keyList = new ArrayList<>(attrMap.keySet());
