@@ -25,14 +25,16 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class BytecodeLoader
 {
-	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
     private static final int INITIAL_SIZE_IN_BYTES = 65536;
     private static final int OFFSET = 1;
     private static final int MNEMONIC = 2;
     private static final int PARAM = 3;
     private static final int CONSTANT = 4;
 
-	enum ParseState
+    private static final int UPTO_FIFTH_POSITION = 5;
+
+    enum ParseState
 	{
 		OTHER, BYTECODE, LINETABLE
 	}
@@ -304,7 +306,7 @@ public final class BytecodeLoader
 		for (String line : lines)
 		{
 			// strip off 'line '
-			line = line.trim().substring(5);
+			line = line.trim().substring(UPTO_FIFTH_POSITION);
 
 			String[] parts = line.split(S_COLON);
 

@@ -5,11 +5,6 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -24,11 +19,23 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class FileChooserList extends VBox
 {
     private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
+    public static final int TEN_SPACES = 10;
+    public static final double BY_RATIO_OF_85_BY_100 = 0.85;
+    public static final double BY_RATIO_OF_15_BY_100 = 0.15;
+    public static final int TOP_POSITION = 10;
+    public static final int LEFT_POSITION = 10;
+    public static final int RIGHT_POSITION = 10;
+    public static final int BOTTOM_POSITION = 10;
 
-	private Stage stage;
+    private Stage stage;
 
 	protected ListView<Label> fileList;
 
@@ -85,8 +92,13 @@ public class FileChooserList extends VBox
 		});
 
 		vboxButtons = new VBox();
-		vboxButtons.setPadding(new Insets(10, 10, 10, 10));
-		vboxButtons.setSpacing(10);
+		vboxButtons.setPadding(new Insets(
+                TOP_POSITION,
+                RIGHT_POSITION,
+                BOTTOM_POSITION,
+                LEFT_POSITION
+        ));
+		vboxButtons.setSpacing(TEN_SPACES);
 
 		vboxButtons.getChildren().add(btnOpenFileDialog);
 		vboxButtons.getChildren().add(btnOpenFolderDialog);
@@ -95,15 +107,15 @@ public class FileChooserList extends VBox
 		hbox.getChildren().add(fileList);
 		hbox.getChildren().add(vboxButtons);
 
-		fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.85));
-		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.15));
+		fileList.prefWidthProperty().bind(this.widthProperty().multiply(BY_RATIO_OF_85_BY_100));
+		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(BY_RATIO_OF_15_BY_100));
 
 		Label titleLabel = new Label(title);
 
 		getChildren().add(titleLabel);
 		getChildren().add(hbox);
 
-		setSpacing(10);
+		setSpacing(TEN_SPACES);
 	}
 
 	private void chooseFile()

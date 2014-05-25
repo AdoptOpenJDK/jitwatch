@@ -5,23 +5,9 @@
  */
 package com.chrisnewland.jitwatch.ui.toplist;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.toplist.CompiledAttributeTopListVisitable;
-import com.chrisnewland.jitwatch.toplist.ITopListScore;
-import com.chrisnewland.jitwatch.toplist.InliningFailReasonTopListVisitable;
-import com.chrisnewland.jitwatch.toplist.MemberScore;
-import com.chrisnewland.jitwatch.toplist.AbstractTopListVisitable;
-import com.chrisnewland.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
+import com.chrisnewland.jitwatch.toplist.*;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -38,9 +24,20 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import java.util.*;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 public class TopListStage extends Stage
 {
     private static final String MEMBER = "Member";
+    private static final int VIEW_WIDTH = 800;
+    private static final int VIEW_HEIGHT = 480;
+    private static final int INSET_PADDING = 8;
+    private static final int EIGHT_SPACES = 8;
+    private static final int BY_EIGHT = 8;
+    private static final int BY_SEVEN = 7;
+
     private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
 
 	private TableView<ITopListScore> tableView;
@@ -60,8 +57,8 @@ public class TopListStage extends Stage
 			}
 		});
 
-		int width = 800;
-		int height = 480;
+		int width = VIEW_WIDTH;
+		int height = VIEW_HEIGHT;
 
 		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new CompiledAttributeTopListVisitable(
 				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", MEMBER});
@@ -120,8 +117,8 @@ public class TopListStage extends Stage
 		attrMap.put(tlCompilationOrderOSR.getTitle(), tlCompilationOrderOSR);
 
 		VBox vbox = new VBox();
-		vbox.setPadding(new Insets(8));
-		vbox.setSpacing(8);
+		vbox.setPadding(new Insets(INSET_PADDING));
+		vbox.setSpacing(EIGHT_SPACES);
 
 		List<String> keyList = new ArrayList<>(attrMap.keySet());
 		Collections.sort(keyList);
@@ -150,11 +147,11 @@ public class TopListStage extends Stage
 
 		TableColumn<ITopListScore, Long> colScore = new TableColumn<ITopListScore, Long>("");
 		colScore.setCellValueFactory(new PropertyValueFactory<ITopListScore, Long>("score"));
-		colScore.prefWidthProperty().bind(tableView.widthProperty().divide(8));
+		colScore.prefWidthProperty().bind(tableView.widthProperty().divide(BY_EIGHT));
 
 		TableColumn<ITopListScore, Object> colKey = new TableColumn<ITopListScore, Object>("");
 		colKey.setCellValueFactory(new PropertyValueFactory<ITopListScore, Object>("key"));
-		colKey.prefWidthProperty().bind(tableView.widthProperty().divide(8).multiply(7));
+		colKey.prefWidthProperty().bind(tableView.widthProperty().divide(BY_EIGHT).multiply(BY_SEVEN));
 
 		tableView.getColumns().add(colScore);
 		tableView.getColumns().add(colKey);

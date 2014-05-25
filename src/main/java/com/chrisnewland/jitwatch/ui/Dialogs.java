@@ -17,10 +17,16 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class Dialogs
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
+    private static final int SCENE_WIDTH = 640;
+    private static final int SCENE_HEIGHT = 320;
+    private static final int INSETS_TEN = 10;
+    private static final int SIXTY_FROM_TOP = 60;
+    private static final int LINE_HEIGHT = 20;
+
+    /*
+       Hide Utility Class Constructor Utility classes should not have a public
+       or default constructor.
+    */
 	private Dialogs()
 	{
 	}
@@ -28,7 +34,7 @@ public final class Dialogs
 	public enum Response
 	{
 		NO, YES
-	};
+	}
 
 	private static Response response = Response.NO;
 
@@ -63,7 +69,7 @@ public final class Dialogs
 	{
 		VBox vBox = new VBox();
 
-		Scene scene = new Scene(vBox, 640, 320);
+		Scene scene = new Scene(vBox, SCENE_WIDTH, SCENE_HEIGHT);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
@@ -113,7 +119,7 @@ public final class Dialogs
 		VBox vBox = new VBox();
 		vBox.setSpacing(10);
 		vBox.setAlignment(Pos.CENTER);
-		vBox.setPadding(new Insets(10));
+		vBox.setPadding(new Insets(INSETS_TEN));
 
 		String[] lines = message.split(S_NEWLINE);
 
@@ -123,7 +129,7 @@ public final class Dialogs
 			vBox.getChildren().add(label);
 		}
 
-		Scene scene = new Scene(vBox, 640, 60 + 20 * lines.length);
+		Scene scene = new Scene(vBox, SCENE_WIDTH, SIXTY_FROM_TOP + LINE_HEIGHT * lines.length);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 

@@ -39,17 +39,27 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
 
-	static
-	{
-		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
-		scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
-		scoreMap.put(REASON_TOO_BIG, 0.5);
-		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
-		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
-		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
+    public static final double SCORE_OF_HALF = 0.5;
 
-		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
-		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
+    public static final double SCORE_OF_ZERO = 0.0;
+
+    public static final double SCORE_OF_2_BY_10 = 0.2;
+
+    public static final double SCORE_OF_4_BY_10 = 0.4;
+
+    public static final double SCORE_OF_ONE = 1.0;
+
+    static
+	{
+		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, SCORE_OF_ONE);
+		scoreMap.put(REASON_UNCERTAIN_BRANCH, SCORE_OF_HALF);
+		scoreMap.put(REASON_TOO_BIG, SCORE_OF_HALF);
+		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, SCORE_OF_4_BY_10);
+		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, SCORE_OF_4_BY_10);
+		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, SCORE_OF_2_BY_10);
+
+		scoreMap.put(REASON_NEVER_EXECUTED, SCORE_OF_ZERO);
+		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, SCORE_OF_ZERO);
 
 		explanationMap
 				.put(REASON_HOT_METHOD_TOO_BIG,
