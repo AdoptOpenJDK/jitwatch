@@ -5,7 +5,6 @@
  */
 package com.chrisnewland.jitwatch.ui.sandbox;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +16,11 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.sandbox.Sandbox;
+import com.chrisnewland.jitwatch.ui.Dialogs;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
+import com.chrisnewland.jitwatch.ui.Dialogs.Response;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 
 import javafx.application.Platform;
@@ -57,8 +58,6 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 	private SplitPane splitEditorPanes;
 
-	static final File SANDBOX_EXAMPLE_DIR = new File("src/main/java/com/chrisnewland/jitwatch/demo");
-
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
 	{
 		this.accessProxy = proxy;
@@ -67,18 +66,20 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 		setTitle("JIT Sandbox");
 
-		Button btnRunTestLoad = new Button("Run");
-		btnRunTestLoad.setOnAction(new EventHandler<ActionEvent>()
+		Button btnRun = new Button("Run");
+		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
+				saveUnsavedEditors();
+
 				new Thread(new Runnable()
 				{
 					@Override
 					public void run()
 					{
-						runTestLoad();
+						runSandbox();
 					}
 				}).start();
 			}
@@ -142,6 +143,23 @@ public class SandboxStage extends Stage implements ISandboxStage
 			}
 		});
 
+		Button btnResetSandbox = new Button("Reset Sandbox");
+		btnResetSandbox.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				Response resp = Dialogs.showYesNoDialog(SandboxStage.this, "Reset Sandbox?",
+						"Delete all modified Sandbox sources and classes?");
+
+				if (resp == Response.YES)
+				{
+					sandbox.reset();
+					loadDefaultEditors();
+				}
+			}
+		});
+
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(10);
@@ -150,8 +168,9 @@ public class SandboxStage extends Stage implements ISandboxStage
 		hBoxTools.getChildren().add(lblSyntax);
 		hBoxTools.getChildren().add(rbATT);
 		hBoxTools.getChildren().add(rbIntel);
-		hBoxTools.getChildren().add(btnRunTestLoad);
+		hBoxTools.getChildren().add(btnRun);
 		hBoxTools.getChildren().add(btnNewEditor);
+		hBoxTools.getChildren().add(btnResetSandbox);
 
 		splitVertical.getItems().add(hBoxTools);
 		splitVertical.getItems().add(splitEditorPanes);
@@ -175,11 +194,14 @@ public class SandboxStage extends Stage implements ISandboxStage
 			}
 		});
 
-		setup();
+		loadDefaultEditors();
 	}
 
-	private void setup()
+	private void loadDefaultEditors()
 	{
+		editorPanes.clear();
+		splitEditorPanes.getItems().clear();
+		
 		addEditor("SandboxTest.java");
 		addEditor("SandboxTestLoad.java");
 	}
@@ -190,7 +212,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 		if (filename != null)
 		{
-			editor.loadSource(SANDBOX_EXAMPLE_DIR, filename);
+			editor.loadSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), filename);
 		}
 
 		editorPanes.add(editor);
@@ -219,7 +241,15 @@ public class SandboxStage extends Stage implements ISandboxStage
 		});
 	}
 
-	private void runTestLoad()
+	private void saveUnsavedEditors()
+	{
+		for (EditorPane editor : editorPanes)
+		{
+			editor.promptSave();
+		}
+	}
+
+	private void runSandbox()
 	{
 		try
 		{

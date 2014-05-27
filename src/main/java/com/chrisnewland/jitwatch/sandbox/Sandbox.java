@@ -4,6 +4,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,22 +15,68 @@ import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.ui.sandbox.ISandboxStage;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
+import com.chrisnewland.jitwatch.util.FileUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 public class Sandbox
 {
 	private ISandboxStage sandboxStage;
+	
+	public static final Path SANDBOX_DIR;
+	public static final Path SANDBOX_SOURCE_DIR;
+	public static final Path SANDBOX_CLASS_DIR;
 
 	private static final String SANDBOX_LOGFILE = "sandbox.log";
 
-	private File sandboxLogFile = new File(ClassCompiler.SANDBOX_DIR.toFile(), SANDBOX_LOGFILE);
+	private File sandboxLogFile = new File(SANDBOX_DIR.toFile(), SANDBOX_LOGFILE);
 
 	private ILogParser logParser;
 
 	private String firstClassName;
 
 	private String classContainingMain;
+	
+	static
+	{
+		String userDir = System.getProperty("user.dir");
+
+		File sandbox = new File(userDir, "sandbox");
+		File sandboxSources = new File(sandbox, "sources");
+		File sandboxClasses = new File(sandbox, "classes");
+
+		if (!sandboxSources.exists())
+		{
+			sandboxSources.mkdirs();
+			
+			if (sandboxSources.exists())
+			{
+				copyExamples();
+			}
+		}
+
+		if (!sandboxClasses.exists())
+		{
+			sandboxClasses.mkdirs();
+		}
+
+		SANDBOX_DIR = sandbox.toPath();
+		SANDBOX_SOURCE_DIR = sandboxSources.toPath();
+		SANDBOX_CLASS_DIR = sandboxClasses.toPath();
+	}
+	
+	public void reset()
+	{
+		FileUtil.emptyDir(SANDBOX_SOURCE_DIR.toFile());
+		FileUtil.emptyDir(SANDBOX_CLASS_DIR.toFile());
+		
+		copyExamples();
+	}
+	
+	private static void copyExamples()
+	{
+		FileUtil.copyFilesToDir(new File("src/main/resources/examples"), SANDBOX_SOURCE_DIR.toFile());
+	}
 
 	public Sandbox(ILogParser parser, ISandboxStage logger)
 	{
@@ -54,7 +101,7 @@ public class Sandbox
 
 		ClassCompiler compiler = new ClassCompiler();
 
-		boolean compiledOK = compiler.compile(compileList);
+		boolean compiledOK = compiler.compile(compileList, SANDBOX_CLASS_DIR.toFile());
 
 		sandboxStage.log("Compilation success: " + compiledOK);
 
@@ -120,14 +167,14 @@ public class Sandbox
 
 		sandboxStage.log("Writing source file: " + fqNameSource + ".java");
 
-		return ClassCompiler.writeSource(fqNameSource, source);
+		return FileUtil.writeSource(SANDBOX_SOURCE_DIR.toFile(), fqNameSource, source);
 	}
 
 	private boolean executeTestLoad(ClassExecutor classExecutor, boolean intelMode) throws Exception
 	{
 		List<String> classpath = new ArrayList<>();
 
-		classpath.add(ClassCompiler.SANDBOX_CLASS_DIR.toString());
+		classpath.add(SANDBOX_CLASS_DIR.toString());
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
@@ -156,8 +203,8 @@ public class Sandbox
 		List<String> sourceLocations = new ArrayList<>();
 		List<String> classLocations = new ArrayList<>();
 
-		sourceLocations.add(ClassCompiler.SANDBOX_SOURCE_DIR.toString());
-		classLocations.add(ClassCompiler.SANDBOX_CLASS_DIR.toString());
+		sourceLocations.add(SANDBOX_SOURCE_DIR.toString());
+		classLocations.add(SANDBOX_CLASS_DIR.toString());
 
 		JITWatchConfig config = new JITWatchConfig();
 		config.setSourceLocations(sourceLocations);

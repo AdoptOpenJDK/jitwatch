@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 public class MetaPackage implements Comparable<MetaPackage>
 {
     private String packageName;
@@ -89,7 +91,18 @@ public class MetaPackage implements Comparable<MetaPackage>
     @Override
     public String toString()
     {
-        return getName();
+    	String str;
+    	
+    	if (S_EMPTY.equals(packageName))
+    	{
+    		str = "(default package)";
+    	}
+    	else
+    	{
+    		str = getName();
+    	}
+    	
+        return str;
     }
 
     @Override

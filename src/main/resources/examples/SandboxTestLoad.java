@@ -1,5 +1,3 @@
-package com.chrisnewland.jitwatch.demo;
-
 public class SandboxTestLoad
 {
     public static void main(String[] args)
