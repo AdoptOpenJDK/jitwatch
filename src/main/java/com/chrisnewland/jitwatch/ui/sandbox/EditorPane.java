@@ -177,7 +177,7 @@ public class EditorPane extends VBox
 		}
 
 		taLineNumbers.setText(builder.toString());
-		taLineNumbers.setMaxWidth(40 + maxDigits * 20);
+		taLineNumbers.setMaxWidth(40 + maxDigits * 25);
 
 		sbSource = (ScrollBar) taSource.lookup(".scroll-bar:vertical");
 		sbLineNum = (ScrollBar) taLineNumbers.lookup(".scroll-bar:vertical");
