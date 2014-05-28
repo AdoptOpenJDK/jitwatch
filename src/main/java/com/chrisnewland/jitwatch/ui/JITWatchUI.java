@@ -85,10 +85,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
     private static final int EVERY_THOUSAND_MILLISECONDS = 1000;
     private static final int FOUR_SPACES = 4;
 
-    public static final double MAIN_SPLITPANE_DIVIDER_INDEX = 0.7;
-    public static final double MAIN_SPLITPANE_DIVIDER_POSITION = 0.3;
-    public static final double CENTRE_SPLITPANE_DIVIDER_INDEX = 0.33;
-    public static final double CENTRE_SPLITPANE_DIVIDER_POSITION = 0.67;
+    private static final double MAIN_SPLITPANE_DIVIDER_INDEX = 0.7;
+    private static final double MAIN_SPLITPANE_DIVIDER_POSITION = 0.3;
+    private static final double CENTRE_SPLITPANE_DIVIDER_INDEX = 0.33;
+    private static final double CENTRE_SPLITPANE_DIVIDER_POSITION = 0.67;
 
     private Stage stage;
 
