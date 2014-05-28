@@ -51,8 +51,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 {
     private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
-    private static final int windowWidth;
-    private static final int windowHeight;
+    public static final int windowWidth;
+    public static final int windowHeight;
 
     private static final int WINDOW_WIDTH = 1024;
     private static final int JAVA7_WINDOW_HEIGHT = 592;
