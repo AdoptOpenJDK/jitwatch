@@ -152,8 +152,8 @@ public final class JITWatchConstants
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
 	public static final char C_QUESTION = '?';
 	public static final char C_BACKSLASH = '\\';
+	public static final char C_HAT = '^';
+	public static final char C_DOLLAR = '$';
 	
 	public static final String S_ASSEMBLY_ADDRESS = "0x";
-
-
 }

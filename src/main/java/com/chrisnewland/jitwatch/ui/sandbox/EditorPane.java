@@ -1,6 +1,13 @@
 package com.chrisnewland.jitwatch.ui.sandbox;
 
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
+import com.chrisnewland.jitwatch.sandbox.Sandbox;
+import com.chrisnewland.jitwatch.ui.Dialogs;
+import com.chrisnewland.jitwatch.ui.Dialogs.Response;
+
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -31,7 +38,13 @@ public class EditorPane extends VBox
 	private TextArea textArea;
 	private HBox hBoxTitle;
 
+	private Button btnSave;
+
 	private SandboxStage sandboxStage;
+
+	private boolean isModified = false;
+
+	private File sourceFile = null;
 
 	public EditorPane(SandboxStage stage)
 	{
@@ -45,11 +58,13 @@ public class EditorPane extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
+				promptSave();
+				
 				chooseFile();
 			}
 		});
 
-		Button btnSave = new Button("Save");
+		btnSave = new Button("Save");
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -58,6 +73,8 @@ public class EditorPane extends VBox
 				saveFile();
 			}
 		});
+
+		btnSave.setDisable(!isModified);
 
 		Button btnClear = new Button("Clear");
 		btnClear.setOnAction(new EventHandler<ActionEvent>()
@@ -76,6 +93,8 @@ public class EditorPane extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
+				promptSave();
+
 				sandboxStage.editorClosed(EditorPane.this);
 			}
 		});
@@ -99,6 +118,15 @@ public class EditorPane extends VBox
 		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 		textArea.setStyle(style);
 
+		textArea.textProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue)
+			{
+				setModified(true);
+			}
+		});
+
 		getChildren().add(hBoxTitle);
 		getChildren().add(textArea);
 
@@ -109,6 +137,19 @@ public class EditorPane extends VBox
 		textArea.prefHeightProperty().bind(heightProperty().multiply(TEXTAREA_HEIGHT_MULTIPLIER));
 	}
 
+	private void setModified(final boolean modified)
+	{
+		this.isModified = modified;
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				btnSave.setDisable(!modified);
+			}
+		});
+	}
+
 	public String getSource()
 	{
 		return textArea.getText().trim();
@@ -116,12 +157,16 @@ public class EditorPane extends VBox
 
 	public void loadSource(File dir, String filename)
 	{
-		String source = ResourceLoader.readFileInDirectory(dir, filename);
+		sourceFile = new File(dir, filename);
+
+		String source = ResourceLoader.readFile(sourceFile);
 
 		source = source.replace("\t", "    ");
 
 		lblTitle.setText(filename);
 		textArea.setText(source);
+
+		setModified(false);
 	}
 
 	private void chooseFile()
@@ -129,7 +174,7 @@ public class EditorPane extends VBox
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose source file");
 
-		fc.setInitialDirectory(SandboxStage.SANDBOX_EXAMPLE_DIR);
+		fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
 		File result = fc.showOpenDialog(sandboxStage);
 
@@ -139,18 +184,35 @@ public class EditorPane extends VBox
 		}
 	}
 
+	public void promptSave()
+	{
+		if (isModified)
+		{
+			Response resp = Dialogs.showYesNoDialog(sandboxStage, "Save modified file?", "Save changes?");
+
+			if (resp == Response.YES)
+			{
+				saveFile();
+			}
+		}
+	}
+
 	private void saveFile()
 	{
-		FileChooser fc = new FileChooser();
-		fc.setTitle("Save file as");
-
-		fc.setInitialDirectory(SandboxStage.SANDBOX_EXAMPLE_DIR);
-
-		File result = fc.showSaveDialog(sandboxStage);
-
-		if (result != null)
+		if (sourceFile == null)
 		{
-			saveFile(result);
+			FileChooser fc = new FileChooser();
+			fc.setTitle("Save file as");
+
+			fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
+
+			sourceFile = fc.showSaveDialog(sandboxStage);
+		}
+
+		if (sourceFile != null)
+		{
+			saveFile(sourceFile);
+			setModified(false);
 		}
 	}
 
@@ -182,5 +244,10 @@ public class EditorPane extends VBox
 				}
 			}
 		}
+	}
+
+	public boolean isModified()
+	{
+		return isModified;
 	}
 }

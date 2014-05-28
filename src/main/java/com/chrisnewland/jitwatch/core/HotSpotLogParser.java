@@ -207,7 +207,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleTag(Tag tag)
-	{
+	{		
 		String tagName = tag.getName();
 
 		switch (tagName)
@@ -392,7 +392,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-
+		
 		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
 

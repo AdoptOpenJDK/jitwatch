@@ -38,7 +38,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	public void setContent(IMetaMember member, List<String> classLocations)
-	{
+	{	
 		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode(classLocations);
 
 		List<BytecodeInstruction> instructions = null;

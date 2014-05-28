@@ -192,7 +192,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to\n");
 					reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append("\n");
-					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName()).append("\n");
+					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName(false)).append("\n");
 					reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
 
 					if (explanationMap.containsKey(reason))

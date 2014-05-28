@@ -18,7 +18,7 @@ public class ClassBC
 	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
 
 	private LineTable lineTable = new LineTable();
-
+	
 	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		memberBytecodeMap.put(memberName, memberBytecode);
@@ -103,6 +103,19 @@ public class ClassBC
 	public LineTable getLineTable()
 	{
 		return lineTable;
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (Map.Entry<String, MemberBytecode> entry : memberBytecodeMap.entrySet())
+		{
+			builder.append("member: ").append(entry.getKey());
+		}
+		
+		return builder.toString();
 	}
 
 }

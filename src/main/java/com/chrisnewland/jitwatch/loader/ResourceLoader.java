@@ -23,14 +23,15 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class ResourceLoader
 {
-    private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private ResourceLoader() {
-    }
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private ResourceLoader()
+	{
+	}
 
 	public static String getSourceFilename(MetaClass metaClass)
 	{
@@ -44,10 +45,10 @@ public class ResourceLoader
 		}
 
 		fqName = fqName.replace(S_DOT, File.separator) + ".java";
-				
+
 		return fqName;
 	}
-	
+
 	public static String getSource(List<String> locations, String fileName)
 	{
 		String source = null;
@@ -55,7 +56,7 @@ public class ResourceLoader
 		for (String location : locations)
 		{
 			File lf = new File(location);
-			
+
 			if (lf.exists())
 			{
 				if (lf.isDirectory())
@@ -84,9 +85,14 @@ public class ResourceLoader
 
 	public static String readFileInDirectory(File dir, String fileName)
 	{
-		String result = null;
-
 		File sourceFile = new File(dir, fileName);
+
+		return readFile(sourceFile);
+	}
+
+	public static String readFile(File sourceFile)
+	{
+		String result = null;
 
 		if (sourceFile.exists())
 		{
@@ -97,7 +103,7 @@ public class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+				logger.error("", ioe);
 			}
 		}
 
@@ -131,7 +137,7 @@ public class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+			logger.error("", ioe);
 		}
 
 		return result;

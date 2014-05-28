@@ -41,8 +41,7 @@ public class LineTable
 
 			if (lineEntry.getBytecodeOffset() == offset)
 			{
-				if (lineEntry.getMemberSignature().equals(member.toString())
-						|| lineEntry.getMemberSignature().equals(member.toStringUnqualifiedMethodName()))
+				if (member.matchesBytecodeSignature(lineEntry.getMemberSignature()))
 				{
 					result = entry.getKey();
 				}

@@ -151,8 +151,6 @@ public class ClassTree extends VBox
         {
             found = new TreeItem<Object>(value);
             children.add(placeToInsert, found);
-
-            //TODO indicate missing class definition?
         }
 
         boolean hasCompiledChildren = false;

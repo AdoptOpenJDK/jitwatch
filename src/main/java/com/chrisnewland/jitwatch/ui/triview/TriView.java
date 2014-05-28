@@ -187,7 +187,7 @@ public class TriView extends Stage implements ILineListener
 						}
 						else
 						{
-							setText(item.toStringUnqualifiedMethodName());
+							setText(item.toStringUnqualifiedMethodName(false));
 
 							if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
 							{
@@ -208,7 +208,7 @@ public class TriView extends Stage implements ILineListener
 			@Override
 			public String toString(IMetaMember mm)
 			{
-				return mm.toStringUnqualifiedMethodName();
+				return mm.toStringUnqualifiedMethodName(false);
 			}
 
 			@Override

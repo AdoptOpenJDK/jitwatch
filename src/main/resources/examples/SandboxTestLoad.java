@@ -1,5 +1,3 @@
-package com.chrisnewland.jitwatch.demo;
-
 public class SandboxTestLoad
 {
     private static final int ONE_MILLION = 1_000_000;

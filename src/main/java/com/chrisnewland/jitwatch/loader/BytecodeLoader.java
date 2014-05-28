@@ -87,7 +87,7 @@ public final class BytecodeLoader
 		{
 			result = parse(byteCodeString);
 		}
-
+		
 		return result;
 	}
 
