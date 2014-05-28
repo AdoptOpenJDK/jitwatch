@@ -299,17 +299,17 @@ public class MakeHotSpotLog
 
 	private long chainB1(long count)
 	{
-		return chainB2(count) - 1;
+		return chainB2(count) - ONE;
 	}
 
 	private long chainB2(long count)
 	{
-		return chainB3(count) - 2;
+		return chainB3(count) - TWO;
 	}
 
 	private long chainB3(long count)
 	{
-		return count - 3;
+		return count - THREE;
 	}
 
 	private void testCallChain2(long iterations)
@@ -360,12 +360,12 @@ public class MakeHotSpotLog
 
 	private long chainC2(long count)
 	{
-		return 2 + count;
+		return TWO + count;
 	}
 
 	private long chainC3(long count)
 	{
-		return 3 + count;
+		return THREE + count;
 	}
 
 	private void testLeaf(long iterations)
