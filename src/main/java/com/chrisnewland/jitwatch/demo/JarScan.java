@@ -21,10 +21,14 @@ import java.util.zip.ZipFile;
 
 public class JarScan
 {
+
+    private static final int SIX_CHARACTERS_WIDE = 6;
+    private static final int MAX_METHOD_SIZE_IN_BYTES = 325;
+
     /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
+                Hide Utility Class Constructor
+                Utility classes should not have a public or default constructor.
+            */
     private JarScan() {
     }
 
@@ -47,7 +51,7 @@ public class JarScan
 
 				if (name.endsWith(".class"))
 				{
-					String fqName = name.replace("/", ".").substring(0, name.length() - 6);
+					String fqName = name.replace("/", ".").substring(0, name.length() - SIX_CHARACTERS_WIDE);
 
 					process(classLocations, fqName, maxMethodBytes, writer);
 				}
@@ -93,7 +97,7 @@ public class JarScan
 
 	public static void main(String[] args) throws IOException
 	{
-		int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
+		int maxMethodBytes = Integer.getInteger("maxMethodSize", MAX_METHOD_SIZE_IN_BYTES);
 
 		PrintWriter writer = new PrintWriter(System.out);
 

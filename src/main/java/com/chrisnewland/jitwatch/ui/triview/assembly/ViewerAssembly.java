@@ -13,9 +13,14 @@ import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyReference;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener;
-import com.chrisnewland.jitwatch.ui.triview.Viewer;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
+import com.chrisnewland.jitwatch.ui.triview.Viewer;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import com.chrisnewland.jitwatch.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -26,7 +31,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ViewerAssembly extends Viewer
 {
-	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+
+    private static final int MINIMUM_REGISTER_LENGTH = 3;
+
+    public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
 	}
@@ -156,7 +164,7 @@ public class ViewerAssembly extends Viewer
 		{
 			// https://sourceware.org/binutils/docs/as/i386_002dRegs.html#i386_002dRegs
 			// http://www.x86-64.org/documentation/assembly.html
-			if (register.length() >= 3)
+			if (register.length() >= MINIMUM_REGISTER_LENGTH)
 			{
 				String regName = register.substring(1); // remove %
 

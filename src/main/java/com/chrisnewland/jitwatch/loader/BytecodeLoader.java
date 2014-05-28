@@ -25,9 +25,16 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class BytecodeLoader
 {
-	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
+    private static final int INITIAL_SIZE_IN_BYTES = 65536;
+    private static final int OFFSET = 1;
+    private static final int MNEMONIC = 2;
+    private static final int PARAM = 3;
+    private static final int CONSTANT = 4;
 
-	enum ParseState
+    private static final int UPTO_FIFTH_POSITION = 5;
+
+    enum ParseState
 	{
 		OTHER, BYTECODE, LINETABLE
 	}
@@ -58,7 +65,7 @@ public final class BytecodeLoader
 
 		String byteCodeString = null;
 
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(INITIAL_SIZE_IN_BYTES))
 		{
 			JavapTask task = new JavapTask();
 			task.setLog(baos);
@@ -133,25 +140,25 @@ public final class BytecodeLoader
 					}
 					catch (NumberFormatException nfe)
 					{
-						List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
+                        List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
 
-						memberBytecode = new MemberBytecode();
-						memberBytecode.setInstructions(instructions);
-						builder.delete(0, builder.length());
+                        memberBytecode = new MemberBytecode();
+                        memberBytecode.setInstructions(instructions);
+                        builder.delete(0, builder.length());
 
-						if (line.startsWith("LineNumberTable:"))
-						{
-							parseState = ParseState.LINETABLE;
-						}
-						else
-						{
-							classBytecode.addMemberBytecode(memberSignature, memberBytecode);
-							parseState = ParseState.OTHER;
-						}
-					}
-				}
-				break;
-			case LINETABLE:
+                        if (line.startsWith("LineNumberTable:"))
+                        {
+                            parseState = ParseState.LINETABLE;
+                        }
+                        else
+                        {
+                            classBytecode.addMemberBytecode(memberSignature, memberBytecode);
+                            parseState = ParseState.OTHER;
+                        }
+                    }
+                }
+                break;
+                case LINETABLE:
 				if (line.startsWith("line "))
 				{
 					builder.append(line).append(C_NEWLINE);
@@ -250,10 +257,10 @@ public final class BytecodeLoader
 					{
 						instruction = new BytecodeInstruction();
 
-						String offset = matcher.group(1);
-						String mnemonic = matcher.group(2);
-						String paramString = matcher.group(3);
-						String comment = matcher.group(4);
+						String offset = matcher.group(OFFSET);
+						String mnemonic = matcher.group(MNEMONIC);
+						String paramString = matcher.group(PARAM);
+						String comment = matcher.group(CONSTANT);
 
 						instruction.setOffset(Integer.parseInt(offset));
 						instruction.setOpcode(Opcode.getOpcodeForMnemonic(mnemonic));
@@ -299,7 +306,7 @@ public final class BytecodeLoader
 		for (String line : lines)
 		{
 			// strip off 'line '
-			line = line.trim().substring(5);
+			line = line.trim().substring(UPTO_FIFTH_POSITION);
 
 			String[] parts = line.split(S_COLON);
 

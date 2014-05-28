@@ -5,16 +5,19 @@
  */
 package com.chrisnewland.jitwatch.model.assembly;
 
+import com.chrisnewland.jitwatch.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.chrisnewland.jitwatch.util.StringUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyInstruction
 {
-	private long address; // 64 bit
+    private static final char ZERO_AS_CHAR = '0';
+    private static final int SIXTEEN_WIDE = 16;
+
+    private long address; // 64 bit
 	private String modifier;
 	private String mnemonic;
 	private List<String> operands = new ArrayList<>();
@@ -87,7 +90,8 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(
+                Long.toHexString(address), SIXTEEN_WIDE, ZERO_AS_CHAR, true));
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -144,7 +148,8 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(
+                Long.toHexString(address), SIXTEEN_WIDE, ZERO_AS_CHAR, true));
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)

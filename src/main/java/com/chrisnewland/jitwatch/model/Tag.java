@@ -14,7 +14,10 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class Tag
 {
-	private String name;
+    private static final int HASH_BASE_CONSTANT = 31;
+    private static final int HASH_CODE_ZERO = 0;
+    private static final int HASH_CODE_ONE = 1;
+    private String name;
 	private Map<String, String> attrs = new HashMap<>();
 	private List<Tag> children = new ArrayList<>();
 	private Tag parent = null;
@@ -230,12 +233,12 @@ public class Tag
 
     @Override
     public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
-        result = 31 * result + (children != null ? children.hashCode() : 0);
-        result = 31 * result + (parent != null ? parent.hashCode() : 0);
-        result = 31 * result + (selfClosing ? 1 : 0);
-        result = 31 * result + (textContent != null ? textContent.hashCode() : 0);
+        int result = name != null ? name.hashCode() : HASH_CODE_ZERO;
+        result = HASH_BASE_CONSTANT * result + (attrs != null ? attrs.hashCode() : HASH_CODE_ZERO);
+        result = HASH_BASE_CONSTANT * result + (children != null ? children.hashCode() : HASH_CODE_ZERO);
+        result = HASH_BASE_CONSTANT * result + (parent != null ? parent.hashCode() : HASH_CODE_ZERO);
+        result = HASH_BASE_CONSTANT * result + (selfClosing ? HASH_CODE_ONE : HASH_CODE_ZERO);
+        result = HASH_BASE_CONSTANT * result + (textContent != null ? textContent.hashCode() : HASH_CODE_ZERO);
         return result;
     }
 }

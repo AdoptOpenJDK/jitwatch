@@ -17,7 +17,12 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MemberSignatureParts
 {
-	private int modifier;
+    private static final int FIRST_GROUP = 1;
+    private static final int SECOND_GROUP = 2;
+    private static final int THIRD_GROUP = 3;
+    private static final int FOURTH_GROUP = 4;
+
+    private int modifier;
 	private List<String> modifierList;
 	private Map<String, String> genericsMap;
 	private String returnType;
@@ -100,7 +105,7 @@ public class MemberSignatureParts
 					modifier += modifierMap.get(group);
 				}
 
-				if (i == modifierCount + 1)
+				if (i == modifierCount + FIRST_GROUP)
 				{
 					if (group != null)
 					{
@@ -108,7 +113,7 @@ public class MemberSignatureParts
 					}
 				}
 
-				if (i == modifierCount + 2)
+				if (i == modifierCount + SECOND_GROUP)
 				{
 					if (group != null)
 					{
@@ -116,7 +121,7 @@ public class MemberSignatureParts
 					}
 				}
 
-				if (i == modifierCount + 3)
+				if (i == modifierCount + THIRD_GROUP)
 				{
 					if (group != null)
 					{
@@ -124,7 +129,7 @@ public class MemberSignatureParts
 					}
 				}
 
-				if (i == modifierCount + 4)
+				if (i == modifierCount + FOURTH_GROUP)
 				{
 					if (group != null)
 					{

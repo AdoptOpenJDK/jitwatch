@@ -19,7 +19,9 @@ import javafx.stage.WindowEvent;
 
 public class StatsStage extends Stage
 {
-	private TableView<StatsTableRow> tableView;
+    private static final int MAX_WIDTH = 800;
+    private static final int MAX_HEIGHT = 480;
+    private TableView<StatsTableRow> tableView;
 	private ObservableList<StatsTableRow> obList = FXCollections.observableArrayList();
 	
 	private JITWatchUI parent;
@@ -32,7 +34,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 		
-		Scene scene = new Scene(vbox, 800, 480);
+		Scene scene = new Scene(vbox, MAX_WIDTH, MAX_HEIGHT);
 	
 		tableView = TableUtil.buildTableStats(obList);
 		

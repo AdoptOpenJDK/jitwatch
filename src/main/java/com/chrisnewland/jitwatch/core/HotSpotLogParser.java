@@ -24,7 +24,15 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class HotSpotLogParser implements ILogParser, IMemberFinder
 {
-	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
+    
+    private static final int INPUT_BUFFER_SIZE = 65536;
+
+    enum ParseState
+	{
+		READY, IN_TAG, IN_NATIVE
+	}
 
 	private JITDataModel model;
 
@@ -126,7 +134,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		reading = true;
 
-		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
+		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), INPUT_BUFFER_SIZE);
 
 		String currentLine = input.readLine();
 

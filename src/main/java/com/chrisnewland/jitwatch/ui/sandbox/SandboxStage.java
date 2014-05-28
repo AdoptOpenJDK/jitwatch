@@ -11,8 +11,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.sandbox.Sandbox;
@@ -22,7 +20,6 @@ import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.ui.Dialogs.Response;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -31,22 +28,24 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 public class SandboxStage extends Stage implements ISandboxStage
 {
-	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
+    private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
+    private static final int TEN_SPACES = 10;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final double DIVIDER_POSITION_ONE = 0.1;
+    private static final double DIVIDER_POSITION_TWO = 0.7;
+    private static final double DIVIDER_POSITION_THREE = 0.2;
 
-	private List<EditorPane> editorPanes = new ArrayList<>();
+    private List<EditorPane> editorPanes = new ArrayList<>();
 
 	private TextArea taLog;
 
@@ -162,8 +161,8 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 		HBox hBoxTools = new HBox();
 
-		hBoxTools.setSpacing(10);
-		hBoxTools.setPadding(new Insets(10));
+		hBoxTools.setSpacing(TEN_SPACES);
+		hBoxTools.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		hBoxTools.getChildren().add(lblSyntax);
 		hBoxTools.getChildren().add(rbATT);
@@ -176,12 +175,15 @@ public class SandboxStage extends Stage implements ISandboxStage
 		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
-		splitVertical.setDividerPositions(0.1, 0.7, 0.2);
+		splitVertical.setDividerPositions(
+                DIVIDER_POSITION_ONE,
+                DIVIDER_POSITION_TWO,
+                DIVIDER_POSITION_THREE);
 
 		log("Sandbox ready");
 		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
 
-		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(splitVertical, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
 		setScene(scene);
 
@@ -222,23 +224,20 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 	private void setEditorDividers()
 	{
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				int editorCount = editorPanes.size();
+		Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                int editorCount = editorPanes.size();
 
-				double widthFraction = 1.0 / editorCount;
-				double dividerPos = widthFraction;
+                double widthFraction = 1.0 / editorCount;
+                double dividerPos = widthFraction;
 
-				for (int i = 0; i < editorCount - 1; i++)
-				{
-					splitEditorPanes.setDividerPosition(i, dividerPos);
-					dividerPos += widthFraction;
-				}
-			}
-		});
+                for (int i = 0; i < editorCount - 1; i++) {
+                    splitEditorPanes.setDividerPosition(i, dividerPos);
+                    dividerPos += widthFraction;
+                }
+            }
+        });
 	}
 
 	private void saveUnsavedEditors()

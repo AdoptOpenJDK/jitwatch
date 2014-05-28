@@ -5,26 +5,31 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.ParseUtil;
-
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.StageStyle;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 public class CodeCacheStage extends AbstractGraphStage
 {
-	public CodeCacheStage(JITWatchUI parent)
+
+    private static final int GC_MONOSPACE_FONT_SIZE = 10;
+    private static final int SCREEN_WIDTH = 640;
+    private static final int SCREEN_HEIGHT = 480;
+    private static final int TEN_PIXELS = 10;
+
+    public CodeCacheStage(JITWatchUI parent)
 	{
-		super(parent, 640, 480, true);
+		super(parent, SCREEN_WIDTH, SCREEN_HEIGHT, true);
 
 		initStyle(StageStyle.DECORATED);
 
@@ -92,7 +97,7 @@ public class CodeCacheStage extends AbstractGraphStage
 			double lastCY = GRAPH_GAP_Y + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
 			gc.setStroke(Color.BLACK);
-			gc.setFont(new Font("monospace", 10));
+			gc.setFont(new Font("monospace", GC_MONOSPACE_FONT_SIZE));
 
 			Color colourLine = Color.BLUE;
 
@@ -118,7 +123,7 @@ public class CodeCacheStage extends AbstractGraphStage
 		}
 		else
 		{
-			gc.strokeText("No code cache information in log", fix(10), fix(10));
+			gc.strokeText("No code cache information in log", fix(TEN_PIXELS), fix(TEN_PIXELS));
 
 		}
 	}

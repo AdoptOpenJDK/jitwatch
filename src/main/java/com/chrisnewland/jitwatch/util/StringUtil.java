@@ -15,7 +15,12 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class StringUtil
 {
-	private static final DecimalFormat DF = new DecimalFormat("#,###");
+    private static final DecimalFormat DF = new DecimalFormat("#,###");
+    private static final long TWENTY_FOUR_HOURS = 24L;
+    private static final long SIXTY_MINUTES = 60L;
+    private static final long SIXTY_SECONDS_IN_MILLISECONDS = 60_000L;
+    private static final long ONE_SECOND_IN_MILLISECONDS = 1_000L;
+    private static final int THREE_PLACES = 3;
 
     /*
         Hide Utility Class Constructor
@@ -40,10 +45,10 @@ public final class StringUtil
 
 		long stampCopy = stamp;
 
-		long dayMillis = 24L * 60L * 60_000L;
-		long hourMillis = 60L * 60_000L;
-		long minuteMillis = 60_000L;
-		long secondMillis = 1_000L;
+		long dayMillis = TWENTY_FOUR_HOURS * SIXTY_MINUTES * SIXTY_SECONDS_IN_MILLISECONDS;
+		long hourMillis = SIXTY_MINUTES * SIXTY_SECONDS_IN_MILLISECONDS;
+		long minuteMillis = SIXTY_SECONDS_IN_MILLISECONDS;
+		long secondMillis = ONE_SECOND_IN_MILLISECONDS;
 
 		long days = (long) Math.floor(stampCopy / dayMillis);
 		stampCopy -= days * dayMillis;
@@ -72,7 +77,7 @@ public final class StringUtil
 
 		if (showMillis)
 		{
-			sb.append(S_DOT).append(padZero(millis, 3));
+			sb.append(S_DOT).append(padZero(millis, THREE_PLACES));
 		}
 
 		return sb.toString();

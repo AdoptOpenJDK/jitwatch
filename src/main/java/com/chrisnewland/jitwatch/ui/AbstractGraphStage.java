@@ -19,7 +19,58 @@ import javafx.stage.WindowEvent;
 
 public abstract class AbstractGraphStage extends Stage
 {
-	protected Canvas canvas;
+    private static final int TOP = 0;
+    private static final int LEFT = 0;
+    private static final int RED = 210;
+    private static final int GREEN = 255;
+    private static final int BLUE = 255;
+    private static final int X_POSITION_MARGIN = 12;
+    private static final int FIVE_THOUSAND_PIXELS = 5000;
+    private static final int Y_POSITION_MARGIN = 12;
+    private static final int HUNDRED_AND_TWO_SECONDS = 120;
+    private static final int SECONDS_TO_MILLISECONDS_MULTIPLIER = 60000;
+    private static final int DEFAULT_SCALE_REQUIRED_LINES = 8;
+    private static final int ONE_HUNDRED = 100;
+    private static final double HALF = 0.5;
+    private static final int SIXTY_SECONDS = 60;
+    private static final int TWENTY_FOUR_HOURS = 24;
+    private static final int ONE_SECOND = 1;
+    private static final int TWO_SECONDS = 2;
+    private static final int ONE_MILLISECOND = 1;
+    private static final int TWO_MILLISECONDS = 2;
+    private static final int FIVE_SECONDS = 5;
+    private static final int TEN_SECONDS = 10;
+    private static final int FIFTEEN_SECONDS = 15;
+    private static final int THIRTY_SECONDS = 30;
+    private static final int ONE_MINUTE = 1;
+    private static final int TWO_MINUTES = 2;
+    private static final int FOUR_MINUTES = 4;
+    private static final int THIRTY_DAYS = 30;
+    private static final int FOURTEEN_DAYS = 14;
+    private static final int SEVEN_DAYS = 7;
+    private static final int FOUR_DAYS = 4;
+    private static final int TWO_DAYS = 2;
+    private static final int ONE_DAY = 1;
+    private static final int SIXTEEN_MINUTES = 16;
+    private static final int TWELVE_MINUTES = 12;
+    private static final int EIGHT_MINUTES = 8;
+    private static final int SIX_MINUTES = 6;
+    private static final int FIVE_MILLISECONDS = 5;
+    private static final int TEN_MILLISECONDS = 10;
+    private static final int TWENTY_MILLISECONDS = 20;
+    private static final int FIFTY_MILLISECONDS = 50;
+    private static final int ONE_HUNDRED_MILLISECONDS = 100;
+    private static final int TWO_HUNDRED_MILLISECONDS = 200;
+    private static final int FIVE_HUNDRED_MILLISECONDS = 500;
+    private static final int ONE_THOUSAND_MILLISECONDS = 1000;
+    private static final int TWO_THOUSAND_MILLISECONDS = 2000;
+    private static final int FIVE_THOUSAND_MILLISECONDS = 5000;
+    private static final int TEN_THOUSAND_MILLISECONDS = 10000;
+    private static final int FIFTEEN_THOUSAND_MILLISECONDS = 15000;
+    private static final int THIRTY_THOUSAND_MILLISECONDS = 30000;
+    public static final int DEFAULT_STEP_TIME_REQUIRED_LINES = 6;
+
+    protected Canvas canvas;
     protected GraphicsContext gc;
     protected JITWatchUI parent;
 
@@ -27,7 +78,8 @@ public abstract class AbstractGraphStage extends Stage
 	protected static final double GRAPH_GAP_RIGHT = 20.5;
 	protected static final double GRAPH_GAP_Y = 20.5;
 
-	static final int[] Y_SCALE = new int[21];
+    private static final int DIVISONS = 21;
+    static final int[] Y_SCALE = new int[DIVISONS];
 
     protected double width;
     protected double height;
@@ -41,17 +93,27 @@ public abstract class AbstractGraphStage extends Stage
 
 	private boolean xAxisTime = false;
 
-	static
+    private static final int ZERO = 0;
+    private static final int ONE = 1;
+    private static final int TWO = 2;
+    private static final int FIVE_TIMES = 5;
+    private static final int BY_TEN = 10;
+    private static final int ONE_TIME = 1;
+    private static final int TWO_TIMES = 2;
+
+    private static final int INCREMENT_BY_THREE = 3;
+
+    static
 	{
 		int multiplier = 1;
 
-		for (int i = 0; i < Y_SCALE.length; i += 3)
+		for (int i = 0; i < Y_SCALE.length; i += INCREMENT_BY_THREE)
 		{
-			Y_SCALE[i + 0] = 1 * multiplier;
-			Y_SCALE[i + 1] = 2 * multiplier;
-			Y_SCALE[i + 2] = 5 * multiplier;
+			Y_SCALE[i + ZERO] = ONE_TIME * multiplier;
+			Y_SCALE[i + ONE] = TWO_TIMES * multiplier;
+			Y_SCALE[i + TWO] = FIVE_TIMES * multiplier;
 
-			multiplier *= 10;
+			multiplier *= BY_TEN;
 		}
 	}
 
@@ -101,8 +163,8 @@ public abstract class AbstractGraphStage extends Stage
 		chartHeight = height - GRAPH_GAP_Y * 2;
 
 		gc.setFill(Color.WHITE);
-		gc.fillRect(0, 0, width, height);
-		gc.setFill(Color.rgb(210, 255, 255));
+		gc.fillRect(TOP, LEFT, width, height);
+		gc.setFill(Color.rgb(RED, GREEN, BLUE));
 		gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
 		gc.setStroke(Color.BLACK);
 		gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
@@ -133,9 +195,10 @@ public abstract class AbstractGraphStage extends Stage
 			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
 			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
 
-			boolean showMillis = gridX >= 0 && gridX < 5000 && xInc < 5000;
+			boolean showMillis = gridX >= 0 && gridX < FIVE_THOUSAND_PIXELS && xInc < FIVE_THOUSAND_PIXELS;
 
-			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x),
+                    fix(GRAPH_GAP_Y + chartHeight + X_POSITION_MARGIN));
 
 			gridX += xInc;
 		}
@@ -151,7 +214,8 @@ public abstract class AbstractGraphStage extends Stage
 		{
 			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
 			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
-			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x),
+                    fix(GRAPH_GAP_Y + chartHeight + Y_POSITION_MARGIN));
 
 			gridX += xInc;
 		}
@@ -182,14 +246,46 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		long rangeMillis = maxX - minX;
 
-		int requiredLines = 6;
+		int requiredLines = DEFAULT_STEP_TIME_REQUIRED_LINES;
 
-		long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
-				2 * 24 * 60 * 60000, 24 * 60 * 60000, 16 * 60 * 60000, 12 * 60 * 60000, 8 * 60 * 60000, 6 * 60 * 60000,
-				4 * 60 * 60000, 2 * 60 * 60000, 60 * 60000, 30 * 60000, 15 * 60000, 10 * 60000, 5 * 60000, 2 * 60000, 1 * 60000,
-				30000, 15000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1 };
+		long[] gapMillis = new long[] {
+                THIRTY_DAYS * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                FOURTEEN_DAYS * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                SEVEN_DAYS * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                FOUR_DAYS * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                TWO_DAYS * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                ONE_DAY * TWENTY_FOUR_HOURS * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                SIXTEEN_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                TWELVE_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                EIGHT_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                SIX_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                FOUR_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                TWO_MINUTES * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                ONE_MINUTE * SIXTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                THIRTY_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                FIFTEEN_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                TEN_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                FIVE_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                TWO_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                ONE_SECOND * SECONDS_TO_MILLISECONDS_MULTIPLIER,
+                THIRTY_THOUSAND_MILLISECONDS,
+                FIFTEEN_THOUSAND_MILLISECONDS,
+                TEN_THOUSAND_MILLISECONDS,
+                FIVE_THOUSAND_MILLISECONDS,
+                TWO_THOUSAND_MILLISECONDS,
+                ONE_THOUSAND_MILLISECONDS,
+                FIVE_HUNDRED_MILLISECONDS,
+                TWO_HUNDRED_MILLISECONDS,
+                ONE_HUNDRED_MILLISECONDS,
+                FIFTY_MILLISECONDS,
+                TWENTY_MILLISECONDS,
+                TEN_MILLISECONDS,
+                FIVE_MILLISECONDS,
+                TWO_MILLISECONDS,
+                ONE_MILLISECOND
+        };
 
-		long incrementMillis = 120 * 60000;
+		long incrementMillis = HUNDRED_AND_TWO_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLIER;
 
 		for (int i = 0; i < gapMillis.length; i++)
 		{
@@ -205,7 +301,7 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected long findScale(long range)
 	{
-		long requiredLines = 8;
+		long requiredLines = DEFAULT_SCALE_REQUIRED_LINES;
 
 		for (int i = 0; i < Y_SCALE.length; i++)
 		{
@@ -254,17 +350,17 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected void padY(double percentOfRange)
 	{
-		double rangePercent = ((double) maxY - (double) minY) / (double) maxY * 100;
+		double rangePercent = ((double) maxY - (double) minY) / (double) maxY * ONE_HUNDRED;
 
-		double spacePercent = rangePercent * percentOfRange / 100;
+		double spacePercent = rangePercent * percentOfRange / ONE_HUNDRED;
 
-		minY *= (1.0 - spacePercent / 100.0);
-		maxY *= (1.0 + spacePercent / 100.0);
+		minY *= (ONE - spacePercent / ONE_HUNDRED);
+		maxY *= (ONE + spacePercent / ONE_HUNDRED);
 	}
 
 	// prevent blurry lines in JavaFX
 	protected double fix(double pixel)
 	{
-		return 0.5 + (int) pixel;
+		return HALF + (int) pixel;
 	}
 }

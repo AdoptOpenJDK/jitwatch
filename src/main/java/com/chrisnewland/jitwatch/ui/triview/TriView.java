@@ -5,11 +5,6 @@
  */
 package com.chrisnewland.jitwatch.ui.triview;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.model.IMetaMember;
@@ -25,8 +20,6 @@ import com.chrisnewland.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import com.chrisnewland.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import com.chrisnewland.jitwatch.ui.triview.source.ViewerSource;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -34,24 +27,41 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class TriView extends Stage implements ILineListener
 {
-	private IMetaMember currentMember;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final int TEN_SPACES = 10;
+    private static final int TOP = 0;
+    private static final int RIGHT = 10;
+    private static final int LEFT = 10;
+    private static final int BOTTOM = 10;
+    private static final double BY_RATIO_OF_4_BY_10 = 0.4;
+    private static final double BY_RATIO_OF_5_BY_10 = 0.5;
+    private static final double RATIO_OF_ONE_THIRD = 0.333;
+    private static final double RATIO_OF_TWO_THIRD = 0.666;
+    private static final int RATIO_ZERO = 0;
+    private static final int RATIO_ONE = 1;
+    private static final int FIRST_COLUMN = 0;
+    private static final int SECOND_COLUMN = 1;
+    private static final int FOURTH_COLUMN = 3;
+    private static final int THIRD_COLUMN = 2;
+
+    private IMetaMember currentMember;
 	private JITWatchConfig config;
 
 	private ViewerSource viewerSource;
@@ -86,12 +96,12 @@ public class TriView extends Stage implements ILineListener
 		VBox vBox = new VBox();
 
 		HBox hBoxToolBarClass = new HBox();
-		hBoxToolBarClass.setSpacing(10);
-		hBoxToolBarClass.setPadding(new Insets(10));
+		hBoxToolBarClass.setSpacing(TEN_SPACES);
+		hBoxToolBarClass.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		HBox hBoxToolBarButtons = new HBox();
-		hBoxToolBarButtons.setSpacing(10);
-		hBoxToolBarButtons.setPadding(new Insets(0, 10, 10, 10));
+		hBoxToolBarButtons.setSpacing(TEN_SPACES);
+		hBoxToolBarButtons.setPadding(new Insets(TOP, RIGHT, BOTTOM, LEFT));
 
 		checkSource = new CheckBox("Source");
 		checkBytecode = new CheckBox("Bytecode");
@@ -134,12 +144,12 @@ public class TriView extends Stage implements ILineListener
 
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
-		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		classSearch.prefWidthProperty().bind(widthProperty().multiply(BY_RATIO_OF_4_BY_10));
 
 		Label lblMember = new Label("Member:");
 
 		comboMember = new ComboBox<>();
-		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		comboMember.prefWidthProperty().bind(widthProperty().multiply(BY_RATIO_OF_4_BY_10));
 
 		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
 		{
@@ -264,7 +274,7 @@ public class TriView extends Stage implements ILineListener
 		vBox.getChildren().add(splitViewer);
 		vBox.getChildren().add(lblMemberInfo);
 
-		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(vBox, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
 		setScene(scene);
 
@@ -304,17 +314,17 @@ public class TriView extends Stage implements ILineListener
 
 		switch (colCount)
 		{
-		case 0:
-			splitViewer.setDividerPositions(0);
+		case FIRST_COLUMN:
+			splitViewer.setDividerPositions(RATIO_ZERO);
 			break;
-		case 1:
-			splitViewer.setDividerPositions(1);
+		case SECOND_COLUMN:
+			splitViewer.setDividerPositions(RATIO_ONE);
 			break;
-		case 2:
-			splitViewer.setDividerPositions(0.5);
+		case THIRD_COLUMN:
+			splitViewer.setDividerPositions(BY_RATIO_OF_5_BY_10);
 			break;
-		case 3:
-			splitViewer.setDividerPositions(0.333, 0.666);
+		case FOURTH_COLUMN:
+			splitViewer.setDividerPositions(RATIO_OF_ONE_THIRD, RATIO_OF_TWO_THIRD);
 			break;
 		default:
 			break;

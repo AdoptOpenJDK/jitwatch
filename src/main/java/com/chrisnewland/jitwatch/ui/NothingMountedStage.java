@@ -24,16 +24,22 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 public class NothingMountedStage extends Stage
-{	
-	public NothingMountedStage(final JITWatchUI parent, final JITWatchConfig config)
+{
+
+    private static final int TWENTY_SPACES = 20;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final int SCENE_WIDTH = 360;
+    private static final int SCENE_HEIGHT = 160;
+
+    public NothingMountedStage(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		initStyle(StageStyle.DECORATED);
 			
 		VBox vbox = new VBox();
-		vbox.setSpacing(20);
-		vbox.setPadding(new Insets(10));
+		vbox.setSpacing(TWENTY_SPACES);
+		vbox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 		
-		Scene scene = new Scene(vbox, 360, 160);
+		Scene scene = new Scene(vbox, SCENE_WIDTH, SCENE_HEIGHT);
 	
 		setTitle("No classes or sources mounted");
 		
@@ -54,8 +60,8 @@ public class NothingMountedStage extends Stage
         });
         
         HBox hboxButtons = new HBox();
-        hboxButtons.setSpacing(20);
-        hboxButtons.setPadding(new Insets(10));
+        hboxButtons.setSpacing(TWENTY_SPACES);
+        hboxButtons.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
         hboxButtons.setAlignment(Pos.CENTER);
 
         Button btnOpenConfig = new Button("Open Config");

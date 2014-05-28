@@ -15,7 +15,10 @@ import java.util.Map.Entry;
 
 public class Histo
 {
-	private Map<Long, Integer> bucketMap = new HashMap<>();
+    private static final int ONE_HUNDRED_PERCENTILE = 100;
+    private static final double HALF_PERCENTILE = 0.5;
+
+    private Map<Long, Integer> bucketMap = new HashMap<>();
 
 	// lots of writes, not COWAL
 	private List<Long> values = new ArrayList<>();
@@ -114,7 +117,7 @@ public class Histo
 
 		int count = valuesCopy.size();
 
-		if (percentile >= 100)
+		if (percentile >= ONE_HUNDRED_PERCENTILE)
 		{
 			result = valuesCopy.get(count - 1);
 		}
@@ -124,7 +127,7 @@ public class Histo
 		}
 		else
 		{
-			double position = 0.5 + (percentile) / 100.0 * count;
+			double position = HALF_PERCENTILE + (percentile) / ONE_HUNDRED_PERCENTILE * count;
 			int index = (int) Math.round(position) - 1;
 
 			result = valuesCopy.get(index);

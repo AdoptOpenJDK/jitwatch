@@ -53,6 +53,21 @@ public class ParseUtil
 	public static final char TYPE_INTEGER = 'I';
 	public static final char TYPE_FLOAT = 'F';
 
+    private static final int ONE_THOUSAND = 1000;
+    private static final int CLASS_NAME = 1;
+    private static final int METHOD_NAME = 2;
+    private static final int PARAM_TYPES = 3;
+    private static final int RETURN_TYPES = 4;
+
+    private static final int ARRAY_INDEX_CLASS_NAME = CLASS_NAME - 1;
+    private static final int ARRAY_INDEX_METHOD_NAME = METHOD_NAME - 1;
+    private static final int ARRAY_INDEX_PARAM_TYPES = PARAM_TYPES - 1;
+    private static final int ARRAY_INDEX_RETURN_TYPES = RETURN_TYPES - 1;
+
+    private static final int ASSEMBLY_MEMBER = 2;
+    private static final int ASSEMBLY_PARAMS = 3;
+    private static final int ASSEMBLY_CLASS_NAME = 4;
+
     /*
         Hide Utility Class Constructor
         Utility classes should not have a public or default constructor.
@@ -64,7 +79,7 @@ public class ParseUtil
 	{
 		double number = parseLocaleSafeDouble(stamp);
 
-		return (long) (number * 1000);
+		return (long) (number * ONE_THOUSAND);
 	}
 
 	public static double parseLocaleSafeDouble(String str)
@@ -188,10 +203,12 @@ public class ParseUtil
 
 		if (matcher.find())
 		{
-			String className = matcher.group(1);
-			String methodName = matcher.group(2);
-			String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
-			String returnType = matcher.group(4);
+			String className = matcher.group(CLASS_NAME);
+			String methodName = matcher.group(METHOD_NAME);
+			String paramTypes = matcher.group(PARAM_TYPES)
+                    .replace(S_OPEN_PARENTHESES, S_EMPTY)
+                    .replace(S_CLOSE_PARENTHESES, S_EMPTY);
+			String returnType = matcher.group(RETURN_TYPES);
 
 			parts = new String[] { className, methodName, paramTypes, returnType };
 		}
@@ -212,10 +229,10 @@ public class ParseUtil
 
 		if (parts != null)
 		{
-			String className = parts[0];
-			String methodName = parts[1];
-			String paramTypes = parts[2];
-			String returnType = parts[3];
+			String className = parts[ARRAY_INDEX_CLASS_NAME];
+			String methodName = parts[ARRAY_INDEX_METHOD_NAME];
+			String paramTypes = parts[ARRAY_INDEX_PARAM_TYPES];
+			String returnType = parts[ARRAY_INDEX_RETURN_TYPES];
 
 			Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
 			Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
@@ -643,9 +660,9 @@ public class ParseUtil
 
 		if (matcher.find())
 		{
-			String memberName = matcher.group(2);
-			String params = matcher.group(3).replace(S_SLASH, S_DOT);
-			String className = matcher.group(4).replace(S_SLASH, S_DOT);
+			String memberName = matcher.group(ASSEMBLY_MEMBER);
+			String params = matcher.group(ASSEMBLY_PARAMS).replace(S_SLASH, S_DOT);
+			String className = matcher.group(ASSEMBLY_CLASS_NAME).replace(S_SLASH, S_DOT);
 
 			StringBuilder builder = new StringBuilder();
 			builder.append(className).append(C_SPACE);

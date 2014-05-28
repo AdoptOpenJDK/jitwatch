@@ -5,31 +5,17 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.chrisnewland.jitwatch.chain.CompileChainWalker;
 import com.chrisnewland.jitwatch.chain.CompileNode;
-import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.HotSpotLogParser;
+import com.chrisnewland.jitwatch.core.IJITListener;
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
-import com.chrisnewland.jitwatch.model.IMetaMember;
-import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
-import com.chrisnewland.jitwatch.model.JITEvent;
-import com.chrisnewland.jitwatch.model.Journal;
-import com.chrisnewland.jitwatch.model.MetaClass;
-import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.ui.sandbox.SandboxStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
 import com.chrisnewland.jitwatch.ui.triview.TriView;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
@@ -42,12 +28,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -55,33 +36,61 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_SLASH;
+
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
-	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
-	public static final int WINDOW_WIDTH = 1024;
-	public static final int WINDOW_HEIGHT;
+    public static final int windowWidth;
+    public static final int windowHeight;
 
-	static
+    private static final int WINDOW_WIDTH = 1024;
+    private static final int JAVA7_WINDOW_HEIGHT = 592;
+    private static final int JAVA8_ONWARDS_WINDOW_HEIGHT = 550;
+
+    static
 	{
 		String version = System.getProperty("java.version", "1.7");
 
+        windowWidth = WINDOW_WIDTH;
 		if (version.contains("1.7"))
 		{
-			WINDOW_HEIGHT = 592;
+			windowHeight = JAVA7_WINDOW_HEIGHT;
 		}
 		else
 		{
 			// JavaFX 8 has more padding.
-			WINDOW_HEIGHT = 550;
+			windowHeight = JAVA8_ONWARDS_WINDOW_HEIGHT;
 		}
 	}
 
-	private Stage stage;
+    private static final int DEFAULT_MENU_BAR_HEIGHT = 40;
+    private static final int DEFAULT_TEXT_AREA_HEIGHT = 100;
+    private static final int DEFAULT_STATUS_BAR_HEIGHT = 25;
+
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final int FOUR_FOR_TOP_RIGHT_BOTTOM_LEFT = 4;
+    private static final int TEN_SPACES = 10;
+    private static final int ONE_KILO_BYTE = 1024;
+    private static final int EVERY_THOUSAND_MILLISECONDS = 1000;
+    private static final int FOUR_SPACES = 4;
+
+    private static final double MAIN_SPLITPANE_DIVIDER_INDEX = 0.7;
+    private static final double MAIN_SPLITPANE_DIVIDER_POSITION = 0.3;
+    private static final double CENTRE_SPLITPANE_DIVIDER_INDEX = 0.33;
+    private static final double CENTRE_SPLITPANE_DIVIDER_POSITION = 0.67;
+
+    private Stage stage;
 
 	private ILogParser logParser;
 
@@ -272,7 +281,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		BorderPane borderPane = new BorderPane();
 
-		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+		Scene scene = new Scene(borderPane, windowWidth, windowHeight);
 
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
@@ -462,15 +471,15 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		lblHeap = new Label();
 
-		int menuBarHeight = 40;
-		int textAreaHeight = 100;
-		int statusBarHeight = 25;
+		int menuBarHeight = DEFAULT_MENU_BAR_HEIGHT;
+		int textAreaHeight = DEFAULT_TEXT_AREA_HEIGHT;
+		int statusBarHeight = DEFAULT_STATUS_BAR_HEIGHT;
 
 		HBox hboxTop = new HBox();
 
-		hboxTop.setPadding(new Insets(10));
+		hboxTop.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 		hboxTop.setPrefHeight(menuBarHeight);
-		hboxTop.setSpacing(10);
+		hboxTop.setSpacing(TEN_SPACES);
 		hboxTop.getChildren().add(btnSandbox);
 		hboxTop.getChildren().add(btnChooseWatchFile);
 		hboxTop.getChildren().add(btnStart);
@@ -508,7 +517,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		SplitPane spCentre = new SplitPane();
 		spCentre.getItems().add(classTree);
 		spCentre.getItems().add(spMethodInfo);
-		spCentre.setDividerPositions(0.33, 0.67);
+		spCentre.setDividerPositions(
+                CENTRE_SPLITPANE_DIVIDER_INDEX, CENTRE_SPLITPANE_DIVIDER_POSITION);
 
 		textAreaLog = new TextArea();
 		textAreaLog.setStyle("-fx-font-family:monospace;");
@@ -527,13 +537,14 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 		spMain.getItems().add(spCentre);
 		spMain.getItems().add(textAreaLog);
-		spMain.setDividerPositions(0.7, 0.3);
+		spMain.setDividerPositions(
+                MAIN_SPLITPANE_DIVIDER_INDEX, MAIN_SPLITPANE_DIVIDER_POSITION);
 
 		HBox hboxBottom = new HBox();
 
-		hboxBottom.setPadding(new Insets(4));
+		hboxBottom.setPadding(new Insets(FOUR_FOR_TOP_RIGHT_BOTTOM_LEFT));
 		hboxBottom.setPrefHeight(statusBarHeight);
-		hboxBottom.setSpacing(4);
+		hboxBottom.setSpacing(FOUR_SPACES);
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
 
@@ -545,7 +556,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		stage.setScene(scene);
 		stage.show();
 
-		int refresh = 1000; // ms
+		int refresh = EVERY_THOUSAND_MILLISECONDS; // ms
 
 		final Duration oneFrameAmt = Duration.millis(refresh);
 
@@ -862,7 +873,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		long freeMemory = runtime.freeMemory();
 		long usedMemory = totalMemory - freeMemory;
 
-		long megabyte = 1024 * 1024;
+		long megabyte = ONE_KILO_BYTE * ONE_KILO_BYTE;
 
 		String heapString = "Heap: " + (usedMemory / megabyte) + S_SLASH + (totalMemory / megabyte) + "M";
 

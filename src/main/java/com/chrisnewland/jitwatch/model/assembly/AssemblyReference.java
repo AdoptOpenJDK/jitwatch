@@ -21,13 +21,16 @@ public class AssemblyReference
 	private static final String TAG_MNEM_CLOSE = "</mnem>";
 	private static final String TAG_BRIEF_OPEN = "<brief>";
 	private static final String TAG_BRIEF_CLOSE = "</brief>";
+    private static final int INPUT_BUFFER_SIZE = 65536;
 
-	static
+    static
 	{
 		try
 		{
-			BufferedReader input = new BufferedReader(new InputStreamReader(AssemblyReference.class.getResourceAsStream("/x86reference.xml")),
-					65536);
+			BufferedReader input = new BufferedReader(
+                    new InputStreamReader(
+                            AssemblyReference.class.getResourceAsStream("/x86reference.xml")),
+                    INPUT_BUFFER_SIZE);
 
 			String currentLine = input.readLine();
 

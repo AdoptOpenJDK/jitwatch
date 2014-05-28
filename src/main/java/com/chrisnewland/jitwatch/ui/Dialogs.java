@@ -17,10 +17,17 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class Dialogs
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
+    private static final int SCENE_WIDTH = 640;
+    private static final int SCENE_HEIGHT = 320;
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final int SIXTY_FROM_TOP = 60;
+    private static final int LINE_HEIGHT = 20;
+    private static final int TEN_SPACES = 10;
+
+    /*
+       Hide Utility Class Constructor Utility classes should not have a public
+       or default constructor.
+    */
 	private Dialogs()
 	{
 	}
@@ -28,7 +35,7 @@ public final class Dialogs
 	public enum Response
 	{
 		NO, YES
-	};
+	}
 
 	private static Response response = Response.NO;
 
@@ -63,11 +70,11 @@ public final class Dialogs
 	{
 		VBox vBox = new VBox();
 		vBox.setAlignment(Pos.CENTER);
-		vBox.setSpacing(10);
-		vBox.setPadding(new Insets(10));
+		vBox.setSpacing(TEN_SPACES);
+		vBox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
-		Scene scene = new Scene(vBox, 640, 80);
-
+		Scene scene = new Scene(vBox, SCENE_WIDTH, SCENE_HEIGHT);
+		
 		final Dialog dialog = new Dialog(title, owner, scene);
 
 		Button btnYes = new Button("Yes");
@@ -98,8 +105,8 @@ public final class Dialogs
 
 		HBox hBox = new HBox();
 		hBox.setAlignment(Pos.CENTER);
-		hBox.setSpacing(10);
-		hBox.setPadding(new Insets(10));
+		hBox.setSpacing(TEN_SPACES);
+		hBox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		hBox.getChildren().addAll(btnYes, btnNo);
 
@@ -115,9 +122,9 @@ public final class Dialogs
 	public static void showOKDialog(Stage owner, String title, String message)
 	{
 		VBox vBox = new VBox();
-		vBox.setSpacing(10);
+		vBox.setSpacing(TEN_SPACES);
 		vBox.setAlignment(Pos.CENTER);
-		vBox.setPadding(new Insets(10));
+		vBox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
 
 		String[] lines = message.split(S_NEWLINE);
 
@@ -127,7 +134,7 @@ public final class Dialogs
 			vBox.getChildren().add(label);
 		}
 
-		Scene scene = new Scene(vBox, 640, 60 + 20 * lines.length);
+		Scene scene = new Scene(vBox, SCENE_WIDTH, SIXTY_FROM_TOP + LINE_HEIGHT * lines.length);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 

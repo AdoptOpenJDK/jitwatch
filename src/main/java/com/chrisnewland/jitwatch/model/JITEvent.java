@@ -10,6 +10,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class JITEvent
 {
+    private static final int FOURTEEN_ZEROS = 14;
     private long stamp;
     private EventType eventType;
     private String methodSignature;
@@ -46,7 +47,10 @@ public class JITEvent
 
         sb.append(stampString).append(C_SPACE);
 
-        sb.append(StringUtil.padLeft(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
+        sb.append(StringUtil.padLeft(eventType.getText(), FOURTEEN_ZEROS))
+                .append(C_SPACE)
+                .append(C_COLON)
+                .append(C_SPACE);
      
         sb.append(methodSignature);
 

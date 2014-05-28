@@ -5,27 +5,23 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import java.util.List;
-
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
+
 public class ClassTree extends VBox
 {
+    private static final int MAX_CHECKBOX_WIDTH = 280;
     private TreeView<Object> treeView;
     private TreeItem<Object> rootItem;
 
@@ -38,7 +34,7 @@ public class ClassTree extends VBox
         this.config = config;
 
         CheckBox cbHideInterfaces = new CheckBox("Hide interfaces");
-        cbHideInterfaces.setMaxWidth(280);
+        cbHideInterfaces.setMaxWidth(MAX_CHECKBOX_WIDTH);
         cbHideInterfaces.setTooltip(new Tooltip("Hide interfaces from the class tree."));
         cbHideInterfaces.setSelected(config.isHideInterfaces());
         cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()

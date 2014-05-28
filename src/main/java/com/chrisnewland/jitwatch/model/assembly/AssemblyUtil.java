@@ -5,25 +5,33 @@
  */
 package com.chrisnewland.jitwatch.model.assembly;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyUtil
 {
-	//http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
+    //http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^([a-f0-9x]+):\\s+([0-9a-z\\(\\)\\$,\\-%\\s]+)([;#].*)?");
+    private static final int COUNT_OF_THREE = 3;
+    private static final int ADDRESS_GROUP = 1;
+    private static final int MIDDLE_GROUP = 2;
+    private static final int COMMENT_GROUP = 3;
+    private static final int RADIX_OF_SIXTEEN = 16;
+    private static final int ONE_PART = 1;
+    private static final int TWO_PARTS = 2;
+    private static final int THREE_PARTS = 3;
 
-	private AssemblyUtil()
+    private AssemblyUtil()
 	{
 	}
 
@@ -91,11 +99,11 @@ public class AssemblyUtil
 
 		Matcher matcher = PATTERN_ASSEMBLY_INSTRUCTION.matcher(line);
 
-		if (matcher.find() && matcher.groupCount() == 3)
+		if (matcher.find() && matcher.groupCount() == COUNT_OF_THREE)
 		{
-			String address = matcher.group(1);
-			String middle = matcher.group(2);
-			String comment = matcher.group(3);
+			String address = matcher.group(ADDRESS_GROUP);
+			String middle = matcher.group(MIDDLE_GROUP);
+			String comment = matcher.group(COMMENT_GROUP);
 
 			long addressValue = 0;
 
@@ -108,7 +116,7 @@ public class AssemblyUtil
 					address = address.substring(S_ASSEMBLY_ADDRESS.length());
 				}
 
-				addressValue = Long.parseLong(address, 16);
+				addressValue = Long.parseLong(address, RADIX_OF_SIXTEEN);
 			}
 
 			String modifier = null;
@@ -125,16 +133,16 @@ public class AssemblyUtil
 
 				String opString = null;
 
-				if (midParts.length == 1)
+				if (midParts.length == ONE_PART)
 				{
 					mnemonic = midParts[0];
 				}
-				else if (midParts.length == 2)
+				else if (midParts.length == TWO_PARTS)
 				{
 					mnemonic = midParts[0];
 					opString = midParts[1];
 				}
-				else if (midParts.length >= 3)
+				else if (midParts.length >= THREE_PARTS)
 				{
 					StringBuilder modBuilder = new StringBuilder();
 

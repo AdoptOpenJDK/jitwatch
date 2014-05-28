@@ -21,21 +21,30 @@ import javafx.stage.WindowEvent;
 
 public class ConfigStage extends Stage
 {
+
+    private static final int TEN_FOR_TOP_RIGHT_BOTTOM_LEFT = 10;
+    private static final int TEN_SPACES = 10;
+    private static final int TWENTY_SPACES = 20;
+    private static final double BY_RATIO_OF_HALF = 0.5;
+    private static final int OF_THIRTY_UNITS = 30;
+    private static final int SCENE_HEIGHT = 800;
+    private static final int SCENE_WIDTH = 480;
+
     public ConfigStage(final JITWatchUI parent, final JITWatchConfig config)
     {
         initStyle(StageStyle.UTILITY);
 
         VBox vbox = new VBox();
        
-        vbox.setPadding(new Insets(10));
-        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
+        vbox.setSpacing(TEN_SPACES);
 
         final FileChooserList chooserSource = new FileChooserListSrcZip(this, "Source locations", config.getSourceLocations());
         final FileChooserList chooserClasses = new FileChooserList(this, "Class locations", config.getClassLocations());
 
         HBox hboxButtons = new HBox();
-        hboxButtons.setSpacing(20);
-        hboxButtons.setPadding(new Insets(10));
+        hboxButtons.setSpacing(TWENTY_SPACES);
+        hboxButtons.setPadding(new Insets(TEN_FOR_TOP_RIGHT_BOTTOM_LEFT));
         hboxButtons.setAlignment(Pos.CENTER);
 
         Button btnSave = new Button("Save");
@@ -74,13 +83,13 @@ public class ConfigStage extends Stage
 
         vbox.getChildren().add(hboxButtons);
         
-        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
-        chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
-        hboxButtons.setPrefHeight(30);
+        chooserSource.prefHeightProperty().bind(this.heightProperty().multiply(BY_RATIO_OF_HALF));
+        chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(BY_RATIO_OF_HALF));
+        hboxButtons.setPrefHeight(OF_THIRTY_UNITS);
 
         setTitle("JITWatch Configuration");
 
-        Scene scene = new Scene(vbox, 800, 480);
+        Scene scene = new Scene(vbox, SCENE_HEIGHT, SCENE_WIDTH);
 
         setScene(scene);
 

@@ -42,7 +42,7 @@ public class SuggestStage extends Stage
 
 		vbox = new VBox();
 
-		Scene scene = new Scene(vbox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(vbox, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
 		tableView = SuggestionTableUtil.buildTableSuggestion(obList);
 
