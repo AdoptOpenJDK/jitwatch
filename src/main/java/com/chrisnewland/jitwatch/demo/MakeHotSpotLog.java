@@ -25,7 +25,21 @@ import java.util.Random;
 
 public class MakeHotSpotLog
 {
-	public MakeHotSpotLog(int iterations)
+
+    private static final double HALF = 0.5;
+    private static final int ONE = 1;
+    private static final int TWO = 2;
+    private static final int THREE = 3;
+    private static final int FOUR = 4;
+    private static final int FIVE = 5;
+    private static final int SIX = 6;
+    private static final int SEVEN = 7;
+    private static final int ONE_THOUSAND_TIMES = 1000;
+    private static final double NINETY_PERCENT_OF = 0.9;
+    private static final int ONE_HUNDRED_THOUSAND = 100_000;
+    private static final int TWENTY_THOUSAND_TIMES = 20_000;
+
+    public MakeHotSpotLog(int iterations)
 	{
 		addVariable(iterations);
 		addConstant(iterations);
@@ -73,7 +87,7 @@ public class MakeHotSpotLog
 
 		for (int i = 0; i < iterations; i++)
 		{
-			if (Math.random() < 0.5)
+			if (Math.random() < HALF)
 			{
 				count = add(count, 1);
 				adds++;
@@ -115,7 +129,7 @@ public class MakeHotSpotLog
 	{
 
 		long dstSum = 0;
-		int[] src = new int[] { 1, 2, 3, 4, 5 };
+		int[] src = new int[] { ONE, TWO, THREE, FOUR, FIVE };
 		int[] dst = new int[src.length];
 
 		for (int i = 0; i < iterations; i++)
@@ -174,13 +188,13 @@ public class MakeHotSpotLog
 		f += i;
 		g += i;
 
-		a += 1;
-		b += 2;
-		c += 3;
-		d += 4;
-		e += 5;
-		f += 6;
-		g += 7;
+		a += ONE;
+		b += TWO;
+		c += THREE;
+		d += FOUR;
+		e += FIVE;
+		f += SIX;
+		g += SEVEN;
 
 		a += i;
 		b += i;
@@ -190,13 +204,13 @@ public class MakeHotSpotLog
 		f += i;
 		g += i;
 
-		a -= 7;
-		b -= 6;
-		c -= 5;
-		d -= 4;
-		e -= 3;
-		f -= 2;
-		g -= 1;
+		a -= SEVEN;
+		b -= SIX;
+		c -= FIVE;
+		d -= FOUR;
+		e -= THREE;
+		f -= TWO;
+		g -= ONE;
 
 		a++;
 		b++;
@@ -225,11 +239,11 @@ public class MakeHotSpotLog
 		long sum = 0;
 
 		// ensure sort is JIT compiled
-		for (int i = 0; i < 20000; i++)
+		for (int i = 0; i < TWENTY_THOUSAND_TIMES; i++)
 		{
 			Random random = new Random();
 
-			int count = 1000;
+			int count = ONE_THOUSAND_TIMES;
 
 			List<Integer> list = new ArrayList<>();
 
@@ -264,23 +278,23 @@ public class MakeHotSpotLog
 
 	private long chainA1(long count)
 	{
-		return 1 + chainA2(count);
+		return ONE + chainA2(count);
 	}
 
 	private long chainA2(long count)
 	{
-		return 2 + chainA3(count);
+		return TWO + chainA3(count);
 	}
 
 	private long chainA3(long count)
 	{
-		return 3 + chainA4(count);
+		return THREE + chainA4(count);
 	}
 
 	private long chainA4(long count)
 	{
 		// last link will not be inlined
-		return bigMethod(count, 4);
+		return bigMethod(count, FOUR);
 	}
 
 	private long chainB1(long count)
@@ -313,14 +327,14 @@ public class MakeHotSpotLog
 
 	private boolean test(int count, int iterations)
 	{
-		return count < (0.9 * (double) iterations);
+		return count < (NINETY_PERCENT_OF * (double) iterations);
 	}
 
 	private void testCallChain3()
 	{
 		long count = 0;
 
-		int iterations = 100_000;
+		int iterations = ONE_HUNDRED_THOUSAND;
 
 		for (int i = 0; i < iterations; i++)
 		{
@@ -371,22 +385,22 @@ public class MakeHotSpotLog
 
 	private long leaf1(long count)
 	{
-		return count + 1;
+		return count + ONE;
 	}
 
 	private long leaf2(long count)
 	{
-		return count + 2;
+		return count + TWO;
 	}
 
 	private long leaf3(long count)
 	{
-		return count + 3;
+		return count + THREE;
 	}
 
 	private long leaf4(long count)
 	{
-		return count + 4;
+		return count + FOUR;
 	}
 
 	private void testToUpperCase(long iterations)
@@ -415,7 +429,7 @@ public class MakeHotSpotLog
 
 	public static void main(String[] args)
 	{
-		int iterations = 20_000;
+		int iterations = TWENTY_THOUSAND_TIMES;
 
 		if (args.length == 1)
 		{
