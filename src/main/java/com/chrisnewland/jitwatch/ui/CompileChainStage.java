@@ -57,7 +57,7 @@ public class CompileChainStage extends Stage
 
         scrollPane.setContent(pane);
 
-        Scene scene = new Scene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+        Scene scene = new Scene(scrollPane, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
         setTitle("Compile Chain: " + root.getMember().toString());
 

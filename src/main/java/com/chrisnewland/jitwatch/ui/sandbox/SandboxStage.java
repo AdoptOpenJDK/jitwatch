@@ -11,8 +11,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
-
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.sandbox.Sandbox;
@@ -34,12 +32,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -191,7 +183,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 		log("Sandbox ready");
 		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
 
-		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(splitVertical, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
 		setScene(scene);
 
@@ -232,23 +224,20 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 	private void setEditorDividers()
 	{
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				int editorCount = editorPanes.size();
+		Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                int editorCount = editorPanes.size();
 
-				double widthFraction = 1.0 / editorCount;
-				double dividerPos = widthFraction;
+                double widthFraction = 1.0 / editorCount;
+                double dividerPos = widthFraction;
 
-				for (int i = 0; i < editorCount - 1; i++)
-				{
-					splitEditorPanes.setDividerPosition(i, dividerPos);
-					dividerPos += widthFraction;
-				}
-			}
-		});
+                for (int i = 0; i < editorCount - 1; i++) {
+                    splitEditorPanes.setDividerPosition(i, dividerPos);
+                    dividerPos += widthFraction;
+                }
+            }
+        });
 	}
 
 	private void saveUnsavedEditors()

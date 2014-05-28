@@ -274,7 +274,7 @@ public class TriView extends Stage implements ILineListener
 		vBox.getChildren().add(splitViewer);
 		vBox.getChildren().add(lblMemberInfo);
 
-		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(vBox, JITWatchUI.windowWidth, JITWatchUI.windowHeight);
 
 		setScene(scene);
 
