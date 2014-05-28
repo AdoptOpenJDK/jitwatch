@@ -5,6 +5,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,10 +42,17 @@ public class Sandbox
 	{
 		String userDir = System.getProperty("user.dir");
 
-		File sandbox = new File(userDir, "sandbox");
-		File sandboxSources = new File(sandbox, "sources");
-		File sandboxClasses = new File(sandbox, "classes");
+		SANDBOX_DIR = Paths.get(userDir, "sandbox");
+		SANDBOX_SOURCE_DIR = Paths.get(userDir, "sandbox", "sources");
+		SANDBOX_CLASS_DIR = Paths.get(userDir, "sandbox", "classes");
 
+		initialise();
+	}
+	
+	private static void initialise()
+	{
+		File sandboxSources = SANDBOX_SOURCE_DIR.toFile();
+		
 		if (!sandboxSources.exists())
 		{
 			sandboxSources.mkdirs();
@@ -54,23 +62,20 @@ public class Sandbox
 				copyExamples();
 			}
 		}
+		
+		File sandboxClasses = SANDBOX_CLASS_DIR.toFile();
+
 
 		if (!sandboxClasses.exists())
 		{
 			sandboxClasses.mkdirs();
 		}
-
-		SANDBOX_DIR = sandbox.toPath();
-		SANDBOX_SOURCE_DIR = sandboxSources.toPath();
-		SANDBOX_CLASS_DIR = sandboxClasses.toPath();
 	}
 	
 	public void reset()
 	{
-		FileUtil.emptyDir(SANDBOX_SOURCE_DIR.toFile());
-		FileUtil.emptyDir(SANDBOX_CLASS_DIR.toFile());
-		
-		copyExamples();
+		FileUtil.emptyDir(SANDBOX_DIR.toFile());		
+		initialise();
 	}
 	
 	private static void copyExamples()

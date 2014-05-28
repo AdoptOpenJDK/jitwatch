@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.core;
 
+import com.chrisnewland.jitwatch.loader.DisposableURLClassLoader;
 import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
@@ -17,7 +18,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
@@ -43,7 +46,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private TagProcessor tagProcessor;
 	
 	private AssemblyProcessor asmProcessor;
-
+	
 	public HotSpotLogParser(IJITListener logListener)
 	{
 		model = new JITDataModel();
@@ -64,14 +67,27 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private void mountAdditionalClasses()
 	{
+		URL[] classURLs = new URL[config.getClassLocations().size()];
+		
+		int pos = 0;
+		
 		for (String filename : config.getClassLocations())
 		{
 			URI uri = new File(filename).toURI();
 
 			logListener.handleLogEntry("Adding classpath: " + uri.toString());
 
-			ClassUtil.addURIToClasspath(uri);
+			try
+			{
+				classURLs[pos++] = uri.toURL();
+			}
+			catch (MalformedURLException e)
+			{
+				logger.error("Could not create URL: {} ", uri, e);
+			}
 		}
+		
+		ClassUtil.initialise(classURLs);
 	}
 
 	private void logEvent(JITEvent event)
@@ -109,7 +125,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
-
+		
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
@@ -126,9 +142,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		reading = true;
 
-		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
+		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
 
-		String currentLine = input.readLine();
+		String currentLine = reader.readLine();
 
 		while (reading && currentLine != null)
 		{
@@ -141,12 +157,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				logger.error("Exception handling: '{}'", currentLine, ex);
 			}
 
-			currentLine = input.readLine();
+			currentLine = reader.readLine();
 		}
 
 		asmProcessor.complete();
 		
-		input.close();
+		reader.close();
 
 		logListener.handleReadComplete();
 	}
@@ -158,7 +174,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleLine(String inCurrentLine)
-	{
+	{	
 		String currentLine = inCurrentLine;
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);

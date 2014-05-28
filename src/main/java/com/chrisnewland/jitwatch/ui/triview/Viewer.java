@@ -24,6 +24,7 @@ import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.triview.ILineListener.LineType;
 import com.chrisnewland.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
@@ -140,7 +141,7 @@ public class Viewer extends VBox
 
 			if (showLineNumbers)
 			{
-				lines[i] = padLineNumber(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
+				lines[i] = StringUtil.padLineNumber(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
 
 			Label lblLine = new Label(lines[i]);
@@ -175,6 +176,8 @@ public class Viewer extends VBox
 					@Override
 					public void handle(MouseEvent arg0)
 					{
+						unhighlightPrevious();
+						
 						label.setStyle(STYLE_HIGHLIGHTED);
 						lineListener.lineHighlighted(finalPos, lineType);
 					}
@@ -193,22 +196,6 @@ public class Viewer extends VBox
 			label.minWidthProperty().bind(scrollPane.widthProperty());
 			pos++;
 		}
-	}
-
-	private String padLineNumber(int number, int maxWidth)
-	{
-		int len = Integer.toString(number).length();
-
-		StringBuilder builder = new StringBuilder();
-
-		for (int i = len; i < maxWidth; i++)
-		{
-			builder.append(S_SPACE);
-		}
-
-		builder.append(number);
-
-		return builder.toString();
 	}
 
 	private void setUpContextMenu()
@@ -285,16 +272,20 @@ public class Viewer extends VBox
 			label.setStyle(STYLE_UNHIGHLIGHTED);
 		}
 	}
-
-	public void highlightLine(int index)
+	
+	private void unhighlightPrevious()
 	{
 		if (lastScrollIndex != -1)
 		{
-			// revert to black Label
 			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
 			unhighlightLabel(label);
 		}
+	}
+
+	public void highlightLine(int index)
+	{
+		unhighlightPrevious();
 
 		if (index != -1)
 		{

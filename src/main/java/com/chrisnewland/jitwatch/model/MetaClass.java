@@ -14,6 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
@@ -30,7 +33,9 @@ public class MetaClass implements Comparable<MetaClass>
 	private int compiledMethodCount = 0;
 
 	private ClassBC classBytecode = null;
-	
+
+	//private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
+
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;

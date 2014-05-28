@@ -8,6 +8,8 @@ package com.chrisnewland.jitwatch.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.chrisnewland.jitwatch.loader.DisposableURLClassLoader;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -21,60 +23,27 @@ public final class ClassUtil
         Hide Utility Class Constructor
         Utility classes should not have a public or default constructor.
     */
-    private ClassUtil() {
+    
+	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
+    
+    private ClassUtil()
+    {
+    }
+    
+    public static void initialise(URL[] urls)
+    {
+    	disposableClassLoader = new DisposableURLClassLoader(urls);
     }
 
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
 		try
 		{
-			return Class.forName(fqClassName, false, getClassLoader());
+			return Class.forName(fqClassName, false, disposableClassLoader);
 		}
 		catch (Exception ex)
 		{
 			throw ex;
 		}
-	}
-	
-	public static void addURIToClasspath(URI uri)
-	{
-		try
-		{
-			URLClassLoader urlClassLoader = getClassLoader();
-			URL url = uri.toURL();
-			Class<?> urlClass = URLClassLoader.class;
-			Method method = urlClass.getDeclaredMethod("addURL", new Class<?>[] { URL.class });
-			method.setAccessible(true);
-			method.invoke(urlClassLoader, new Object[] { url });
-		}
-		catch (Exception ex)
-		{
-            logger.error("Exception: {}", ex.getMessage(), ex);
-		}
-	}
-	
-	public static URL[] getClassLoaderURLs()
-	{
-		try
-		{
-			URLClassLoader urlClassLoader = getClassLoader();
-			Class<?> urlClass = URLClassLoader.class;
-			Method method = urlClass.getDeclaredMethod("getURLs", new Class<?>[] {});
-			method.setAccessible(true);
-			Object result = method.invoke(urlClassLoader, new Object[] {});
-			
-			return (URL[])result;
-		}
-		catch (Exception ex)
-		{
-            logger.error("Exception: {}", ex.getMessage(), ex);
-		}
-		
-		return null;
-	}
-	
-	private static URLClassLoader getClassLoader()
-	{
-	    return (URLClassLoader) ClassUtil.class.getClassLoader();
 	}
 }

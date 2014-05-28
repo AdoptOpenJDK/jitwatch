@@ -17,12 +17,13 @@ public final class StringUtil
 {
 	private static final DecimalFormat DF = new DecimalFormat("#,###");
 
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private StringUtil() {
-    }
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private StringUtil()
+	{
+	}
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
@@ -77,55 +78,55 @@ public final class StringUtil
 
 		return sb.toString();
 	}
-	
+
 	public static String repeat(char c, int count)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		for (int i = 0; i < count; i++)
 		{
 			builder.append(c);
 		}
-		
-		return builder.toString();		
+
+		return builder.toString();
 	}
-	
+
 	public static String rtrim(String string)
 	{
-		return string.replaceAll("\\s+$","");
+		return string.replaceAll("\\s+$", "");
 	}
-	
+
 	public static String padLeft(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, true);
 	}
-	
+
 	public static String padLeft(String str, int width)
 	{
 		return pad(str, width, C_SPACE, true);
-	}	
-	
+	}
+
 	public static String padRight(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, false);
 	}
-	
+
 	public static String padRight(String str, int width)
 	{
 		return pad(str, width, C_SPACE, false);
-	}	
-	
+	}
+
 	public static String padZero(long num, int width)
 	{
 		return pad(Long.toString(num), width, '0', true);
-	}	
-	
+	}
+
 	public static String pad(String str, int width, char padding, boolean left)
 	{
 		StringBuilder sb = new StringBuilder();
 
 		int len = str.length();
-		
+
 		if (!left)
 		{
 			sb.append(str);
@@ -143,7 +144,7 @@ public final class StringUtil
 		{
 			sb.append(str);
 		}
-		
+
 		return sb.toString();
 	}
 
@@ -216,7 +217,7 @@ public final class StringUtil
 
 		return result;
 	}
-	
+
 	public static String getPackageName(String fqClassName)
 	{
 		int lastDot = fqClassName.lastIndexOf('.');
@@ -229,6 +230,11 @@ public final class StringUtil
 		}
 
 		return result;
+	}
+
+	public static String padLineNumber(int number, int maxWidth)
+	{
+		return padLeft(Integer.toString(number), maxWidth);
 	}
 
 	public static Map<String, String> getLineAttributes(String line)
@@ -296,7 +302,7 @@ public final class StringUtil
 
 		return result;
 	}
-	
+
 	public static Map<String, String> getLineAttributesDoubleQuote(String line)
 	{
 		Map<String, String> result = new HashMap<>();
@@ -365,7 +371,7 @@ public final class StringUtil
 
 	public static String formatThousands(String inValue)
 	{
-        String value = inValue;
+		String value = inValue;
 		// see if it can be formatted as a long with commas at thousands
 		try
 		{
@@ -377,7 +383,7 @@ public final class StringUtil
 
 		return value;
 	}
-	
+
 	public static String listToString(List<?> list)
 	{
 		StringBuilder builder = new StringBuilder();

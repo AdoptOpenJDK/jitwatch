@@ -108,12 +108,13 @@ public class FileUtil
 				if (file.isDirectory())
 				{
 					emptyDir(file);
+					file.delete();
 				}
 				else
 				{
 					file.delete();
 				}
-			}
+			}			
 		}
 	}
 }

@@ -103,7 +103,7 @@ public class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-				logger.error("", ioe);
+				logger.error("Failed to read file: {}", sourceFile, ioe);
 			}
 		}
 

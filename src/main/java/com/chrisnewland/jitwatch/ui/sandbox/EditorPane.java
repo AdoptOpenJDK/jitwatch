@@ -8,6 +8,7 @@ import com.chrisnewland.jitwatch.loader.ResourceLoader;
 import com.chrisnewland.jitwatch.sandbox.Sandbox;
 import com.chrisnewland.jitwatch.ui.Dialogs;
 import com.chrisnewland.jitwatch.ui.Dialogs.Response;
+import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -17,6 +18,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -26,7 +28,14 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public class EditorPane extends VBox
 {
 	private Label lblTitle;
-	private TextArea textArea;
+
+	private TextArea taSource;
+	private TextArea taLineNumbers;
+
+	private ScrollBar sbSource;
+	private ScrollBar sbLineNum;
+	private boolean scrollLinked = false;
+
 	private HBox hBoxTitle;
 
 	private Button btnSave;
@@ -50,7 +59,7 @@ public class EditorPane extends VBox
 			public void handle(ActionEvent e)
 			{
 				promptSave();
-				
+
 				chooseFile();
 			}
 		});
@@ -74,7 +83,7 @@ public class EditorPane extends VBox
 			public void handle(ActionEvent e)
 			{
 				lblTitle.setText("New File");
-				textArea.setText(S_EMPTY);
+				taSource.setText(S_EMPTY);
 			}
 		});
 
@@ -101,11 +110,11 @@ public class EditorPane extends VBox
 
 		hBoxTitle.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
 
-		textArea = new TextArea();
-		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
-		textArea.setStyle(style);
+		taSource = new TextArea();
+		String styleSource = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+		taSource.setStyle(styleSource);
 
-		textArea.textProperty().addListener(new ChangeListener<String>()
+		taSource.textProperty().addListener(new ChangeListener<String>()
 		{
 			@Override
 			public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue)
@@ -114,14 +123,27 @@ public class EditorPane extends VBox
 			}
 		});
 
+		taLineNumbers = new TextArea();
+		String styleLineNumber = "-fx-padding:0; -fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:#eeeeee;";
+		taLineNumbers.setStyle(styleLineNumber);
+		taLineNumbers.setEditable(false);
+		taLineNumbers.setWrapText(true);
+
+		HBox hBoxTextAreas = new HBox();
+
+		hBoxTextAreas.getChildren().add(taLineNumbers);
+		hBoxTextAreas.getChildren().add(taSource);
+
+		taSource.prefWidthProperty().bind(hBoxTextAreas.widthProperty());
+
 		getChildren().add(hBoxTitle);
-		getChildren().add(textArea);
+		getChildren().add(hBoxTextAreas);
 
 		hBoxTitle.prefWidthProperty().bind(widthProperty());
 		hBoxTitle.prefHeightProperty().bind(heightProperty().multiply(0.1));
 
-		textArea.prefWidthProperty().bind(widthProperty());
-		textArea.prefHeightProperty().bind(heightProperty().multiply(0.9));
+		hBoxTextAreas.prefWidthProperty().bind(widthProperty());
+		hBoxTextAreas.prefHeightProperty().bind(heightProperty().multiply(0.9));
 	}
 
 	private void setModified(final boolean modified)
@@ -133,13 +155,78 @@ public class EditorPane extends VBox
 			public void run()
 			{
 				btnSave.setDisable(!modified);
+
+				int breakCount = 1 + countChar(taSource.getText(), C_NEWLINE);
+
+				generateLineNumbers(breakCount);
 			}
 		});
 	}
 
+	private void generateLineNumbers(int breakCount)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		final int maxDigits = Integer.toString(breakCount).length();
+
+		for (int i = 0; i < breakCount; i++)
+		{
+			String marker = StringUtil.padLineNumber(i + 1, maxDigits);
+
+			builder.append(marker).append(C_NEWLINE);
+		}
+
+		taLineNumbers.setText(builder.toString());
+		taLineNumbers.setMaxWidth(40 + maxDigits * 20);
+
+		sbSource = (ScrollBar) taSource.lookup(".scroll-bar:vertical");
+		sbLineNum = (ScrollBar) taLineNumbers.lookup(".scroll-bar:vertical");
+
+		if (sbLineNum != null)
+		{
+			sbLineNum.setOpacity(0.0);
+		}
+
+		if (sbSource != null && sbLineNum != null && !scrollLinked)
+		{
+			linkScrollBars();
+		}
+	}
+
+	private void linkScrollBars()
+	{
+		sbSource.valueProperty().addListener(new ChangeListener<Number>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Number> value, Number oldValue, Number newValue)
+			{
+				sbLineNum.setValue(newValue.doubleValue());
+			}
+		});
+
+		scrollLinked = true;
+	}
+
+	private int countChar(String text, char countChar)
+	{
+		int result = 0;
+
+		for (int i = 0; i < text.length(); i++)
+		{
+			char c = text.charAt(i);
+
+			if (c == countChar)
+			{
+				result++;
+			}
+		}
+
+		return result;
+	}
+
 	public String getSource()
 	{
-		return textArea.getText().trim();
+		return taSource.getText().trim();
 	}
 
 	public void loadSource(File dir, String filename)
@@ -148,12 +235,15 @@ public class EditorPane extends VBox
 
 		String source = ResourceLoader.readFile(sourceFile);
 
-		source = source.replace("\t", "    ");
+		if (source != null)
+		{
+			source = source.replace("\t", "    ");
 
-		lblTitle.setText(filename);
-		textArea.setText(source);
+			lblTitle.setText(filename);
+			taSource.setText(source.trim());
 
-		setModified(false);
+			setModified(false);
+		}
 	}
 
 	private void chooseFile()
