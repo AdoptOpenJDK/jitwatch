@@ -332,6 +332,42 @@ public class TestTagProcessor
     }
 
     /*
+        Scenario: Parsing nested self closing lines (with a parent)
+            Given a line containing an open tag
+            And the closing angle bracket of the tag is missing
+            When the tag processor parses such a line
+            Then no tags should be returned
+    */
+    @Test
+    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenANestTagIsReturned() {
+        // Given
+        String expectedParseResult =
+                "<loop inner_loop=\"1\" idx=\"1012\">\n" +
+                "  <loop inner_loop=\"2\" idx=\"1013\">\n" +
+                "    <loop/>\n  </loop>\n</loop>\n";
+
+        String[] lines = new String[] {
+                "<loop idx='1012' inner_loop='1' >",
+                "<loop idx='1013' inner_loop='2' >",
+                "<loop />",
+                "</loop>",
+                "</loop>"
+        };
+
+        // When
+        Tag actualTag = null;
+        TagProcessor tagProcessor = new TagProcessor();
+        for (String eachLine: lines) {
+            actualTag = tagProcessor.processLine(eachLine);
+        }
+
+        // Then
+        assertThat("Nested tags should have been returned.",
+                actualTag.toString(),
+                is(equalTo(expectedParseResult)));
+    }
+
+    /*
         Scenario: Parsing a line containing a tag of type 'Task'
             Given a line containing a tag of type 'Task' is available
             When the tag processor parses such a line
@@ -341,9 +377,9 @@ public class TestTagProcessor
     @Ignore
     public void givenLineContainingATypeTask_WhenTheTagProcessorParsesIt_ThenATaskTagIsReturned() {
         // Given
-//        String withTypeTask = "<task compile_id='1' compile_kind='osr' method='com/chrisnewland/jitwatch/demo/MakeHotSpotLog " +
-//                "addVariable (I)V' bytes='41' count='10000' backedge_count='5438' iicount='1' osr_bci='5' stamp='0.164'>";
-        String withTypeTask = "</task>";
+         String withTypeTask = "<task compile_id='1' compile_kind='osr' method='com/chrisnewland/jitwatch/demo/MakeHotSpotLog " +
+         "addVariable (I)V' bytes='41' count='10000' backedge_count='5438' iicount='1' osr_bci='5' stamp='0.164'>";
+        //String withTypeTask = "</task>";
         Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTask);
         boolean selfClosing = (withTypeTask.charAt(withTypeTask.length() - 2) == JITWatchConstants.C_SLASH);
         int indexEndName = withTypeTask.indexOf(C_CLOSE_ANGLE);
