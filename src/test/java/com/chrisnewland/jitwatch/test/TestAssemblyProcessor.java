@@ -14,6 +14,7 @@ import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyBlock;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyInstruction;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,14 +25,14 @@ import java.util.Map;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.LOADED;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 public class TestAssemblyProcessor
 {
     private static final int ZERO = 0;
     public static final IMetaMember NO_MEMBER = null;
+    private static final int ONE = 1;
     private Map<String, IMetaMember> map;
     private IMemberFinder memberFinder;
 
@@ -243,6 +244,7 @@ public class TestAssemblyProcessor
     /*
         Scenario: Parsing a line that does not start with the Native Code
             Given a number of lines of disassembled code
+            And the line does not start with the Native Code
             When the assembly processor parses such lines
             Then no assembly instructions are returned
     */
@@ -266,8 +268,9 @@ public class TestAssemblyProcessor
     }
 
     /*
-        Scenario: Parsing a lines with incorrect signature
+        Scenario: Parsing lines with incorrect method signature
             Given a number of lines of disassembled code
+            And the method signature is incorrect
             When the assembly processor parses such a line
             Then no assembly instructions are returned
     */
@@ -295,5 +298,38 @@ public class TestAssemblyProcessor
         assertThat("No assembly results should have been returned.",
                 actualAssemblyResults,
                 is(equalTo(expectedAssemblyResults)));
+    }
+
+
+    /*
+        Scenario: Parsing lines with method signature starting with [ (open square bracket)
+            Given a number of lines of disassembled code
+            And the method signature starts with a [
+            When the assembly processor parses such a line
+            Then no assembly instructions are returned
+    */
+    @Test
+    public void givenBlockOfCodeWithMethodSignatureStartingWithBoxBracket_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
+        // Given
+        int expectedAssemblyResults = ONE;
+        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
+        lines[7] = "[ 0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}";
+
+        // When
+        performAssemblyParsingOn(lines);
+        int actualAssemblyResults = map.size();
+        IMetaMember actualMember = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
+
+        // Then
+        assertThat("One assembly results should have been returned.",
+                actualAssemblyResults,
+                is(equalTo(expectedAssemblyResults)));
+        assertThat("An object should have been returned",
+                actualMember,
+                is(available()));
+    }
+
+    private Matcher<Object> available() {
+        return not(nullValue());
     }
 }
