@@ -30,9 +30,9 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 
 Latest binaries from Jenkins
 ----------------------------
-JDK 1.7 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=JDK_1.7/ws/jitwatch-1.0.0-SNAPSHOT-JDK_1.7.tar.gz
+<b>[JDK 1.7 binary] (https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=JDK_1.7/ws/jitwatch-1.0.0-SNAPSHOT-JDK_1.7.tar.gz)</b>
 
-OpenJDK 8 binary: https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/ws/jitwatch-1.0.0-SNAPSHOT-OpenJDK8.tar.gz
+<b>[OpenJDK 8 binary] (https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/jdk=OpenJDK8/ws/jitwatch-1.0.0-SNAPSHOT-OpenJDK8.tar.gz)</b>
 
 Java 8 Compatibility
 --------------------
