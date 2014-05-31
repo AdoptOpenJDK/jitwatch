@@ -120,7 +120,7 @@ public class TestAssemblyProcessor
 	{
 		String[] lines = new String[]{
 				"Decoding compiled method 0x00007f7d73363f90:",
-				"Code:",
+				"Cod    e:",
 				"[Entry Point]",
 				"[Constants]",
 				"  # {method} &apos;add&apos; &apos;(II)I&apos; in &apos;com",
@@ -274,8 +274,8 @@ public class TestAssemblyProcessor
     @Test
     public void givenBlockOfCodeWithIncorrectSignature_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
         // Given
-        String[] lines = SINGLE_ASSEMBLY_METHOD;
         int expectedAssemblyResults = ZERO;
+        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
         lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;";
 
         memberFinder = new IMemberFinder()
