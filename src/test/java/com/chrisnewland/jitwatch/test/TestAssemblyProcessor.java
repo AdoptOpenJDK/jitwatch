@@ -31,6 +31,7 @@ import static org.junit.Assert.*;
 public class TestAssemblyProcessor
 {
     private static final int ZERO = 0;
+    public static final IMetaMember NO_MEMBER = null;
     private Map<String, IMetaMember> map;
     private IMemberFinder memberFinder;
 
@@ -241,8 +242,8 @@ public class TestAssemblyProcessor
 
     /*
         Scenario: Parsing a line that does not start with the Native Code
-            Given a line with some text
-            When the assembly processor parses such a line
+            Given a number of lines of disassembled code
+            When the assembly processor parses such lines
             Then no assembly instructions are returned
     */
     @Test
@@ -252,6 +253,38 @@ public class TestAssemblyProcessor
         String[] lines = new String[] {
                 "Does not start with Decoding compiled method 0x00007f7d73364190:",
                 "Code:"
+        };
+
+        // When
+        performAssemblyParsingOn(lines);
+        int actualAssemblyResults = map.size();
+
+        // Then
+        assertThat("No assembly results should have been returned.",
+                actualAssemblyResults,
+                is(equalTo(expectedAssemblyResults)));
+    }
+
+    /*
+        Scenario: Parsing a lines with incorrect signature
+            Given a number of lines of disassembled code
+            When the assembly processor parses such a line
+            Then no assembly instructions are returned
+    */
+    @Test
+    public void givenBlockOfCodeWithIncorrectSignature_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
+        // Given
+        String[] lines = SINGLE_ASSEMBLY_METHOD;
+        int expectedAssemblyResults = ZERO;
+        lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;";
+
+        memberFinder = new IMemberFinder()
+        {
+            @Override
+            public IMetaMember findMemberWithSignature(String logSignature)
+            {
+                return NO_MEMBER;
+            }
         };
 
         // When
