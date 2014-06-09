@@ -5,7 +5,6 @@
  */
 package com.chrisnewland.jitwatch.core;
 
-import com.chrisnewland.jitwatch.loader.DisposableURLClassLoader;
 import com.chrisnewland.jitwatch.model.*;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;

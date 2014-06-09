@@ -101,12 +101,22 @@ public final class JITWatchConstants
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
 
+	public static final String REGEX_GROUP_ANY = "(.*)";
+	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";
+	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
+	public static final String REGEX_UNICODE_PARAM_NAME = "([0-9\\p{L}_]+)";
+	public static final String REGEX_UNICODE_PACKAGE_NAME = "([0-9\\p{L}_\\.]*)";
+	
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
+	public static final String S_ESCAPED_OPEN_PARENTHESES = "\\(";
+	public static final String S_ESCAPED_CLOSE_PARENTHESES = "\\)";
     public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
     public static final String S_OPEN_SQUARE = "[";
 	public static final String S_CLOSE_SQUARE= "]";
+    public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
+	public static final String S_ESCAPED_CLOSE_SQUARE= "\\]";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
