@@ -494,11 +494,11 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		catch (ClassNotFoundException cnf)
 		{
-			logError("ClassNotFoundException: '" + fqClassName);
+			logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
 		}
 		catch (NoClassDefFoundError ncdf)
 		{
-			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage());
+			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
 		}
 	}
 

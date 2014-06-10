@@ -28,7 +28,7 @@ import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
 {
-	private MemberBytecode memberBytecode;
+	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
@@ -39,11 +39,9 @@ public class ViewerBytecode extends Viewer
 	{	
 		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode(classLocations);
 
-		List<BytecodeInstruction> instructions = null;
-
 		if (metaClassBytecode != null)
 		{
-			memberBytecode = metaClassBytecode.getMemberBytecode(member);
+			MemberBytecode memberBytecode = metaClassBytecode.getMemberBytecode(member);
 
 			if (memberBytecode != null)
 			{
@@ -123,7 +121,7 @@ public class ViewerBytecode extends Viewer
 
 		int pos = 0;
 
-		for (BytecodeInstruction instruction : memberBytecode.getInstructions())
+		for (BytecodeInstruction instruction : instructions)
 		{
 			if (instruction.getOffset() == offset)
 			{

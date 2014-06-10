@@ -588,11 +588,11 @@ public class ParseUtil
         		}
         		catch (ClassNotFoundException cnf)
         		{
-        			logger.error("ClassNotFoundException: '" + metaClassName);
+        			logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
         		}
         		catch (NoClassDefFoundError ncdf)
         		{
-        			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage());
+        			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
         		}
 			}
 

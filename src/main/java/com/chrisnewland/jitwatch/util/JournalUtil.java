@@ -182,14 +182,14 @@ public final class JournalUtil
 
 				if (count != null)
 				{
-					reason.append("Count: ").append(count).append("\n");
+					reason.append("Count: ").append(count).append(C_NEWLINE);
 				}
 
-				reason.append("Branch taken: ").append(taken).append("\nBranch not taken: ").append(notTaken);
+				reason.append("Branch taken: ").append(taken).append(C_NEWLINE).append("Branch not taken: ").append(notTaken);
 
 				if (prob != null)
 				{
-					reason.append("\nProbability: ").append(prob);
+					reason.append(C_NEWLINE).append("Taken Probability: ").append(prob);
 				}
 
 				if (!result.containsKey(currentBytecode))
@@ -273,7 +273,7 @@ public final class JournalUtil
 
 			if (count != 1)
 			{
-                logger.info("Unexpected parse phase count: {}", count);
+                logger.warn("Unexpected parse phase count: {}", count);
 			}
 			else
 			{
