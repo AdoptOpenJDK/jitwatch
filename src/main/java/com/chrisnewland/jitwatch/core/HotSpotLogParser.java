@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
+import java.util.Set;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
@@ -37,6 +38,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
+	
+	private boolean inHeader = true;
 
 	private long currentLineNumber;
 
@@ -144,12 +147,21 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
 
 		String currentLine = reader.readLine();
+		
+		inHeader = true;
 
 		while (reading && currentLine != null)
 		{
 			try
 			{
-				handleLine(currentLine);
+				if (inHeader)
+				{
+					handleLogHeader(currentLine);
+				}
+				else
+				{
+					handleLogLine(currentLine);
+				}				
 			}
 			catch (Exception ex)
 			{
@@ -172,26 +184,54 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		reading = false;
 	}
 
-	private void handleLine(String inCurrentLine)
+	private boolean skipLine(final String line, final Set<String> skipSet)
+	{
+		boolean isSkip = false;
+
+		for (String skip : skipSet)
+		{
+			if (line.startsWith(skip))
+			{
+				isSkip = true;
+				break;
+			}
+		}
+		
+		return isSkip;
+	}
+	
+	// HotSpot log header XML can have text nodes
+	private void handleLogHeader(final String inCurrentLine)
+	{		
+		if (TAG_TTY.equals(inCurrentLine))
+		{
+			inHeader = false;
+		}
+		else 
+		{
+			if (!skipLine(inCurrentLine, SKIP_HEADER_TAGS))
+			{
+				Tag tag = tagProcessor.processLine(inCurrentLine);
+
+				if (tag != null)
+				{
+					handleTag(tag);
+				}
+			}
+		}
+	}
+	
+	// After the header, XML nodes do not have text nodes
+	private void handleLogLine(final String inCurrentLine)
 	{	
 		String currentLine = inCurrentLine;
+		
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
-			boolean isSkip = false;
-
-			for (String skip : SKIP_TAGS)
-			{
-				if (currentLine.startsWith(skip))
-				{
-					isSkip = true;
-					break;
-				}
-			}
-
-			if (!isSkip)
+			if (!skipLine(inCurrentLine, SKIP_BODY_TAGS))
 			{
 				Tag tag = tagProcessor.processLine(currentLine);
 

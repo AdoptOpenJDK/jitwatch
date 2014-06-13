@@ -1,6 +1,7 @@
 package com.chrisnewland.jitwatch.ui.triview.bytecode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import com.chrisnewland.jitwatch.model.AnnotationException;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
@@ -30,15 +32,17 @@ public class ViewerBytecode extends Viewer
 {
 	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
+	private boolean offsetMismatchDetected = false;
+	
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
 	}
 
-	public void setContent(IMetaMember member, List<String> classLocations)
-	{	
-		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode(classLocations);
-
+	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
+	{
+		offsetMismatchDetected = false;
+		
 		if (metaClassBytecode != null)
 		{
 			MemberBytecode memberBytecode = metaClassBytecode.getMemberBytecode(member);
@@ -49,7 +53,7 @@ public class ViewerBytecode extends Viewer
 			}
 		}
 
-		Map<Integer, LineAnnotation> annotations = null;
+		Map<Integer, LineAnnotation> annotations = new HashMap<Integer, LineAnnotation>();
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
@@ -60,7 +64,16 @@ public class ViewerBytecode extends Viewer
 		{
 			Journal journal = member.getJournal();
 
-			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+			try
+			{
+				annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+			}
+			catch (AnnotationException annoEx)
+			{
+				logger.error("class bytcode mismatch: {}", annoEx.getMessage());
+
+				offsetMismatchDetected = true;
+			}
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
@@ -79,7 +92,7 @@ public class ViewerBytecode extends Viewer
 					LineAnnotation annotation = annotations.get(offset);
 
 					String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
-					
+
 					if (annotation != null)
 					{
 						annotationText = annotation.getAnnotation();
@@ -89,7 +102,7 @@ public class ViewerBytecode extends Viewer
 
 						lblLine.setTooltip(new Tooltip(annotationText));
 					}
-					
+
 					lblLine.setUnhighlightedStyle(unhighlightedStyle);
 				}
 
@@ -113,6 +126,11 @@ public class ViewerBytecode extends Viewer
 		}
 
 		setContent(labels);
+	}
+	
+	public boolean isOffsetMismatchDetected()
+	{
+		return offsetMismatchDetected;
 	}
 
 	public int getLineIndexForBytecodeOffset(int offset)

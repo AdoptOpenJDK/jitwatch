@@ -368,4 +368,21 @@ public class TestBytecodeLoader
 		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest()", entry2.getMemberSignature());
 
 	}
+	
+	@Test
+	public void testClassFileVersion()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("public class com.chrisnewland.jitwatch.demo.MakeHotSpotLog").append("\n");
+		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append("\n");
+		builder.append("minor version: 1").append("\n");
+		builder.append("major version: 51").append("\n");
+		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append("\n");
+
+
+		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		assertEquals(1, classBytecode.getMinorVersion());		
+		assertEquals(51, classBytecode.getMajorVersion());		
+	}
 }

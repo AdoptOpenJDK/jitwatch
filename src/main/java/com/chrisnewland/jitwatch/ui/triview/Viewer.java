@@ -248,7 +248,7 @@ public class Viewer extends VBox
 		scrollIndex = -1;
 
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
-
+		
 		if (regexPos == -1)
 		{
 			List<String> lines = Arrays.asList(originalSource.split(S_NEWLINE));
@@ -341,7 +341,7 @@ public class Viewer extends VBox
 		return result;
 	}
 
-	private void setScrollBar()
+	public void setScrollBar()
 	{
 		if (vBoxRows.getChildren().size() > 0)
 		{

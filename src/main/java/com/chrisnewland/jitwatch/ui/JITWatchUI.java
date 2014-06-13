@@ -1008,4 +1008,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		return logParser.getModel().getPackageManager();
 	}
 
+	@Override
+	public Stage getStageForDialog()
+	{
+		return stage;
+	}
 }

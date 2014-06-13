@@ -26,8 +26,10 @@ public final class JITWatchConstants
 	public static final String TAG_HOTSPOT_LOG = "<hotspot_log";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
 
-	public static final Set<String> SKIP_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_TTY, TAG_TTY_CLOSE,
-			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG, TAG_HOTSPOT_LOG_CLOSE }));
+	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG}));
+	
+	public static final Set<String> SKIP_BODY_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_TTY_CLOSE,
+			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG_CLOSE }));
 
 	public static final String NATIVE_CODE_START = "Decoding compiled method";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
@@ -166,4 +168,8 @@ public final class JITWatchConstants
 	public static final char C_DOLLAR = '$';
 	
 	public static final String S_ASSEMBLY_ADDRESS = "0x";
+	
+	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
+	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+
 }

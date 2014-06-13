@@ -8,17 +8,18 @@ import java.util.Set;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ClassBC
 {
 	private ConstantPool constantPool;
 	private String sourceFile;
-	private String majorVersion;
-	private String minorVersion;
+	private int majorVersion;
+	private int minorVersion;
 	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
 
 	private LineTable lineTable = new LineTable();
-	
+
 	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		memberBytecodeMap.put(memberName, memberBytecode);
@@ -75,22 +76,60 @@ public class ClassBC
 		this.sourceFile = sourceFile;
 	}
 
-	public String getMajorVersion()
+	public int getMajorVersion()
 	{
 		return majorVersion;
 	}
 
-	public void setMajorVersion(String majorVersion)
+	public void setMajorVersion(int majorVersion)
 	{
 		this.majorVersion = majorVersion;
 	}
 
-	public String getMinorVersion()
+	public int getMinorVersion()
 	{
 		return minorVersion;
 	}
 
-	public void setMinorVersion(String minorVersion)
+	public String getJavaVersion()
+	{
+		String result;
+
+		switch (majorVersion)
+		{
+		case 52:
+			result = "Java 8";
+			break;
+		case 51:
+			result = "Java 7";
+			break;
+		case 50:
+			result = "Java 6.0";
+			break;
+		case 49:
+			result = "Java 5.0";
+			break;
+		case 48:
+			result = "Java 1.4";
+			break;
+		case 47:
+			result = "Java 1.3";
+			break;
+		case 46:
+			result = "Java 1.2";
+			break;
+		case 45:
+			result = "Java 1.1";
+			break;
+		default:
+			result = "Unknown";
+			break;
+		}
+
+		return result;
+	}
+
+	public void setMinorVersion(int minorVersion)
 	{
 		this.minorVersion = minorVersion;
 	}
@@ -104,17 +143,20 @@ public class ClassBC
 	{
 		return lineTable;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
+		builder.append(S_BYTECODE_MAJOR_VERSION).append(majorVersion).append(C_NEWLINE);
+		builder.append(S_BYTECODE_MINOR_VERSION).append(minorVersion).append(C_NEWLINE);
+
 		for (Map.Entry<String, MemberBytecode> entry : memberBytecodeMap.entrySet())
 		{
 			builder.append("member: ").append(entry.getKey());
 		}
-		
+
 		return builder.toString();
 	}
 

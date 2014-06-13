@@ -116,6 +116,16 @@ public final class BytecodeLoader
 					parseState = ParseState.BYTECODE;
 					pos--;
 				}
+				else if (line.startsWith(S_BYTECODE_MINOR_VERSION))
+				{
+					int minorVersion = getVersionPart(line);
+					classBytecode.setMinorVersion(minorVersion);
+				}
+				else if (line.startsWith(S_BYTECODE_MAJOR_VERSION))
+				{
+					int majorVersion = getVersionPart(line);
+					classBytecode.setMajorVersion(majorVersion);
+				}
 				break;
 			case BYTECODE:
 				int firstColonIndex = line.indexOf(C_COLON);
@@ -171,6 +181,29 @@ public final class BytecodeLoader
 		}
 
 		return classBytecode;
+	}
+	
+	private static int getVersionPart(String line)
+	{
+		int version = 0;
+		
+		int colonPos = line.indexOf(C_COLON);
+		
+		if (colonPos != -1 && colonPos != line.length()-1)
+		{
+			String versionPart = line.substring(colonPos+1).trim();
+			
+			try
+			{
+				version = Integer.parseInt(versionPart);
+			}
+			catch (NumberFormatException nfe)
+			{
+				logger.error("Could not parse version part {}", versionPart, nfe);
+			}
+		}
+		
+		return version;
 	}
 
 	private static String fixSignature(String signature)

@@ -5,6 +5,8 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import javafx.stage.Stage;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public interface IStageAccessProxy
@@ -14,4 +16,6 @@ public interface IStageAccessProxy
 	void openBrowser(String title, String html, String stylesheet);
 	
 	void openTextViewer(String title, String contents, boolean lineNumbers, boolean highlighting);
+
+	Stage getStageForDialog();
 }
