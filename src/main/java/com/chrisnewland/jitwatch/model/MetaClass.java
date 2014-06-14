@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 

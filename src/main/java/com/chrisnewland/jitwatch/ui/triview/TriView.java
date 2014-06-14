@@ -480,7 +480,7 @@ public class TriView extends Stage implements ILineListener
 
 	@Override
 	public void lineHighlighted(int index, LineType lineType)
-	{
+	{		
 		switch (lineType)
 		{
 		case SOURCE:
@@ -503,11 +503,16 @@ public class TriView extends Stage implements ILineListener
 
 		int bytecodeHighlight = -1;
 		int assemblyHighlight = -1;
-
+		
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();
-
+			
+			if (lineTable.size() == 0)
+			{
+				logger.warn("LineNumberTable not found in class file. TriView highlight linking will not be available.");
+			}
+			
 			LineTableEntry entry = lineTable.get(sourceLine);
 
 			if (entry != null)
@@ -535,7 +540,7 @@ public class TriView extends Stage implements ILineListener
 		}
 
 		assemblyHighlight = viewerAssembly.getIndexForSourceLine(currentMember.getMetaClass().getFullyQualifiedName(), sourceLine);
-
+		
 		viewerBytecode.highlightLine(bytecodeHighlight);
 		viewerAssembly.highlightLine(assemblyHighlight);
 	}
@@ -556,7 +561,7 @@ public class TriView extends Stage implements ILineListener
 		int sourceHighlight = -1;
 		int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(),
 				bytecodeOffset);
-
+		
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();

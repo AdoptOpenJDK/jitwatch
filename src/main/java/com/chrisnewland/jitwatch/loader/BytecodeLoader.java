@@ -103,7 +103,7 @@ public final class BytecodeLoader
 		while (pos < lines.length)
 		{
 			String line = lines[pos].trim();
-
+			
 			switch (parseState)
 			{
 			case OTHER:
