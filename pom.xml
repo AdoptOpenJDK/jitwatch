@@ -187,6 +187,7 @@
                         <source>${jdk.version}</source>
                         <target>${jdk.version}</target>
                         <compilerArgument>-Xlint:unchecked</compilerArgument>
+        		<compilerArgument>-g:source,lines</compilerArgument>
                     </configuration>
                 </plugin>
                 <plugin>
