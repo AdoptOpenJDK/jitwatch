@@ -316,6 +316,9 @@
                         <includeProjectDependencies>true</includeProjectDependencies>
                         <includePluginDependencies>true</includePluginDependencies>
                         <mainClass>com.chrisnewland.jitwatch.launch.LaunchUI</mainClass>
+                        <additionalClasspathElements>
+                            <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+                        </additionalClasspathElements>
                     </configuration>
                     <dependencies>
                         <dependency>
