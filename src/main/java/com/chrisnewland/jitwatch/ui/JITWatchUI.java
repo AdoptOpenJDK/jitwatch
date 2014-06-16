@@ -786,9 +786,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			getConfig().setLastLogDir(hsLogFile.getParent());
 			getConfig().saveConfig();
 
-			
+			clearTextArea();
 			log("Selected file: " + hsLogFile.getAbsolutePath());
-			log("Click Start button to process or tail the file");
+			log("\nClick Start button to process the HotSpot log");
 			updateButtons();
 
 			refreshLog();
@@ -872,6 +872,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
 	}
 
+	private void clearTextArea()
+	{
+		textAreaLog.clear();
+	}
+	
 	private void refreshLog()
 	{
 		textAreaLog.appendText(logBuffer.toString());
