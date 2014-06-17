@@ -210,6 +210,13 @@ public class Sandbox
 
 		sourceLocations.add(SANDBOX_SOURCE_DIR.toString());
 		classLocations.add(SANDBOX_CLASS_DIR.toString());
+		
+		File jdkSrcZip = JITWatchConfig.getJDKSourceZip();
+		
+		if (jdkSrcZip != null)
+		{
+			sourceLocations.add(jdkSrcZip.toPath().toString());
+		}
 
 		JITWatchConfig config = new JITWatchConfig();
 		config.setSourceLocations(sourceLocations);
