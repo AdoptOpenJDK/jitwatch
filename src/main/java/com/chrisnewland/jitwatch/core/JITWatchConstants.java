@@ -17,6 +17,9 @@ public final class JITWatchConstants
     */
     private JITWatchConstants() {
     }
+    
+    public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
+    public static final int DEFAULT_MAX_INLINE_SIZE = 325;
 
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";

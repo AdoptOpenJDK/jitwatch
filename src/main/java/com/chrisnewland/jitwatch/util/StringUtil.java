@@ -386,13 +386,23 @@ public final class StringUtil
 
 	public static String listToString(List<?> list)
 	{
+		return listToString(list, C_SPACE);
+	}
+
+	public static String listToString(List<?> list, char separator)
+	{
 		StringBuilder builder = new StringBuilder();
 
 		for (Object item : list)
 		{
-			builder.append(item.toString()).append(C_SPACE);
+			builder.append(item.toString()).append(separator);
 		}
 
-		return builder.toString().trim();
+		if (builder.length() > 0)
+		{
+			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		return builder.toString();
 	}
 }

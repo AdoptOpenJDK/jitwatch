@@ -19,9 +19,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-public class ConfigStage extends Stage
+public class MainConfigStage extends Stage
 {
-    public ConfigStage(final JITWatchUI parent, final JITWatchConfig config)
+    public MainConfigStage(final IStageCloseListener parent, final JITWatchConfig config)
     {
         initStyle(StageStyle.UTILITY);
 
@@ -51,7 +51,7 @@ public class ConfigStage extends Stage
 
                 config.saveConfig();
                 
-				parent.handleStageClosed(ConfigStage.this);
+				parent.handleStageClosed(MainConfigStage.this);
                 close();
             }
         });
@@ -61,7 +61,7 @@ public class ConfigStage extends Stage
             @Override
             public void handle(ActionEvent e)
             {
-				parent.handleStageClosed(ConfigStage.this);
+				parent.handleStageClosed(MainConfigStage.this);
                 close();
             }
         });
@@ -80,7 +80,7 @@ public class ConfigStage extends Stage
 
         setTitle("JITWatch Configuration");
 
-        Scene scene = new Scene(vbox, 800, 480);
+        Scene scene = new Scene(vbox, 640, 400);
 
         setScene(scene);
 
@@ -89,7 +89,7 @@ public class ConfigStage extends Stage
             @Override
             public void handle(WindowEvent arg0)
             {
-				parent.handleStageClosed(ConfigStage.this);
+				parent.handleStageClosed(MainConfigStage.this);
             }
         });
     }

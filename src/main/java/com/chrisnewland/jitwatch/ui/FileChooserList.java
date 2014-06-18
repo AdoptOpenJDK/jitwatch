@@ -85,7 +85,7 @@ public class FileChooserList extends VBox
 		});
 
 		vboxButtons = new VBox();
-		vboxButtons.setPadding(new Insets(10, 10, 10, 10));
+		vboxButtons.setPadding(new Insets(10));
 		vboxButtons.setSpacing(10);
 
 		vboxButtons.getChildren().add(btnOpenFileDialog);
@@ -95,8 +95,8 @@ public class FileChooserList extends VBox
 		hbox.getChildren().add(fileList);
 		hbox.getChildren().add(vboxButtons);
 
-		fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.85));
-		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.15));
+		fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.8));
+		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.2));
 
 		Label titleLabel = new Label(title);
 

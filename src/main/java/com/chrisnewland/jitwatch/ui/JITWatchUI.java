@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.chain.CompileChainWalker;
@@ -91,7 +90,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TableView<AttributeTableRow> attributeTableView;
 	private ObservableList<AttributeTableRow> memberAttrList;
 
-	private List<Stage> openPopupStages = new ArrayList<>();
+	private StageManager stageManager = new StageManager();
 
 	private TextArea textAreaLog;
 
@@ -114,7 +113,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private Label lblHeap;
 
-	private ConfigStage configStage;
+	private MainConfigStage configStage;
 	private TimeLineStage timeLineStage;
 	private StatsStage statsStage;
 	private HistoStage histoStage;
@@ -258,13 +257,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				for (Stage s : openPopupStages)
-				{
-					if (s != null)
-					{
-						s.close();
-					}
-				}
+				stageManager.closeAll();
 
 				stopParsing();
 			}
@@ -303,7 +296,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
 							nothingMountedStage.show();
 
-							openPopupStages.add(nothingMountedStage);
+							stageManager.add(nothingMountedStage);
 
 							startDelayedByConfig = true;
 						}
@@ -346,7 +339,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 				timeLineStage.show();
 
-				openPopupStages.add(timeLineStage);
+				stageManager.add(timeLineStage);
 
 				btnTimeLine.setDisable(true);
 			}
@@ -361,7 +354,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				statsStage = new StatsStage(JITWatchUI.this);
 				statsStage.show();
 
-				openPopupStages.add(statsStage);
+				stageManager.add(statsStage);
 
 				btnStats.setDisable(true);
 			}
@@ -376,7 +369,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				histoStage = new HistoStage(JITWatchUI.this);
 				histoStage.show();
 
-				openPopupStages.add(histoStage);
+				stageManager.add(histoStage);
 
 				btnHisto.setDisable(true);
 			}
@@ -391,7 +384,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				topListStage = new TopListStage(JITWatchUI.this);
 				topListStage.show();
 
-				openPopupStages.add(topListStage);
+				stageManager.add(topListStage);
 
 				btnTopList.setDisable(true);
 			}
@@ -406,7 +399,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
 				codeCacheStage.show();
 
-				openPopupStages.add(codeCacheStage);
+				stageManager.add(codeCacheStage);
 
 				btnCodeCache.setDisable(true);
 			}
@@ -432,7 +425,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 				suggestStage.show();
 
-				openPopupStages.add(suggestStage);
+				stageManager.add(suggestStage);
 
 				btnSuggest.setDisable(true);
 			}
@@ -576,10 +569,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			loadConfigFromFile();
 
-			configStage = new ConfigStage(JITWatchUI.this, getConfig());
+			configStage = new MainConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
 
-			openPopupStages.add(configStage);
+			stageManager.add(configStage);
 
 			btnConfigure.setDisable(true);
 		}
@@ -594,7 +587,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			triViewStage.show();
 
-			openPopupStages.add(triViewStage);
+			stageManager.add(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -613,7 +606,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			sandBoxStage.show();
 
-			openPopupStages.add(sandBoxStage);
+			stageManager.add(sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
@@ -628,7 +621,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			browserStage.show();
 
-			openPopupStages.add(browserStage);
+			stageManager.add(browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -710,7 +703,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		tvs.show();
-		openPopupStages.add(tvs);
+		stageManager.add(tvs);
 	}
 
 	public void openTextViewer(String title, String content)
@@ -730,7 +723,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			ccs.show();
 
-			openPopupStages.add(ccs);
+			stageManager.add(ccs);
 		}
 		else
 		{
@@ -742,7 +735,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
 		jvs.show();
-		openPopupStages.add(jvs);
+		stageManager.add(jvs);
 	}
 
 	private void chooseHotSpotFile()
@@ -876,7 +869,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		textAreaLog.clear();
 	}
-	
+
 	private void refreshLog()
 	{
 		textAreaLog.appendText(logBuffer.toString());
@@ -895,11 +888,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		classTree.showTree();
 	}
 
-	// TODO refactor stages and pass IStageCloseListener instead of JITWatchUI
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		openPopupStages.remove(stage);
+		stageManager.remove(stage);
 
 		// map?
 		if (stage instanceof TimeLineStage)
@@ -917,7 +909,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			btnHisto.setDisable(false);
 			histoStage = null;
 		}
-		else if (stage instanceof ConfigStage)
+		else if (stage instanceof MainConfigStage)
 		{
 			btnConfigure.setDisable(false);
 			configStage = null;
