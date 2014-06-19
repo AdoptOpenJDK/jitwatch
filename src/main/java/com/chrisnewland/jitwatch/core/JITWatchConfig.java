@@ -46,6 +46,7 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_FREQ_INLINE_SIZE = "sandbox.freq.inline.size";
 	private static final String KEY_SANDBOX_MAX_INLINE_SIZE = "sandbox.max.inline.size";
 	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = "sandbox.print.assembly";
+	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = "sandbox.compiler.threshold";
 
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
@@ -61,6 +62,7 @@ public class JITWatchConfig
 	private int freqInlineSize;
 	private int maxInlineSize;
 	private boolean printAssembly;
+	private int compilerThreshold;
 
 	public JITWatchConfig()
 	{
@@ -129,10 +131,12 @@ public class JITWatchConfig
 		}
 		
 		freqInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
+		
 		maxInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
 	
 		printAssembly = loadBooleanFromProperty(loadProps, KEY_SANDBOX_PRINT_ASSEMBLY, true);
 
+		compilerThreshold = loadIntFromProperty(loadProps, KEY_SANDBOX_COMPILER_THRESHOLD,  JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 	}
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
@@ -196,10 +200,14 @@ public class JITWatchConfig
 		}
 		
 		saveProps.put(KEY_SANDBOX_FREQ_INLINE_SIZE, Integer.toString(freqInlineSize));
+	
 		saveProps.put(KEY_SANDBOX_MAX_INLINE_SIZE, Integer.toString(maxInlineSize));
 
 		saveProps.put(KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
 
+		saveProps.put(KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
+
+		
 		return saveProps;
 	}
 
@@ -375,5 +383,15 @@ public class JITWatchConfig
 	public void setPrintAssembly(boolean printAssembly)
 	{
 		this.printAssembly = printAssembly;
+	}
+	
+	public int getCompilerThreshold()
+	{
+		return compilerThreshold;
+	}
+
+	public void setCompilerThreshold(int compilationThreshold)
+	{
+		this.compilerThreshold = compilationThreshold;
 	}
 }

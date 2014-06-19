@@ -38,6 +38,8 @@ public class SandboxConfigStage extends Stage
 {
 	private TextField txtFreqInline;
 	private TextField txtMaxInline;
+	private TextField txtCompilerThreshold;
+
 	private CheckBox checkBoxPrintAssembly;
 	private static final int labelWidth = 150;
 
@@ -69,6 +71,7 @@ public class SandboxConfigStage extends Stage
 			public void handle(ActionEvent e)
 			{
 				config.setSandboxClassLocations(chooserClasses.getFiles());
+				
 				try
 				{
 					config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
@@ -85,6 +88,15 @@ public class SandboxConfigStage extends Stage
 				catch (NumberFormatException nfe)
 				{
 					logger.error("Bad MaxInlineSize value", nfe);
+				}
+				
+				try
+				{
+					config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
+				}
+				catch (NumberFormatException nfe)
+				{
+					logger.error("Bad CompilerThreshold value", nfe);
 				}
 				
 				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
@@ -116,15 +128,18 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(buildHBoxAssemblySyntax(config));
 
 		vbox.getChildren().add(buildHBoxTieredCompilation(config));
+		
+		HBox hboxCompilerSettings = new HBox();
+		//hboxCompilerSettings.setPadding(new Insets(0, 20, 0, 0));
+		hboxCompilerSettings.setSpacing(20);
 
-		vbox.getChildren().add(buildHBoxFreqInline(config));
-
-		vbox.getChildren().add(buildHBoxMaxInline(config));
+		buildHBoxFreqInline(hboxCompilerSettings, config);
+		buildHBoxMaxInline(hboxCompilerSettings, config);
+		buildHBoxCompilationThreshold(hboxCompilerSettings, config);
+		
+		vbox.getChildren().add(hboxCompilerSettings);
 
 		vbox.getChildren().add(hboxButtons);
-
-		// chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.5));
-		// hboxButtons.setPrefHeight(30);
 
 		setTitle("Sandbox Configuration");
 
@@ -262,36 +277,40 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-	private HBox buildHBoxFreqInline(final JITWatchConfig config)
+	private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtFreqInline = new TextField(Integer.toString(config.getFreqInlineSize()));
 		txtFreqInline.setMaxWidth(50);
+		txtFreqInline.setAlignment(Pos.BASELINE_RIGHT);
 
-		HBox hbox = new HBox();
+		Label label = new Label("-XX:FreqInlineSize:");
 
-		Label label = new Label("FreqInlineSize:");
-		label.setMinWidth(labelWidth);
-
-		hbox.getChildren().add(label);
-		hbox.getChildren().add(txtFreqInline);
-
-		return hbox;
+		hbCompilerSettings.getChildren().add(label);
+		hbCompilerSettings.getChildren().add(txtFreqInline);
 	}
 
-	private HBox buildHBoxMaxInline(final JITWatchConfig config)
+	private void buildHBoxMaxInline(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtMaxInline = new TextField(Integer.toString(config.getMaxInlineSize()));
 		txtMaxInline.setMaxWidth(50);
+		txtMaxInline.setAlignment(Pos.BASELINE_RIGHT);
 
-		HBox hbox = new HBox();
+		Label label = new Label("-XX:MaxInlineSize:");
 
-		Label label = new Label("MaxInlineSize:");
-		label.setMinWidth(labelWidth);
+		hbCompilerSettings.getChildren().add(label);
+		hbCompilerSettings.getChildren().add(txtMaxInline);
+	}
+	
+	private void buildHBoxCompilationThreshold(HBox hbCompilerSettings, final JITWatchConfig config)
+	{
+		txtCompilerThreshold = new TextField(Integer.toString(config.getCompilerThreshold()));
+		txtCompilerThreshold.setMaxWidth(70);
+		txtCompilerThreshold.setAlignment(Pos.BASELINE_RIGHT);
 
-		hbox.getChildren().add(label);
-		hbox.getChildren().add(txtMaxInline);
+		Label label = new Label("-XX:CompilationThreshold:");
 
-		return hbox;
+		hbCompilerSettings.getChildren().add(label);
+		hbCompilerSettings.getChildren().add(txtCompilerThreshold);
 	}
 
 	private CheckBox buildCheckBoxPrintAssembly(final JITWatchConfig config)

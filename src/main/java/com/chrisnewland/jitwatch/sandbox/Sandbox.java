@@ -226,6 +226,11 @@ public class Sandbox
 			options.add("-XX:MaxInlineSize="+logParser.getConfig().getMaxInlineSize());
 		}
 		
+		if (logParser.getConfig().getCompilerThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
+		{
+			options.add("-XX:CompilerThreshold="+logParser.getConfig().getCompilerThreshold());
+		}
+		
 		sandboxStage.log("Executing: " + classContainingMain);
 		sandboxStage.log("Classpath: " + StringUtil.listToString(classpath, File.pathSeparatorChar));
 		sandboxStage.log("VM options: " + StringUtil.listToString(options));
