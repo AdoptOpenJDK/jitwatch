@@ -16,6 +16,7 @@ import java.util.List;
 
 import com.chrisnewland.jitwatch.core.ILogParser;
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.JITWatchConfig.CompressedOops;
 import com.chrisnewland.jitwatch.core.JITWatchConfig.TieredCompilation;
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.IMetaMember;
@@ -212,6 +213,17 @@ public class Sandbox
 			options.add("-XX:+TieredCompilation");
 		}
 		else if (tieredMode == TieredCompilation.FORCE_NO_TIERED)
+		{
+			options.add("-XX:-TieredCompilation");
+		}
+		
+		CompressedOops oopsMode = logParser.getConfig().getCompressedOopsMode();
+		
+		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
+		{
+			options.add("-XX:+TieredCompilation");
+		}
+		else if (oopsMode == CompressedOops.FORCE_NO_COMPRESSED)
 		{
 			options.add("-XX:-TieredCompilation");
 		}

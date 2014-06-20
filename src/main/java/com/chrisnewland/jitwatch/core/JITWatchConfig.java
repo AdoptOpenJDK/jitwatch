@@ -24,6 +24,11 @@ public class JITWatchConfig
 	{
 		VM_DEFAULT, FORCE_TIERED, FORCE_NO_TIERED;
 	}
+	
+	public enum CompressedOops
+	{
+		VM_DEFAULT, FORCE_COMPRESSED, FORCE_NO_COMPRESSED;
+	}
 
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchConfig.class);
 
@@ -42,6 +47,7 @@ public class JITWatchConfig
 
 	private static final String KEY_SANDBOX_INTEL_MODE = "sandbox.intel.mode";
 	private static final String KEY_SANDBOX_TIERED_MODE = "sandbox.tiered.mode";
+	private static final String KEY_SANDBOX_COMPRESSED_OOPS_MODE = "sandbox.compressed.oops.mode";
 
 	private static final String KEY_SANDBOX_FREQ_INLINE_SIZE = "sandbox.freq.inline.size";
 	private static final String KEY_SANDBOX_MAX_INLINE_SIZE = "sandbox.max.inline.size";
@@ -59,6 +65,8 @@ public class JITWatchConfig
 	private String lastLogDir = null;
 	private boolean intelMode = false;
 	private TieredCompilation tieredCompilationMode;
+	private CompressedOops compressedOopsMode;
+
 	private int freqInlineSize;
 	private int maxInlineSize;
 	private boolean printAssembly;
@@ -130,6 +138,21 @@ public class JITWatchConfig
 			break;
 		}
 		
+		int oopsMode = Integer.parseInt(loadProps.getProperty(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
+
+		switch (oopsMode)
+		{
+		case 0:
+			compressedOopsMode = CompressedOops.VM_DEFAULT;
+			break;
+		case 1:
+			compressedOopsMode = CompressedOops.FORCE_COMPRESSED;
+			break;
+		case 2:
+			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
+			break;
+		}
+		
 		freqInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
 		
 		maxInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
@@ -191,6 +214,19 @@ public class JITWatchConfig
 			break;
 		case FORCE_NO_TIERED:
 			saveProps.put(KEY_SANDBOX_TIERED_MODE, "2");
+			break;
+		}
+		
+		switch (compressedOopsMode)
+		{
+		case VM_DEFAULT:
+			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0");
+			break;
+		case FORCE_COMPRESSED:
+			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "1");
+			break;
+		case FORCE_NO_COMPRESSED:
+			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
 		}
 
@@ -393,5 +429,15 @@ public class JITWatchConfig
 	public void setCompilerThreshold(int compilationThreshold)
 	{
 		this.compilerThreshold = compilationThreshold;
+	}
+	
+	public CompressedOops getCompressedOopsMode()
+	{
+		return compressedOopsMode;
+	}
+
+	public void setCompressedOopsMode(CompressedOops compressedOopsMode)
+	{
+		this.compressedOopsMode = compressedOopsMode;
 	}
 }

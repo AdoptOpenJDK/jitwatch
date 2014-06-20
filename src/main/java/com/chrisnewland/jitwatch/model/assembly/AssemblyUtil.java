@@ -27,7 +27,7 @@ public class AssemblyUtil
 	{
 	}
 
-	public static AssemblyMethod parseAssembly(String asm)
+	public static AssemblyMethod parseAssembly(final String asm)
 	{
 		AssemblyMethod method = new AssemblyMethod();
 
@@ -41,21 +41,21 @@ public class AssemblyUtil
 
 		for (String line : lines)
 		{			
-			line = line.trim();
+			String cleanLine = line.replace(ENTITY_APOS, S_QUOTE).trim();
 
-			if (line.startsWith(S_HASH))
+			if (cleanLine.startsWith(S_HASH))
 			{
-				headerBuilder.append(line).append(S_NEWLINE);
+				headerBuilder.append(cleanLine).append(S_NEWLINE);
 			}
-			else if (line.startsWith(S_OPEN_SQUARE))
+			else if (cleanLine.startsWith(S_OPEN_SQUARE))
 			{
 				method.addBlock(currentBlock);
 				currentBlock = new AssemblyBlock();
-				currentBlock.setTitle(line);
+				currentBlock.setTitle(cleanLine);
 			}
-			else if (line.startsWith(S_ASSEMBLY_ADDRESS))
+			else if (cleanLine.startsWith(S_ASSEMBLY_ADDRESS))
 			{
-				AssemblyInstruction instr = createInstruction(line);
+				AssemblyInstruction instr = createInstruction(cleanLine);
 
 				currentBlock.addInstruction(instr);
 
@@ -66,14 +66,14 @@ public class AssemblyUtil
 				// extended comment
 				if (lastInstruction != null)
 				{
-					if (line.length() > 0)
+					if (cleanLine.length() > 0)
 					{
-						lastInstruction.addCommentLine(line);
+						lastInstruction.addCommentLine(cleanLine);
 					}
 				}
 				else
 				{
-					logger.error("Found comment but lastInstruction is null: {}", line);
+					logger.error("Found comment but lastInstruction is null: {}", cleanLine);
 				}
 			}
 		}
@@ -85,7 +85,7 @@ public class AssemblyUtil
 		return method;
 	}
 
-	public static AssemblyInstruction createInstruction(String line)
+	public static AssemblyInstruction createInstruction(final String line)
 	{
 		AssemblyInstruction instr = null;
 

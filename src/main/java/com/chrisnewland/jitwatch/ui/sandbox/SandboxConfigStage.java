@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.chrisnewland.jitwatch.core.JITWatchConfig;
+import com.chrisnewland.jitwatch.core.JITWatchConfig.CompressedOops;
 import com.chrisnewland.jitwatch.core.JITWatchConfig.TieredCompilation;
 import com.chrisnewland.jitwatch.ui.FileChooserList;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
@@ -51,7 +52,7 @@ public class SandboxConfigStage extends Stage
 
 		VBox vbox = new VBox();
 
-		vbox.setPadding(new Insets(10));
+		vbox.setPadding(new Insets(15));
 		vbox.setSpacing(10);
 
 		final FileChooserList chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath",
@@ -129,6 +130,8 @@ public class SandboxConfigStage extends Stage
 
 		vbox.getChildren().add(buildHBoxTieredCompilation(config));
 		
+		vbox.getChildren().add(buildHBoxCompressedOops(config));
+		
 		HBox hboxCompilerSettings = new HBox();
 		//hboxCompilerSettings.setPadding(new Insets(0, 20, 0, 0));
 		hboxCompilerSettings.setSpacing(20);
@@ -143,7 +146,7 @@ public class SandboxConfigStage extends Stage
 
 		setTitle("Sandbox Configuration");
 
-		Scene scene = new Scene(vbox, 700, 400);
+		Scene scene = new Scene(vbox, 740, 480);
 
 		setScene(scene);
 
@@ -277,6 +280,79 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
+	private HBox buildHBoxCompressedOops(final JITWatchConfig config)
+	{
+		final RadioButton rbVMDefault = new RadioButton("VM Default");
+		final RadioButton rbForceCompressed = new RadioButton("-XX:+UseCompressedOops");
+		final RadioButton rbForceNoCompressed = new RadioButton("-XX:-UseCompressedOops");
+
+		final ToggleGroup groupOops = new ToggleGroup();
+
+		rbVMDefault.setStyle("-fx-padding:0px 8px 0px 0px");
+		rbForceCompressed.setStyle("-fx-padding:0px 8px 0px 0px");
+
+		CompressedOops oopsMode = config.getCompressedOopsMode();
+
+		switch (oopsMode)
+		{
+		case VM_DEFAULT:
+			rbVMDefault.setSelected(true);
+			rbForceCompressed.setSelected(false);
+			rbForceNoCompressed.setSelected(false);
+			break;
+		case FORCE_COMPRESSED:
+			rbVMDefault.setSelected(false);
+			rbForceCompressed.setSelected(true);
+			rbForceNoCompressed.setSelected(false);
+			break;
+		case FORCE_NO_COMPRESSED:
+			rbVMDefault.setSelected(false);
+			rbForceCompressed.setSelected(false);
+			rbForceNoCompressed.setSelected(true);
+			break;
+		}
+
+		rbVMDefault.setToggleGroup(groupOops);
+		rbForceCompressed.setToggleGroup(groupOops);
+		rbForceNoCompressed.setToggleGroup(groupOops);
+
+		groupOops.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				if (groupOops.getSelectedToggle() != null)
+				{
+					if (groupOops.getSelectedToggle().equals(rbVMDefault))
+					{
+						config.setCompressedOopsMode(CompressedOops.VM_DEFAULT);
+					}
+					else if (groupOops.getSelectedToggle().equals(rbForceCompressed))
+					{
+						config.setCompressedOopsMode(CompressedOops.FORCE_COMPRESSED);
+					}
+					else if (groupOops.getSelectedToggle().equals(rbForceNoCompressed))
+					{
+						config.setCompressedOopsMode(CompressedOops.FORCE_NO_COMPRESSED);
+					}
+				}
+			}
+		});
+
+		HBox hbox = new HBox();
+
+		Label lblMode = new Label("Compressed Oops:");
+		lblMode.setMinWidth(labelWidth);
+
+		hbox.getChildren().add(lblMode);
+
+		hbox.getChildren().add(rbVMDefault);
+		hbox.getChildren().add(rbForceCompressed);
+		hbox.getChildren().add(rbForceNoCompressed);
+
+		return hbox;
+	}
+	
 	private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtFreqInline = new TextField(Integer.toString(config.getFreqInlineSize()));

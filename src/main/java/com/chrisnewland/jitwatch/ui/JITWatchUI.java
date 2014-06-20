@@ -507,7 +507,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
+		log("Welcome to JITWatch by Chris Newland.\n");
+		log("Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
