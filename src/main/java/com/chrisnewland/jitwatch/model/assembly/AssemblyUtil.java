@@ -41,7 +41,7 @@ public class AssemblyUtil
 
 		for (String line : lines)
 		{			
-			String cleanLine = line.replace(ENTITY_APOS, S_QUOTE).trim();
+			String cleanLine = line.replace(S_ENTITY_APOS, S_QUOTE).trim();
 
 			if (cleanLine.startsWith(S_HASH))
 			{

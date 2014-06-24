@@ -65,6 +65,8 @@ public interface IMetaMember
 	String getReturnTypeName();
 	String[] getParamTypeNames();
 
+	boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes);
+	
 	boolean matches(String input);
 
 	AssemblyMethod getAssembly();

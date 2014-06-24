@@ -75,7 +75,7 @@ public class CompileChainStage extends Stage
     }
 
     public void redraw()
-    {
+    {  	
         show(rootNode, X_OFFSET, Y_OFFSET, 0);
         
         if (rootNode.getChildren().size() == 0)

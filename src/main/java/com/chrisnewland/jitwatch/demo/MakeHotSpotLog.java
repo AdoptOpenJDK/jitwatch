@@ -35,7 +35,12 @@ public class MakeHotSpotLog
 		tooBigToInline(iterations);
 		testSort();
 		testCallChain(iterations);
-		testCallChain2(iterations);
+		
+		long result = testCallChainReturn(iterations);
+		
+		// ensure code not eliminated by using result
+		System.out.println("testCallChainReturn: " + result);
+		
 		testCallChain3();
 		testLeaf(iterations);
 		testToUpperCase(iterations);
@@ -300,17 +305,17 @@ public class MakeHotSpotLog
 		return count - 3;
 	}
 
-	private void testCallChain2(long iterations)
+	public long testCallChainReturn(long iterations)
 	{
 		long count = 0;
 
 		for (int i = 0; i < iterations; i++)
 		{
-			count = chainC1(count);
-			count = chainC2(count);
+			count = chainA1(count);
+			count = chainB1(count);
 		}
 
-		System.out.println("testCallChain2: " + count);
+		return count;
 	}
 
 	private boolean test(int count, int iterations)
