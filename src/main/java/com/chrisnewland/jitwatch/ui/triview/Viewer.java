@@ -275,7 +275,7 @@ public class Viewer extends VBox
 	
 	private void unhighlightPrevious()
 	{
-		if (lastScrollIndex != -1)
+		if (lastScrollIndex >= 0 && lastScrollIndex < vBoxRows.getChildren().size())
 		{
 			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
@@ -287,7 +287,7 @@ public class Viewer extends VBox
 	{
 		unhighlightPrevious();
 
-		if (index != -1)
+		if (index >= 0 && index < vBoxRows.getChildren().size())
 		{
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
