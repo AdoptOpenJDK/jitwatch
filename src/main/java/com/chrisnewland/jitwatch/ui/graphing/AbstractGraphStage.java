@@ -3,8 +3,9 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.graphing;
 
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
 import javafx.beans.value.ChangeListener;
@@ -20,24 +21,29 @@ import javafx.stage.WindowEvent;
 public abstract class AbstractGraphStage extends Stage
 {
 	protected Canvas canvas;
-    protected GraphicsContext gc;
-    protected JITWatchUI parent;
+	protected GraphicsContext gc;
+	protected JITWatchUI parent;
 
-	protected static final double GRAPH_GAP_LEFT = 60.5;
+	protected static double GRAPH_GAP_LEFT = 20.5;
 	protected static final double GRAPH_GAP_RIGHT = 20.5;
 	protected static final double GRAPH_GAP_Y = 20.5;
 
 	static final int[] Y_SCALE = new int[21];
 
-    protected double width;
-    protected double height;
-    protected double chartWidth;
-    protected double chartHeight;
+	protected double width;
+	protected double height;
+	protected double chartWidth;
+	protected double chartHeight;
 
-    protected long minX;
-    protected long maxX;
-    protected long minY;
-    protected long maxY;
+	protected long minX;
+	protected long maxX;
+	protected long minY;
+	protected long maxY;
+	
+	protected long minXQ;
+	protected long maxXQ;
+	protected long minYQ;
+	protected long maxYQ;
 
 	private boolean xAxisTime = false;
 
@@ -109,7 +115,7 @@ public abstract class AbstractGraphStage extends Stage
 	}
 
 	protected void drawAxes()
-	{
+	{		
 		if (xAxisTime)
 		{
 			drawXAxisTime();
@@ -121,20 +127,24 @@ public abstract class AbstractGraphStage extends Stage
 
 		drawYAxis();
 	}
-
+	
 	private void drawXAxisTime()
 	{
 		long xInc = getXStepTime();
+		
+		minXQ = (minX / xInc) * xInc;
 
-		long gridX = minX;
+		maxXQ =  (1 + (maxX / xInc)) * xInc;
 
-		while (gridX < maxX)
+		long gridX = minXQ;
+
+		while (gridX <= maxX)
 		{
 			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
 			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
 
-			boolean showMillis = gridX >= 0 && gridX < 5000 && xInc < 5000;
-
+			boolean showMillis = maxX  < 5000;
+			
 			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
 
 			gridX += xInc;
@@ -145,9 +155,13 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		long xInc = findScale(maxX - minX);
 
-		long gridX = minX;
+		minXQ = (minX / xInc) * xInc;
 
-		while (gridX < maxX)
+		maxXQ =  (1 + (maxX / xInc)) * xInc;
+		
+		long gridX = minXQ;
+
+		while (gridX <= maxX)
 		{
 			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
 			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
@@ -161,17 +175,25 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		long yInc = findScale(maxY - minY);
 
-		long minYCopy = (minY / yInc) * yInc; // quantise start value
+		minYQ = (minY / yInc) * yInc;
 
-		long gridY = minYCopy;
+		maxYQ =  (1 + (maxY / yInc)) * yInc;
+		
+		long gridY = minYQ;
 
-		while (gridY < maxY)
+		int maxYLabelWidth = StringUtil.formatThousands(Long.toString(maxYQ)).length();
+
+		GRAPH_GAP_LEFT = Math.max(40.5, maxYLabelWidth*7);
+		
+		double yLabelX = GRAPH_GAP_LEFT - (1 + maxYLabelWidth) * 6;
+
+		while (gridY <= maxYQ)
 		{
-			if (gridY >= minY)
+			if (gridY >= minYQ)
 			{
 				double y = GRAPH_GAP_Y + normaliseY(gridY);
 				gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
-				gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(2), fix(y + 2));
+				gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(yLabelX), fix(y + 2));
 			}
 
 			gridY += yInc;
@@ -180,7 +202,7 @@ public abstract class AbstractGraphStage extends Stage
 
 	private long getXStepTime()
 	{
-		long rangeMillis = maxX - minX;
+		long rangeMillis = maxXQ - minXQ;
 
 		int requiredLines = 6;
 
@@ -220,12 +242,12 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected double normaliseX(double value)
 	{
-		return normalise(value, minX, maxX, chartWidth, false);
+		return normalise(value, minXQ, maxXQ, chartWidth, false);
 	}
 
 	protected double normaliseY(double value)
 	{
-		return normalise(value, minY, maxY, chartHeight, true);
+		return normalise(value, minYQ, maxYQ, chartHeight, true);
 	}
 
 	protected double normalise(double value, double min, double max, double size, boolean invert)
@@ -250,16 +272,6 @@ public abstract class AbstractGraphStage extends Stage
 		}
 
 		return result;
-	}
-
-	protected void padY(double percentOfRange)
-	{
-		double rangePercent = ((double) maxY - (double) minY) / (double) maxY * 100;
-
-		double spacePercent = rangePercent * percentOfRange / 100;
-
-		minY *= (1.0 - spacePercent / 100.0);
-		maxY *= (1.0 + spacePercent / 100.0);
 	}
 
 	// prevent blurry lines in JavaFX

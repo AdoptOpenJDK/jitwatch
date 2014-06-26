@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.graphing;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +14,7 @@ import com.chrisnewland.jitwatch.histo.Histo;
 import com.chrisnewland.jitwatch.histo.IHistoVisitable;
 import com.chrisnewland.jitwatch.histo.InlineSizeHistoVisitable;
 import com.chrisnewland.jitwatch.model.IReadOnlyJITDataModel;
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
