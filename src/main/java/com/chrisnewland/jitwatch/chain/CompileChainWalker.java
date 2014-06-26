@@ -33,39 +33,42 @@ public class CompileChainWalker
 	}
 
 	public CompileNode buildCallTree(IMetaMember mm)
-	{		
+	{
+		logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+
 		CompileNode root = null;
-		
-		if (mm.isCompiled())
-		{			
-			Journal journal = mm.getJournal();
 
-			Task lastTaskTag = JournalUtil.getLastTask(journal);
+		Journal journal = mm.getJournal();
 
-			if (lastTaskTag != null)
+		Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+		if (lastTaskTag != null)
+		{
+			logger.debug("lastTaskTag not null");
+
+			parseDictionary = lastTaskTag.getParseDictionary();
+
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			if (parsePhase != null)
 			{
-				parseDictionary = lastTaskTag.getParseDictionary();
+				logger.debug("parsePhase not null");
 
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-				if (parsePhase != null)
+				for (Tag parseTag : parseTags)
 				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+					String id = parseTag.getAttribute(ATTR_METHOD);
 
-					for (Tag parseTag : parseTags)
-					{						
-						String id = parseTag.getAttribute(ATTR_METHOD);
-
-						// only initialise on first parse tag.
-						// there may be multiple if late_inline
-						// is detected
-						if (root == null)
-						{
-							root = new CompileNode(mm, id);
-						}
-						
-						processParseTag(parseTag, root);
+					// only initialise on first parse tag.
+					// there may be multiple if late_inline
+					// is detected
+					if (root == null)
+					{
+						root = new CompileNode(mm, id);
 					}
+
+					processParseTag(parseTag, root);
 				}
 			}
 		}
@@ -74,7 +77,9 @@ public class CompileChainWalker
 	}
 
 	private void processParseTag(Tag parseTag, CompileNode parentNode)
-	{		
+	{
+		logger.info("processParseTag");
+
 		String methodID = null;
 		boolean inlined = false;
 		String inlineReason = null;
@@ -89,7 +94,7 @@ public class CompileChainWalker
 		{
 			String tagName = child.getName();
 			Map<String, String> tagAttrs = child.getAttrs();
-			
+
 			switch (tagName)
 			{
 			case TAG_BC:
@@ -154,10 +159,10 @@ public class CompileChainWalker
 
 				if (childCall != null)
 				{
-					CompileNode childNode = new CompileNode(childCall, childMethodID);					
-					
+					CompileNode childNode = new CompileNode(childCall, childMethodID);
+
 					parentNode.addChild(childNode);
-					
+
 					if (methodID != null && methodID.equals(childMethodID))
 					{
 						childNode.setInlined(inlined, inlineReason);

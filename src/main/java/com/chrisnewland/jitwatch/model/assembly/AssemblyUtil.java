@@ -71,10 +71,6 @@ public class AssemblyUtil
 						lastInstruction.addCommentLine(cleanLine);
 					}
 				}
-				else
-				{
-					logger.error("Found comment but lastInstruction is null: {}", cleanLine);
-				}
 			}
 		}
 

@@ -717,21 +717,32 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public void openCompileChain(IMetaMember member)
 	{
-		CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
-
-		CompileNode root = walker.buildCallTree(member);
-
-		if (root != null)
+		if (member.isCompiled())
 		{
-			CompileChainStage ccs = new CompileChainStage(this, root);
+			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			ccs.show();
+			CompileNode root = walker.buildCallTree(member);
 
-			stageManager.add(ccs);
+			if (root != null)
+			{
+				CompileChainStage ccs = new CompileChainStage(this, root);
+
+				ccs.show();
+
+				stageManager.add(ccs);
+			}
+			else
+			{
+				logger.error("Could not open CompileChain - root node was null");
+			}
 		}
 		else
 		{
-			logger.error("Could not open CompileChain - root node was null");
+			Dialogs.showOKDialog(
+					stage,
+					"Root method is not compiled",
+					"Can only display compile chain where the root method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
 	}
 

@@ -23,6 +23,197 @@ import com.chrisnewland.jitwatch.util.ClassUtil;
 
 public class TestCompileChain
 {
+	//@Test test is correct but disabled to keep CI builds working for J7
+	public void testJava8TieredCompilation()
+	{
+		String[] lines = new String[]{
+				"<task osr_bci='8' method='com/chrisnewland/jitwatch/demo/MakeHotSpotLog testCallChain3 ()V' compile_kind='osr' level='3' bytes='71' count='1' backedge_count='60494' stamp='13.088' compile_id='127' iicount='1'>",
+				"<phase name='buildIR' stamp='13.088'>",
+				"<type name='void' id='680'/>",
+				"<klass name='com/chrisnewland/jitwatch/demo/MakeHotSpotLog' flags='1' id='776'/>",
+				"<method bytes='71' name='testCallChain3' flags='2' holder='776' id='777' iicount='1' return='680'/>",
+				"<parse method='777' stamp='13.088'><!-- void com.chrisnewland.jitwatch.demo.MakeHotSpotLog.testCallChain3() -->",
+				"<bc code='183' bci='18'/>",
+				"<type name='boolean' id='672'/>",
+				"<type name='int' id='678'/>",
+				"<method level='4' bytes='18' name='test' flags='2' holder='776' arguments='678 678' id='779' compile_id='125' compiler='C2' iicount='7613' return='672'/>",
+				"<call method='779' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='26'/>",
+				"<type name='long' id='679'/>",
+				"<method level='4' bytes='16' name='chainC1' flags='2' holder='776' arguments='679' id='781' compile_id='126' compiler='C2' iicount='32985' return='679'/>",
+				"<call method='781' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='5'/>",
+				"<method level='2' bytes='6' name='chainC2' flags='2' holder='776' arguments='679' id='783' compile_id='123' compiler='C1' iicount='32985' return='679'/>",
+				"<call method='783' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='12'/>",
+				"<method level='3' bytes='6' name='chainC3' flags='2' holder='776' arguments='679' id='785' compile_id='124' compiler='C1' iicount='32985' return='679'/>",
+				"<call method='785' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='35'/>",
+				"<call method='783' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='52'/>",
+				"<klass name='java/lang/StringBuilder' flags='17' id='749'/>",
+				"<method bytes='7' name='<init>' flags='1' holder='749' id='789' iicount='117' return='680'/>",
+				"<call method='789' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='3'/>",
+				"<klass name='java/lang/AbstractStringBuilder' flags='1024' id='747'/>",
+				"<method bytes='12' name='<init>' flags='0' holder='747' arguments='678' id='791' iicount='130' return='680'/>",
+				"<call method='791' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='1'/>",
+				"<klass name='java/lang/Object' flags='1' id='685'/>",
+				"<method level='1' bytes='1' name='<init>' flags='1' holder='685' id='793' compile_id='12' compiler='C1' iicount='749967' return='680'/>",
+				"<call method='793' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='182' bci='57'/>",
+				"<klass name='java/lang/String' flags='17' id='686'/>",
+				"<method bytes='8' name='append' flags='1' holder='749' arguments='686' id='796' iicount='215' return='749'/>",
+				"<call method='796' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='2'/>",
+				"<method bytes='50' name='append' flags='1' holder='747' arguments='686' id='798' iicount='248' return='747'/>",
+				"<call method='798' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<bc code='182' bci='61'/>",
+				"<method bytes='8' name='append' flags='1' holder='749' arguments='679' id='800' iicount='9' return='749'/>",
+				"<call method='800' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='2'/>",
+				"<method bytes='70' name='append' flags='1' holder='747' arguments='679' id='802' iicount='9' return='747'/>",
+				"<call method='802' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<bc code='182' bci='64'/>",
+				"<method bytes='17' name='toString' flags='1' holder='749' id='804' iicount='116' return='686'/>",
+				"<call method='804' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='13'/>",
+				"<klass name='[C' flags='1041' id='765'/>",
+				"<method bytes='62' name='<init>' flags='1' holder='686' arguments='765 678 678' id='806' iicount='278' return='680'/>",
+				"<call method='806' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<bc code='182' bci='67'/>",
+				"<klass name='java/io/PrintStream' flags='1' id='787'/>",
+				"<method bytes='24' name='println' flags='1' holder='787' arguments='686' id='808' iicount='9' return='680'/>",
+				"<call method='808' instr='invokevirtual'/>",
+				"<dependency ctxk='787' type='leaf_type'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='182' bci='6'/>",
+				"<method bytes='13' name='print' flags='1' holder='787' arguments='686' id='810' iicount='9' return='680'/>",
+				"<call method='810' instr='invokevirtual'/>",
+				"<dependency ctxk='787' type='leaf_type'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<bc code='183' bci='9'/>",
+				"<method bytes='83' name='write' flags='2' holder='787' arguments='686' id='812' iicount='9' return='680'/>",
+				"<call method='812' instr='invokespecial'/>",
+				"<dependency ctxk='787' type='leaf_type'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<bc code='183' bci='10'/>",
+				"<method bytes='73' name='newLine' flags='2' holder='787' id='816' iicount='9' return='680'/>",
+				"<call method='816' instr='invokespecial'/>",
+				"<dependency ctxk='787' type='leaf_type'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='13.091'/>",
+				"</parse>",
+				"<phase name='optimize_blocks' stamp='13.091'>",
+				"<phase_done name='optimize_blocks' stamp='13.091'/>",
+				"</phase>",
+				"<phase name='optimize_null_checks' stamp='13.092'>",
+				"<phase_done name='optimize_null_checks' stamp='13.092'/>",
+				"</phase>",
+				"<phase_done name='buildIR' stamp='13.092'/>",
+				"</phase>",
+				"<phase name='emit_lir' stamp='13.092'>",
+				"<phase name='lirGeneration' stamp='13.092'>",
+				"<phase_done name='lirGeneration' stamp='13.092'/>",
+				"</phase>",
+				"<phase name='linearScan' stamp='13.092'>",
+				"<phase_done name='linearScan' stamp='13.094'/>",
+				"</phase>",
+				"<phase_done name='emit_lir' stamp='13.094'/>",
+				"</phase>",
+				"<phase name='codeemit' stamp='13.094'>",
+				"<phase_done name='codeemit' stamp='13.094'/>",
+				"</phase>",
+				"<phase name='codeinstall' stamp='13.094'>",
+				"<dependency ctxk='787' type='leaf_type'/>",
+				"<phase_done name='codeinstall' stamp='13.173'/>",
+				"</phase>",
+				"<code_cache nmethods='124' free_code_cache='250227008' adapters='142' total_blobs='349' stamp='13.088'/>",
+				"<task_done inlined_bytes='142' success='1' count='1' backedge_count='100000' stamp='13.173' nmsize='3624'/>",
+				"</task>"
+		};
+		
+		JITDataModel testModel = new JITDataModel();
+
+		String methodName = "testCallChain3";
+		String fqClassName = "com.chrisnewland.jitwatch.demo.MakeHotSpotLog";
+		testModel.buildMetaClass(fqClassName, com.chrisnewland.jitwatch.demo.MakeHotSpotLog.class);
+
+		try
+		{
+			String fqClassNameSB = "java.lang.AbstractStringBuilder";
+			testModel.buildMetaClass(fqClassNameSB, ClassUtil.loadClassWithoutInitialising("java.lang.AbstractStringBuilder"));
+		}
+		catch (ClassNotFoundException cnfe)
+		{
+			fail();
+		}
+
+		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
+		IMetaMember testMember = metaClass.getMemberFromSignature(methodName, void.class, new Class<?>[0]);
+
+		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
+		
+//		private void testCallChain3()
+//		{
+//		  long count = 0;
+//		  int iterations = 100_000;
+//		  for (int i = 0; i < iterations; i++)
+//		  {
+//		     if (test(i, iterations))
+//		     {
+//		       count = chainC1(count);
+//		     }
+//		     else
+//		     {
+//		       count = chainC2(count);
+//		     }
+//		   }
+//		   System.out.println("testCallChain2: " + count);
+//		}
+		
+		// root
+		// -> test() 
+		// -> chainC1() -> chainC2()
+		//              -> chainC3()
+		// -> chainC2()
+		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
+		// -> append()
+		// -> append()
+		// -> toString()
+		// -> println
+
+		List<CompileNode> rootChildren = root.getChildren();
+		
+		assertEquals(8, rootChildren.size());
+		
+		int pos = 0;
+		
+		assertEquals("test", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("chainC1", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("chainC2", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("toString", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
+	}
+	
 	@Test
 	public void testJava7LateInlineRegression()
 	{
