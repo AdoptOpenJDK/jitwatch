@@ -52,7 +52,7 @@ export notiered="-XX:-TieredCompilation"
 # Enable tiered compilation
 export tiered="-XX:+TieredCompilation"
 
-export OPTIONAL_SWITCHES="$assembly $notiered"
+export OPTIONAL_SWITCHES="$assembly"
 
 unamestr=`uname`
 
