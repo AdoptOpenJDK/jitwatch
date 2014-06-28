@@ -255,7 +255,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			stats.incCountConstructor();
 			
 			logger.debug("Added MetaConstructor: {}", metaConstructor);
-
 		}
 	}
 
