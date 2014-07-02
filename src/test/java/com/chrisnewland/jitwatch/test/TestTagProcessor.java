@@ -9,13 +9,13 @@ import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.util.StringUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_RELEASE;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -260,7 +260,7 @@ public class TestTagProcessor
 
     /*
         Scenario: Parsing a line containing partially completed tag
-            Given an line containing a partially completed tag is available
+            Given a line containing a partially completed tag is available
             When the tag processor parses such a line
             Then no tag objects are returned
      */
@@ -281,26 +281,117 @@ public class TestTagProcessor
                 is(equalTo(expectedParseResult)));
     }
 
+
     /*
-        Scenario: Parsing a line containing a tag
-            Given an line containing a tag is available
+        Scenario: Parsing a line containing different open and close tags
+            Given a line containing an open tag of type 'task'
+            And another closing tag of type 'tag'
             When the tag processor parses such a line
-            Then a tag object is returned
-     */
+            Then no tags should be returned
+    */
     @Test
-    public void givenLineContainingATypeTag_WhenTheTagProcessorParsesIt_ThenAResultIsReturned() {
+    public void givenALineWithTwoDifferentOpenCloseTags_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
         // Given
-        String withTypeTag = "<type id='622' name='void'/>";
-        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTag);
-        boolean selfClosing = true;
-        Tag expectedParseResult = new Tag("type", attrs, selfClosing);
+        Tag expectedParseResult = null;
+        String aLineWithOpeningTag = "<loop idx='1012' inner_loop='1' >";
+        String aLineWithClosingTag = "</line>";
 
         // When
         TagProcessor tagProcessor = new TagProcessor();
-        Tag actualParseResult = tagProcessor.processLine(withTypeTag);
+        tagProcessor.processLine(aLineWithOpeningTag);
+        Tag actualTag = tagProcessor.processLine(aLineWithClosingTag);
 
         // Then
-        assertThat("The line should have been parsed correctly, producing a tag.",
+        assertThat("No tags should have been returned.",
+                actualTag,
+                is(equalTo(expectedParseResult)));
+    }
+
+
+    /*
+        Scenario: Parsing a line containing an opening tag without a closing angle bracket (invalid)
+            Given a line containing an open tag
+            And the closing angle bracket of the tag is missing
+            When the tag processor parses such a line
+            Then no tags should be returned
+    */
+    @Test
+    public void givenALineWithAnOpenTagWithNoCloseAngleBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
+        // Given
+        Tag expectedParseResult = null;
+        String aLineWithOpeningTagWithoutClosingAngleBracket = "<loop";
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualTag = tagProcessor.processLine(aLineWithOpeningTagWithoutClosingAngleBracket);
+
+        // Then
+        assertThat("No tags should have been returned.",
+                actualTag,
+                is(equalTo(expectedParseResult)));
+    }
+
+    /*
+        Scenario: Parsing nested self closing lines (with a parent)
+            Given a line containing an open tag
+            And the closing angle bracket of the tag is missing
+            When the tag processor parses such a line
+            Then nested tags should be returned
+    */
+    @Test
+    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenNestedTagsAreReturned() {
+        // Given
+        String expectedParseResult =
+                "<loop inner_loop=\"1\" idx=\"1012\">\n" +
+                "  <loop inner_loop=\"2\" idx=\"1013\">\n" +
+                "    <loop/>\n  </loop>\n</loop>\n";
+
+        String[] lines = new String[] {
+                "<loop idx='1012' inner_loop='1' >",
+                "<loop idx='1013' inner_loop='2' >",
+                "<loop />",
+                "</loop>",
+                "</loop>"
+        };
+
+        // When
+        Tag actualTag = null;
+        TagProcessor tagProcessor = new TagProcessor();
+        for (String eachLine: lines) {
+            actualTag = tagProcessor.processLine(eachLine);
+        }
+
+        // Then
+        assertThat("Nested tags should have been returned.",
+                actualTag.toString(),
+                is(equalTo(expectedParseResult)));
+    }
+
+    /*
+        Scenario: Parsing a line containing a tag of type 'Task'
+            Given a line containing a tag of type 'Task' is available
+            When the tag processor parses such a line
+            Then a task object is returned
+     */
+    @Test
+    @Ignore
+    public void givenLineContainingATypeTask_WhenTheTagProcessorParsesIt_ThenATaskTagIsReturned() {
+        // Given
+         String withTypeTask = "<task compile_id='1' compile_kind='osr' method='com/chrisnewland/jitwatch/demo/MakeHotSpotLog " +
+         "addVariable (I)V' bytes='41' count='10000' backedge_count='5438' iicount='1' osr_bci='5' stamp='0.164'>";
+        //String withTypeTask = "</task>";
+        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTask);
+        boolean selfClosing = (withTypeTask.charAt(withTypeTask.length() - 2) == JITWatchConstants.C_SLASH);
+        int indexEndName = withTypeTask.indexOf(C_CLOSE_ANGLE);
+        String name = withTypeTask.substring(1, indexEndName);
+        Tag expectedParseResult = new Tag(name, attrs, selfClosing);
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+        Tag actualParseResult = tagProcessor.processLine(withTypeTask);
+
+        // Then
+        assertThat("The line should have been parsed correctly, producing a tag..",
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }

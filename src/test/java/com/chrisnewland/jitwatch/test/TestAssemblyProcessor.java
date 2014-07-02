@@ -5,18 +5,6 @@
  */
 package com.chrisnewland.jitwatch.test;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.LOADED;
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
-import static org.junit.Assert.*;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.chrisnewland.jitwatch.core.AssemblyProcessor;
 import com.chrisnewland.jitwatch.core.IMemberFinder;
 import com.chrisnewland.jitwatch.model.IMetaMember;
@@ -26,12 +14,42 @@ import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyBlock;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyInstruction;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.LOADED;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 public class TestAssemblyProcessor
 {
-	private Map<String, IMetaMember> map;
+    private static final int ZERO = 0;
+    public static final IMetaMember NO_MEMBER = null;
+    private static final int ONE = 1;
+    private Map<String, IMetaMember> map;
+    private IMemberFinder memberFinder;
 
-	private IMemberFinder memberFinder;
+    private static final String[] SINGLE_ASSEMBLY_METHOD = new String[]{
+            "Decoding compiled method 0x00007f7d73364190:",
+            "Code:",
+            "[Disassembling for mach=&apos;i386:x86-64&apos;]",
+            "[Entry Point]",
+            "[Verified Entry Point]",
+            "[Constants]",
+            "  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;",
+            "  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
+            "  0x00007f7d733642e5: data32 data32 nopw 0x0(%rax,%rax,1)",
+            "  0x00007f7d733642f0: mov    %eax,-0x14000(%rsp)",
+            "  0x00007f7d733642f7: push   %rbp",
+            "  0x00007f7d733642f8: sub    $0x20,%rsp"
+    };
 
 	@Before
 	public void setup()
@@ -61,32 +79,9 @@ public class TestAssemblyProcessor
 	@Test
 	public void testSingleAsmMethod()
 	{
-		String[] lines = new String[]{
-				"Decoding compiled method 0x00007f7d73364190:",
-				"Code:",
-				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
-				"[Entry Point]",
-				"[Verified Entry Point]",
-				"[Constants]",
-				"  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;",
-				"  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
-				"  0x00007f7d733642e5: data32 data32 nopw 0x0(%rax,%rax,1)",
-				"  0x00007f7d733642f0: mov    %eax,-0x14000(%rsp)",
-				"  0x00007f7d733642f7: push   %rbp",
-				"  0x00007f7d733642f8: sub    $0x20,%rsp"
-		};
-		
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
-		
-		for (String line : lines)
-		{
-			if (!line.startsWith(S_OPEN_ANGLE) && !line.startsWith(LOADED))
-			{
-				asmProcessor.handleLine(line);
-			}
-		}
-		
-		asmProcessor.complete();
+		String[] lines = SINGLE_ASSEMBLY_METHOD;
+
+        performAssemblyParsingOn(lines);
 		
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
 		
@@ -106,8 +101,22 @@ public class TestAssemblyProcessor
 		
 		assertEquals(5, instructions.size());
 	}
-	
-	@Test
+
+    private void performAssemblyParsingOn(String[] lines) {
+        AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
+
+        for (String line : lines)
+        {
+            if (!line.startsWith(S_OPEN_ANGLE) && !line.startsWith(LOADED))
+            {
+                asmProcessor.handleLine(line);
+            }
+        }
+
+        asmProcessor.complete();
+    }
+
+    @Test
 	public void testSingleAsmMethodInterrupted()
 	{
 		String[] lines = new String[]{
@@ -131,18 +140,8 @@ public class TestAssemblyProcessor
 				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}",
 				"  0x00007f7d733640cd: data32 xchg %ax,%ax"
 		};
-		
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
-		
-		for (String line : lines)
-		{
-			if (!line.startsWith(S_OPEN_ANGLE) && !line.startsWith(LOADED))
-			{
-				asmProcessor.handleLine(line);
-			}
-		}
-		
-		asmProcessor.complete();
+
+        performAssemblyParsingOn(lines);
 		
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTest add (II)I");
 		
@@ -202,18 +201,8 @@ public class TestAssemblyProcessor
 				"  0x00007f7d733640cd: data32 xchg %ax,%ax"
 
 		};
-		
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
-		
-		for (String line : lines)
-		{
-			if (!line.startsWith(S_OPEN_ANGLE) && !line.startsWith(LOADED))
-			{
-				asmProcessor.handleLine(line);
-			}
-		}
-		
-		asmProcessor.complete();
+
+        performAssemblyParsingOn(lines);
 		
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
 		
@@ -251,4 +240,96 @@ public class TestAssemblyProcessor
 		
 		assertEquals(4, instructions2.size());
 	}
+
+    /*
+        Scenario: Parsing a line that does not start with the Native Code
+            Given a number of lines of disassembled code
+            And the line does not start with the Native Code
+            When the assembly processor parses such lines
+            Then no assembly instructions are returned
+    */
+    @Test
+    public void givenBlockOfCodeWithoutTheNativeCodeStart_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
+        // Given
+        int expectedAssemblyResults = ZERO;
+        String[] lines = new String[] {
+                "Decoding <junk> compiled <junk> method 0x00007f7d73364190:",
+                "Code:"
+        };
+
+        // When
+        performAssemblyParsingOn(lines);
+        int actualAssemblyResults = map.size();
+
+        // Then
+        assertThat("No assembly results should have been returned.",
+                actualAssemblyResults,
+                is(equalTo(expectedAssemblyResults)));
+    }
+
+    /*
+        Scenario: Parsing lines with incorrect method signature
+            Given a number of lines of disassembled code
+            And the method signature is incorrect
+            When the assembly processor parses such a line
+            Then no assembly instructions are returned
+    */
+    @Test
+    public void givenBlockOfCodeWithIncorrectSignature_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
+        // Given
+        int expectedAssemblyResults = ZERO;
+        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
+        lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;";
+
+        memberFinder = new IMemberFinder()
+        {
+            @Override
+            public IMetaMember findMemberWithSignature(String logSignature)
+            {
+                return NO_MEMBER;
+            }
+        };
+
+        // When
+        performAssemblyParsingOn(lines);
+        int actualAssemblyResults = map.size();
+
+        // Then
+        assertThat("No assembly results should have been returned.",
+                actualAssemblyResults,
+                is(equalTo(expectedAssemblyResults)));
+    }
+
+
+    /*
+        Scenario: Parsing lines with method signature starting with [ (open square bracket)
+            Given a number of lines of disassembled code
+            And the method signature starts with a [
+            When the assembly processor parses such a line
+            Then no assembly instructions are returned
+    */
+    @Test
+    public void givenBlockOfCodeWithMethodSignatureStartingWithBoxBracket_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
+        // Given
+        int expectedAssemblyResults = ONE;
+        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
+        lines[7] = "[ 0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}";
+
+        // When
+        performAssemblyParsingOn(lines);
+        int actualAssemblyResults = map.size();
+        IMetaMember actualMember = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
+
+        // Then
+        assertThat("One assembly results should have been returned.",
+                actualAssemblyResults,
+                is(equalTo(expectedAssemblyResults)));
+        assertThat("An object should have been returned",
+                actualMember,
+                is(available()));
+    }
+
+    private Matcher<Object> available() {
+        return not(nullValue());
+    }
 }
