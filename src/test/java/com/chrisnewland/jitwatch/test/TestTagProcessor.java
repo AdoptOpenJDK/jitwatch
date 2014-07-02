@@ -339,7 +339,7 @@ public class TestTagProcessor
             Then nested tags should be returned
     */
     @Test
-    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenANestedTagsAreReturned() {
+    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenNestedTagsAreReturned() {
         // Given
         String expectedParseResult =
                 "<loop inner_loop=\"1\" idx=\"1012\">\n" +
