@@ -121,7 +121,7 @@ public class TestAssemblyProcessor
 	{
 		String[] lines = new String[]{
 				"Decoding compiled method 0x00007f7d73363f90:",
-				"Cod    e:",
+				"Code:",
 				"[Entry Point]",
 				"[Constants]",
 				"  # {method} &apos;add&apos; &apos;(II)I&apos; in &apos;com",
@@ -253,7 +253,7 @@ public class TestAssemblyProcessor
         // Given
         int expectedAssemblyResults = ZERO;
         String[] lines = new String[] {
-                "Does not start with Decoding compiled method 0x00007f7d73364190:",
+                "Decoding <junk> compiled <junk> method 0x00007f7d73364190:",
                 "Code:"
         };
 

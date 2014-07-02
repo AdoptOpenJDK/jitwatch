@@ -336,10 +336,10 @@ public class TestTagProcessor
             Given a line containing an open tag
             And the closing angle bracket of the tag is missing
             When the tag processor parses such a line
-            Then no tags should be returned
+            Then nested tags should be returned
     */
     @Test
-    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenANestTagIsReturned() {
+    public void givenNestedLinesWithAParent_WhenTheTagProcessorActionsIt_ThenANestedTagsAreReturned() {
         // Given
         String expectedParseResult =
                 "<loop inner_loop=\"1\" idx=\"1012\">\n" +
