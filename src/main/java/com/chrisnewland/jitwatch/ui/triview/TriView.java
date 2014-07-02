@@ -19,6 +19,7 @@ import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.LineTable;
 import com.chrisnewland.jitwatch.model.bytecode.LineTableEntry;
+import com.chrisnewland.jitwatch.ui.Dialogs;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.ui.triview.assembly.ViewerAssembly;
 import com.chrisnewland.jitwatch.ui.triview.bytecode.BytecodeLabel;
@@ -27,6 +28,7 @@ import com.chrisnewland.jitwatch.ui.triview.source.ViewerSource;
 import com.chrisnewland.jitwatch.util.UserInterfaceUtil;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -74,6 +76,8 @@ public class TriView extends Stage implements ILineListener
 	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
+	
+	private boolean classBytecodeMismatch = false;
 
 	private static final Logger logger = LoggerFactory.getLogger(TriView.class);
 
@@ -81,7 +85,7 @@ public class TriView extends Stage implements ILineListener
 	{
 		this.config = config;
 
-		setTitle("TriView Source, Bytecode, Assembly Viewer");
+		setTitle("TriView: Source, Bytecode, Assembly Viewer");
 
 		VBox vBox = new VBox();
 
@@ -365,6 +369,8 @@ public class TriView extends Stage implements ILineListener
 
 		if (!sameClass)
 		{
+			classBytecodeMismatch = false;
+			
 			comboMember.getSelectionModel().clearSelection();
 			comboMember.getItems().clear();
 			comboMember.getItems().addAll(memberClass.getMetaMembers());
@@ -387,23 +393,42 @@ public class TriView extends Stage implements ILineListener
 		if (jumpToSource)
 		{
 			viewerSource.jumpTo(currentMember);
+			viewerSource.setScrollBar();
 		}
+
+		StringBuilder statusBarBuilder = new StringBuilder();
 
 		List<String> classLocations = config.getClassLocations();
 
-		viewerBytecode.setContent(currentMember, classLocations);
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
+
+		if (classBytecode != null)
+		{
+			int majorVersion = classBytecode.getMajorVersion();
+			int minorVersion = classBytecode.getMinorVersion();
+			String javaVersion = classBytecode.getJavaVersion();
+
+			statusBarBuilder.append("Mounted class version: ");
+			statusBarBuilder.append(majorVersion).append(C_DOT).append(minorVersion);
+			statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
+			statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
+		}
+
+		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
 
 		AssemblyMethod asmMethod = null;
 
 		if (currentMember.isCompiled())
-		{			
+		{
+			statusBarBuilder.append(C_SPACE).append("member ").append(currentMember.toStringUnqualifiedMethodName(false));
+
 			asmMethod = currentMember.getAssembly();
 
 			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
 
 			if (attrCompiler != null)
 			{
-				lblMemberInfo.setText("Compiled with " + attrCompiler);
+				statusBarBuilder.append(" compiled with ").append(attrCompiler);
 			}
 			else
 			{
@@ -411,7 +436,7 @@ public class TriView extends Stage implements ILineListener
 
 				if (attrCompileKind != null && C2N.equals(attrCompileKind))
 				{
-					lblMemberInfo.setText("Compiled native wrapper");
+					statusBarBuilder.append(" compiled native wrapper");
 				}
 			}
 
@@ -431,6 +456,25 @@ public class TriView extends Stage implements ILineListener
 			viewerAssembly.setContent(msg, false);
 
 			lblMemberInfo.setText(S_EMPTY);
+		}
+
+		lblMemberInfo.setText(statusBarBuilder.toString());
+		
+		if (!classBytecodeMismatch && viewerBytecode.isOffsetMismatchDetected())
+		{
+			classBytecodeMismatch = true;
+			
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					Dialogs.showOKDialog(
+							TriView.this,
+							"Wrong classes mounted for log file?",
+							"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
+				}
+			});
 		}
 	}
 
@@ -458,8 +502,8 @@ public class TriView extends Stage implements ILineListener
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(config.getClassLocations());
 
 		int bytecodeHighlight = -1;
-		int assemblyHighlight = -1; 
-		
+		int assemblyHighlight = -1;
+
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();
@@ -489,7 +533,7 @@ public class TriView extends Stage implements ILineListener
 				}
 			}
 		}
-		
+
 		assemblyHighlight = viewerAssembly.getIndexForSourceLine(currentMember.getMetaClass().getFullyQualifiedName(), sourceLine);
 
 		viewerBytecode.highlightLine(bytecodeHighlight);
@@ -500,27 +544,28 @@ public class TriView extends Stage implements ILineListener
 	{
 		// each source line can map to multiple bytecodes?
 		// but bytecode only maps to 1 source line
-		
+
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(config.getClassLocations());
 
-		BytecodeLabel bcLabel = (BytecodeLabel)viewerBytecode.getLabelAtIndex(index);
-		
+		BytecodeLabel bcLabel = (BytecodeLabel) viewerBytecode.getLabelAtIndex(index);
+
 		BytecodeInstruction instruction = bcLabel.getInstruction();
-		
+
 		int bytecodeOffset = instruction.getOffset();
-		
+
 		int sourceHighlight = -1;
-		int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(), bytecodeOffset);
-	
+		int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(),
+				bytecodeOffset);
+
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();
 
 			sourceHighlight = lineTable.findSourceLine(currentMember, bytecodeOffset);
-			
+
 			if (sourceHighlight != -1)
 			{
-				//starts at 1
+				// starts at 1
 				sourceHighlight--;
 			}
 		}
@@ -528,7 +573,7 @@ public class TriView extends Stage implements ILineListener
 		viewerSource.highlightLine(sourceHighlight);
 		viewerAssembly.highlightLine(assemblyHighlight);
 	}
-	
+
 	private void highlightFromAssembly(int index)
 	{
 		Label label = viewerAssembly.getLabelAtIndex(index);
@@ -543,7 +588,7 @@ public class TriView extends Stage implements ILineListener
 			if (className != null && className.equals(currentMember.getMetaClass().getFullyQualifiedName()))
 			{
 				String sourceLine = viewerAssembly.getSourceLineFromLabel(label);
-				
+
 				String bytecodeLine = viewerAssembly.getBytecodeOffsetFromLabel(label);
 
 				if (sourceLine != null)

@@ -106,7 +106,7 @@ public class CompileChainWalker
 
 			if (depth == 0)
 			{
-				builder.append("\n");
+				builder.append(C_NEWLINE);
 			}
 		}
 
@@ -117,7 +117,7 @@ public class CompileChainWalker
 
 		if (node.getChildren().size() == 0)
 		{
-			builder.append("\n");
+			builder.append(C_NEWLINE);
 		}
 	}
 

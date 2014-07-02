@@ -26,8 +26,10 @@ public final class JITWatchConstants
 	public static final String TAG_HOTSPOT_LOG = "<hotspot_log";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
 
-	public static final Set<String> SKIP_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_TTY, TAG_TTY_CLOSE,
-			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG, TAG_HOTSPOT_LOG_CLOSE }));
+	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG}));
+	
+	public static final Set<String> SKIP_BODY_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_TTY_CLOSE,
+			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG_CLOSE }));
 
 	public static final String NATIVE_CODE_START = "Decoding compiled method";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
@@ -101,12 +103,22 @@ public final class JITWatchConstants
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
 
+	public static final String REGEX_GROUP_ANY = "(.*)";
+	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";
+	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
+	public static final String REGEX_UNICODE_PARAM_NAME = "([0-9\\p{L}_]+)";
+	public static final String REGEX_UNICODE_PACKAGE_NAME = "([0-9\\p{L}_\\.]*)";
+	
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
+	public static final String S_ESCAPED_OPEN_PARENTHESES = "\\(";
+	public static final String S_ESCAPED_CLOSE_PARENTHESES = "\\)";
     public static final String S_OPEN_ANGLE = "<";
 	public static final String S_CLOSE_ANGLE= ">";
     public static final String S_OPEN_SQUARE = "[";
 	public static final String S_CLOSE_SQUARE= "]";
+    public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
+	public static final String S_ESCAPED_CLOSE_SQUARE= "\\]";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE= "}";
 	public static final String S_AT = "@";
@@ -156,4 +168,8 @@ public final class JITWatchConstants
 	public static final char C_DOLLAR = '$';
 	
 	public static final String S_ASSEMBLY_ADDRESS = "0x";
+	
+	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
+	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+
 }

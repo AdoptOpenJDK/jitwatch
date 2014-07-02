@@ -514,7 +514,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes");
+		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
@@ -786,6 +786,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			getConfig().setLastLogDir(hsLogFile.getParent());
 			getConfig().saveConfig();
 
+			
 			log("Selected file: " + hsLogFile.getAbsolutePath());
 			log("Click Start button to process or tail the file");
 			updateButtons();
@@ -1007,4 +1008,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		return logParser.getModel().getPackageManager();
 	}
 
+	@Override
+	public Stage getStageForDialog()
+	{
+		return stage;
+	}
 }

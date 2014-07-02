@@ -263,7 +263,7 @@ public class ViewerAssembly extends Viewer
 		{
 			String line = label.getText();
 
-			result = StringUtil.getSubstringBetween(line, "(line ", ")");
+			result = StringUtil.getSubstringBetween(line, "(line ", S_CLOSE_PARENTHESES);
 		}
 
 		return result;
@@ -277,7 +277,7 @@ public class ViewerAssembly extends Viewer
 		{
 			String line = label.getText();
 
-			result = StringUtil.getSubstringBetween(line, "@", " ");
+			result = StringUtil.getSubstringBetween(line, S_AT, S_SPACE);
 		}
 
 		return result;

@@ -39,6 +39,8 @@ public class MakeHotSpotLog
 		testCallChain3();
 		testLeaf(iterations);
 		testToUpperCase(iterations);
+		testLoopUnrolling(iterations);
+		padMethod();
 	}
 
 	private void addVariable(int iterations)
@@ -410,6 +412,64 @@ public class MakeHotSpotLog
 		for (int w = 0; w < wordCount; w++)
 		{
 			ucWords[w] = lcWords[w].toUpperCase();
+		}
+	}
+
+	private void testLoopUnrolling(long iterations)
+	{
+		long result = 0;
+		int toAdd = 4;
+
+		for (long l = 0; l < iterations; l++)
+		{
+			result += timesTen(toAdd);
+		}
+		
+		for (long l = 0; l < iterations; l++)
+		{
+			result += timesHundred(toAdd);
+		}
+		
+		System.out.println("testLoopUnrolling: " + result);
+	}
+
+	private int timesTen(int number)
+	{
+		int result = 0;
+
+		for (int i = 0; i < 10; i++)
+		{
+			result += number;
+		}
+
+		return result;
+	}
+	
+	private int timesHundred(int number)
+	{
+		int result = 0;
+
+		for (int i = 0; i < 100; i++)
+		{
+			result += number;
+		}
+
+		return result;
+	}
+	
+	// sacrificial dummy method
+	// in case hotspot truncates the LogCompilation output
+	// as it exits and produces a <fragment>
+	private void padMethod()
+	{
+		try
+		{
+			Thread.sleep(500);
+			System.out.println("done");
+		}
+		catch (InterruptedException ie)
+		{
+			ie.printStackTrace();
 		}
 	}
 

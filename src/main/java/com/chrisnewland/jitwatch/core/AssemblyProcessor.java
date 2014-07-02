@@ -44,7 +44,7 @@ public class AssemblyProcessor
 				methodStarted = true;
 			}
 
-			if (methodStarted)
+			if (methodStarted && line.length() > 0)
 			{
 				char firstChar = line.charAt(0);
 
