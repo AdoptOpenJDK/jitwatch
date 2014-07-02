@@ -420,7 +420,7 @@ public class TriView extends Stage implements ILineListener
 
 		if (currentMember.isCompiled())
 		{
-			statusBarBuilder.append(C_SPACE).append("member ").append(currentMember.toStringUnqualifiedMethodName(false));
+			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
 
 			asmMethod = currentMember.getAssembly();
 
@@ -457,30 +457,35 @@ public class TriView extends Stage implements ILineListener
 
 			lblMemberInfo.setText(S_EMPTY);
 		}
-
-		lblMemberInfo.setText(statusBarBuilder.toString());
 		
-		if (!classBytecodeMismatch && viewerBytecode.isOffsetMismatchDetected())
+		if (viewerBytecode.isOffsetMismatchDetected())
 		{
-			classBytecodeMismatch = true;
-			
-			Platform.runLater(new Runnable()
+			statusBarBuilder.append(C_SPACE).append("WARNING Class bytecode offsets do not match HotSpot log");
+		
+			if (!classBytecodeMismatch)
 			{
-				@Override
-				public void run()
+				classBytecodeMismatch = true;
+				
+				Platform.runLater(new Runnable()
 				{
-					Dialogs.showOKDialog(
-							TriView.this,
-							"Wrong classes mounted for log file?",
-							"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
-				}
-			});
+					@Override
+					public void run()
+					{
+						Dialogs.showOKDialog(
+								TriView.this,
+								"Wrong classes mounted for log file?",
+								"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
+					}
+				});
+			}
 		}
+		
+		lblMemberInfo.setText(statusBarBuilder.toString());
 	}
 
 	@Override
 	public void lineHighlighted(int index, LineType lineType)
-	{
+	{		
 		switch (lineType)
 		{
 		case SOURCE:
@@ -503,11 +508,16 @@ public class TriView extends Stage implements ILineListener
 
 		int bytecodeHighlight = -1;
 		int assemblyHighlight = -1;
-
+		
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();
-
+			
+			if (lineTable.size() == 0)
+			{
+				logger.warn("LineNumberTable not found in class file. TriView highlight linking will not be available.");
+			}
+			
 			LineTableEntry entry = lineTable.get(sourceLine);
 
 			if (entry != null)
@@ -535,7 +545,7 @@ public class TriView extends Stage implements ILineListener
 		}
 
 		assemblyHighlight = viewerAssembly.getIndexForSourceLine(currentMember.getMetaClass().getFullyQualifiedName(), sourceLine);
-
+		
 		viewerBytecode.highlightLine(bytecodeHighlight);
 		viewerAssembly.highlightLine(assemblyHighlight);
 	}
@@ -556,7 +566,7 @@ public class TriView extends Stage implements ILineListener
 		int sourceHighlight = -1;
 		int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(),
 				bytecodeOffset);
-
+		
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();

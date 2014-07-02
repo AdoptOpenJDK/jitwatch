@@ -524,11 +524,11 @@ public class ParseUtil
 	}
 
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
-	{
+	{		
 		IMetaMember result = null;
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
-
+		
 		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
@@ -635,7 +635,7 @@ public class ParseUtil
 
 	public static String convertNativeCodeMethodName(String inLine)
 	{
-		String line = inLine.replace(ENTITY_APOS, S_QUOTE);
+		String line = inLine.replace(S_ENTITY_APOS, S_QUOTE);
 
 		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
 

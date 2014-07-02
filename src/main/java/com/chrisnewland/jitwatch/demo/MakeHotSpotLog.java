@@ -32,10 +32,16 @@ public class MakeHotSpotLog
 		randomBranchTest(iterations);
 		changingBranchTest(iterations);
 		intrinsicTest(iterations);
+		intrinsicTestMin(iterations);
 		tooBigToInline(iterations);
 		testSort();
 		testCallChain(iterations);
-		testCallChain2(iterations);
+		
+		long result = testCallChainReturn(iterations);
+		
+		// ensure code not eliminated by using result
+		System.out.println("testCallChainReturn: " + result);
+		
 		testCallChain3();
 		testLeaf(iterations);
 		testToUpperCase(iterations);
@@ -133,6 +139,22 @@ public class MakeHotSpotLog
 
 		System.out.println("intrinsicTest: " + dstSum);
 	}
+	
+	//http://openjdk.5641.n7.nabble.com/Intrinsics-for-Math-min-and-max-td183747.html
+	private void intrinsicTestMin(int iterations)
+	{
+		long sum = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			// x86 has intrinsic for Math.min
+			
+			sum = Math.min(i, i+1);
+		}
+
+		System.out.println("intrinsicTest: " + sum);
+	}
+
 
 	private long add(long a, long b)
 	{
@@ -300,17 +322,17 @@ public class MakeHotSpotLog
 		return count - 3;
 	}
 
-	private void testCallChain2(long iterations)
+	public long testCallChainReturn(long iterations)
 	{
 		long count = 0;
 
 		for (int i = 0; i < iterations; i++)
 		{
-			count = chainC1(count);
-			count = chainC2(count);
+			count = chainA1(count);
+			count = chainB1(count);
 		}
 
-		System.out.println("testCallChain2: " + count);
+		return count;
 	}
 
 	private boolean test(int count, int iterations)
@@ -336,7 +358,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		System.out.println("testCallChain2: " + count);
+		System.out.println("testCallChain3: " + count);
 	}
 
 	private long chainC1(long inCount)

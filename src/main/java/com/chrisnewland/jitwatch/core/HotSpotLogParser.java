@@ -540,6 +540,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		{
 			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
 		}
+		catch (Throwable t)
+		{
+			// Throwable because of possible VerifyError
+			
+			logger.error("Could not addClassToModel {}", fqClassName, t);
+			logError("Exception: '" + fqClassName + C_QUOTE);
+		}
 	}
 
 	@Override

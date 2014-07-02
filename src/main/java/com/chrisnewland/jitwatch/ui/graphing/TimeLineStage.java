@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.graphing;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,6 +15,7 @@ import com.chrisnewland.jitwatch.model.EventType;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.JITStats;
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -104,12 +105,12 @@ public class TimeLineStage extends AbstractGraphStage
 			}
 
 			Color colourMarker = Color.BLUE;
-			
+
 			gc.setFill(colourMarker);
 			gc.setStroke(colourMarker);
-			
+
 			int cumC = 0;
-			int markerDiameter = 8;
+			int markerDiameter = 10;
 
 			for (JITEvent event : events)
 			{
@@ -132,11 +133,16 @@ public class TimeLineStage extends AbstractGraphStage
 					if (compiledStampTime != -1 && stamp > compiledStampTime)
 					{
 						double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
+						
+						double blobX = fix(smX - markerDiameter / 2);
+						double blobY = fix(y - markerDiameter / 2);
 
-						gc.fillOval(fix(smX - markerDiameter / 2), fix(y - markerDiameter / 2), fix(markerDiameter),
+						gc.fillOval(blobX, blobY, fix(markerDiameter),
 								fix(markerDiameter));
 
-						String line1 = selectedMember.toString();
+						StringBuilder selectedItemBuilder = new StringBuilder();
+
+						selectedItemBuilder.append(selectedMember.toStringUnqualifiedMethodName(false));
 
 						String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
 
@@ -150,32 +156,52 @@ public class TimeLineStage extends AbstractGraphStage
 							}
 						}
 
-						String line2 = "Compiled at " + StringUtil.formatTimestamp((long) compiledStampTime, true) + " using "
-								+ compiler;
+						selectedItemBuilder.append(" compiled at ")
+								.append(StringUtil.formatTimestamp((long) compiledStampTime, true)).append(" by ").append(compiler);
 
 						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
 
 						if (compiletime != null)
 						{
-							line2 += " took " + compiletime + "ms";
+							selectedItemBuilder.append(" in ").append(compiletime).append("ms");
 						}
 
-						double legendY = y;
-
-						if (legendY > GRAPH_GAP_Y + chartHeight - 32)
+						double approxWidth = selectedItemBuilder.length() * 5.5;
+						
+						double selectedLabelX;
+						
+						if (blobX + approxWidth > chartWidth)
 						{
-							legendY = GRAPH_GAP_Y + chartHeight - 32;
+							selectedLabelX = blobX - approxWidth - 16;
 						}
+						else
+						{
+							selectedLabelX = blobX + 32;
+						}
+						
+						double selectedLabelY = Math.min(blobY+8, GRAPH_GAP_Y + chartHeight - 32);
 
-						gc.strokeText(line1, fix(smX + 10), fix(legendY));
-						gc.strokeText(line2, fix(smX + 10), fix(legendY + 16));
+			            gc.setFill(Color.WHITE);
+			            gc.setStroke(Color.BLACK);
+
+			            gc.fillRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
+			            gc.strokeRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
+
+						gc.strokeText(selectedItemBuilder.toString(), fix(selectedLabelX), fix(selectedLabelY));
 
 						compiledStampTime = -1;
+						
+			            gc.setStroke(Color.BLUE);
+
 					}
 				}
 			}
 
 			showStatsLegend(gc);
+		}
+		else
+		{
+			gc.strokeText("No compilation information processed", fix(10), fix(10));
 		}
 	}
 

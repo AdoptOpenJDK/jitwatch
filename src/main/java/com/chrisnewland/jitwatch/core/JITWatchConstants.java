@@ -17,6 +17,10 @@ public final class JITWatchConstants
     */
     private JITWatchConstants() {
     }
+    
+    public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
+    public static final int DEFAULT_MAX_INLINE_SIZE = 325;
+    public static final int DEFAULT_COMPILER_THRESHOLD = 10000;
 
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";
@@ -96,7 +100,7 @@ public final class JITWatchConstants
 	public static final String ALWAYS = "always";
 	public static final String NEVER = "never";
 	
-	public static final String ENTITY_APOS = "&apos;";
+	public static final String S_ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";
 	public static final String S_ENTITY_GT = "&gt;";
 	

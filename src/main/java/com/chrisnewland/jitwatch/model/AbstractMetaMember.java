@@ -62,6 +62,38 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
+	public boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes)
+	{
+		boolean result = false;
+
+		if (memberName.equals(inMemberName))
+		{
+			if (this.returnType.getName().equals(inReturnType.getName()))
+			{
+				if (this.paramTypes.length == inParamTypes.length)
+				{
+					boolean allMatch = true;
+
+					for (int i = 0; i < this.paramTypes.length; i++)
+					{
+						Class<?> c1 = this.paramTypes[i];
+						Class<?> c2 = inParamTypes[i];
+
+						if (!c1.getName().equals(c2.getName()))
+						{
+							allMatch = false;
+						}
+					}
+
+					result = allMatch;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	@Override
 	public String getReturnTypeName()
 	{
 		return (returnType == null) ? S_EMPTY : ParseUtil.expandParameterType(returnType.getName());
@@ -296,7 +328,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public static String expandParam(String inParamType, boolean fullyQualifiedType)
 	{
 		String paramType = inParamType;
-		
+
 		if (paramType.charAt(0) == C_OPEN_SQUARE_BRACKET)
 		{
 			paramType = ParseUtil.expandParameterType(paramType);

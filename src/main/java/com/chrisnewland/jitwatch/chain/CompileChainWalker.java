@@ -34,33 +34,41 @@ public class CompileChainWalker
 
 	public CompileNode buildCallTree(IMetaMember mm)
 	{
+		logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+
 		CompileNode root = null;
 
-		if (mm.isCompiled())
+		Journal journal = mm.getJournal();
+
+		Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+		if (lastTaskTag != null)
 		{
-			Journal journal = mm.getJournal();
+			logger.debug("lastTaskTag not null");
 
-			Task lastTaskTag = JournalUtil.getLastTask(journal);
+			parseDictionary = lastTaskTag.getParseDictionary();
 
-			if (lastTaskTag != null)
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			if (parsePhase != null)
 			{
-				parseDictionary = lastTaskTag.getParseDictionary();
+				logger.debug("parsePhase not null");
 
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-				// TODO fix for JDK8
-				if (parsePhase != null)
+				for (Tag parseTag : parseTags)
 				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+					String id = parseTag.getAttribute(ATTR_METHOD);
 
-					for (Tag parseTag : parseTags)
+					// only initialise on first parse tag.
+					// there may be multiple if late_inline
+					// is detected
+					if (root == null)
 					{
-						String id = parseTag.getAttribute(ATTR_METHOD);
-
 						root = new CompileNode(mm, id);
-
-						processParseTag(parseTag, root);
 					}
+
+					processParseTag(parseTag, root);
 				}
 			}
 		}
@@ -68,61 +76,10 @@ public class CompileChainWalker
 		return root;
 	}
 
-	public String buildCompileChainTextRepresentation(CompileNode node)
+	private void processParseTag(Tag parseTag, CompileNode parentNode)
 	{
-		StringBuilder builder = new StringBuilder();
+		logger.info("processParseTag");
 
-		show(node, builder, 0);
-
-		return builder.toString();
-	}
-
-	private void show(CompileNode node, StringBuilder builder, int depth)
-	{
-		if (depth > 0)
-		{
-			for (int i = 0; i < depth; i++)
-			{
-				builder.append("\t");
-			}
-
-			builder.append(" -> ");
-
-			builder.append(node.getMember().getMemberName());
-
-			builder.append("[");
-
-			if (node.getMember().isCompiled())
-			{
-				builder.append("C");
-			}
-
-			if (node.isInlined())
-			{
-				builder.append("I");
-			}
-
-			builder.append("]");
-
-			if (depth == 0)
-			{
-				builder.append(C_NEWLINE);
-			}
-		}
-
-		for (CompileNode child : node.getChildren())
-		{
-			show(child, builder, depth + 1);
-		}
-
-		if (node.getChildren().size() == 0)
-		{
-			builder.append(C_NEWLINE);
-		}
-	}
-
-	private void processParseTag(Tag parseTag, CompileNode node)
-	{
 		String methodID = null;
 		boolean inlined = false;
 		String inlineReason = null;
@@ -137,7 +94,7 @@ public class CompileChainWalker
 		{
 			String tagName = child.getName();
 			Map<String, String> tagAttrs = child.getAttrs();
-			
+
 			switch (tagName)
 			{
 			case TAG_BC:
@@ -173,7 +130,7 @@ public class CompileChainWalker
 				if (childCall != null)
 				{
 					CompileNode childNode = new CompileNode(childCall, methodID);
-					node.addChild(childNode);
+					parentNode.addChild(childNode);
 
 					String reason = tagAttrs.get(ATTR_REASON);
 					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
@@ -203,7 +160,8 @@ public class CompileChainWalker
 				if (childCall != null)
 				{
 					CompileNode childNode = new CompileNode(childCall, childMethodID);
-					node.addChild(childNode);
+
+					parentNode.addChild(childNode);
 
 					if (methodID != null && methodID.equals(childMethodID))
 					{

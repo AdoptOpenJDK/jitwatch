@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.chain.CompileChainWalker;
@@ -25,6 +24,9 @@ import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.graphing.CodeCacheStage;
+import com.chrisnewland.jitwatch.ui.graphing.HistoStage;
+import com.chrisnewland.jitwatch.ui.graphing.TimeLineStage;
 import com.chrisnewland.jitwatch.ui.sandbox.SandboxStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
@@ -91,7 +93,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TableView<AttributeTableRow> attributeTableView;
 	private ObservableList<AttributeTableRow> memberAttrList;
 
-	private List<Stage> openPopupStages = new ArrayList<>();
+	private StageManager stageManager = new StageManager();
 
 	private TextArea textAreaLog;
 
@@ -114,7 +116,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private Label lblHeap;
 
-	private ConfigStage configStage;
+	private MainConfigStage configStage;
 	private TimeLineStage timeLineStage;
 	private StatsStage statsStage;
 	private HistoStage histoStage;
@@ -258,13 +260,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				for (Stage s : openPopupStages)
-				{
-					if (s != null)
-					{
-						s.close();
-					}
-				}
+				stageManager.closeAll();
 
 				stopParsing();
 			}
@@ -303,7 +299,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
 							nothingMountedStage.show();
 
-							openPopupStages.add(nothingMountedStage);
+							stageManager.add(nothingMountedStage);
 
 							startDelayedByConfig = true;
 						}
@@ -346,7 +342,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 				timeLineStage.show();
 
-				openPopupStages.add(timeLineStage);
+				stageManager.add(timeLineStage);
 
 				btnTimeLine.setDisable(true);
 			}
@@ -361,7 +357,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				statsStage = new StatsStage(JITWatchUI.this);
 				statsStage.show();
 
-				openPopupStages.add(statsStage);
+				stageManager.add(statsStage);
 
 				btnStats.setDisable(true);
 			}
@@ -376,7 +372,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				histoStage = new HistoStage(JITWatchUI.this);
 				histoStage.show();
 
-				openPopupStages.add(histoStage);
+				stageManager.add(histoStage);
 
 				btnHisto.setDisable(true);
 			}
@@ -391,7 +387,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				topListStage = new TopListStage(JITWatchUI.this);
 				topListStage.show();
 
-				openPopupStages.add(topListStage);
+				stageManager.add(topListStage);
 
 				btnTopList.setDisable(true);
 			}
@@ -406,7 +402,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
 				codeCacheStage.show();
 
-				openPopupStages.add(codeCacheStage);
+				stageManager.add(codeCacheStage);
 
 				btnCodeCache.setDisable(true);
 			}
@@ -432,7 +428,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 				suggestStage.show();
 
-				openPopupStages.add(suggestStage);
+				stageManager.add(suggestStage);
 
 				btnSuggest.setDisable(true);
 			}
@@ -514,7 +510,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setStyle("-fx-font-family:monospace;");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
+		log("Welcome to JITWatch by Chris Newland.\n");
+		log("Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
@@ -576,10 +573,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			loadConfigFromFile();
 
-			configStage = new ConfigStage(JITWatchUI.this, getConfig());
+			configStage = new MainConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
 
-			openPopupStages.add(configStage);
+			stageManager.add(configStage);
 
 			btnConfigure.setDisable(true);
 		}
@@ -594,7 +591,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			triViewStage.show();
 
-			openPopupStages.add(triViewStage);
+			stageManager.add(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -613,7 +610,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			sandBoxStage.show();
 
-			openPopupStages.add(sandBoxStage);
+			stageManager.add(sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
@@ -628,7 +625,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			browserStage.show();
 
-			openPopupStages.add(browserStage);
+			stageManager.add(browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -710,7 +707,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		tvs.show();
-		openPopupStages.add(tvs);
+		stageManager.add(tvs);
 	}
 
 	public void openTextViewer(String title, String content)
@@ -720,21 +717,32 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public void openCompileChain(IMetaMember member)
 	{
-		CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
-
-		CompileNode root = walker.buildCallTree(member);
-
-		if (root != null)
+		if (member.isCompiled())
 		{
-			CompileChainStage ccs = new CompileChainStage(this, root);
+			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			ccs.show();
+			CompileNode root = walker.buildCallTree(member);
 
-			openPopupStages.add(ccs);
+			if (root != null)
+			{
+				CompileChainStage ccs = new CompileChainStage(this, root);
+
+				ccs.show();
+
+				stageManager.add(ccs);
+			}
+			else
+			{
+				logger.error("Could not open CompileChain - root node was null");
+			}
 		}
 		else
 		{
-			logger.error("Could not open CompileChain - root node was null");
+			Dialogs.showOKDialog(
+					stage,
+					"Root method is not compiled",
+					"Can only display compile chain where the root method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
 	}
 
@@ -742,7 +750,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
 		jvs.show();
-		openPopupStages.add(jvs);
+		stageManager.add(jvs);
 	}
 
 	private void chooseHotSpotFile()
@@ -786,9 +794,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			getConfig().setLastLogDir(hsLogFile.getParent());
 			getConfig().saveConfig();
 
-			
+			clearTextArea();
 			log("Selected file: " + hsLogFile.getAbsolutePath());
-			log("Click Start button to process or tail the file");
+			log("\nClick Start button to process the HotSpot log");
 			updateButtons();
 
 			refreshLog();
@@ -872,6 +880,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
 	}
 
+	private void clearTextArea()
+	{
+		textAreaLog.clear();
+	}
+
 	private void refreshLog()
 	{
 		textAreaLog.appendText(logBuffer.toString());
@@ -890,11 +903,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		classTree.showTree();
 	}
 
-	// TODO refactor stages and pass IStageCloseListener instead of JITWatchUI
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		openPopupStages.remove(stage);
+		stageManager.remove(stage);
 
 		// map?
 		if (stage instanceof TimeLineStage)
@@ -912,7 +924,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			btnHisto.setDisable(false);
 			histoStage = null;
 		}
-		else if (stage instanceof ConfigStage)
+		else if (stage instanceof MainConfigStage)
 		{
 			btnConfigure.setDisable(false);
 			configStage = null;

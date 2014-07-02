@@ -7,6 +7,7 @@ package com.chrisnewland.jitwatch.model.bytecode;
 
 import java.util.HashMap;
 import java.util.Map;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
@@ -54,5 +55,20 @@ public class LineTable
 	public int size()
 	{
 		return lineMap.size();
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (Map.Entry<Integer, LineTableEntry> entry : lineMap.entrySet())
+		{
+			LineTableEntry lineEntry = entry.getValue();
+
+			builder.append(entry.getKey()).append(C_SPACE).append(lineEntry.getBytecodeOffset()).append(C_NEWLINE);
+		}
+		
+		return builder.toString();
 	}
 }

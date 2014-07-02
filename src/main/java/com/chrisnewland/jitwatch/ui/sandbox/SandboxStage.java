@@ -20,29 +20,24 @@ import com.chrisnewland.jitwatch.ui.Dialogs;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
 import com.chrisnewland.jitwatch.ui.IStageCloseListener;
 import com.chrisnewland.jitwatch.ui.JITWatchUI;
+import com.chrisnewland.jitwatch.ui.StageManager;
 import com.chrisnewland.jitwatch.ui.Dialogs.Response;
 import com.chrisnewland.jitwatch.util.DisassemblyUtil;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class SandboxStage extends Stage implements ISandboxStage
+public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
@@ -52,13 +47,17 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 	private IStageAccessProxy accessProxy;
 
-	private boolean intelMode = false;
-
 	private Sandbox sandbox;
 
 	private SplitPane splitEditorPanes;
+	
+	private Button btnSandboxConfig;
+	
+	private SandboxConfigStage sandboxConfigStage;
+	
+	private StageManager stageManager = new StageManager();
 
-	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, ILogParser parser)
+	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
 
@@ -85,47 +84,11 @@ public class SandboxStage extends Stage implements ISandboxStage
 			}
 		});
 
-		final RadioButton rbATT = new RadioButton("AT&T");
-		final RadioButton rbIntel = new RadioButton("Intel");
-
-		rbIntel.setDisable(true); // TODO support Intel format
-
-		final ToggleGroup group = new ToggleGroup();
-
-		rbATT.setToggleGroup(group);
-		rbIntel.setToggleGroup(group);
-
-		rbATT.setSelected(!intelMode);
-		rbIntel.setSelected(intelMode);
-
-		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
-			{
-				if (group.getSelectedToggle() != null)
-				{
-					intelMode = group.getSelectedToggle().equals(rbIntel);
-
-					if (intelMode)
-					{
-						log("Intel syntax assembly");
-					}
-					else
-					{
-						log("AT&T syntax assembly");
-					}
-				}
-			}
-		});
-
 		splitEditorPanes = new SplitPane();
 		splitEditorPanes.setOrientation(Orientation.HORIZONTAL);
 
 		SplitPane splitVertical = new SplitPane();
 		splitVertical.setOrientation(Orientation.VERTICAL);
-
-		Label lblSyntax = new Label("Assembly syntax:");
 
 		taLog = new TextArea();
 
@@ -140,6 +103,22 @@ public class SandboxStage extends Stage implements ISandboxStage
 			public void handle(ActionEvent e)
 			{
 				addEditor(null);
+			}
+		});
+		
+		btnSandboxConfig = new Button("Configure Sandbox");
+		btnSandboxConfig.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				sandboxConfigStage = new SandboxConfigStage(SandboxStage.this, parser.getConfig());
+				
+				stageManager.add(sandboxConfigStage);
+				
+				sandboxConfigStage.show();
+
+				btnSandboxConfig.setDisable(true);
 			}
 		});
 
@@ -165,11 +144,9 @@ public class SandboxStage extends Stage implements ISandboxStage
 		hBoxTools.setSpacing(10);
 		hBoxTools.setPadding(new Insets(10));
 
-		hBoxTools.getChildren().add(lblSyntax);
-		hBoxTools.getChildren().add(rbATT);
-		hBoxTools.getChildren().add(rbIntel);
 		hBoxTools.getChildren().add(btnRun);
 		hBoxTools.getChildren().add(btnNewEditor);
+		hBoxTools.getChildren().add(btnSandboxConfig);
 		hBoxTools.getChildren().add(btnResetSandbox);
 
 		splitVertical.getItems().add(hBoxTools);
@@ -190,6 +167,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
+				stageManager.closeAll();
 				closeListener.handleStageClosed(SandboxStage.this);
 			}
 		});
@@ -274,7 +252,7 @@ public class SandboxStage extends Stage implements ISandboxStage
 
 			if (sources.size() > 0)
 			{
-				sandbox.runSandbox(sources, intelMode);
+				sandbox.runSandbox(sources);
 			}
 			else
 			{
@@ -333,5 +311,16 @@ public class SandboxStage extends Stage implements ISandboxStage
 				accessProxy.openTextViewer("Error", error, false, false);
 			}
 		});
+	}
+
+	@Override
+	public void handleStageClosed(Stage stage)
+	{
+		stageManager.remove(stage);
+		
+		if (stage instanceof SandboxConfigStage)
+		{
+			btnSandboxConfig.setDisable(false);
+		}
 	}
 }

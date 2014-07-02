@@ -20,8 +20,8 @@ public class TestStringUtil
 	@Test
 	public void testFormatTimestamp()
 	{
-		assertEquals("0", StringUtil.formatTimestamp(0, false));
-		assertEquals("0.000", StringUtil.formatTimestamp(0, true));
+		assertEquals("00:00:00", StringUtil.formatTimestamp(0, false));
+		assertEquals("00:00:00.000", StringUtil.formatTimestamp(0, true));
 		assertEquals("00:00:04", StringUtil.formatTimestamp(4000, false));
 		assertEquals("00:00:04.567", StringUtil.formatTimestamp(4567, true));
 		assertEquals("00:01:00", StringUtil.formatTimestamp(60 * 1000 + 123, false));

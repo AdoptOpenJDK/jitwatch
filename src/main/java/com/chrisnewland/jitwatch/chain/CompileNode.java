@@ -3,6 +3,8 @@ package com.chrisnewland.jitwatch.chain;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
 public class CompileNode
@@ -66,5 +68,59 @@ public class CompileNode
 	public CompileNode getParent()
 	{
 		return parent;
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		show(this, builder, 0);
+
+		return builder.toString();
+	}
+
+	private void show(CompileNode node, StringBuilder builder, int depth)
+	{
+		if (depth > 0)
+		{
+			for (int i = 0; i < depth; i++)
+			{
+				builder.append("\t");
+			}
+
+			builder.append(" -> ");
+
+			builder.append(node.getMember().getMemberName());
+
+			builder.append("[");
+
+			if (node.getMember().isCompiled())
+			{
+				builder.append("C");
+			}
+
+			if (node.isInlined())
+			{
+				builder.append("I");
+			}
+
+			builder.append("]");
+
+			if (depth == 0)
+			{
+				builder.append(C_NEWLINE);
+			}
+		}
+
+		for (CompileNode child : node.getChildren())
+		{
+			show(child, builder, depth + 1);
+		}
+
+		if (node.getChildren().size() == 0)
+		{
+			builder.append(C_NEWLINE);
+		}
 	}
 }

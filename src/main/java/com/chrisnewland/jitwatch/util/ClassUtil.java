@@ -5,25 +5,12 @@
  */
 package com.chrisnewland.jitwatch.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.chrisnewland.jitwatch.loader.DisposableURLClassLoader;
 
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 
 public final class ClassUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
-
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    
 	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
     
     private ClassUtil()

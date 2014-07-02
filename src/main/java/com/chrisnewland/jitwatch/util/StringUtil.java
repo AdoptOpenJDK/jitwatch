@@ -15,7 +15,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class StringUtil
 {
-	private static final DecimalFormat DF = new DecimalFormat("#,###");
+	private static final DecimalFormat DF_THOUSANDS = new DecimalFormat("#,###");
 
 	/*
 	 * Hide Utility Class Constructor Utility classes should not have a public
@@ -27,18 +27,6 @@ public final class StringUtil
 
 	public static String formatTimestamp(long stamp, boolean showMillis)
 	{
-		if (stamp == 0)
-		{
-			if (showMillis)
-			{
-				return "0.000";
-			}
-			else
-			{
-				return "0";
-			}
-		}
-
 		long stampCopy = stamp;
 
 		long dayMillis = 24L * 60L * 60_000L;
@@ -375,7 +363,7 @@ public final class StringUtil
 		// see if it can be formatted as a long with commas at thousands
 		try
 		{
-			value = DF.format(Long.parseLong(value));
+			value = DF_THOUSANDS.format(Long.parseLong(value));
 		}
 		catch (NumberFormatException nfe)
 		{
@@ -386,13 +374,23 @@ public final class StringUtil
 
 	public static String listToString(List<?> list)
 	{
+		return listToString(list, C_SPACE);
+	}
+
+	public static String listToString(List<?> list, char separator)
+	{
 		StringBuilder builder = new StringBuilder();
 
 		for (Object item : list)
 		{
-			builder.append(item.toString()).append(C_SPACE);
+			builder.append(item.toString()).append(separator);
 		}
 
-		return builder.toString().trim();
+		if (builder.length() > 0)
+		{
+			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		return builder.toString();
 	}
 }
