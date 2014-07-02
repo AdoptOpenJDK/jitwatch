@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package com.chrisnewland.jitwatch.ui;
+package com.chrisnewland.jitwatch.ui.graphing;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.chrisnewland.jitwatch.core.JITWatchConstants;
 import com.chrisnewland.jitwatch.model.Tag;
+import com.chrisnewland.jitwatch.ui.JITWatchUI;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 
 import javafx.scene.Scene;
@@ -119,7 +120,6 @@ public class CodeCacheStage extends AbstractGraphStage
 		else
 		{
 			gc.strokeText("No code cache information in log", fix(10), fix(10));
-
 		}
 	}
 

@@ -6,8 +6,6 @@
 package com.chrisnewland.jitwatch.core;
 
 import com.chrisnewland.jitwatch.model.*;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
-import com.chrisnewland.jitwatch.model.assembly.AssemblyUtil;
 import com.chrisnewland.jitwatch.util.ClassUtil;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
@@ -19,40 +17,38 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
+import java.util.Set;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public class HotSpotLogParser implements ILogParser
+public class HotSpotLogParser implements ILogParser, IMemberFinder
 {
-	enum ParseState
-	{
-		READY, IN_TAG, IN_NATIVE
-	}
-
 	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
 	private JITDataModel model;
 
 	private boolean reading = false;
-	
+
 	private boolean hasTraceClassLoad = false;
-
-	private ParseState parseState = ParseState.READY;
-
-	private StringBuilder nativeCodeBuilder = new StringBuilder();
 
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
+	
+	private boolean inHeader = true;
 
 	private long currentLineNumber;
 
 	private JITWatchConfig config;
 
 	private TagProcessor tagProcessor;
-
+	
+	private AssemblyProcessor asmProcessor;
+	
 	public HotSpotLogParser(IJITListener logListener)
 	{
 		model = new JITDataModel();
@@ -73,14 +69,27 @@ public class HotSpotLogParser implements ILogParser
 
 	private void mountAdditionalClasses()
 	{
+		URL[] classURLs = new URL[config.getClassLocations().size()];
+		
+		int pos = 0;
+		
 		for (String filename : config.getClassLocations())
 		{
 			URI uri = new File(filename).toURI();
 
 			logListener.handleLogEntry("Adding classpath: " + uri.toString());
 
-			ClassUtil.addURIToClasspath(uri);
+			try
+			{
+				classURLs[pos++] = uri.toURL();
+			}
+			catch (MalformedURLException e)
+			{
+				logger.error("Could not create URL: {} ", uri, e);
+			}
 		}
+		
+		ClassUtil.initialise(classURLs);
 	}
 
 	private void logEvent(JITEvent event)
@@ -109,25 +118,23 @@ public class HotSpotLogParser implements ILogParser
 	public void reset()
 	{
 		getModel().reset();
-		
+
 		hasTraceClassLoad = false;
-		
-		parseState = ParseState.READY;
-		
-		nativeCodeBuilder = new StringBuilder();
-		
+
 		reading = false;
-		
+
 		currentMember = null;
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
-
+		
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
+		
+		asmProcessor = new AssemblyProcessor(this);
 	}
 
 	@Override
@@ -137,25 +144,36 @@ public class HotSpotLogParser implements ILogParser
 
 		reading = true;
 
-		BufferedReader input = new BufferedReader(new FileReader(hotspotLog), 65536);
+		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
 
-		String currentLine = input.readLine();
+		String currentLine = reader.readLine();
+		
+		inHeader = true;
 
 		while (reading && currentLine != null)
 		{
 			try
 			{
-				handleLine(currentLine);
+				if (inHeader)
+				{
+					handleLogHeader(currentLine);
+				}
+				else
+				{
+					handleLogLine(currentLine);
+				}				
 			}
 			catch (Exception ex)
 			{
 				logger.error("Exception handling: '{}'", currentLine, ex);
 			}
 
-			currentLine = input.readLine();
+			currentLine = reader.readLine();
 		}
 
-		input.close();
+		asmProcessor.complete();
+		
+		reader.close();
 
 		logListener.handleReadComplete();
 	}
@@ -166,100 +184,98 @@ public class HotSpotLogParser implements ILogParser
 		reading = false;
 	}
 
-	private void handleLine(String inCurrentLine)
+	private boolean skipLine(final String line, final Set<String> skipSet)
 	{
+		boolean isSkip = false;
+
+		for (String skip : skipSet)
+		{
+			if (line.startsWith(skip))
+			{
+				isSkip = true;
+				break;
+			}
+		}
+		
+		return isSkip;
+	}
+	
+	// HotSpot log header XML can have text nodes
+	private void handleLogHeader(final String inCurrentLine)
+	{		
+		if (TAG_TTY.equals(inCurrentLine))
+		{
+			inHeader = false;
+		}
+		else 
+		{
+			if (!skipLine(inCurrentLine, SKIP_HEADER_TAGS))
+			{
+				Tag tag = tagProcessor.processLine(inCurrentLine);
+
+				if (tag != null)
+				{
+					handleTag(tag);
+				}
+			}
+		}
+	}
+	
+	// After the header, XML nodes do not have text nodes
+	private void handleLogLine(final String inCurrentLine)
+	{	
 		String currentLine = inCurrentLine;
+		
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
-			boolean isSkip = false;
-
-			for (String skip : JITWatchConstants.SKIP_TAGS)
-			{
-				if (currentLine.startsWith(skip))
-				{
-					isSkip = true;
-					break;
-				}
-			}
-
-			if (!isSkip)
+			if (!skipLine(inCurrentLine, SKIP_BODY_TAGS))
 			{
 				Tag tag = tagProcessor.processLine(currentLine);
 
 				if (tag != null)
 				{
 					handleTag(tag);
-
-					parseState = ParseState.READY;
-				}
-				else
-				{
-					parseState = ParseState.IN_TAG;
 				}
 			}
 		}
-		else if (currentLine.startsWith(JITWatchConstants.LOADED))
+		else if (currentLine.startsWith(LOADED))
 		{
-			if (parseState == ParseState.IN_NATIVE)
-			{
-				completeNativeCode();
-			}
 			handleLoaded(currentLine);
 		}
-		else if (parseState == ParseState.IN_NATIVE)
+		else
 		{
-			appendNativeCode(currentLine);
-		}
-		else if (parseState == ParseState.IN_TAG)
-		{
-			tagProcessor.processLine(currentLine);
-		}
-		else if (currentLine.contains(JITWatchConstants.NATIVE_CODE_METHOD_MARK))
-		{
-			String sig = ParseUtil.convertNativeCodeMethodName(currentLine);
-
-			currentMember = findMemberWithSignature(sig);
-
-			parseState = ParseState.IN_NATIVE;
-
-			appendNativeCode(currentLine);
+			asmProcessor.handleLine(currentLine);
 		}
 
 		currentLineNumber++;
 	}
 
 	private void handleTag(Tag tag)
-	{
-		if (parseState == ParseState.IN_NATIVE)
-		{
-			// TODO: chase up bug report for mangled hotspot output
-			completeNativeCode();
-		}
-
+	{		
 		String tagName = tag.getName();
 
 		switch (tagName)
 		{
-		case JITWatchConstants.TAG_VM_VERSION:
+		case TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
 
-		case JITWatchConstants.TAG_TASK_QUEUED:
+		case TAG_TASK_QUEUED:
 			handleTagQueued(tag);
 			break;
 
-		case JITWatchConstants.TAG_NMETHOD:
+		case TAG_NMETHOD:
 			handleTagNMethod(tag);
 			break;
 
-		case JITWatchConstants.TAG_TASK:
+		case TAG_TASK:
 			handleTagTask(tag);
 			break;
 
-		case JITWatchConstants.TAG_START_COMPILE_THREAD:
+		case TAG_START_COMPILE_THREAD:
 			handleStartCompileThread(tag);
 			break;
 
@@ -273,25 +289,6 @@ public class HotSpotLogParser implements ILogParser
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
 		model.setVmVersionRelease(release);
-	}
-
-	private void appendNativeCode(String line)
-	{
-		nativeCodeBuilder.append(line).append("\n");
-	}
-
-	private void completeNativeCode()
-	{
-		parseState = ParseState.READY;
-
-		if (currentMember != null)
-		{
-			AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(nativeCodeBuilder.toString());
-			
-			currentMember.setAssembly(asmMethod);
-		}
-
-		nativeCodeBuilder.delete(0, nativeCodeBuilder.length());
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -324,7 +321,7 @@ public class HotSpotLogParser implements ILogParser
 		return threadName == null;
 	}
 
-	private IMetaMember findMemberWithSignature(String logSignature)
+	public IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember metaMember = null;
 
@@ -400,19 +397,19 @@ public class HotSpotLogParser implements ILogParser
 	{
 		handleMethodLine(tag, EventType.TASK);
 
-		Tag tagCodeCache = tag.getFirstNamedChild(JITWatchConstants.TAG_CODE_CACHE);
+		Tag tagCodeCache = tag.getFirstNamedChild(TAG_CODE_CACHE);
 
 		if (tagCodeCache != null)
 		{
 			// copy timestamp from parent <task> tag used for graphing code
 			// cache
-			String stamp = tag.getAttribute(JITWatchConstants.ATTR_STAMP);
-			tagCodeCache.getAttrs().put(JITWatchConstants.ATTR_STAMP, stamp);
+			String stamp = tag.getAttribute(ATTR_STAMP);
+			tagCodeCache.getAttrs().put(ATTR_STAMP, stamp);
 
 			model.addCodeCacheTag(tagCodeCache);
 		}
 
-		Tag tagTaskDone = tag.getFirstNamedChild(JITWatchConstants.TAG_TASK_DONE);
+		Tag tagTaskDone = tag.getFirstNamedChild(TAG_TASK_DONE);
 
 		if (tagTaskDone != null)
 		{
@@ -442,7 +439,7 @@ public class HotSpotLogParser implements ILogParser
 	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-
+		
 		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
 
@@ -513,7 +510,7 @@ public class HotSpotLogParser implements ILogParser
 		{
 			hasTraceClassLoad = true;
 		}
-		
+
 		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
@@ -529,7 +526,7 @@ public class HotSpotLogParser implements ILogParser
 		try
 		{
 			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-			
+
 			if (clazz != null)
 			{
 				model.buildMetaClass(fqClassName, clazz);
@@ -537,11 +534,18 @@ public class HotSpotLogParser implements ILogParser
 		}
 		catch (ClassNotFoundException cnf)
 		{
-			logError("ClassNotFoundException: '" + fqClassName);
+			logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
 		}
 		catch (NoClassDefFoundError ncdf)
 		{
-			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage());
+			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
+		}
+		catch (Throwable t)
+		{
+			// Throwable because of possible VerifyError
+			
+			logger.error("Could not addClassToModel {}", fqClassName, t);
+			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
 	}
 

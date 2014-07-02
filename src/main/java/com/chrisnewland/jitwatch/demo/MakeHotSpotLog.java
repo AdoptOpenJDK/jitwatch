@@ -5,15 +5,10 @@
  */
 package com.chrisnewland.jitwatch.demo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 // Demo class to generate an example hotspot.log
 // run with VM arguments
@@ -30,8 +25,6 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MakeHotSpotLog
 {
-	private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
-
 	public MakeHotSpotLog(int iterations)
 	{
 		addVariable(iterations);
@@ -39,13 +32,21 @@ public class MakeHotSpotLog
 		randomBranchTest(iterations);
 		changingBranchTest(iterations);
 		intrinsicTest(iterations);
+		intrinsicTestMin(iterations);
 		tooBigToInline(iterations);
 		testSort();
 		testCallChain(iterations);
-		testCallChain2(iterations);
+		
+		long result = testCallChainReturn(iterations);
+		
+		// ensure code not eliminated by using result
+		System.out.println("testCallChainReturn: " + result);
+		
 		testCallChain3();
 		testLeaf(iterations);
 		testToUpperCase(iterations);
+		testLoopUnrolling(iterations);
+		padMethod();
 	}
 
 	private void addVariable(int iterations)
@@ -57,7 +58,7 @@ public class MakeHotSpotLog
 			count = add(count, i);
 		}
 
-		logger.info("addVariable: {}", count);
+		System.out.println("addVariable: " + count);
 	}
 
 	private void addConstant(int iterations)
@@ -69,7 +70,7 @@ public class MakeHotSpotLog
 			count = add(count, 1);
 		}
 
-		logger.info("addConstant: {}", count);
+		System.out.println("addConstant: " + count);
 	}
 
 	private void randomBranchTest(int iterations)
@@ -92,7 +93,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("randomBranchTest: {} {} {}", count, adds, subs);
+		System.out.println("randomBranchTest: " + count + " " + adds + " " + subs);
 	}
 
 	private void changingBranchTest(int iterations)
@@ -115,7 +116,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("changingBranchTest: {} {} {}", count, adds, subs);
+		System.out.println("changingBranchTest: " + count + " " + adds + " " + subs);
 	}
 
 	private void intrinsicTest(int iterations)
@@ -136,8 +137,24 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("intrinsicTest: {}", dstSum);
+		System.out.println("intrinsicTest: " + dstSum);
 	}
+	
+	//http://openjdk.5641.n7.nabble.com/Intrinsics-for-Math-min-and-max-td183747.html
+	private void intrinsicTestMin(int iterations)
+	{
+		long sum = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			// x86 has intrinsic for Math.min
+			
+			sum = Math.min(i, i+1);
+		}
+
+		System.out.println("intrinsicTest: " + sum);
+	}
+
 
 	private long add(long a, long b)
 	{
@@ -158,7 +175,7 @@ public class MakeHotSpotLog
 			count = bigMethod(count, i);
 		}
 
-		logger.warn("tooBigToInline: {}", count);
+		System.out.println("tooBigToInline: " + count);
 	}
 
 	private long bigMethod(long count, int i)
@@ -253,7 +270,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.info("list sum: {}", sum);
+		System.out.println("list sum: " + sum);
 	}
 
 	private void testCallChain(long iterations)
@@ -266,7 +283,7 @@ public class MakeHotSpotLog
 			count = chainB1(count);
 		}
 
-		logger.info("testCallChain: {}", count);
+		System.out.println("testCallChain: " + count);
 	}
 
 	private long chainA1(long count)
@@ -305,22 +322,22 @@ public class MakeHotSpotLog
 		return count - 3;
 	}
 
-	private void testCallChain2(long iterations)
+	public long testCallChainReturn(long iterations)
 	{
 		long count = 0;
 
 		for (int i = 0; i < iterations; i++)
 		{
-			count = chainC1(count);
-			count = chainC2(count);
+			count = chainA1(count);
+			count = chainB1(count);
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		return count;
 	}
-	
+
 	private boolean test(int count, int iterations)
 	{
-		return count < (0.9 * (double)iterations);
+		return count < (0.9 * (double) iterations);
 	}
 
 	private void testCallChain3()
@@ -341,7 +358,7 @@ public class MakeHotSpotLog
 			}
 		}
 
-		logger.warn("testCallChain2: {}", count);
+		System.out.println("testCallChain3: " + count);
 	}
 
 	private long chainC1(long inCount)
@@ -373,7 +390,7 @@ public class MakeHotSpotLog
 			count = leaf4(count);
 		}
 
-		logger.info("testLeaf: {}", count);
+		System.out.println("testLeaf: " + count);
 	}
 
 	private long leaf1(long count)
@@ -395,23 +412,23 @@ public class MakeHotSpotLog
 	{
 		return count + 4;
 	}
-	
+
 	private void testToUpperCase(long iterations)
-	{		
+	{
 		String sentence = "The quick brown fox jumps over the lazy dog\n";
-		
-		String[] lcWords = sentence.split(S_SPACE);
+
+		String[] lcWords = sentence.split(" ");
 
 		int wordCount = lcWords.length;
 
 		String[] ucWords = new String[wordCount];
-		
+
 		for (long l = 0; l < iterations; l++)
 		{
 			toUpper(lcWords, ucWords, wordCount);
 		}
 	}
-	
+
 	private void toUpper(String[] lcWords, String[] ucWords, int wordCount)
 	{
 		for (int w = 0; w < wordCount; w++)
@@ -420,9 +437,67 @@ public class MakeHotSpotLog
 		}
 	}
 
+	private void testLoopUnrolling(long iterations)
+	{
+		long result = 0;
+		int toAdd = 4;
+
+		for (long l = 0; l < iterations; l++)
+		{
+			result += timesTen(toAdd);
+		}
+		
+		for (long l = 0; l < iterations; l++)
+		{
+			result += timesHundred(toAdd);
+		}
+		
+		System.out.println("testLoopUnrolling: " + result);
+	}
+
+	private int timesTen(int number)
+	{
+		int result = 0;
+
+		for (int i = 0; i < 10; i++)
+		{
+			result += number;
+		}
+
+		return result;
+	}
+	
+	private int timesHundred(int number)
+	{
+		int result = 0;
+
+		for (int i = 0; i < 100; i++)
+		{
+			result += number;
+		}
+
+		return result;
+	}
+	
+	// sacrificial dummy method
+	// in case hotspot truncates the LogCompilation output
+	// as it exits and produces a <fragment>
+	private void padMethod()
+	{
+		try
+		{
+			Thread.sleep(500);
+			System.out.println("done");
+		}
+		catch (InterruptedException ie)
+		{
+			ie.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args)
 	{
-		int iterations = 1_000_000;
+		int iterations = 20_000;
 
 		if (args.length == 1)
 		{
@@ -432,7 +507,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("usage: MakeHotSpotLog [iterations]", nfe);
+				System.out.println("usage: MakeHotSpotLog [iterations]");
 			}
 		}
 

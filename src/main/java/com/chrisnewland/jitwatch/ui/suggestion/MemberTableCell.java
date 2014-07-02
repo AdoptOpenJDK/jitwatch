@@ -62,7 +62,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 			});
 
 			lblMetaClass.setText(member.getMetaClass().getFullyQualifiedName());
-			lblMetaMember.setText(member.toStringUnqualifiedMethodName());
+			lblMetaMember.setText(member.toStringUnqualifiedMethodName(false));
 		}
 	}
 }

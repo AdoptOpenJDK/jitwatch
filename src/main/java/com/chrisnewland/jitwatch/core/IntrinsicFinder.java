@@ -40,7 +40,6 @@ public final class IntrinsicFinder
 
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				// TODO too deep!
 				if (parsePhase != null)
 				{
 					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);

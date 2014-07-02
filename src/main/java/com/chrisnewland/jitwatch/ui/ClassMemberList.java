@@ -266,7 +266,7 @@ public class ClassMemberList extends VBox
 			}
             else
             {
-				setText(item.toStringUnqualifiedMethodName());
+				setText(item.toStringUnqualifiedMethodName(false));
 
 				if (item.isCompiled())
 				{

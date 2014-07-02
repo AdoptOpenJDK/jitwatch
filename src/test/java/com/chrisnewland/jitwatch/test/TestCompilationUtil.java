@@ -11,14 +11,44 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.chrisnewland.jitwatch.util.CompilationUtil;
-import static com.chrisnewland.jitwatch.util.CompilationUtil.*;
+import com.chrisnewland.jitwatch.sandbox.ClassCompiler;
+import com.chrisnewland.jitwatch.sandbox.Sandbox;
+import com.chrisnewland.jitwatch.util.FileUtil;
 
 public class TestCompilationUtil
 {
+	private static final File TEST_SOURCE_FILE = new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "com" + File.separator + "chrisnewland"
+			+ File.separator + "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.java");
 
+	private static final File TEST_CLASS_FILE = new File(Sandbox.SANDBOX_CLASS_DIR.toFile(), "com" + File.separator + "chrisnewland" + File.separator
+			+ "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.class");
+
+	@Before
+	public void setUp()
+	{
+		deleteFile(TEST_SOURCE_FILE);
+		deleteFile(TEST_CLASS_FILE);
+	}
+	
+	@After
+	public void tearDown()
+	{
+		deleteFile(TEST_SOURCE_FILE);
+		deleteFile(TEST_CLASS_FILE);
+	}
+	
+	private void deleteFile(File file)
+	{
+		if (file.exists() && file.isFile())
+		{
+			file.delete();
+		}
+	}
+	
 	@Test
 	public void testCompileSimple()
 	{
@@ -33,24 +63,20 @@ public class TestCompilationUtil
 
 		try
 		{
-			File f = CompilationUtil.writeSource("com.chrisnewland.jitwatch.compiletest.CompileTest", builder.toString());
+			File f = FileUtil.writeSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "com.chrisnewland.jitwatch.compiletest.CompileTest", builder.toString());
 
-			File expectedSourceFile = new File(SANDBOX_SOURCE_DIR.toFile(), "com" + File.separator + "chrisnewland"
-					+ File.separator + "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.java");
-
-			assertTrue(expectedSourceFile.exists());
+			assertTrue(TEST_SOURCE_FILE.exists());
 
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
 
-			boolean success = CompilationUtil.compile(sources);
+			ClassCompiler compiler = new ClassCompiler();
+			
+			boolean success = compiler.compile(sources, Sandbox.SANDBOX_CLASS_DIR.toFile());
 
 			assertTrue(success);
 
-			File expectedClassFile = new File(SANDBOX_CLASS_DIR.toFile(), "com" + File.separator + "chrisnewland" + File.separator
-					+ "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.class");
-
-			assertTrue(expectedClassFile.exists());
+			assertTrue(TEST_CLASS_FILE.exists());
 		}
 		catch (Exception e)
 		{

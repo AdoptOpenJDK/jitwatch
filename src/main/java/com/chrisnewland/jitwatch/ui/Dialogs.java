@@ -54,16 +54,19 @@ public final class Dialogs
 			sizeToScene();
 
 			centerOnScreen();
-			
+
 			showAndWait();
 		}
 	}
 
-	public static Response showYesNoDialog(Stage owner, String message, String title)
+	public static Response showYesNoDialog(Stage owner, String title, String message)
 	{
 		VBox vBox = new VBox();
+		vBox.setAlignment(Pos.CENTER);
+		vBox.setSpacing(10);
+		vBox.setPadding(new Insets(10));
 
-		Scene scene = new Scene(vBox, 640, 320);
+		Scene scene = new Scene(vBox, 640, 80);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
@@ -93,13 +96,14 @@ public final class Dialogs
 
 		BorderPane bp = new BorderPane();
 
-		HBox buttons = new HBox();
+		HBox hBox = new HBox();
+		hBox.setAlignment(Pos.CENTER);
+		hBox.setSpacing(10);
+		hBox.setPadding(new Insets(10));
 
-		buttons.setAlignment(Pos.CENTER);
+		hBox.getChildren().addAll(btnYes, btnNo);
 
-		buttons.getChildren().addAll(btnYes, btnNo);
-
-		bp.setCenter(buttons);
+		bp.setCenter(hBox);
 
 		vBox.getChildren().addAll(new Label(message), bp);
 

@@ -3,6 +3,7 @@ package com.chrisnewland.jitwatch.test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,18 +15,55 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import com.chrisnewland.jitwatch.core.TagProcessor;
 import com.chrisnewland.jitwatch.loader.BytecodeLoader;
+import com.chrisnewland.jitwatch.model.AnnotationException;
 import com.chrisnewland.jitwatch.model.CompilerName;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.Tag;
 import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
-import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
+import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.util.JournalUtil;
 
 import static org.junit.Assert.*;
 
 public class TestJournalUtil
 {
+	@Test
+	public void testSanityCheckInlineFail()
+	{
+		BytecodeInstruction instrAaload = new BytecodeInstruction();
+		instrAaload.setOpcode(Opcode.AALOAD);
+		
+		assertFalse(JournalUtil.sanityCheckInline(instrAaload));
+	}
+	
+	@Test
+	public void testSanityCheckInlinePass()
+	{
+		BytecodeInstruction instrInvokeSpecial = new BytecodeInstruction();
+		instrInvokeSpecial.setOpcode(Opcode.INVOKESPECIAL);
+		
+		assertTrue(JournalUtil.sanityCheckInline(instrInvokeSpecial));
+	}
+	
+	@Test
+	public void testSanityCheckBranchFail()
+	{
+		BytecodeInstruction instrAaload = new BytecodeInstruction();
+		instrAaload.setOpcode(Opcode.AALOAD);
+		
+		assertFalse(JournalUtil.sanityCheckBranch(instrAaload));
+	}
+	
+	@Test
+	public void testSanityCheckBranchPass()
+	{
+		BytecodeInstruction instrIfcmpne = new BytecodeInstruction();
+		instrIfcmpne.setOpcode(Opcode.IF_ICMPNE);
+		
+		assertTrue(JournalUtil.sanityCheckBranch(instrIfcmpne));
+	}
+	
 	@Test
 	public void testJava7NonTieredLeaf()
 	{
@@ -629,14 +667,23 @@ public class TestJournalUtil
 	
 		assertEquals(8, result.size());
 
-		checkLine(result, 52, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 56, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 59, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 62, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 10, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 16, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 22, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 28, "Inlined: Yes", Color.GREEN);
+		int bcOffsetStringBuilderInit = 52;
+		int bcOffsetMakeHotSpotLogLeaf1 = 10;
+		int bcOffsetMakeHotSpotLogLeaf2 = 16;
+		int bcOffsetMakeHotSpotLogLeaf3 = 22;
+		int bcOffsetMakeHotSpotLogLeaf4 = 28;
+		int bcOffsetStringBuilderAppend = 56;
+		int bcOffsetStringBuilderToString = 59;
+		int bcOffsetPrintStreamPrintln = 62;
+
+		checkLine(result, bcOffsetStringBuilderInit, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf1, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf2, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf3, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf4, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetStringBuilderAppend, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetStringBuilderToString, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetPrintStreamPrintln, "Inlined: Yes", Color.GREEN);
 	}	
 
 	@Test
@@ -1624,11 +1671,22 @@ public class TestJournalUtil
 			bytecodeBuilder.append(bcLine.trim()).append(S_NEWLINE);
 		}
 		
-		MemberBytecode memberBytecode = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
+		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
+			
+		Map<Integer, LineAnnotation> result = new HashMap<>();
 		
-		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		try
+		{
+			result = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+		}
+		catch (AnnotationException annoEx)
+		{
+			annoEx.printStackTrace();
+			
+			fail();
+		}
 		
-		return JournalUtil.buildBytecodeAnnotations(journal, instructions);		
+		return result;
 	}
 	
 	private void checkLine(Map<Integer, LineAnnotation> result, int index, String annotation, Color colour)

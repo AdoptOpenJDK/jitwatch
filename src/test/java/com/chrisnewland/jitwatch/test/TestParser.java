@@ -280,7 +280,7 @@ public class TestParser
         Method m = getMethod(className, methodName, new Class<?>[] { int.class });
         MetaMethod method = new MetaMethod(m, null);
 
-        String uqToString = method.toStringUnqualifiedMethodName();
+        String uqToString = method.toStringUnqualifiedMethodName(false);
         
         assertEquals(-1, uqToString.indexOf("volatile"));
     }

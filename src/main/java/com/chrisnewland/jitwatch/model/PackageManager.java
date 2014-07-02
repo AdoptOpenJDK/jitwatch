@@ -10,10 +10,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PackageManager
 {
+	private static final Logger logger = LoggerFactory.getLogger(PackageManager.class);
+	
 	// class name -> MetaClass
 	private Map<String, MetaClass> metaClasses;
 
@@ -51,6 +56,8 @@ public class PackageManager
 
 	public MetaPackage buildPackage(String packageName)
 	{
+		logger.debug("Building package {}", packageName);
+		
 		String[] parts = packageName.split("\\.");
 
 		StringBuilder builder = new StringBuilder();
@@ -64,7 +71,7 @@ public class PackageManager
 		{
 			if (builder.length() > 0)
 			{
-				builder.append('.');
+				builder.append(C_DOT);
 			}
 
 			builder.append(part);

@@ -33,32 +33,41 @@ public class CompileChainWalker
 
 	public CompileNode buildCallTree(IMetaMember mm)
 	{
+		logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+
 		CompileNode root = null;
 
-		if (mm.isCompiled())
+		Journal journal = mm.getJournal();
+
+		Task lastTaskTag = JournalUtil.getLastTask(journal);
+
+		if (lastTaskTag != null)
 		{
-			Journal journal = mm.getJournal();
+			logger.debug("lastTaskTag not null");
 
-			Task lastTaskTag = JournalUtil.getLastTask(journal);
+			parseDictionary = lastTaskTag.getParseDictionary();
 
-			if (lastTaskTag != null)
+			Tag parsePhase = JournalUtil.getParsePhase(journal);
+
+			if (parsePhase != null)
 			{
-				parseDictionary = lastTaskTag.getParseDictionary();
+				logger.debug("parsePhase not null");
 
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
+				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
-				// TODO fix for JDK8
-				if (parsePhase != null)
+				for (Tag parseTag : parseTags)
 				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+					String id = parseTag.getAttribute(ATTR_METHOD);
 
-					for (Tag parseTag : parseTags)
+					// only initialise on first parse tag.
+					// there may be multiple if late_inline
+					// is detected
+					if (root == null)
 					{
-						String id = parseTag.getAttribute(ATTR_METHOD);
-
 						root = new CompileNode(mm, id);
-						processParseTag(parseTag, root);
 					}
+
+					processParseTag(parseTag, root);
 				}
 			}
 		}
@@ -66,110 +75,25 @@ public class CompileChainWalker
 		return root;
 	}
 
-	public String buildCompileChainTextRepresentation(CompileNode node)
+	private void processParseTag(Tag parseTag, CompileNode parentNode)
 	{
-		StringBuilder builder = new StringBuilder();
+		logger.info("processParseTag");
 
-		show(node, builder, 0);
-
-		return builder.toString();
-	}
-
-	private void show(CompileNode node, StringBuilder builder, int depth)
-	{
-		if (depth > 0)
-		{
-			for (int i = 0; i < depth; i++)
-			{
-				builder.append("\t");
-			}
-
-			builder.append(" -> ");
-
-			builder.append(node.getMember().getMemberName());
-
-			builder.append("[");
-
-			if (node.getMember().isCompiled())
-			{
-				builder.append("C");
-			}
-
-			if (node.isInlined())
-			{
-				builder.append("I");
-			}
-
-			builder.append("]");
-
-			if (depth == 0)
-			{
-				builder.append("\n");
-			}
-		}
-
-		for (CompileNode child : node.getChildren())
-		{
-			show(child, builder, depth + 1);
-		}
-
-		if (node.getChildren().size() == 0)
-		{
-			builder.append("\n");
-		}
-	}
-
-	private void processParseTag(Tag parseTag, CompileNode node)
-	{
 		String methodID = null;
 		boolean inlined = false;
 		String inlineReason = null;
 
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
-        // TODO - this switch code is appearing a lot
-        // should probably refactor with an interface
-        // or visitor pattern
-        for (Tag child : parseTag.getChildren())
-        {
-            new ParseAllTagTypes(node,
-                    methodID,
-                    inlined,
-                    inlineReason,
-                    methodAttrs,
-                    callAttrs,
-                    child).invoke();
-        }
-    }
 
-    private class ParseAllTagTypes {
-        private CompileNode node;
-        private String methodID;
-        private boolean inlined;
-        private String inlineReason;
-        private Map<String, String> methodAttrs;
-        private Map<String, String> callAttrs;
-        private Tag child;
-
-        public ParseAllTagTypes(CompileNode node, String methodID, boolean inlined, String inlineReason, Map<String, String> methodAttrs, Map<String, String> callAttrs, Tag child) {
-            this.node = node;
-            this.methodID = methodID;
-            this.inlined = inlined;
-            this.inlineReason = inlineReason;
-            this.methodAttrs = methodAttrs;
-            this.callAttrs = callAttrs;
-            this.child = child;
-        }
-
-        public ParseAllTagTypes invoke() {
 		// TODO - this switch code is appearing a lot
 		// should probably refactor with an interface
 		// or visitor pattern
-		for (Tag eachChild : child.getChildren())
+		for (Tag child : parseTag.getChildren())
 		{
-			String tagName = eachChild.getName();
-			Map<String, String> tagAttrs = eachChild.getAttrs();
-			
+			String tagName = child.getName();
+			Map<String, String> tagAttrs = child.getAttrs();
+
 			switch (tagName)
 			{
 			case TAG_BC:
@@ -196,13 +120,29 @@ public class CompileChainWalker
 			}
 				break;
 
-            case TAG_INLINE_FAIL:
-            {
-                PerformTAG_INLINE_FAIL performTagInlineFail = new PerformTAG_INLINE_FAIL(node, methodID, methodAttrs, callAttrs, tagAttrs).invoke();
-                inlined = performTagInlineFail.isInlined();
-                methodID = performTagInlineFail.getMethodID();
-            }
-            break;
+			case TAG_INLINE_FAIL:
+			{
+				inlined = false; // reset
+
+				IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
+
+				if (childCall != null)
+				{
+					CompileNode childNode = new CompileNode(childCall, methodID);
+					parentNode.addChild(childNode);
+
+					String reason = tagAttrs.get(ATTR_REASON);
+					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+					childNode.setInlined(inlined, annotationText);
+				}
+				else
+				{
+					logger.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
+				}
+
+				methodID = null;
+			}
+				break;
 
 			case TAG_INLINE_SUCCESS:
 				inlined = true;
@@ -210,94 +150,35 @@ public class CompileChainWalker
 				inlineReason = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
 				break;
 
-            case TAG_PARSE: // call depth
-                {
-                    performTagParse(node, methodID, inlined, inlineReason, child, tagAttrs);
-                }
-                break;
+			case TAG_PARSE: // call depth
+			{
+				String childMethodID = tagAttrs.get(ATTR_METHOD);
+
+				IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
+
+				if (childCall != null)
+				{
+					CompileNode childNode = new CompileNode(childCall, childMethodID);
+
+					parentNode.addChild(childNode);
+
+					if (methodID != null && methodID.equals(childMethodID))
+					{
+						childNode.setInlined(inlined, inlineReason);
+					}
+
+					processParseTag(child, childNode);
+				}
+				else
+				{
+					logger.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
+				}
+			}
+				break;
 
 			default:
 				break;
 			}
-        }
-            return this;
-        }
-
-        private void performTagParse(CompileNode node, String methodID, boolean inlined, String inlineReason, Tag child, Map<String, String> tagAttrs) {
-            {
-                String childMethodID = tagAttrs.get(ATTR_METHOD);
-
-                IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
-
-                if (childCall != null)
-                {
-                    CompileNode childNode = new CompileNode(childCall, childMethodID);
-                    node.addChild(childNode);
-
-                    if (methodID != null && methodID.equals(childMethodID))
-                    {
-                        childNode.setInlined(inlined, inlineReason);
-                    }
-
-                    processParseTag(child, childNode);
-                }
-                else
-                {
-                    logger.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
-                }
-            }
-        }
-    }
-
-    private class PerformTAG_INLINE_FAIL {
-        private CompileNode node;
-        private String methodID;
-        private Map<String, String> methodAttrs;
-        private Map<String, String> callAttrs;
-        private Map<String, String> tagAttrs;
-        private boolean inlined;
-
-        public PerformTAG_INLINE_FAIL(CompileNode node,
-                                      String methodID,
-                                      Map<String, String> methodAttrs,
-                                      Map<String, String> callAttrs,
-                                      Map<String, String> tagAttrs) {
-            this.node = node;
-            this.methodID = methodID;
-            this.methodAttrs = methodAttrs;
-            this.callAttrs = callAttrs;
-            this.tagAttrs = tagAttrs;
-        }
-
-        public String getMethodID() {
-            return methodID;
-        }
-
-        public boolean isInlined() {
-            return inlined;
-        }
-
-        public PerformTAG_INLINE_FAIL invoke() {
-            inlined = false; // reset
-
-            IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
-
-            if (childCall != null)
-            {
-                CompileNode childNode = new CompileNode(childCall, methodID);
-                node.addChild(childNode);
-
-                String reason = tagAttrs.get(ATTR_REASON);
-                String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-                childNode.setInlined(inlined, annotationText);
-            }
-            else
-            {
-                logger.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
-            }
-
-            methodID = null;
-            return this;
-        }
-    }
+		}
+	}
 }

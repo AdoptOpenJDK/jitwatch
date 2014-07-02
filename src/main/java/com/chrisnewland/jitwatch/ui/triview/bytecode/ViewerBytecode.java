@@ -1,6 +1,7 @@
 package com.chrisnewland.jitwatch.ui.triview.bytecode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,10 +13,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import com.chrisnewland.jitwatch.model.AnnotationException;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.LineAnnotation;
 import com.chrisnewland.jitwatch.model.bytecode.BytecodeInstruction;
+import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
 import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.ui.IStageAccessProxy;
@@ -27,20 +30,30 @@ import com.chrisnewland.jitwatch.util.JournalUtil;
 
 public class ViewerBytecode extends Viewer
 {
-	private MemberBytecode memberBytecode;
+	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
+	private boolean offsetMismatchDetected = false;
+	
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
-		super(stageAccessProxy, lineListener, lineType);
+		super(stageAccessProxy, lineListener, lineType, true);
 	}
 
-	public void setContent(IMetaMember member, List<String> classLocations)
+	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
 	{
-		memberBytecode = member.getBytecodeForMember(classLocations);
-
-		List<BytecodeInstruction> instructions = memberBytecode.getBytecodeInstructions();
+		offsetMismatchDetected = false;
 		
-		Map<Integer, LineAnnotation> annotations = null;
+		if (metaClassBytecode != null)
+		{
+			MemberBytecode memberBytecode = metaClassBytecode.getMemberBytecode(member);
+
+			if (memberBytecode != null)
+			{
+				instructions = memberBytecode.getInstructions();
+			}
+		}
+
+		Map<Integer, LineAnnotation> annotations = new HashMap<Integer, LineAnnotation>();
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
@@ -51,13 +64,22 @@ public class ViewerBytecode extends Viewer
 		{
 			Journal journal = member.getJournal();
 
-			annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
-			
+			try
+			{
+				annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+			}
+			catch (AnnotationException annoEx)
+			{
+				logger.error("class bytcode mismatch: {}", annoEx.getMessage());
+
+				offsetMismatchDetected = true;
+			}
+
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
 			for (final BytecodeInstruction instruction : instructions)
 			{
-				Label lblLine = new Label(instruction.toString(maxOffset));
+				BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset);
 
 				labels.add(lblLine);
 
@@ -69,19 +91,19 @@ public class ViewerBytecode extends Viewer
 				{
 					LineAnnotation annotation = annotations.get(offset);
 
+					String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+
 					if (annotation != null)
 					{
 						annotationText = annotation.getAnnotation();
 						Color colour = annotation.getColour();
 
-						lblLine.setStyle(STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";");
+						unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";";
 
 						lblLine.setTooltip(new Tooltip(annotationText));
 					}
-					else
-					{
-						lblLine.setStyle(STYLE_UNHIGHLIGHTED);
-					}
+
+					lblLine.setUnhighlightedStyle(unhighlightedStyle);
 				}
 
 				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
@@ -106,23 +128,28 @@ public class ViewerBytecode extends Viewer
 		setContent(labels);
 	}
 	
+	public boolean isOffsetMismatchDetected()
+	{
+		return offsetMismatchDetected;
+	}
+
 	public int getLineIndexForBytecodeOffset(int offset)
 	{
 		int result = -1;
-		
+
 		int pos = 0;
-		
-		for (BytecodeInstruction instruction : memberBytecode.getBytecodeInstructions())
+
+		for (BytecodeInstruction instruction : instructions)
 		{
 			if (instruction.getOffset() == offset)
 			{
 				result = pos;
 				break;
 			}
-			
+
 			pos++;
 		}
-		
+
 		return result;
 	}
 

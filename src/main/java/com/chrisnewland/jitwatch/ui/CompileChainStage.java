@@ -5,6 +5,7 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 import com.chrisnewland.jitwatch.chain.CompileNode;
 import com.chrisnewland.jitwatch.model.IMetaMember;
 
@@ -74,8 +75,17 @@ public class CompileChainStage extends Stage
     }
 
     public void redraw()
-    {
+    {  	
         show(rootNode, X_OFFSET, Y_OFFSET, 0);
+        
+        if (rootNode.getChildren().size() == 0)
+        {
+            Text text = new Text(rootNode.getMember().toStringUnqualifiedMethodName(false) + " makes no calls");
+            text.setX(X_OFFSET);
+            text.setY(y);
+            
+            pane.getChildren().add(text);
+        }
     }
 
     private void show(CompileNode node, double x, double inParentY, int depth)
@@ -110,7 +120,7 @@ public class CompileChainStage extends Stage
         String labelText = getLabelText(node);
 
         StringBuilder tipBuilder = new StringBuilder();
-        tipBuilder.append(node.getMember().toString()).append("\n");
+        tipBuilder.append(node.getMember().toString()).append(C_NEWLINE);
 
         Text text = new Text(labelText);
 
@@ -145,7 +155,7 @@ public class CompileChainStage extends Stage
             tipBuilder.append(inlineReason);
         }
 
-        tipBuilder.append("\n");
+        tipBuilder.append(C_NEWLINE);
 
         if (depth > 0)
         {

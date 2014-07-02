@@ -172,7 +172,7 @@ public class MemberSignatureParts
 			{
 				char c = stripped.charAt(i);
 
-				if (c == ',')
+				if (c == C_COMMA)
 				{
 					if (angleBracketDepth == 0)
 					{
@@ -288,13 +288,13 @@ public class MemberSignatureParts
 
 			for (String mod : modifierList)
 			{
-				sb.append(mod).append(',');
+				sb.append(mod).append(C_COMMA);
 			}
 
 			sb.deleteCharAt(sb.length() - 1);
 		}
 
-		sb.append("\n");
+		sb.append(C_NEWLINE);
 
 		sb.append("generics: ");
 
@@ -312,18 +312,18 @@ public class MemberSignatureParts
 					sb.append(entry.getKey());
 				}
 
-				sb.append(',');
+				sb.append(C_COMMA);
 
 			}
 
 			sb.deleteCharAt(sb.length() - 1);
 		}
 
-		sb.append("\n");
+		sb.append(C_NEWLINE);
 
-		sb.append("returnType: ").append(returnType).append("\n");
+		sb.append("returnType: ").append(returnType).append(C_NEWLINE);
 
-		sb.append("memberName: ").append(memberName).append("\n");
+		sb.append("memberName: ").append(memberName).append(C_NEWLINE);
 
 		sb.append("paramTypes: ");
 
@@ -332,13 +332,13 @@ public class MemberSignatureParts
 
 			for (String param : paramTypeList)
 			{
-				sb.append(param).append(',');
+				sb.append(param).append(C_COMMA);
 			}
 
 			sb.deleteCharAt(sb.length() - 1);
 		}
 
-		sb.append("\n");
+		sb.append(C_NEWLINE);
 
 		return sb.toString();
 	}

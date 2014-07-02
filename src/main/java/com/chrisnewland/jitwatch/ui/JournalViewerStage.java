@@ -23,10 +23,9 @@ import javafx.stage.WindowEvent;
 
 public class JournalViewerStage extends AbstractTextViewerStage
 {
-	// make this a TextFlow in Java8
 	public JournalViewerStage(final JITWatchUI parent, String title, Journal journal)
 	{
-		super(parent, title);
+		super(parent, title, false);
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{

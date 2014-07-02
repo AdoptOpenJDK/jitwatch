@@ -560,11 +560,11 @@ public final class ParseUtil
 	}
 
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
-	{
+	{		
 		IMetaMember result = null;
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
-
+		
 		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
@@ -624,11 +624,11 @@ public final class ParseUtil
         		}
         		catch (ClassNotFoundException cnf)
         		{
-        			logger.error("ClassNotFoundException: '" + metaClassName);
+        			logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
         		}
         		catch (NoClassDefFoundError ncdf)
         		{
-        			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage());
+        			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
         		}
 			}
 
@@ -671,7 +671,7 @@ public final class ParseUtil
 
 	public static String convertNativeCodeMethodName(String inLine)
 	{
-		String line = inLine.replace(ENTITY_APOS, S_QUOTE);
+		String line = inLine.replace(S_ENTITY_APOS, S_QUOTE);
 
 		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
 
@@ -693,4 +693,57 @@ public final class ParseUtil
 
 		return result;
 	}
+	
+	public static String getPackageFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			if (line.startsWith(S_PACKAGE) && line.endsWith(S_SEMICOLON))
+			{
+				result = line.substring(S_PACKAGE.length(), line.length() - 1).trim();
+			}
+		}
+
+		if (result == null)
+		{
+			result = S_EMPTY;
+		}
+
+		return result;
+	}
+	
+	public static String getClassFromSource(String source)
+	{
+		String result = null;
+
+		String[] lines = source.split(S_NEWLINE);
+
+		String classToken = S_SPACE + S_CLASS + S_SPACE;
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			int classTokenPos = line.indexOf(classToken);
+
+			if (classTokenPos != -1)
+			{
+				result = line.substring(classTokenPos + classToken.length());
+			}
+		}
+
+		if (result == null)
+		{
+			result = "";
+		}
+
+		return result;
+	}
+
 }

@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.model;
 
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 import com.chrisnewland.jitwatch.model.bytecode.ClassBC;
-import com.chrisnewland.jitwatch.model.bytecode.MemberBytecode;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 
@@ -23,39 +22,33 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
 	protected MetaClass methodClass;
-    private AssemblyMethod asmMethod = null;
+	private AssemblyMethod asmMethod = null;
 
-    private boolean isQueued = false;
-    private boolean isCompiled = false;
+	private boolean isQueued = false;
+	private boolean isCompiled = false;
 
-    private Journal journal = new Journal();
+	private Journal journal = new Journal();
 
-    private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
-    private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+	private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
+	private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
 
-    protected int modifier; // bitset
-    protected String memberName;
-    protected Class<?> returnType;
-    protected Class<?>[] paramTypes;
+	protected int modifier; // bitset
+	protected String memberName;
+	protected Class<?> returnType;
+	protected Class<?>[] paramTypes;
 
-	private static final String anyChars = "(.*)";
-	private static final String spaceZeroOrMore = "( )*";
-	private static final String spaceOneOrMore = "( )+";
-	private static final String paramName = "([0-9\\p{L}_]+)";
-	private static final String regexPackage = "([0-9\\p{L}_\\.]*)";
-	
 	@Override
 	public String getMemberName()
 	{
 		return memberName;
 	}
-	
+
 	@Override
 	public String getFullyQualifiedMemberName()
 	{
 		return methodClass.getFullyQualifiedName() + C_DOT + memberName;
 	}
-	
+
 	@Override
 	public int getModifier()
 	{
@@ -67,7 +60,39 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		return Modifier.toString(modifier);
 	}
-	
+
+	@Override
+	public boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes)
+	{
+		boolean result = false;
+
+		if (memberName.equals(inMemberName))
+		{
+			if (this.returnType.getName().equals(inReturnType.getName()))
+			{
+				if (this.paramTypes.length == inParamTypes.length)
+				{
+					boolean allMatch = true;
+
+					for (int i = 0; i < this.paramTypes.length; i++)
+					{
+						Class<?> c1 = this.paramTypes[i];
+						Class<?> c2 = inParamTypes[i];
+
+						if (!c1.getName().equals(c2.getName()))
+						{
+							allMatch = false;
+						}
+					}
+
+					result = allMatch;
+				}
+			}
+		}
+
+		return result;
+	}
+
 	@Override
 	public String getReturnTypeName()
 	{
@@ -83,7 +108,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			typeNames.add(ParseUtil.expandParameterType(paramClass.getName()));
 		}
-		
+
 		return typeNames.toArray(new String[typeNames.size()]);
 	}
 
@@ -166,34 +191,34 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public String toStringUnqualifiedMethodName()
+	public String toStringUnqualifiedMethodName(boolean fqParamTypes)
 	{
 		StringBuilder builder = new StringBuilder();
-				
+
 		if (modifier != 0)
 		{
 			builder.append(Modifier.toString(modifier)).append(C_SPACE);
 		}
-		
+
 		if (returnType != null)
 		{
-			builder.append(expandParam(returnType.getName())).append(C_SPACE);
+			builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
 		}
 
 		builder.append(memberName);
-		builder.append('(');
+		builder.append(C_OPEN_PARENTHESES);
 
 		if (paramTypes.length > 0)
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
-				builder.append(expandParam(paramClass.getName())).append(',');
+				builder.append(expandParam(paramClass.getName(), fqParamTypes)).append(C_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
-		builder.append(')');
+		builder.append(C_CLOSE_PARENTHESES);
 
 		return builder.toString();
 	}
@@ -213,6 +238,19 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
+	public boolean matchesBytecodeSignature(String signature)
+	{
+		// bytecode signatures have fully qualified object param types
+		// public static void main(java.lang.String[])
+		// constructor is fully qualified
+		// methods are not fully qualified
+
+		boolean match = toString().equals(signature) || toStringUnqualifiedMethodName(true).equals(signature);
+
+		return match;
+	}
+
+	@Override
 	public AssemblyMethod getAssembly()
 	{
 		return asmMethod;
@@ -229,8 +267,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("^");
-		builder.append(anyChars);
+		builder.append(C_HAT);
+		builder.append(REGEX_GROUP_ANY);
 
 		String modifiers = Modifier.toString(modifier);
 
@@ -250,52 +288,53 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (this instanceof MetaConstructor)
 		{
-			builder.append(regexPackage);
+			builder.append(REGEX_UNICODE_PACKAGE_NAME);
 			builder.append(StringUtil.makeUnqualified(memberName));
 		}
 		else
 		{
 			builder.append(memberName);
 		}
-		
-		builder.append(spaceZeroOrMore);
 
-		builder.append("\\(");
+		builder.append(REGEX_ZERO_OR_MORE_SPACES);
+
+		builder.append(S_ESCAPED_OPEN_PARENTHESES);
 
 		if (paramTypes.length > 0)
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
-				builder.append(spaceZeroOrMore);
+				builder.append(REGEX_ZERO_OR_MORE_SPACES);
 
 				String paramType = expandParamRegEx(paramClass.getName());
 
 				builder.append(paramType);
-				builder.append(spaceOneOrMore);
-				builder.append(paramName);
+				builder.append(REGEX_ONE_OR_MORE_SPACES);
+				builder.append(REGEX_UNICODE_PARAM_NAME);
 				builder.append(S_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
-		builder.append(spaceZeroOrMore);
-		builder.append("\\)");
-		builder.append(anyChars);
-		builder.append("$");
+		builder.append(REGEX_ZERO_OR_MORE_SPACES);
+		builder.append(S_ESCAPED_CLOSE_PARENTHESES);
+		builder.append(REGEX_GROUP_ANY);
+		builder.append(C_DOLLAR);
 
 		return builder.toString();
 	}
 
-	public static String expandParam(String inParamType)
+	public static String expandParam(String inParamType, boolean fullyQualifiedType)
 	{
-        String paramType = inParamType;
-		if (paramType.charAt(0) == '[')
+		String paramType = inParamType;
+
+		if (paramType.charAt(0) == C_OPEN_SQUARE_BRACKET)
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
 		}
 
-		if (paramType.contains(S_DOT))
+		if (paramType.contains(S_DOT) && !fullyQualifiedType)
 		{
 			paramType = StringUtil.makeUnqualified(paramType);
 		}
@@ -305,17 +344,17 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	public static String expandParamRegEx(String inParamType)
 	{
-        String paramType = inParamType;
-		if (paramType.charAt(0) == '[')
+		String paramType = inParamType;
+		if (paramType.charAt(0) == C_OPEN_SQUARE_BRACKET)
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
 
-			paramType = paramType.replace("[", "\\[").replace("]", "\\]");
+			paramType = paramType.replace(S_OPEN_SQUARE, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE, S_ESCAPED_CLOSE_SQUARE);
 		}
 
 		if (paramType.contains(S_DOT))
 		{
-			paramType = regexPackage + StringUtil.makeUnqualified(paramType);
+			paramType = REGEX_UNICODE_PACKAGE_NAME + StringUtil.makeUnqualified(paramType);
 		}
 
 		return paramType;
@@ -332,36 +371,32 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		return path;
 	}
-	
-    @Override
-    public int compareTo(IMetaMember other)
-    {
-        if (other == null)
-        {
-            return -1;
-        }
-        else
-        {
-            return getMemberName().compareTo(other.getMemberName());
-        }
-    }
-    
-    public Journal getJournal()
-    {
-    	return journal;
-    }
-    
-    public void addJournalEntry(Tag entry)
-    {        
-        journal.addEntry(entry);
-    }
-    
-	public MemberBytecode getBytecodeForMember(List<String> classLocations)
+
+	@Override
+	public int compareTo(IMetaMember other)
 	{
-		ClassBC classBytecode = getMetaClass().getClassBytecode(classLocations);
+		if (other == null)
+		{
+			return -1;
+		}
+		else
+		{
+			return getMemberName().compareTo(other.getMemberName());
+		}
+	}
 
-		MemberBytecode result = classBytecode.getMemberBytecode(this);
+	public Journal getJournal()
+	{
+		return journal;
+	}
 
-		return result;
+	public void addJournalEntry(Tag entry)
+	{
+		journal.addEntry(entry);
+	}
+
+	public ClassBC getClassBytecodeForMember(List<String> classLocations)
+	{
+		return getMetaClass().getClassBytecode(classLocations);
 	}
 }

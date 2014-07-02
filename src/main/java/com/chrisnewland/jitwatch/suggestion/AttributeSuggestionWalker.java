@@ -183,17 +183,17 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 					StringBuilder reasonBuilder = new StringBuilder();
 
 					reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to\n");
-					reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append("\n");
-					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName()).append("\n");
+					reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append(C_NEWLINE);
+					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName(false)).append(C_NEWLINE);
 					reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
 
 					if (explanationMap.containsKey(reason))
 					{
-						reasonBuilder.append(explanationMap.get(reason)).append("\n");
+						reasonBuilder.append(explanationMap.get(reason)).append(C_NEWLINE);
 					}
 
-					reasonBuilder.append("Invocations: ").append(invocationCount).append("\n");
-					reasonBuilder.append("Size of callee bytecode: ").append(methodBytecodes).append("\n");
+					reasonBuilder.append("Invocations: ").append(invocationCount).append(C_NEWLINE);
+					reasonBuilder.append("Size of callee bytecode: ").append(methodBytecodes).append(C_NEWLINE);
 
 					score *= invocationCount;
 

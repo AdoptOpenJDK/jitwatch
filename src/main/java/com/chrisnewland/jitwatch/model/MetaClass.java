@@ -14,10 +14,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
+    //private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
+	
 	private String className;
 	private MetaPackage classPackage;
 
@@ -30,6 +35,8 @@ public class MetaClass implements Comparable<MetaClass>
 	private int compiledMethodCount = 0;
 
 	private ClassBC classBytecode = null;
+
+	//private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
@@ -119,7 +126,7 @@ public class MetaClass implements Comparable<MetaClass>
 		{
 			String[] parts = classPackage.getName().split("\\.");
 
-			for(String part : parts)
+			for (String part : parts)
 			{
 				builder.append(part.charAt(0)).append(C_DOT);
 			}
@@ -161,10 +168,46 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember getMemberFromSignature(String inName, String inReturnType, String[] paramTypes)
+	public IMetaMember findMemberByBytecodeSignature(String bytecodeSignature)
 	{
-	    String returnType = inReturnType;
-        String name = inName;
+		IMetaMember result = null;
+
+		if (bytecodeSignature != null)
+		{
+			for (IMetaMember mm : getMetaMembers())
+			{
+				if (mm.matchesBytecodeSignature(bytecodeSignature))
+				{
+					result = mm;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	public IMetaMember getMemberFromSignature(final String inMemberName, final Class<?> inReturnType, final Class<?>[] inParamTypes)
+	{		
+		IMetaMember result = null;
+
+		for (IMetaMember member : getMetaMembers())
+		{
+			if(member.signatureMatches(inMemberName, inReturnType, inParamTypes))
+			{
+				result = member;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	public IMetaMember getMemberFromSignature(final String inName, final String inReturnType, final String[] paramTypes)
+	{		
+		String returnType = inReturnType;
+		String name = inName;
+		
 		IMetaMember result = null;
 
 		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))

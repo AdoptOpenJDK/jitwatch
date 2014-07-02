@@ -17,9 +17,9 @@ import javafx.stage.WindowEvent;
 
 public class TextViewerStage extends AbstractTextViewerStage
 {
-	public TextViewerStage(final JITWatchUI parent, String title, String inSource, boolean showLineNumbers)
+	public TextViewerStage(final JITWatchUI parent, String title, String inSource, boolean showLineNumbers, boolean highlighting)
 	{
-		super(parent, title);
+		super(parent, title, highlighting);
 
         String source = inSource;
 		setOnCloseRequest(new EventHandler<WindowEvent>()

@@ -23,14 +23,15 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
 public final class ResourceLoader
 {
-    private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private ResourceLoader() {
-    }
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private ResourceLoader()
+	{
+	}
 
 	public static String getSourceFilename(MetaClass metaClass)
 	{
@@ -44,10 +45,10 @@ public final class ResourceLoader
 		}
 
 		fqName = fqName.replace(S_DOT, File.separator) + ".java";
-				
+
 		return fqName;
 	}
-	
+
 	public static String getSource(List<String> locations, String fileName)
 	{
 		String source = null;
@@ -55,12 +56,12 @@ public final class ResourceLoader
 		for (String location : locations)
 		{
 			File lf = new File(location);
-			
+
 			if (lf.exists())
 			{
 				if (lf.isDirectory())
 				{
-					source = searchFileInDirectory(lf, fileName);
+					source = readFileInDirectory(lf, fileName);
 
 					if (source != null)
 					{
@@ -82,11 +83,16 @@ public final class ResourceLoader
 		return source;
 	}
 
-	public static String searchFileInDirectory(File dir, String fileName)
+	public static String readFileInDirectory(File dir, String fileName)
+	{
+		File sourceFile = new File(dir, fileName);
+
+		return readFile(sourceFile);
+	}
+
+	public static String readFile(File sourceFile)
 	{
 		String result = null;
-
-		File sourceFile = new File(dir, fileName);
 
 		if (sourceFile.exists())
 		{
@@ -97,7 +103,7 @@ public final class ResourceLoader
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+				logger.error("Failed to read file: {}", sourceFile, ioe);
 			}
 		}
 
@@ -131,7 +137,7 @@ public final class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+			logger.error("", ioe);
 		}
 
 		return result;

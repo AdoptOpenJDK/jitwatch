@@ -7,7 +7,6 @@ package com.chrisnewland.jitwatch.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.chrisnewland.jitwatch.chain.CompileChainWalker;
@@ -25,6 +24,9 @@ import com.chrisnewland.jitwatch.model.JITEvent;
 import com.chrisnewland.jitwatch.model.Journal;
 import com.chrisnewland.jitwatch.model.MetaClass;
 import com.chrisnewland.jitwatch.model.PackageManager;
+import com.chrisnewland.jitwatch.ui.graphing.CodeCacheStage;
+import com.chrisnewland.jitwatch.ui.graphing.HistoStage;
+import com.chrisnewland.jitwatch.ui.graphing.TimeLineStage;
 import com.chrisnewland.jitwatch.ui.sandbox.SandboxStage;
 import com.chrisnewland.jitwatch.ui.suggestion.SuggestStage;
 import com.chrisnewland.jitwatch.ui.toplist.TopListStage;
@@ -91,16 +93,16 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TableView<AttributeTableRow> attributeTableView;
 	private ObservableList<AttributeTableRow> memberAttrList;
 
-	private List<Stage> openPopupStages = new ArrayList<>();
+	private StageManager stageManager = new StageManager();
 
 	private TextArea textAreaLog;
 
 	private File hsLogFile = null;
+
 	private boolean isReadingLogFile = false;
 
-    private Button btnChooseWatchFile;
-    private Button btnStartWatching;
-	private Button btnStopWatching;
+	private Button btnStart;
+	private Button btnStop;
 	private Button btnConfigure;
 	private Button btnTimeLine;
 	private Button btnStats;
@@ -114,7 +116,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private Label lblHeap;
 
-	private ConfigStage configStage;
+	private MainConfigStage configStage;
 	private TimeLineStage timeLineStage;
 	private StatsStage statsStage;
 	private HistoStage histoStage;
@@ -144,8 +146,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public JITWatchUI()
 	{
 		logParser = new HotSpotLogParser(this);
-		
-        loadConfigFromFile();
+
+		loadConfigFromFile();
 	}
 
 	public JITWatchUI(String[] args)
@@ -231,7 +233,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
-	private void stopWatching()
+	private void stopParsing()
 	{
 		if (isReadingLogFile)
 		{
@@ -239,7 +241,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			isReadingLogFile = false;
 			updateButtons();
 
-			log("Stopped watching " + hsLogFile.getAbsolutePath());
+			log("Stopped parsing " + hsLogFile.getAbsolutePath());
 		}
 	}
 
@@ -253,21 +255,232 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		this.stage = stage;
 
-        initialiseStageWithOnCloseRequestEventHandler(stage);
-        
-        BorderPane borderPane = new BorderPane();
+		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				stageManager.closeAll();
+
+				stopParsing();
+			}
+		});
+
+		BorderPane borderPane = new BorderPane();
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        initialiseAllButtons();
+		Button btnChooseWatchFile = new Button("Open Log");
+		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				stopParsing();
+				chooseHotSpotFile();
+			}
+		});
+
+		btnStart = new Button("Start");
+		btnStart.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (nothingMountedStage == null)
+				{
+					int classCount = getConfig().getClassLocations().size();
+					int sourceCount = getConfig().getSourceLocations().size();
+
+					if (classCount == 0 && sourceCount == 0)
+					{
+						if (getConfig().isShowNothingMounted())
+						{
+							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
+							nothingMountedStage.show();
+
+							stageManager.add(nothingMountedStage);
+
+							startDelayedByConfig = true;
+						}
+					}
+				}
+
+				if (!startDelayedByConfig)
+				{
+					readLogFile();
+				}
+			}
+		});
+
+		btnStop = new Button("Stop");
+		btnStop.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				stopParsing();
+			}
+		});
+
+		btnConfigure = new Button("Config");
+		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				openConfigStage();
+			}
+		});
+
+		btnTimeLine = new Button("Chart");
+		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				timeLineStage = new TimeLineStage(JITWatchUI.this);
+				timeLineStage.show();
+
+				stageManager.add(timeLineStage);
+
+				btnTimeLine.setDisable(true);
+			}
+		});
+
+		btnStats = new Button("Stats");
+		btnStats.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				statsStage = new StatsStage(JITWatchUI.this);
+				statsStage.show();
+
+				stageManager.add(statsStage);
+
+				btnStats.setDisable(true);
+			}
+		});
+
+		btnHisto = new Button("Histo");
+		btnHisto.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				histoStage = new HistoStage(JITWatchUI.this);
+				histoStage.show();
+
+				stageManager.add(histoStage);
+
+				btnHisto.setDisable(true);
+			}
+		});
+
+		btnTopList = new Button("TopList");
+		btnTopList.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				topListStage = new TopListStage(JITWatchUI.this);
+				topListStage.show();
+
+				stageManager.add(topListStage);
+
+				btnTopList.setDisable(true);
+			}
+		});
+
+		btnCodeCache = new Button("Code Cache");
+		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
+				codeCacheStage.show();
+
+				stageManager.add(codeCacheStage);
+
+				btnCodeCache.setDisable(true);
+			}
+		});
+
+		btnTriView = new Button("TriView");
+		btnTriView.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				openTriView(selectedMember, false);
+			}
+		});
+
+		btnSuggest = new Button("Suggest");
+		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				suggestStage = new SuggestStage(JITWatchUI.this);
+
+				suggestStage.show();
+
+				stageManager.add(suggestStage);
+
+				btnSuggest.setDisable(true);
+			}
+		});
+
+		btnSandbox = new Button("Sandbox");
+		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				openSandbox();
+			}
+		});
+
+		btnErrorLog = new Button("Errors (0)");
+		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				openTextViewer("Error Log", errorLog.toString(), false, false);
+			}
+		});
+
+		btnErrorLog.setStyle("-fx-padding: 2 6;");
+
+		lblHeap = new Label();
 
 		int menuBarHeight = 40;
 		int textAreaHeight = 100;
 		int statusBarHeight = 25;
 
-        HBox hboxTop = initialiseHboxTop(btnChooseWatchFile, menuBarHeight);
+		HBox hboxTop = new HBox();
 
-        memberAttrList = FXCollections.observableArrayList();
+		hboxTop.setPadding(new Insets(10));
+		hboxTop.setPrefHeight(menuBarHeight);
+		hboxTop.setSpacing(10);
+		hboxTop.getChildren().add(btnSandbox);
+		hboxTop.getChildren().add(btnChooseWatchFile);
+		hboxTop.getChildren().add(btnStart);
+		hboxTop.getChildren().add(btnStop);
+		hboxTop.getChildren().add(btnConfigure);
+		hboxTop.getChildren().add(btnTimeLine);
+		hboxTop.getChildren().add(btnStats);
+		hboxTop.getChildren().add(btnHisto);
+		hboxTop.getChildren().add(btnTopList);
+		hboxTop.getChildren().add(btnCodeCache);
+		hboxTop.getChildren().add(btnTriView);
+		hboxTop.getChildren().add(btnSuggest);
+
+		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
 		attributeTableView.setPlaceholder(new Text("Select a JIT-compiled class member to view compilation attributes."));
 
@@ -276,10 +489,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		classMemberList = new ClassMemberList(this, getConfig());
 
-        classTree = new ClassTree(this, getConfig());
-        classTree.prefWidthProperty().bind(scene.widthProperty());
-
-        spMethodInfo.getItems().add(classMemberList);
+		spMethodInfo.getItems().add(classMemberList);
 		spMethodInfo.getItems().add(attributeTableView);
 
 		classMemberList.prefHeightProperty().bind(scene.heightProperty());
@@ -291,195 +501,65 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		SplitPane spMain = new SplitPane();
 		spMain.setOrientation(Orientation.VERTICAL);
 
-        SplitPane spCentre = initialiseSplitPane(spMethodInfo);
+		SplitPane spCentre = new SplitPane();
+		spCentre.getItems().add(classTree);
+		spCentre.getItems().add(spMethodInfo);
+		spCentre.setDividerPositions(0.33, 0.67);
 
-        initialiseTextAreaLog(textAreaHeight);
+		textAreaLog = new TextArea();
+		textAreaLog.setStyle("-fx-font-family:monospace;");
+		textAreaLog.setPrefHeight(textAreaHeight);
 
-        checkIfHotSpotLogFileIsChosen();
+		log("Welcome to JITWatch by Chris Newland.\n");
+		log("Please send feedback to chris@chrisnewland.com or @chriswhocodes\n");
+		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
-        setupSpMain(spMain, spCentre);
+		if (hsLogFile == null)
+		{
+			log("Choose a HotSpot log file or open the Sandbox");
+		}
+		else
+		{
+			log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
+		}
+		spMain.getItems().add(spCentre);
+		spMain.getItems().add(textAreaLog);
+		spMain.setDividerPositions(0.7, 0.3);
 
 		HBox hboxBottom = new HBox();
 
-        initialiseHboxBottom(statusBarHeight, hboxBottom);
+		hboxBottom.setPadding(new Insets(4));
+		hboxBottom.setPrefHeight(statusBarHeight);
+		hboxBottom.setSpacing(4);
+		hboxBottom.getChildren().add(lblHeap);
+		hboxBottom.getChildren().add(btnErrorLog);
 
-        initialiseBorderPane(borderPane, hboxTop, spMain, hboxBottom);
+		borderPane.setTop(hboxTop);
+		borderPane.setCenter(spMain);
+		borderPane.setBottom(hboxBottom);
 
-        showStage(stage, scene);
+		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
+		stage.setScene(scene);
+		stage.show();
 
 		int refresh = 1000; // ms
 
 		final Duration oneFrameAmt = Duration.millis(refresh);
 
-        final KeyFrame oneFrame = initialiseKeyFrame(oneFrameAmt);
+		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent arg0)
+			{
+				refresh();
+			}
+		});
 
-        TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
+		TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
 
 		updateButtons();
 	}
 
-    private void initialiseAllButtons() {
-        btnChooseWatchFile = new Button("Open Log");
-        initialiseBtnChooseWatchFileWithOnActionEventHandler(btnChooseWatchFile);
-
-        btnStartWatching = new Button("Start");
-        initialiseBtnStartWatchingWithOnActionEventHandler();
-
-        btnStopWatching = new Button("Stop");
-        initialiseBtnStopWatchingWithOnActionEventHandler();
-
-        btnConfigure = new Button("Config");
-        initialiseBtnConfigureWithOnActionEventHandler();
-
-        btnTimeLine = new Button("Chart");
-        initialiseBtnTimeLineWithOnActionEventHandler();
-
-		btnErrorLog.setStyle("-fx-padding: 2 6;");
-
-		lblHeap = new Label();
-        btnStats = new Button("Stats");
-        initialiseBtnStatsWithOnActionEventHandler();
-
-        btnHisto = new Button("Histo");
-        initialiseBtnHistoWithOnActionEventHandler();
-
-        btnTopList = new Button("TopList");
-        initialiseBtnTopListWithOnActionEventHandler();
-
-        btnCodeCache = new Button("Code Cache");
-        initialiseBtnCodeCacheWithOnActionEventHandler();
-
-        btnTriView = new Button("TriView");
-        initialiseBtnTriViewWithOnActionEventHandler();
-
-        btnSuggest = new Button("Suggest");
-        initialiseBtnSuggestWithOnActionEventHandler();
-
-        btnSandbox = new Button("Sandbox");
-        initialiseBtnSandboxWithOnActionEventHandler();
-        
-        classMemberList = new ClassMemberList(this, getConfig());
-        btnErrorLog = new Button("Errors (0)");
-        initialiseBtnErrorLogWithOnActionEventHandler();
-    }
-
-    private SplitPane initialiseSplitPane(SplitPane spMethodInfo) {
-        SplitPane spCentre = new SplitPane();
-        spCentre.getItems().add(classTree);
-        spCentre.getItems().add(spMethodInfo);
-        spCentre.setDividerPositions(0.33, 0.67);
-        return spCentre;
-    }
-
-    private void setupSpMain(SplitPane spMain, SplitPane spCentre) {
-        spMain.getItems().add(spCentre);
-        spMain.getItems().add(textAreaLog);
-        spMain.setDividerPositions(0.7, 0.3);
-    }
-
-    private void showStage(Stage stage, Scene scene) {
-        stage.setTitle("JITWatch - HotSpot Compilation Inspector");
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    private void initialiseBorderPane(BorderPane borderPane, HBox hboxTop, SplitPane spMain, HBox hboxBottom) {
-        borderPane.setTop(hboxTop);
-        borderPane.setCenter(spMain);
-        borderPane.setBottom(hboxBottom);
-    }
-
-    private void initialiseHboxBottom(int statusBarHeight, HBox hboxBottom) {
-        hboxBottom.setPadding(new Insets(4));
-        hboxBottom.setPrefHeight(statusBarHeight);
-        hboxBottom.setSpacing(4);
-        hboxBottom.getChildren().add(lblHeap);
-        hboxBottom.getChildren().add(btnErrorLog);
-    }
-
-    private void initialiseTextAreaLog(int textAreaHeight) {
-        textAreaLog = new TextArea();
-        textAreaLog.setStyle("-fx-font-family:monospace;");
-        textAreaLog.setPrefHeight(textAreaHeight);
-
-        log("Welcome to JITWatch by Chris Newland. Please send feedback to chris@chrisnewland.com or @chriswhocodes");
-        log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska.\nUsed under licence http://ref.x86asm.net/index.html#License\n");
-    }
-
-    private HBox initialiseHboxTop(Button btnChooseWatchFile, int menuBarHeight) {
-        HBox hboxTop = new HBox();
-
-        hboxTop.setPadding(new Insets(10));
-        hboxTop.setPrefHeight(menuBarHeight);
-        hboxTop.setSpacing(10);
-
-        hboxTop.getChildren().add(btnSandbox);
-        hboxTop.getChildren().add(btnChooseWatchFile);
-        hboxTop.getChildren().add(btnStartWatching);
-        hboxTop.getChildren().add(btnStopWatching);
-        hboxTop.getChildren().add(btnConfigure);
-        hboxTop.getChildren().add(btnTimeLine);
-        hboxTop.getChildren().add(btnStats);
-        hboxTop.getChildren().add(btnHisto);
-        hboxTop.getChildren().add(btnTopList);
-        hboxTop.getChildren().add(btnCodeCache);
-        hboxTop.getChildren().add(btnTriView);
-        hboxTop.getChildren().add(btnSuggest);
-        hboxTop.getChildren().add(btnErrorLog);
-
-        return hboxTop;
-    }
-
-    private void checkIfHotSpotLogFileIsChosen() {
-        if (hsLogFile == null)
-        {
-            log("Please choose a HotSpot log file");
-        }
-        else
-        {
-            log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
-        }
-    }
-
-    private KeyFrame initialiseKeyFrame(Duration oneFrameAmt) {
-        return new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
-            {
-                @Override
-                public void handle(ActionEvent arg0)
-                {
-                    refresh();
-                }
-            });
-    }
-
-    private void initialiseBtnErrorLogWithOnActionEventHandler() {
-        btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openTextViewer("Error Log", errorLog.toString(), false);
-            }
-        });
-    }
-
-    private void initialiseBtnSuggestWithOnActionEventHandler() {
-        btnSuggest.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                suggestStage = new SuggestStage(JITWatchUI.this);
-
-                suggestStage.show();
-
-                openPopupStages.add(suggestStage);
-
-                btnSuggest.setDisable(true);
-            }
-        });
-	}
-	
 	private void loadConfigFromFile()
 	{
 		JITWatchConfig config = new JITWatchConfig();
@@ -487,194 +567,16 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		logParser.setConfig(config);
 	}
 
-    private void initialiseBtnTriViewWithOnActionEventHandler() {
-        btnTriView.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openTriView(selectedMember, false);
-            }
-        });
-    }
-
-    private void initialiseBtnCodeCacheWithOnActionEventHandler() {
-        btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                codeCacheStage = new CodeCacheStage(JITWatchUI.this);
-                codeCacheStage.show();
-
-                openPopupStages.add(codeCacheStage);
-
-                btnCodeCache.setDisable(true);
-            }
-        });
-    }
-
-    private void initialiseBtnTopListWithOnActionEventHandler() {
-        btnTopList.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                topListStage = new TopListStage(JITWatchUI.this);
-                topListStage.show();
-
-                openPopupStages.add(topListStage);
-
-                btnTopList.setDisable(true);
-            }
-        });
-    }
-
-    private void initialiseBtnHistoWithOnActionEventHandler() {
-        btnHisto.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                histoStage = new HistoStage(JITWatchUI.this);
-                histoStage.show();
-
-                openPopupStages.add(histoStage);
-
-                btnHisto.setDisable(true);
-            }
-        });
-    }
-
-    private void initialiseBtnStatsWithOnActionEventHandler() {
-        btnStats.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                statsStage = new StatsStage(JITWatchUI.this);
-                statsStage.show();
-
-                openPopupStages.add(statsStage);
-
-                btnStats.setDisable(true);
-            }
-        });
-    }
-
-    private void initialiseBtnTimeLineWithOnActionEventHandler() {
-        btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                timeLineStage = new TimeLineStage(JITWatchUI.this);
-                timeLineStage.show();
-
-                openPopupStages.add(timeLineStage);
-
-                btnTimeLine.setDisable(true);
-            }
-        });
-    }
-
-    private void initialiseBtnConfigureWithOnActionEventHandler() {
-        btnConfigure.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openConfigStage();
-            }
-        });
-    }
-
-    private void initialiseBtnStopWatchingWithOnActionEventHandler() {
-        btnStopWatching.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                stopWatching();
-            }
-        });
-        }
-
-    private void initialiseBtnStartWatchingWithOnActionEventHandler() {
-        btnStartWatching.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-
-                if (nothingMountedStage == null) {
-                    int classCount = getConfig().getClassLocations().size();
-                    int sourceCount = getConfig().getSourceLocations().size();
-
-                    performActionWhenNothingIsMounted(classCount, sourceCount);
-                }
-
-                if (!startDelayedByConfig) {
-                    readLogFile();
-                }
-            }
-        });
-    }
-
-    private void initialiseBtnChooseWatchFileWithOnActionEventHandler(Button btnChooseWatchFile) {
-        btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                stopWatching();
-                chooseHotSpotFile();
-            }
-        });
-    }
-
-    private void initialiseStageWithOnCloseRequestEventHandler(Stage stage) {
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>()
-        {
-            @Override
-            public void handle(WindowEvent arg0)
-            {
-                for (Stage s : openPopupStages)
-                {
-                    if (s != null)
-                    {
-                        s.close();
-                    }
-                }
-
-                stopWatching();
-            }
-        });
-    }
-
-    private void performActionWhenNothingIsMounted(int classCount, int sourceCount) {
-        if (classCount == 0 && sourceCount == 0)
-        {
-            if (getConfig().isShowNothingMounted())
-            {
-                nothingMountedStage = new NothingMountedStage(this, getConfig());
-                nothingMountedStage.show();
-
-                openPopupStages.add(nothingMountedStage);
-
-                startDelayedByConfig = true;
-            }
-        }
-    }
-
-    void openConfigStage()
+	void openConfigStage()
 	{
 		if (configStage == null)
 		{
 			loadConfigFromFile();
-			
-			configStage = new ConfigStage(JITWatchUI.this, getConfig());
+
+			configStage = new MainConfigStage(JITWatchUI.this, getConfig());
 			configStage.show();
 
-			openPopupStages.add(configStage);
+			stageManager.add(configStage);
 
 			btnConfigure.setDisable(true);
 		}
@@ -689,7 +591,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			triViewStage.show();
 
-			openPopupStages.add(triViewStage);
+			stageManager.add(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -708,23 +610,12 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			sandBoxStage.show();
 
-			openPopupStages.add(sandBoxStage);
+			stageManager.add(sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
 	}
 
-    public void initialiseBtnSandboxWithOnActionEventHandler() {
-        btnSandbox.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                openSandbox();
-            }
-        });
-    }
-    
 	@Override
 	public void openBrowser(String title, String html, String stylesheet)
 	{
@@ -734,7 +625,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			browserStage.show();
 
-			openPopupStages.add(browserStage);
+			stageManager.add(browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -747,8 +638,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private void updateButtons()
 	{
-		btnStartWatching.setDisable(hsLogFile == null || isReadingLogFile);
-		btnStopWatching.setDisable(!isReadingLogFile);
+		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
+		btnStop.setDisable(!isReadingLogFile);
 	}
 
 	public void openTreeAtMember(IMetaMember member)
@@ -811,37 +702,47 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
-	TextViewerStage openTextViewer(String title, String content)
+	@Override
+	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
-		return openTextViewer(title, content, false);
+		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
+		tvs.show();
+		stageManager.add(tvs);
 	}
 
-	TextViewerStage openTextViewer(String title, String content, boolean lineNumbers)
+	public void openTextViewer(String title, String content)
 	{
-		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers);
-		tvs.show();
-		openPopupStages.add(tvs);
-
-		return tvs;
+		openTextViewer(title, content, false, false);
 	}
 
 	public void openCompileChain(IMetaMember member)
 	{
-		CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
-
-		CompileNode root = walker.buildCallTree(member);
-
-		if (root != null)
+		if (member.isCompiled())
 		{
-			CompileChainStage ccs = new CompileChainStage(this, root);
+			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			ccs.show();
+			CompileNode root = walker.buildCallTree(member);
 
-			openPopupStages.add(ccs);
+			if (root != null)
+			{
+				CompileChainStage ccs = new CompileChainStage(this, root);
+
+				ccs.show();
+
+				stageManager.add(ccs);
+			}
+			else
+			{
+				logger.error("Could not open CompileChain - root node was null");
+			}
 		}
 		else
 		{
-			logger.error("Could not open CompileChain - root node was null");
+			Dialogs.showOKDialog(
+					stage,
+					"Root method is not compiled",
+					"Can only display compile chain where the root method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
 	}
 
@@ -849,13 +750,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
 		jvs.show();
-		openPopupStages.add(jvs);
+		stageManager.add(jvs);
 	}
 
 	private void chooseHotSpotFile()
 	{
 		loadConfigFromFile();
-		
+
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 
@@ -893,8 +794,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			getConfig().setLastLogDir(hsLogFile.getParent());
 			getConfig().saveConfig();
 
+			clearTextArea();
 			log("Selected file: " + hsLogFile.getAbsolutePath());
-			log("Click Start button to process or tail the file");
+			log("\nClick Start button to process the HotSpot log");
 			updateButtons();
 
 			refreshLog();
@@ -978,6 +880,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
 	}
 
+	private void clearTextArea()
+	{
+		textAreaLog.clear();
+	}
+
 	private void refreshLog()
 	{
 		textAreaLog.appendText(logBuffer.toString());
@@ -996,11 +903,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		classTree.showTree();
 	}
 
-	// TODO refactor stages and pass IStageCloseListener instead of JITWatchUI
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		openPopupStages.remove(stage);
+		stageManager.remove(stage);
 
 		// map?
 		if (stage instanceof TimeLineStage)
@@ -1018,7 +924,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			btnHisto.setDisable(false);
 			histoStage = null;
 		}
-		else if (stage instanceof ConfigStage)
+		else if (stage instanceof MainConfigStage)
 		{
 			btnConfigure.setDisable(false);
 			configStage = null;
@@ -1114,4 +1020,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		return logParser.getModel().getPackageManager();
 	}
 
+	@Override
+	public Stage getStageForDialog()
+	{
+		return stage;
+	}
 }

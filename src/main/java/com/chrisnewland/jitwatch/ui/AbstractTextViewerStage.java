@@ -21,7 +21,7 @@ public abstract class AbstractTextViewerStage extends Stage
 {
 	private Viewer viewer;
 
-	public AbstractTextViewerStage(final JITWatchUI parent, String title)
+	public AbstractTextViewerStage(final JITWatchUI parent, String title, boolean highlighting)
 	{
 		initStyle(StageStyle.DECORATED);
 
@@ -34,7 +34,7 @@ public abstract class AbstractTextViewerStage extends Stage
 			}
 		});
 
-		viewer = new Viewer(parent);
+		viewer = new Viewer(parent, highlighting);
 
 		setTitle(title);
 
