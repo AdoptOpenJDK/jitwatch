@@ -50,7 +50,7 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig + ";");
 				
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
