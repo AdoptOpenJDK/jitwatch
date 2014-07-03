@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class PackageManager
 {
 	private static final Logger logger = LoggerFactory.getLogger(PackageManager.class);
-	
+
 	// class name -> MetaClass
 	private Map<String, MetaClass> metaClasses;
 
@@ -56,8 +56,11 @@ public class PackageManager
 
 	public MetaPackage buildPackage(String packageName)
 	{
-		logger.debug("Building package {}", packageName);
-		
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("Building package {}", packageName);
+		}
+
 		String[] parts = packageName.split("\\.");
 
 		StringBuilder builder = new StringBuilder();

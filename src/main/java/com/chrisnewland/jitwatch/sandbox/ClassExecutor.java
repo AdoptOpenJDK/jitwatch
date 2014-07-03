@@ -1,5 +1,9 @@
 package com.chrisnewland.jitwatch.sandbox;
 
+import java.io.File;
+import java.lang.ProcessBuilder.Redirect;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +23,12 @@ public class ClassExecutor
 	{
 		List<String> commands = new ArrayList<>();
 
-		commands.add("java");
+		// locate currently running java executable
+		Path pathToJavaExecutable = Paths.get(System.getProperty("java.home"), "bin", "java");
+
+		File javaExecutable = pathToJavaExecutable.toFile();
+		
+		commands.add(javaExecutable.getAbsolutePath());
 
 		if (vmOptions.size() > 0)
 		{
@@ -57,11 +66,15 @@ public class ClassExecutor
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
 			
+			// use this instead of StreamCollectors if missing start of output
+			//pb.redirectErrorStream(true);
+			//pb.redirectOutput(Redirect.INHERIT);
+			
 			Process proc = pb.start();
 
 			//TODO: how to not miss start of output?
-			outBuilder = new StreamCollector(proc.getInputStream());
 			errBuilder = new StreamCollector(proc.getErrorStream());
+			outBuilder = new StreamCollector(proc.getInputStream());
 
 			result = proc.waitFor();
 		}

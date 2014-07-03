@@ -51,6 +51,10 @@ public class TestExecutionUtil
 		
 		boolean success = executor.execute("com.chrisnewland.jitwatch.demo.MakeHotSpotLog", cp, options);
 
+		System.out.println(executor.getErrorStream());
+		//System.out.println(executor.getOutputStream());
+
+		
 		assertTrue(success);
 	}
 }

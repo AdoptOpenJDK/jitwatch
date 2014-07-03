@@ -30,26 +30,23 @@ import static org.junit.Assert.*;
 
 public class TestAssemblyProcessor
 {
-    private static final int ZERO = 0;
-    public static final IMetaMember NO_MEMBER = null;
-    private static final int ONE = 1;
-    private Map<String, IMetaMember> map;
-    private IMemberFinder memberFinder;
+	private static final int ZERO = 0;
+	public static final IMetaMember NO_MEMBER = null;
+	private static final int ONE = 1;
+	private Map<String, IMetaMember> map;
+	private IMemberFinder memberFinder;
 
-    private static final String[] SINGLE_ASSEMBLY_METHOD = new String[]{
-            "Decoding compiled method 0x00007f7d73364190:",
-            "Code:",
-            "[Disassembling for mach=&apos;i386:x86-64&apos;]",
-            "[Entry Point]",
-            "[Verified Entry Point]",
-            "[Constants]",
-            "  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;",
-            "  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
-            "  0x00007f7d733642e5: data32 data32 nopw 0x0(%rax,%rax,1)",
-            "  0x00007f7d733642f0: mov    %eax,-0x14000(%rsp)",
-            "  0x00007f7d733642f7: push   %rbp",
-            "  0x00007f7d733642f8: sub    $0x20,%rsp"
-    };
+	private static final String[] SINGLE_ASSEMBLY_METHOD = new String[] {
+			"Decoding compiled method 0x00007f7d73364190:",
+			"Code:",
+			"[Disassembling for mach=&apos;i386:x86-64&apos;]",
+			"[Entry Point]",
+			"[Verified Entry Point]",
+			"[Constants]",
+			"  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;",
+			"  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
+			"  0x00007f7d733642e5: data32 data32 nopw 0x0(%rax,%rax,1)", "  0x00007f7d733642f0: mov    %eax,-0x14000(%rsp)",
+			"  0x00007f7d733642f7: push   %rbp", "  0x00007f7d733642f8: sub    $0x20,%rsp" };
 
 	@Before
 	public void setup()
@@ -61,16 +58,16 @@ public class TestAssemblyProcessor
 			@Override
 			public IMetaMember findMemberWithSignature(String logSignature)
 			{
-				Method objToStringMethod = UnitTestUtil.getMethod("java.lang.Object", "toString",  new Class[0]);			
-				
+				Method objToStringMethod = UnitTestUtil.getMethod("java.lang.Object", "toString", new Class[0]);
+
 				MetaPackage fakePackage = new MetaPackage("java.lang");
-				
+
 				MetaClass fakeClass = new MetaClass(fakePackage, "java.lang.Object");
-				
+
 				IMetaMember fakeMember = new MetaMethod(objToStringMethod, fakeClass);
-				
+
 				map.put(logSignature, fakeMember);
-				
+
 				return map.get(logSignature);
 			}
 		};
@@ -81,45 +78,48 @@ public class TestAssemblyProcessor
 	{
 		String[] lines = SINGLE_ASSEMBLY_METHOD;
 
-        performAssemblyParsingOn(lines);
-		
+		performAssemblyParsingOn(lines);
+
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
-		
+
 		assertNotNull(member);
-		
+
 		AssemblyMethod assemblyMethod = member.getAssembly();
-		
+
 		assertNotNull(assemblyMethod);
-		
+
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
-		
+
 		assertEquals(1, asmBlocks.size());
 
 		AssemblyBlock block = asmBlocks.get(0);
-		
+
 		List<AssemblyInstruction> instructions = block.getInstructions();
-		
+
 		assertEquals(5, instructions.size());
 	}
 
-    private void performAssemblyParsingOn(String[] lines) {
-        AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
+	private void performAssemblyParsingOn(String[] lines)
+	{
+		AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
 
-        for (String line : lines)
-        {
-            if (!line.startsWith(S_OPEN_ANGLE) && !line.startsWith(LOADED))
-            {
-                asmProcessor.handleLine(line);
-            }
-        }
+		for (String line : lines)
+		{
+			String trimmedLine = line.trim();
+			
+			if (!trimmedLine.startsWith(S_OPEN_ANGLE) && !trimmedLine.startsWith(LOADED))
+			{
+				asmProcessor.handleLine(trimmedLine);
+			}
+		}
 
-        asmProcessor.complete();
-    }
+		asmProcessor.complete();
+	}
 
-    @Test
+	@Test
 	public void testSingleAsmMethodInterrupted()
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 				"Decoding compiled method 0x00007f7d73363f90:",
 				"Code:",
 				"[Entry Point]",
@@ -128,44 +128,37 @@ public class TestAssemblyProcessor
 				"<writer thread='140176877946624'/>",
 				"<uncommon_trap thread='140176877946624' reason='unloaded' action='reinterpret' index='39' compile_id='2' compile_kind='osr' compiler='C2' unresolved='1' name='java/lang/System' stamp='0.374'>",
 				"<jvms bci='31' method='com/chrisnewland/jitwatch/demo/SandboxTestLoad main ([Ljava/lang/String;)V' bytes='57' count='10000' backedge_count='6024' iicount='1'/>",
-				"</uncommon_trap>",
-				"<writer thread='140176736904960'/>",
-				"/chrisnewland/jitwatch/demo/SandboxTest&apos;",
+				"</uncommon_trap>", "<writer thread='140176736904960'/>", "/chrisnewland/jitwatch/demo/SandboxTest&apos;",
 				"  # this:     rsi:rsi   = &apos;com/chrisnewland/jitwatch/demo/SandboxTest&apos;",
-				"  # parm0:    rdx       = int",
-				"  # parm1:    rcx       = int",
-				"  #           [sp+0x20]  (sp of caller)",
-				"  0x00007f7d733640c0: mov    0x8(%rsi),%r10d",
-				"  0x00007f7d733640c4: cmp    %r10,%rax",
-				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}",
-				"  0x00007f7d733640cd: data32 xchg %ax,%ax"
-		};
+				"  # parm0:    rdx       = int", "  # parm1:    rcx       = int", "  #           [sp+0x20]  (sp of caller)",
+				"  0x00007f7d733640c0: mov    0x8(%rsi),%r10d", "  0x00007f7d733640c4: cmp    %r10,%rax",
+				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}", "  0x00007f7d733640cd: data32 xchg %ax,%ax" };
 
-        performAssemblyParsingOn(lines);
-		
+		performAssemblyParsingOn(lines);
+
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTest add (II)I");
-		
+
 		assertNotNull(member);
-		
+
 		AssemblyMethod assemblyMethod = member.getAssembly();
-		
+
 		assertNotNull(assemblyMethod);
-		
+
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
-		
+
 		assertEquals(1, asmBlocks.size());
 
 		AssemblyBlock block = asmBlocks.get(0);
-		
+
 		List<AssemblyInstruction> instructions = block.getInstructions();
-		
+
 		assertEquals(4, instructions.size());
 	}
-	
+
 	@Test
 	public void testTwoMethodsWithOneInterrupted()
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 				"Decoding compiled method 0x00007f7d73364190:",
 				"Code:",
 				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
@@ -188,148 +181,193 @@ public class TestAssemblyProcessor
 				"<writer thread='140176877946624'/>",
 				"<uncommon_trap thread='140176877946624' reason='unloaded' action='reinterpret' index='39' compile_id='2' compile_kind='osr' compiler='C2' unresolved='1' name='java/lang/System' stamp='0.374'>",
 				"<jvms bci='31' method='com/chrisnewland/jitwatch/demo/SandboxTestLoad main ([Ljava/lang/String;)V' bytes='57' count='10000' backedge_count='6024' iicount='1'/>",
-				"</uncommon_trap>",
-				"<writer thread='140176736904960'/>",
-				"/chrisnewland/jitwatch/demo/SandboxTest&apos;",
+				"</uncommon_trap>", "<writer thread='140176736904960'/>", "/chrisnewland/jitwatch/demo/SandboxTest&apos;",
 				"  # this:     rsi:rsi   = &apos;com/chrisnewland/jitwatch/demo/SandboxTest&apos;",
-				"  # parm0:    rdx       = int",
-				"  # parm1:    rcx       = int",
-				"  #           [sp+0x20]  (sp of caller)",
-				"  0x00007f7d733640c0: mov    0x8(%rsi),%r10d",
-				"  0x00007f7d733640c4: cmp    %r10,%rax",
-				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}",
-				"  0x00007f7d733640cd: data32 xchg %ax,%ax"
+				"  # parm0:    rdx       = int", "  # parm1:    rcx       = int", "  #           [sp+0x20]  (sp of caller)",
+				"  0x00007f7d733640c0: mov    0x8(%rsi),%r10d", "  0x00007f7d733640c4: cmp    %r10,%rax",
+				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}", "  0x00007f7d733640cd: data32 xchg %ax,%ax"
 
 		};
 
-        performAssemblyParsingOn(lines);
-		
+		performAssemblyParsingOn(lines);
+
 		IMetaMember member = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
-		
+
 		assertNotNull(member);
-		
+
 		AssemblyMethod assemblyMethod = member.getAssembly();
-		
+
 		assertNotNull(assemblyMethod);
-		
+
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
-		
+
 		assertEquals(1, asmBlocks.size());
 
 		AssemblyBlock block = asmBlocks.get(0);
-		
+
 		List<AssemblyInstruction> instructions = block.getInstructions();
-		
+
 		assertEquals(5, instructions.size());
-		
+
 		IMetaMember member2 = map.get("com.chrisnewland.jitwatch.demo.SandboxTest add (II)I");
-		
+
 		assertNotNull(member2);
-		
+
 		AssemblyMethod assemblyMethod2 = member2.getAssembly();
-		
+
 		assertNotNull(assemblyMethod2);
-		
+
 		List<AssemblyBlock> asmBlocks2 = assemblyMethod2.getBlocks();
-		
+
 		assertEquals(1, asmBlocks2.size());
 
 		AssemblyBlock block2 = asmBlocks2.get(0);
-		
+
 		List<AssemblyInstruction> instructions2 = block2.getInstructions();
-		
+
 		assertEquals(4, instructions2.size());
 	}
 
-    /*
-        Scenario: Parsing a line that does not start with the Native Code
-            Given a number of lines of disassembled code
-            And the line does not start with the Native Code
-            When the assembly processor parses such lines
-            Then no assembly instructions are returned
-    */
-    @Test
-    public void givenBlockOfCodeWithoutTheNativeCodeStart_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
-        // Given
-        int expectedAssemblyResults = ZERO;
-        String[] lines = new String[] {
-                "Decoding <junk> compiled <junk> method 0x00007f7d73364190:",
-                "Code:"
-        };
+	/*
+	 * Scenario: Parsing a line that does not start with the Native Code Given a
+	 * number of lines of disassembled code And the line does not start with the
+	 * Native Code When the assembly processor parses such lines Then no
+	 * assembly instructions are returned
+	 */
+	@Test
+	public void givenBlockOfCodeWithoutTheNativeCodeStart_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned()
+	{
+		// Given
+		int expectedAssemblyResults = ZERO;
+		String[] lines = new String[] { "Decoding <junk> compiled <junk> method 0x00007f7d73364190:", "Code:" };
 
-        // When
-        performAssemblyParsingOn(lines);
-        int actualAssemblyResults = map.size();
+		// When
+		performAssemblyParsingOn(lines);
+		int actualAssemblyResults = map.size();
 
-        // Then
-        assertThat("No assembly results should have been returned.",
-                actualAssemblyResults,
-                is(equalTo(expectedAssemblyResults)));
-    }
+		// Then
+		assertThat("No assembly results should have been returned.", actualAssemblyResults, is(equalTo(expectedAssemblyResults)));
+	}
 
-    /*
-        Scenario: Parsing lines with incorrect method signature
-            Given a number of lines of disassembled code
-            And the method signature is incorrect
-            When the assembly processor parses such a line
-            Then no assembly instructions are returned
-    */
-    @Test
-    public void givenBlockOfCodeWithIncorrectSignature_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
-        // Given
-        int expectedAssemblyResults = ZERO;
-        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
-        lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;";
+	/*
+	 * Scenario: Parsing lines with incorrect method signature Given a number of
+	 * lines of disassembled code And the method signature is incorrect When the
+	 * assembly processor parses such a line Then no assembly instructions are
+	 * returned
+	 */
+	@Test
+	public void givenBlockOfCodeWithIncorrectSignature_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned()
+	{
+		// Given
+		int expectedAssemblyResults = ZERO;
+		String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
+		lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;com/chrisnewland/jitwatch/demo/SandboxTestLoad&apos;";
 
-        memberFinder = new IMemberFinder()
-        {
-            @Override
-            public IMetaMember findMemberWithSignature(String logSignature)
-            {
-                return NO_MEMBER;
-            }
-        };
+		memberFinder = new IMemberFinder()
+		{
+			@Override
+			public IMetaMember findMemberWithSignature(String logSignature)
+			{
+				return NO_MEMBER;
+			}
+		};
 
-        // When
-        performAssemblyParsingOn(lines);
-        int actualAssemblyResults = map.size();
+		// When
+		performAssemblyParsingOn(lines);
+		int actualAssemblyResults = map.size();
 
-        // Then
-        assertThat("No assembly results should have been returned.",
-                actualAssemblyResults,
-                is(equalTo(expectedAssemblyResults)));
-    }
+		// Then
+		assertThat("No assembly results should have been returned.", actualAssemblyResults, is(equalTo(expectedAssemblyResults)));
+	}
 
+	/*
+	 * Scenario: Parsing lines with method signature starting with [ (open
+	 * square bracket) Given a number of lines of disassembled code And the
+	 * method signature starts with a [ When the assembly processor parses such
+	 * a line Then no assembly instructions are returned
+	 */
+	@Test
+	public void givenBlockOfCodeWithMethodSignatureStartingWithBoxBracket_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned()
+	{
+		// Given
+		int expectedAssemblyResults = ONE;
+		String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
+		lines[7] = "[ 0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}";
 
-    /*
-        Scenario: Parsing lines with method signature starting with [ (open square bracket)
-            Given a number of lines of disassembled code
-            And the method signature starts with a [
-            When the assembly processor parses such a line
-            Then no assembly instructions are returned
-    */
-    @Test
-    public void givenBlockOfCodeWithMethodSignatureStartingWithBoxBracket_WhenTheAssemblyProcessorActionsIt_ThenNoInstructionsAreReturned() {
-        // Given
-        int expectedAssemblyResults = ONE;
-        String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
-        lines[7] = "[ 0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}";
+		// When
+		performAssemblyParsingOn(lines);
+		int actualAssemblyResults = map.size();
+		IMetaMember actualMember = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
 
-        // When
-        performAssemblyParsingOn(lines);
-        int actualAssemblyResults = map.size();
-        IMetaMember actualMember = map.get("com.chrisnewland.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
+		// Then
+		assertThat("One assembly results should have been returned.", actualAssemblyResults, is(equalTo(expectedAssemblyResults)));
+		assertThat("An object should have been returned", actualMember, is(available()));
+	}
 
-        // Then
-        assertThat("One assembly results should have been returned.",
-                actualAssemblyResults,
-                is(equalTo(expectedAssemblyResults)));
-        assertThat("An object should have been returned",
-                actualMember,
-                is(available()));
-    }
+	private Matcher<Object> available()
+	{
+		return not(nullValue());
+	}
 
-    private Matcher<Object> available() {
-        return not(nullValue());
-    }
+	@Test
+	public void testRegressionWorksWithJMHIndentedLogs()
+	{
+		String[] lines = new String[] {
+				"         Loaded disassembler from /home/shade/Install/jdk8u0/jre/lib/amd64/server/libhsdis-amd64.so",
+				"                  Decoding compiled method 0x00007f25cd0fedd0:",
+				"                  Code:",
+				"                  [Disassembling for mach=&apos;i386:x86-64&apos;]",
+				"                  [Entry Point]",
+				"                  [Constants]",
+				"                    # {method} {0x00007f25cc804f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;",
+				"                    #           [sp+0x40]  (sp of caller)",
+				"                    0x00007f25cd0fef40: mov    0x8(%rsi),%r10d",
+				"                    0x00007f25cd0fef44: shl    $0x3,%r10",
+				"                    0x00007f25cd0fef48: cmp    %rax,%r10",
+				"                    0x00007f25cd0fef4b: jne    0x00007f25cd045b60  ;   {runtime_call}",
+				"                    0x00007f25cd0fef51: nopw   0x0(%rax,%rax,1)",
+				"                    0x00007f25cd0fef5c: xchg   %ax,%ax",
+				"                  [Verified Entry Point]",
+				"                    0x00007f25cd0fef60: mov    %eax,-0x14000(%rsp)",
+				"                    0x00007f25cd0fef67: push   %rbp",
+				"                    0x00007f25cd0fef68: sub    $0x30,%rsp",
+				"                    0x00007f25cd0fef6c: mov    $0x7f25cc9d0b38,%rax  ;   {metadata(method data for {method} {0x00007f25cc804f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;)}",
+				"                    0x00007f25cd0fef76: mov    0x64(%rax),%edi",
+				"                    0x00007f25cd0fef79: add    $0x8,%edi",
+				"                    0x00007f25cd0fef7c: mov    %edi,0x64(%rax)",
+				"                    0x00007f25cd0fef7f: mov    $0x7f25cc804f80,%rax  ;   {metadata({method} {0x00007f25cc804f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;)}",
+				"                    0x00007f25cd0fef89: and    $0x1ff8,%edi",
+				"                    0x00007f25cd0fef8f: cmp    $0x0,%edi",
+				"                    0x00007f25cd0fef92: je     0x00007f25cd0ff0cb  ;*aload_0",
+				"                                                                  ; - java.lang.String::hashCode@0 (line 1453)",
+				"                    0x00007f25cd0fef98: mov    0x10(%rsi),%eax    ;*getfield hash",
+				"                                                                  ; - java.lang.String::hashCode@1 (line 1453)",
+				"                    0x00007f25cd0fef9b: cmp    $0x0,%eax",
+				"                    0x00007f25cd0fef9e: mov    $0x7f25cc9d0b38,%rdi  ;   {metadata(method data for {method} {0x00007f25cc804f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;)}",
+				"                    0x00007f25cd0fefa8: mov    $0x90,%rbx",
+				"                    0x00007f25cd0fefb2: jne    0x00007f25cd0fefc2",
+				"                    0x00007f25cd0fefb8: mov    $0xa0,%rbx",
+				"                    0x00007f25cd0fefc2: mov    (%rdi,%rbx,1),%rdx",
+				"                    0x00007f25cd0fefc6: lea    0x1(%rdx),%rdx",
+				"                    0x00007f25cd0fefca: mov    %rdx,(%rdi,%rbx,1)",
+				"                    0x00007f25cd0fefce: jne    0x00007f25cd0ff0bf  ;*ifne",
+				"                                                                  ; - java.lang.String::hashCode@6 (line 1454)" };
+
+		performAssemblyParsingOn(lines);
+
+		IMetaMember member = map.get("java.lang.String hashCode ()I");
+
+		assertNotNull(member);
+
+		AssemblyMethod assemblyMethod = member.getAssembly();
+
+		assertNotNull(assemblyMethod);
+
+		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
+		
+		assertEquals(2, asmBlocks.size());
+
+		assertEquals(6, asmBlocks.get(0).getInstructions().size());
+		assertEquals(21, asmBlocks.get(1).getInstructions().size());
+	}
 }

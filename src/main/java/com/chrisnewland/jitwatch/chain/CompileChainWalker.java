@@ -34,7 +34,7 @@ public class CompileChainWalker
 
 	public CompileNode buildCallTree(IMetaMember mm)
 	{
-		logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+		logger.info("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
 
 		CompileNode root = null;
 
@@ -44,16 +44,12 @@ public class CompileChainWalker
 
 		if (lastTaskTag != null)
 		{
-			logger.debug("lastTaskTag not null");
-
 			parseDictionary = lastTaskTag.getParseDictionary();
 
 			Tag parsePhase = JournalUtil.getParsePhase(journal);
 
 			if (parsePhase != null)
 			{
-				logger.debug("parsePhase not null");
-
 				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
 
 				for (Tag parseTag : parseTags)
@@ -78,8 +74,6 @@ public class CompileChainWalker
 
 	private void processParseTag(Tag parseTag, CompileNode parentNode)
 	{
-		logger.info("processParseTag");
-
 		String methodID = null;
 		boolean inlined = false;
 		String inlineReason = null;
