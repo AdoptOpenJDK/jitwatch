@@ -20,7 +20,7 @@ public class ClassBC
 
 	private LineTable lineTable = new LineTable();
 
-	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
+	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		memberBytecodeMap.put(memberName, memberBytecode);
 	}

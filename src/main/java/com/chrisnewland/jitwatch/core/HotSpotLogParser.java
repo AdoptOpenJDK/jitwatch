@@ -38,7 +38,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
-	
+
 	private boolean inHeader = true;
 
 	private long currentLineNumber;
@@ -46,9 +46,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private JITWatchConfig config;
 
 	private TagProcessor tagProcessor;
-	
+
 	private AssemblyProcessor asmProcessor;
-	
+
 	public HotSpotLogParser(IJITListener logListener)
 	{
 		model = new JITDataModel();
@@ -70,9 +70,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private void mountAdditionalClasses()
 	{
 		URL[] classURLs = new URL[config.getClassLocations().size()];
-		
+
 		int pos = 0;
-		
+
 		for (String filename : config.getClassLocations())
 		{
 			URI uri = new File(filename).toURI();
@@ -88,7 +88,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				logger.error("Could not create URL: {} ", uri, e);
 			}
 		}
-		
+
 		ClassUtil.initialise(classURLs);
 	}
 
@@ -127,13 +127,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
-		
+
 		mountAdditionalClasses();
 
 		currentLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
-		
+
 		asmProcessor = new AssemblyProcessor(this);
 	}
 
@@ -147,13 +147,25 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
 
 		String currentLine = reader.readLine();
-		
+
 		inHeader = true;
 
 		while (reading && currentLine != null)
 		{
 			try
 			{
+				String trimmedLine = currentLine.trim();
+
+				if (trimmedLine.length() > 0)
+				{
+					char firstChar = trimmedLine.charAt(0);
+
+					if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET)
+					{
+						currentLine = trimmedLine;
+					}
+				}
+
 				if (inHeader)
 				{
 					handleLogHeader(currentLine);
@@ -161,7 +173,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				else
 				{
 					handleLogLine(currentLine);
-				}				
+				}
 			}
 			catch (Exception ex)
 			{
@@ -172,7 +184,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		asmProcessor.complete();
-		
+
 		reader.close();
 
 		logListener.handleReadComplete();
@@ -196,18 +208,18 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				break;
 			}
 		}
-		
+
 		return isSkip;
 	}
-	
+
 	// HotSpot log header XML can have text nodes
 	private void handleLogHeader(final String inCurrentLine)
-	{		
+	{
 		if (TAG_TTY.equals(inCurrentLine))
 		{
 			inHeader = false;
 		}
-		else 
+		else
 		{
 			if (!skipLine(inCurrentLine, SKIP_HEADER_TAGS))
 			{
@@ -220,12 +232,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			}
 		}
 	}
-	
+
 	// After the header, XML nodes do not have text nodes
 	private void handleLogLine(final String inCurrentLine)
-	{	
+	{
 		String currentLine = inCurrentLine;
-		
+
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
@@ -254,7 +266,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleTag(Tag tag)
-	{		
+	{
 		String tagName = tag.getName();
 
 		switch (tagName)
@@ -439,7 +451,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-		
+
 		String stampAttr = attrs.get(ATTR_STAMP);
 		long stampTime = ParseUtil.parseStamp(stampAttr);
 
@@ -543,7 +555,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		catch (Throwable t)
 		{
 			// Throwable because of possible VerifyError
-			
+
 			logger.error("Could not addClassToModel {}", fqClassName, t);
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
