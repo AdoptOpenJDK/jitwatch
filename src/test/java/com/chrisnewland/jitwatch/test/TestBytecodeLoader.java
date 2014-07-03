@@ -333,7 +333,7 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
 		
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int)");
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int);");
 		
 		assertNotNull(memberBytecode);
 		
@@ -350,9 +350,9 @@ public class TestBytecodeLoader
 		int offset = entry.getBytecodeOffset();
 		
 		assertEquals(0, offset);
-		assertEquals("public int add(int,int)", entry.getMemberSignature());
+		assertEquals("public int add(int,int);", entry.getMemberSignature());
 		
-		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public com.chrisnewland.jitwatch.demo.SandboxTest()");
+		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public com.chrisnewland.jitwatch.demo.SandboxTest();");
 		
 		assertNotNull(memberBytecode2);
 		
@@ -365,7 +365,7 @@ public class TestBytecodeLoader
 		int offset2 = entry2.getBytecodeOffset();
 		
 		assertEquals(0, offset2);		
-		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest()", entry2.getMemberSignature());
+		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest();", entry2.getMemberSignature());
 
 	}
 	
