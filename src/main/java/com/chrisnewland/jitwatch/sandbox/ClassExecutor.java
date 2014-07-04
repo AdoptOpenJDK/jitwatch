@@ -13,10 +13,10 @@ public class ClassExecutor
 {
 	private static final Logger logger = LoggerFactory.getLogger(ClassExecutor.class);
 
-    private StreamCollector outBuilder;
-    private StreamCollector errBuilder;
+	private StreamCollector outBuilder;
+	private StreamCollector errBuilder;
 
-    public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
 	{
 		List<String> commands = new ArrayList<>();
 
@@ -45,7 +45,6 @@ public class ClassExecutor
 				
 		StringBuilder cmdBuilder = new StringBuilder();
 
-
 		for (String part : commands)
 		{
 			cmdBuilder.append(part).append(C_SPACE);
@@ -58,7 +57,7 @@ public class ClassExecutor
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
-			
+
 			Process proc = pb.start();
 
 			//TODO: how to not miss start of output?

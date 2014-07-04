@@ -21,6 +21,8 @@ public final class JITWatchConstants
     private JITWatchConstants() {
     }
     
+    public static final boolean DEBUG_LOGGING = false;
+    
     public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
     public static final int DEFAULT_MAX_INLINE_SIZE = 325;
     public static final int DEFAULT_COMPILER_THRESHOLD = 10000;
@@ -178,6 +180,13 @@ public final class JITWatchConstants
 	
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+	
+	public static final String S_BYTECODE_CONSTANT_POOL = "Constant pool:";
+	public static final String S_BYTECODE_CODE = "Code:";
+	public static final String S_BYTECODE_EXCEPTIONS = "Exceptions:";
+	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
+	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
+	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
 
 
     public static final String[] MODIFIERS = new String[] {

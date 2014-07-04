@@ -45,12 +45,12 @@ public class AssemblyBlock
 
 		if (title != null)
 		{
-			builder.append(title).append(S_NEWLINE);
+			builder.append("AssemblyBlock:" ).append(title).append(S_NEWLINE);
 		}
 		
 		for (AssemblyInstruction instruction : instructions)
 		{
-			builder.append(instruction.toString());
+			builder.append(instruction.toString()).append(S_NEWLINE);
 		}
 
 		return builder.toString();

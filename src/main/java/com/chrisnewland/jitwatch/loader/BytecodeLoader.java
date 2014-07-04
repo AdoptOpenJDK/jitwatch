@@ -8,6 +8,7 @@ package com.chrisnewland.jitwatch.loader;
 import com.chrisnewland.jitwatch.model.bytecode.*;
 import com.sun.tools.javap.JavapTask;
 import com.sun.tools.javap.JavapTask.BadArgs;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ public final class BytecodeLoader
 		{
 			result = parse(byteCodeString);
 		}
-		
+
 		return result;
 	}
 
@@ -102,7 +103,7 @@ public final class BytecodeLoader
 		while (pos < lines.length)
 		{
 			String line = lines[pos].trim();
-			
+
 			switch (parseState)
 			{
 			case OTHER:
@@ -181,17 +182,17 @@ public final class BytecodeLoader
 
 		return classBytecode;
 	}
-	
+
 	private static int getVersionPart(String line)
 	{
 		int version = 0;
-		
+
 		int colonPos = line.indexOf(C_COLON);
-		
+
 		if (colonPos != -1 && colonPos != line.length()-1)
 		{
 			String versionPart = line.substring(colonPos+1).trim();
-			
+
 			try
 			{
 				version = Integer.parseInt(versionPart);
@@ -201,7 +202,7 @@ public final class BytecodeLoader
 				logger.error("Could not parse version part {}", versionPart, nfe);
 			}
 		}
-		
+
 		return version;
 	}
 

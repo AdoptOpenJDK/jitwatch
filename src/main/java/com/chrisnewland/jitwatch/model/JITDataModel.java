@@ -203,6 +203,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	public void buildMetaClass(String fqClassName, Class<?> clazz)
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildMetaClass: {}", fqClassName);
+		}
+		
 		String packageName;
 		String className;
 
@@ -244,8 +249,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			MetaMethod metaMethod = new MetaMethod(m, metaClass);
 			metaClass.addMetaMethod(metaMethod);
 			stats.incCountMethod();
-			
-			logger.debug("Added MetaMethod: {}", metaMethod);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Added MetaMethod: {}", metaMethod);
+			}
 		}
 
 		for (Constructor<?> c : clazz.getDeclaredConstructors())
@@ -253,8 +261,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
 			metaClass.addMetaConstructor(metaConstructor);
 			stats.incCountConstructor();
-			
-			logger.debug("Added MetaConstructor: {}", metaConstructor);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Added MetaConstructor: {}", metaConstructor);
+			}
 		}
 	}
 

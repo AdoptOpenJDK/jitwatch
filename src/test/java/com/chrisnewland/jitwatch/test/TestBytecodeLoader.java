@@ -50,8 +50,10 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig + ";");
-				
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig+";");
+
+		assertNotNull(memberBytecode);
+
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 		assertNotNull(instructions);
@@ -270,7 +272,8 @@ public class TestBytecodeLoader
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("Classfile /home/chris/workspace/jw/target/classes/com/chrisnewland/jitwatch/demo/SandboxTest.class").append("\n");
+		builder.append("Classfile /home/chris/workspace/jw/target/classes/com/chrisnewland/jitwatch/demo/SandboxTest.class")
+				.append("\n");
 		builder.append("  Last modified 18-May-2014; size 426 bytes").append("\n");
 		builder.append("  MD5 checksum d8d0af7620175f82d2c5c753b493196f").append("\n");
 		builder.append("  Compiled from \"SandboxTest.java\"").append("\n");
@@ -332,21 +335,21 @@ public class TestBytecodeLoader
 		builder.append("}").append("\n");
 
 		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
-		
+
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int);");
-		
+
 		assertNotNull(memberBytecode);
-		
+
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
-		
+
 		assertEquals(4, instructions.size());
-		
+
 		LineTable lineTable = classBytecode.getLineTable();
-		
+
 		assertEquals(2, lineTable.size());
-		
+
 		LineTableEntry entry = lineTable.get(7);
-		
+
 		int offset = entry.getBytecodeOffset();
 		
 		assertEquals(0, offset);
@@ -355,34 +358,138 @@ public class TestBytecodeLoader
 		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public com.chrisnewland.jitwatch.demo.SandboxTest();");
 		
 		assertNotNull(memberBytecode2);
-		
+
 		List<BytecodeInstruction> instructions2 = memberBytecode2.getInstructions();
-		
+
 		assertEquals(3, instructions2.size());
-						
+
 		LineTableEntry entry2 = lineTable.get(3);
-		
+
 		int offset2 = entry2.getBytecodeOffset();
-		
-		assertEquals(0, offset2);		
+
+		assertEquals(0, offset2);
 		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest();", entry2.getMemberSignature());
 
 	}
-	
+
 	@Test
 	public void testClassFileVersion()
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append("public class com.chrisnewland.jitwatch.demo.MakeHotSpotLog").append("\n");
 		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append("\n");
 		builder.append("minor version: 1").append("\n");
 		builder.append("major version: 51").append("\n");
 		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append("\n");
 
+		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		assertEquals(1, classBytecode.getMinorVersion());
+		assertEquals(51, classBytecode.getMajorVersion());
+	}
+
+	@Test
+	public void testClassFileVersionWithRuntimeAnnotations()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("public class com.chrisnewland.jitwatch.demo.MakeHotSpotLog").append("\n");
+		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append("\n");
+		builder.append("  RuntimeVisibleAnnotations:").append("\n");
+		builder.append("    0: #49(#50=e#51.#52)").append("\n");
+		builder.append("    0: #49(#50=e#51.#52)").append("\n");
+		builder.append("    1: #53(#50=[e#54.#55])").append("\n");
+		builder.append("    2: #56(#50=e#57.#58)").append("\n");
+		builder.append("minor version: 1").append("\n");
+		builder.append("major version: 51").append("\n");
+		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append("\n");
 
 		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
-		assertEquals(1, classBytecode.getMinorVersion());		
-		assertEquals(51, classBytecode.getMajorVersion());		
+		assertEquals(1, classBytecode.getMinorVersion());
+		assertEquals(51, classBytecode.getMajorVersion());
+	}
+
+	@Test
+	public void testRegressionJMHSampleWithRuntimeAnnotations()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("  public void measureWrong();").append("\n");
+		builder.append("      descriptor: ()V").append("\n");
+		builder.append("    flags: ACC_PUBLIC").append("\n");
+		builder.append("    Code:").append("\n");
+		builder.append("      stack=2, locals=1, args_size=1").append("\n");
+		builder.append("         0: aload_0       ").append("\n");
+		builder.append("         0: aload_0       ").append("\n");
+		builder.append("         1: getfield      #4          // Field x:D").append("\n");
+		builder.append("         4: invokestatic  #5                  // Method java/lang/Math.log:(D)D").append("\n");
+		builder.append("         7: pop2          ").append("\n");
+		builder.append("         8: return        ").append("\n");
+		builder.append("      LineNumberTable:").append("\n");
+		builder.append("        line 65: 0").append("\n");
+		builder.append("        line 66: 8").append("\n");
+		builder.append("      LocalVariableTable:").append("\n");
+		builder.append("        Start  Length  Slot  Name   Signature").append("\n");
+		builder.append("            0       9     0  this   Lorg/openjdk/jmh/samples/JMHSample_08_DeadCode;").append("\n");
+		builder.append("    RuntimeVisibleAnnotations:").append("\n");
+		builder.append("      0: #35()").append("\n");
+		builder.append("      0: #35()").append("\n");
+		
+		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public void measureWrong();");
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertEquals(6, instructions.size());
+		
+		int pos = 0;
+		
+		BytecodeInstruction i0 = instructions.get(pos++);
+		assertEquals(0, i0.getOffset());
+		assertEquals(Opcode.ALOAD_0, i0.getOpcode());
+		assertEquals(false, i0.hasParameters());
+		assertEquals(0, i0.getParameters().size());
+		
+		BytecodeInstruction i1 = instructions.get(pos++);
+		assertEquals(0, i1.getOffset());
+		assertEquals(Opcode.ALOAD_0, i1.getOpcode());
+		assertEquals(false, i1.hasParameters());
+		assertEquals(0, i1.getParameters().size());
+		
+		BytecodeInstruction i2 = instructions.get(pos++);
+		assertEquals(1, i2.getOffset());
+		assertEquals(Opcode.GETFIELD, i2.getOpcode());
+		assertEquals(true, i2.hasParameters());
+		assertEquals(1, i2.getParameters().size());
+		
+		BytecodeInstruction i3 = instructions.get(pos++);
+		assertEquals(4, i3.getOffset());
+		assertEquals(Opcode.INVOKESTATIC, i3.getOpcode());
+		assertEquals(true, i3.hasParameters());
+		assertEquals(1, i3.getParameters().size());
+	
+		BytecodeInstruction i4 = instructions.get(pos++);
+		assertEquals(7, i4.getOffset());
+		assertEquals(Opcode.POP2, i4.getOpcode());
+		assertEquals(false, i4.hasParameters());
+		assertEquals(0, i4.getParameters().size());
+		
+		BytecodeInstruction i5 = instructions.get(pos++);
+		assertEquals(8, i5.getOffset());
+		assertEquals(Opcode.RETURN, i5.getOpcode());
+		assertEquals(false, i5.hasParameters());
+		assertEquals(0, i5.getParameters().size());
+
+		LineTable lineTable = classBytecode.getLineTable();
+
+		assertEquals(2, lineTable.size());
+
+		assertEquals(0, lineTable.get(65).getBytecodeOffset());
+		assertEquals(8, lineTable.get(66).getBytecodeOffset());
+
+		assertEquals("public void measureWrong();", lineTable.get(65).getMemberSignature());
 	}
 }

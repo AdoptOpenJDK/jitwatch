@@ -23,7 +23,7 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public final class ParseUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
@@ -53,13 +53,14 @@ public final class ParseUtil
 	public static final char TYPE_INTEGER = 'I';
 	public static final char TYPE_FLOAT = 'F';
 
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private ParseUtil() {
-    }
-    
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private ParseUtil()
+	{
+	}
+
 	public static long parseStamp(String stamp)
 	{
 		double number = parseLocaleSafeDouble(stamp);
@@ -79,7 +80,7 @@ public final class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-            logger.error("", pe);
+			logger.error("", pe);
 		}
 
 		return result;
@@ -205,7 +206,8 @@ public final class ParseUtil
 	 * 
 	 * @return String[] 0=className 1=methodSignature
 	 */
-	public static String[] parseLogSignature(String logSignature) throws Exception {
+	public static String[] parseLogSignature(String logSignature) throws Exception
+	{
 		String result[] = null;
 
 		String[] parts = splitLogSignatureWithRegex(logSignature);
@@ -293,23 +295,23 @@ public final class ParseUtil
 			}
 			catch (ClassNotFoundException cnf)
 			{
-                logger.error("ClassNotFoundException:", cnf);
+				logger.error("ClassNotFoundException:", cnf);
 				throw new Exception("ClassNotFoundException: " + builder.toString());
 			}
 			catch (NoClassDefFoundError ncdf)
 			{
-                logger.error("NoClassDefFoundError:", ncdf);
-                throw new Exception("NoClassDefFoundError: " + builder.toString());
+				logger.error("NoClassDefFoundError:", ncdf);
+				throw new Exception("NoClassDefFoundError: " + builder.toString());
 			}
 			catch (Exception ex)
 			{
-                logger.error("Exception:", ex);
-                throw new Exception("Exception: " + ex.getMessage());
+				logger.error("Exception parsing: {}:", types, ex);
+				throw new Exception("Exception: " + ex.getMessage());
 			}
 			catch (Error err)
 			{
-                logger.error("Error:", err);
-                throw new Exception("Error: " + err.getMessage());
+				logger.error("Error parsing: {}", types, err);
+				throw new Exception("Error: " + err.getMessage());
 			}
 
 		} // end if empty
@@ -320,127 +322,90 @@ public final class ParseUtil
     private static void calculateTagPosition(String types, List<Class<?>> classes,
                                              int typeLen,
                                              StringBuilder builder) throws ClassNotFoundException {
+
         int pos = 0;
 
-        while (pos < types.length())
-        {
+        while (pos < types.length()) {
             char c = types.charAt(pos);
 
-            switch (c)
-            {
-            case C_OPEN_SQUARE_BRACKET:
-                pos = parseCOpenSquareBracket(types, classes, typeLen, builder, pos, c);
-                break;
-            case C_OBJECT_REF:
-                // ref type
-                pos = parseCObjectRef(types, classes, typeLen, builder, pos);
-                break;
-            default:
-                // primitive
-                pos = parsePrimitive(classes, pos, c);
-                break;
+            switch (c) {
+                case C_OPEN_SQUARE_BRACKET:
+                    // Could be
+                    // [Ljava.lang.String; Object array
+                    // [I primitive array
+                    // [..[I multidimensional primitive array
+                    // [..[Ljava.lang.String multidimensional Object array
+                    builder.delete(0, builder.length());
+                    builder.append(c);
+                    pos++;
+                    c = types.charAt(pos);
+
+                    while (c == C_OPEN_SQUARE_BRACKET) {
+                        builder.append(c);
+                        pos++;
+                        c = types.charAt(pos);
+                    }
+
+                    if (c == C_OBJECT_REF) {
+                        // array of ref type
+                        while (pos < typeLen) {
+                            c = types.charAt(pos++);
+                            builder.append(c);
+
+                            if (c == C_SEMICOLON) {
+                                break;
+                            }
+                        }
+                    } else {
+                        // array of primitive
+                        builder.append(c);
+                        pos++;
+                    }
+
+                    Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
+                    classes.add(arrayClass);
+                    builder.delete(0, builder.length());
+                    break;
+                case C_OBJECT_REF:
+                    // ref type
+                    while (pos < typeLen - 1) {
+                        pos++;
+                        c = types.charAt(pos);
+
+                        if (c == C_SEMICOLON) {
+                            pos++;
+                            break;
+                        }
+
+                        builder.append(c);
+                    }
+                    Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
+                    classes.add(refClass);
+                    builder.delete(0, builder.length());
+                    break;
+                default:
+                    // primitive
+                    Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
+                    classes.add(primitiveClass);
+                    pos++;
+
             } // end switch
 
         } // end while
     }
 
-    private static int parsePrimitive(List<Class<?>> classes, int inPos, char c) {
-        int pos = inPos;
-        Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
-        classes.add(primitiveClass);
-        pos++;
-        return pos;
-    }
-
-    private static int parseCObjectRef(String types,
-                                       List<Class<?>> classes,
-                                       int typeLen,
-                                       StringBuilder builder,
-                                       int inPos) throws ClassNotFoundException {
-        // ref type
-        int pos = inPos;
-        char c;
-        while (pos < typeLen)
-        {
-            pos++;
-            c = types.charAt(pos);
-
-            if (c == C_SEMICOLON)
-            {
-                pos++;
-                break;
-            }
-
-            builder.append(c);
-        }
-        Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-        classes.add(refClass);
-        builder.delete(0, builder.length());
-        return pos;
-    }
-
-    private static int parseCOpenSquareBracket(String types,
-                                               List<Class<?>> classes,
-                                               int typeLen,
-                                               StringBuilder builder,
-                                               int inPos,
-                                               char inC) throws ClassNotFoundException {
-        // Could be
-        // [Ljava.lang.String; Object array
-        // [I primitive array
-        // [..[I multidimensional primitive array
-        // [..[Ljava.lang.String multidimensional Object array
-        char c = inC;
-        int pos = inPos;
-
-        builder.delete(0, builder.length());
-        builder.append(c);
-        pos++;
-        c = types.charAt(pos);
-
-        while (c == C_OPEN_SQUARE_BRACKET)
-        {
-            builder.append(c);
-            pos++;
-            c = types.charAt(pos);
-        }
-
-        if (c == C_OBJECT_REF)
-        {
-            // array of ref type
-            while (pos < typeLen)
-            {
-                c = types.charAt(pos++);
-                builder.append(c);
-
-                if (c == C_SEMICOLON)
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            // array of primitive
-            builder.append(c);
-            pos++;
-        }
-
-        Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-        classes.add(arrayClass);
-        builder.delete(0, builder.length());
-        return pos;
-    }
-
     public static String findBestMatchForMemberSignature(IMetaMember member, List<String> lines)
 	{
-		int index = findBestLineMatchForMemberSignature(member, lines);
-
 		String match = null;
 
-		if (index > 0 && index < lines.size())
+		if (lines != null)
 		{
-			match = lines.get(index);
+			int index = findBestLineMatchForMemberSignature(member, lines);
+
+			if (index > 0 && index < lines.size())
+			{
+				match = lines.get(index);
+			}
 		}
 
 		return match;
@@ -448,65 +413,68 @@ public final class ParseUtil
 
 	public static int findBestLineMatchForMemberSignature(IMetaMember member, List<String> lines)
 	{
-		String memberName = member.getMemberName();
-		int modifier = member.getModifier();
-		String returnTypeName = member.getReturnTypeName();
-		String[] paramTypeNames = member.getParamTypeNames();
-
 		int bestScoreLine = 0;
-		int bestScore = 0;
 
-		for (int i = 0; i < lines.size(); i++)
+		if (lines != null)
 		{
+			String memberName = member.getMemberName();
+			int modifier = member.getModifier();
+			String returnTypeName = member.getReturnTypeName();
+			String[] paramTypeNames = member.getParamTypeNames();
 
-			String line = lines.get(i);
+			int bestScore = 0;
 
-			int score = 0;
-
-			if (line.contains(memberName))
+			for (int i = 0; i < lines.size(); i++)
 			{
-				MemberSignatureParts msp = new MemberSignatureParts(line);
+				String line = lines.get(i);
 
-				if (!memberName.equals(msp.getMemberName()))
+				int score = 0;
+
+				if (line.contains(memberName))
 				{
-					continue;
-				}
+					MemberSignatureParts msp = new MemberSignatureParts(line);
 
-				// modifiers matched
-				if (msp.getModifier() != modifier)
-				{
-					continue;
-				}
+					if (!memberName.equals(msp.getMemberName()))
+					{
+						continue;
+					}
 
-				List<String> mspParamTypes = msp.getParamTypes();
+					// modifiers matched
+					if (msp.getModifier() != modifier)
+					{
+						continue;
+					}
 
-				if (mspParamTypes.size() != paramTypeNames.length)
-				{
-					continue;
-				}
+					List<String> mspParamTypes = msp.getParamTypes();
 
-				int pos = 0;
+					if (mspParamTypes.size() != paramTypeNames.length)
+					{
+						continue;
+					}
 
-				for (String memberParamType : paramTypeNames)
-				{
-					String mspParamType = msp.getParamTypes().get(pos++);
+					int pos = 0;
 
-					if (compareTypeEquality(memberParamType, mspParamType, msp.getGenerics()))
+					for (String memberParamType : paramTypeNames)
+					{
+						String mspParamType = msp.getParamTypes().get(pos++);
+
+						if (compareTypeEquality(memberParamType, mspParamType, msp.getGenerics()))
+						{
+							score++;
+						}
+					}
+
+					// return type matched
+					if (compareTypeEquality(returnTypeName, msp.getReturnType(), msp.getGenerics()))
 					{
 						score++;
 					}
-				}
 
-				// return type matched
-				if (compareTypeEquality(returnTypeName, msp.getReturnType(), msp.getGenerics()))
-				{
-					score++;
-				}
-
-				if (score > bestScore)
-				{
-					bestScoreLine = i;
-					bestScore = score;
+					if (score > bestScore)
+					{
+						bestScoreLine = i;
+						bestScore = score;
+					}
 				}
 			}
 		}
@@ -516,8 +484,8 @@ public final class ParseUtil
 
 	private static boolean compareTypeEquality(String memberTypeName, String inMspTypeName, Map<String, String> genericsMap)
 	{
-        String mspTypeName = inMspTypeName;
-        if (memberTypeName != null && memberTypeName.equals(mspTypeName))
+		String mspTypeName = inMspTypeName;
+		if (memberTypeName != null && memberTypeName.equals(mspTypeName))
 		{
 			return true;
 		}
@@ -560,11 +528,11 @@ public final class ParseUtil
 	}
 
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
-	{		
+	{
 		IMetaMember result = null;
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
-		
+
 		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
@@ -601,35 +569,35 @@ public final class ParseUtil
 			PackageManager pm = model.getPackageManager();
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
-			
+
 			if (metaClass == null)
 			{
-                logger.warn("metaClass not found: {}. Attempting classload", metaClassName);
+				logger.warn("metaClass not found: {}. Attempting classload", metaClassName);
 
-                // Possible that TraceClassLoading did not log this class
-                // try to classload and add to model
-                
-        		Class<?> clazz = null;
+				// Possible that TraceClassLoading did not log this class
+				// try to classload and add to model
 
-        		try
-        		{
-        			clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
-        			
-        			if (clazz != null)
-        			{
-        				model.buildMetaClass(metaClassName, clazz);
-        				
-        				metaClass = pm.getMetaClass(metaClassName);
-        			}
-        		}
-        		catch (ClassNotFoundException cnf)
-        		{
-        			logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
-        		}
-        		catch (NoClassDefFoundError ncdf)
-        		{
-        			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
-        		}
+				Class<?> clazz = null;
+
+				try
+				{
+					clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
+
+					if (clazz != null)
+					{
+						model.buildMetaClass(metaClassName, clazz);
+
+						metaClass = pm.getMetaClass(metaClassName);
+					}
+				}
+				catch (ClassNotFoundException cnf)
+				{
+					logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
+				}
+				catch (NoClassDefFoundError ncdf)
+				{
+					logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
+				}
 			}
 
 			if (metaClass != null)
@@ -638,7 +606,7 @@ public final class ParseUtil
 			}
 			else
 			{
-                logger.error("metaClass not found: {}", metaClassName);
+				logger.error("metaClass not found: {}", metaClassName);
 			}
 		}
 
@@ -693,7 +661,7 @@ public final class ParseUtil
 
 		return result;
 	}
-	
+
 	public static String getPackageFromSource(String source)
 	{
 		String result = null;
@@ -717,7 +685,7 @@ public final class ParseUtil
 
 		return result;
 	}
-	
+
 	public static String getClassFromSource(String source)
 	{
 		String result = null;
