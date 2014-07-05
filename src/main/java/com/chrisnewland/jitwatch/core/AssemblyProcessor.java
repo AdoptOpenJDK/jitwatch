@@ -109,13 +109,30 @@ public class AssemblyProcessor
 
 			String sig = ParseUtil.convertNativeCodeMethodName(firstLine);
 
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Parsed assembly sig {}\nfrom {}", sig, firstLine);
+			}
+
 			IMetaMember currentMember = memberFinder.findMemberWithSignature(sig);
 
 			if (currentMember != null)
 			{
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Found member {}", currentMember);
+				}
+				
 				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
 
 				currentMember.setAssembly(asmMethod);
+			}
+			else
+			{
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Didn't find member for {}", sig);
+				}
 			}
 		}
 

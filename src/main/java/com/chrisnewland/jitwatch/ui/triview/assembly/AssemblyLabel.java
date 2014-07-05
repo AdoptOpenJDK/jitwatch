@@ -13,9 +13,9 @@ public class AssemblyLabel extends Label
 {
 	private AssemblyInstruction instruction;
 	
-	public AssemblyLabel(AssemblyInstruction instr, int line)
+	public AssemblyLabel(AssemblyInstruction instr, int annoWidth, int line)
 	{
-		super(instr.toString(line));
+		super(instr.toString(annoWidth, line));
 		instruction = instr;		
 	}
 	
