@@ -14,14 +14,16 @@ import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyInstruction
 {
-	private long address; // 64 bit
+	private String annotation;
+	private long address;
 	private String modifier;
 	private String mnemonic;
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
 
-	public AssemblyInstruction(long address, String modifier, String mnemonic, List<String> operands, String firstComment)
+	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands, String firstComment)
 	{
+		this.annotation = annotation;
 		this.address = address;
 		this.modifier = modifier;
 		this.mnemonic = mnemonic;
@@ -33,6 +35,11 @@ public class AssemblyInstruction
 		}
 	}
 
+	public String getAnnotation()
+	{
+		return annotation;
+	}
+	
 	public long getAddress()
 	{
 		return address;
@@ -82,11 +89,17 @@ public class AssemblyInstruction
 			commentLines.add(comment.trim());
 		}
 	}
-
+	
 	public String toString()
 	{
-		StringBuilder builder = new StringBuilder();
+		return toString(0);
+	}
 
+	public String toString(int annoWidth)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(StringUtil.padRight(annotation, annoWidth));
 		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 
@@ -135,15 +148,16 @@ public class AssemblyInstruction
 			builder.append(S_NEWLINE);
 		}
 		
-		return builder.toString().trim();
+		return StringUtil.rtrim(builder.toString());
 	}
 	
 	// Allow splitting an instruction with a multi-line comment across multiple labels
 	// which all contain the instruction
-	public String toString(int line)
+	public String toString(int annoWidth, int line)
 	{
 		StringBuilder builder = new StringBuilder();
 
+		builder.append(StringUtil.padRight(annotation, annoWidth));
 		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 

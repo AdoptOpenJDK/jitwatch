@@ -112,7 +112,7 @@ public final class StringUtil
 	public static String pad(String str, int width, char padding, boolean left)
 	{
 		StringBuilder sb = new StringBuilder();
-
+		
 		int len = str.length();
 
 		if (!left)
