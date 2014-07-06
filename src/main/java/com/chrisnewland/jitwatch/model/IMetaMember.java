@@ -25,7 +25,6 @@ public interface IMetaMember
 	String NATIVE = "native";
 	String ABSTRACT = "abstract";
 
-	String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP, NATIVE, ABSTRACT };
 	//===================================
 
 	List<String> getQueuedAttributes();

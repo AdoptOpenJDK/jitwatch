@@ -16,7 +16,7 @@ import java.util.Map;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 
-public class JVMSUtil
+public final class JVMSUtil
 {
     private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
 
@@ -24,6 +24,13 @@ public class JVMSUtil
 
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
+
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private JVMSUtil() {
+    }
 
 	public static boolean hasLocalJVMS()
 	{

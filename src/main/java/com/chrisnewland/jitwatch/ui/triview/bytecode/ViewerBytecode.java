@@ -187,35 +187,48 @@ public class ViewerBytecode extends Viewer
 
 					if (success)
 					{
-						JVMSUtil.loadJVMS();
-
-						final String html = JVMSUtil.getBytecodeDescriptions(opcode);
-
-						final String cssURI = JVMSUtil.getJVMSCSSURL();
-
-						Platform.runLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
-							}
-						});
-					}
+                        performJVMSUtilActions(opcode);
+                    }
 					else
 					{
-						Platform.runLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								stageAccessProxy.openBrowser("Downloading Failed",
-										"Unable to download a local copy of the JVM Specification", null);
-							}
-						});
-					}
+                        createPlatformRunLaterRunnableForDownloadFailure();
+                    }
 				}
-			}).start();
+            }).start();
 		}
 	}
+
+    private void performJVMSUtilActions(Opcode opcode) {
+        JVMSUtil.loadJVMS();
+
+        final String html = JVMSUtil.getBytecodeDescriptions(opcode);
+
+        final String cssURI = JVMSUtil.getJVMSCSSURL();
+
+        createPlatformRunLaterRunnableForJMVSBrowser(html, cssURI, opcode);
+    }
+
+    private void createPlatformRunLaterRunnableForJMVSBrowser(final String html, final String cssURI, final Opcode opcode) {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
+            }
+        });
+    }
+
+    private void createPlatformRunLaterRunnableForDownloadFailure() {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stageAccessProxy.openBrowser("Downloading Failed",
+                        "Unable to download a local copy of the JVM Specification", null);
+            }
+        });
+    }
+
 }

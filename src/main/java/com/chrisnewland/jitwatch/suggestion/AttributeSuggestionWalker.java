@@ -136,12 +136,13 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				handleInlineFailTag(attrs, methodID, caller, currentBytecode);
 				break;
 
-			case TAG_PARSE:
-			{
-				String callerID = attrs.get(ATTR_METHOD);
-				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
-				processParseTag(child, nestedCaller);
-			}
+            case TAG_PARSE:
+                {
+                    String callerID = attrs.get(ATTR_METHOD);
+                    IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
+                    processParseTag(child, nestedCaller);
+                }
+                break;
 
 			default:
 				break;

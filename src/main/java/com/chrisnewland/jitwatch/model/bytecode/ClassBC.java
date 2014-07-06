@@ -1,13 +1,10 @@
 package com.chrisnewland.jitwatch.model.bytecode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.chrisnewland.jitwatch.model.IMetaMember;
 import com.chrisnewland.jitwatch.util.ParseUtil;
+
+import java.util.*;
+
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 public class ClassBC
@@ -20,7 +17,7 @@ public class ClassBC
 
 	private LineTable lineTable = new LineTable();
 
-	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
+	public void addMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		memberBytecodeMap.put(memberName, memberBytecode);
 	}

@@ -1,16 +1,13 @@
 package com.chrisnewland.jitwatch.sandbox;
 
-import java.io.File;
-import java.lang.ProcessBuilder.Redirect;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_COLON;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_SPACE;
 
 public class ClassExecutor
 {
@@ -18,17 +15,12 @@ public class ClassExecutor
 
 	private StreamCollector outBuilder;
 	private StreamCollector errBuilder;
-	
+
 	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions)
 	{
 		List<String> commands = new ArrayList<>();
 
-		// locate currently running java executable
-		Path pathToJavaExecutable = Paths.get(System.getProperty("java.home"), "bin", "java");
-
-		File javaExecutable = pathToJavaExecutable.toFile();
-		
-		commands.add(javaExecutable.getAbsolutePath());
+		commands.add("java");
 
 		if (vmOptions.size() > 0)
 		{
@@ -65,16 +57,12 @@ public class ClassExecutor
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
-			
-			// use this instead of StreamCollectors if missing start of output
-			//pb.redirectErrorStream(true);
-			//pb.redirectOutput(Redirect.INHERIT);
-			
+
 			Process proc = pb.start();
 
 			//TODO: how to not miss start of output?
-			errBuilder = new StreamCollector(proc.getErrorStream());
 			outBuilder = new StreamCollector(proc.getInputStream());
+			errBuilder = new StreamCollector(proc.getErrorStream());
 
 			result = proc.waitFor();
 		}

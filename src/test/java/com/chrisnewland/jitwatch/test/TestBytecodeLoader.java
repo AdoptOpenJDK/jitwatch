@@ -50,7 +50,7 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig+";");
 
 		assertNotNull(memberBytecode);
 
@@ -336,7 +336,7 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
 
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int)");
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int);");
 
 		assertNotNull(memberBytecode);
 
@@ -351,12 +351,12 @@ public class TestBytecodeLoader
 		LineTableEntry entry = lineTable.get(7);
 
 		int offset = entry.getBytecodeOffset();
-
+		
 		assertEquals(0, offset);
-		assertEquals("public int add(int,int)", entry.getMemberSignature());
-
-		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public com.chrisnewland.jitwatch.demo.SandboxTest()");
-
+		assertEquals("public int add(int,int);", entry.getMemberSignature());
+		
+		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public com.chrisnewland.jitwatch.demo.SandboxTest();");
+		
 		assertNotNull(memberBytecode2);
 
 		List<BytecodeInstruction> instructions2 = memberBytecode2.getInstructions();
@@ -368,7 +368,7 @@ public class TestBytecodeLoader
 		int offset2 = entry2.getBytecodeOffset();
 
 		assertEquals(0, offset2);
-		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest()", entry2.getMemberSignature());
+		assertEquals("public com.chrisnewland.jitwatch.demo.SandboxTest();", entry2.getMemberSignature());
 
 	}
 
@@ -437,7 +437,7 @@ public class TestBytecodeLoader
 		
 		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
 
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public void measureWrong()");
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public void measureWrong();");
 
 		assertNotNull(memberBytecode);
 
@@ -490,6 +490,6 @@ public class TestBytecodeLoader
 		assertEquals(0, lineTable.get(65).getBytecodeOffset());
 		assertEquals(8, lineTable.get(66).getBytecodeOffset());
 
-		assertEquals("public void measureWrong()", lineTable.get(65).getMemberSignature());	
+		assertEquals("public void measureWrong();", lineTable.get(65).getMemberSignature());
 	}
 }

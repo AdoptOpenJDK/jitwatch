@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompileChainStage.class);
 
     private ScrollPane scrollPane;
     private Pane pane;
@@ -88,9 +88,10 @@ public class CompileChainStage extends Stage
         }
     }
 
-    private void show(CompileNode node, double x, double parentY, int depth)
+    private void show(CompileNode node, double x, double inParentY, int depth)
     {
         double lastX = x;
+        double parentY = inParentY;
 
         lastX = plotNode(node, x, parentY, depth);
 
@@ -111,8 +112,11 @@ public class CompileChainStage extends Stage
         return member == null ? "Unknown" : member.getMemberName();
     }
 
-    private double plotNode(final CompileNode node, double x, double parentY, int depth)
+    private double plotNode(final CompileNode node, double inX, double inParentY, int depth)
     {
+        double x = inX;
+        double parentY = inParentY;
+
         String labelText = getLabelText(node);
 
         StringBuilder tipBuilder = new StringBuilder();
@@ -140,21 +144,9 @@ public class CompileChainStage extends Stage
 
         tipBuilder.append("JIT Compiled: ");
 
-        if (node.getMember().isCompiled())
-        {
-            tipBuilder.append("Yes\n");
-            rect.setFill(Color.GREEN);
-        }
-        else
-        {
-            tipBuilder.append("No\n");
-            rect.setFill(Color.RED);
-        }
+        highlightInGreenOrRed(node, tipBuilder, rect);
 
-        if (node.isInlined())
-        {
-            text.setFill(Color.YELLOW);
-        }
+        ifInlinedHighlightInYellow(node, text);
 
         String inlineReason = node.getInlineReason();
 
@@ -184,15 +176,7 @@ public class CompileChainStage extends Stage
 
         x += X_GAP;
 
-        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent arg0)
-            {
-                logger.info("{}", node.getMember());
-                // TODO use for navigation in TriView?
-            }
-        });
+        initialiseRectWithOnMouseClickedEventHandler(node, rect);
 
         Tooltip tip = new Tooltip(tipBuilder.toString());
         Tooltip.install(rect, tip);
@@ -202,6 +186,38 @@ public class CompileChainStage extends Stage
         pane.getChildren().add(text);
 
         return x;
+    }
+
+    private void highlightInGreenOrRed(CompileNode node, StringBuilder tipBuilder, Rectangle rect) {
+        if (node.getMember().isCompiled())
+        {
+            tipBuilder.append("Yes\n");
+            rect.setFill(Color.GREEN);
+        }
+        else
+        {
+            tipBuilder.append("No\n");
+            rect.setFill(Color.RED);
+        }
+    }
+
+    private void ifInlinedHighlightInYellow(CompileNode node, Text text) {
+        if (node.isInlined())
+        {
+            text.setFill(Color.YELLOW);
+        }
+    }
+
+    private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Rectangle rect) {
+        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent arg0)
+            {
+                LOGGER.info("{}", node.getMember());
+                // TODO use for navigation in TriView?
+            }
+        });
     }
 
 }
