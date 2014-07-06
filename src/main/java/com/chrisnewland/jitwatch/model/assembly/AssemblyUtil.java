@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
-public final class AssemblyUtil
+public class AssemblyUtil
 {
-	//http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
+	// http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
-			.compile("^([a-f0-9x]+):\\s+([0-9a-z\\(\\)\\$,\\-%\\s]+)([;#].*)?");
+			.compile("^(0x[a-f0-9]+):\\s+([0-9a-z\\(\\)\\$,\\-%\\s]+)([;#].*)?");
 
 	private AssemblyUtil()
 	{
@@ -40,36 +40,58 @@ public final class AssemblyUtil
 		AssemblyInstruction lastInstruction = null;
 
 		for (String line : lines)
-		{			
-			String cleanLine = line.replace(S_ENTITY_APOS, S_QUOTE).trim();
-
-			if (cleanLine.startsWith(S_HASH))
+		{
+			if (DEBUG_LOGGING)
 			{
-				headerBuilder.append(cleanLine).append(S_NEWLINE);
+				logger.debug("line: '{}'", line);
 			}
-			else if (cleanLine.startsWith(S_OPEN_SQUARE))
+
+			String trimmedLine = line.replace(S_ENTITY_APOS, S_QUOTE).trim();
+
+			if (trimmedLine.startsWith(S_HASH))
 			{
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Assembly header: {}", trimmedLine);
+				}
+
+				headerBuilder.append(trimmedLine).append(S_NEWLINE);
+			}
+			else if (trimmedLine.startsWith(S_OPEN_SQUARE))
+			{
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("new AssemblyBlock: {}", trimmedLine);
+				}
+
 				method.addBlock(currentBlock);
 				currentBlock = new AssemblyBlock();
-				currentBlock.setTitle(cleanLine);
+				currentBlock.setTitle(trimmedLine);
 			}
-			else if (cleanLine.startsWith(S_ASSEMBLY_ADDRESS))
+			else if (trimmedLine.startsWith(S_SEMICOLON))
 			{
-				AssemblyInstruction instr = createInstruction(cleanLine);
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Extended comment? : {}", trimmedLine);
+				}
 
-				currentBlock.addInstruction(instr);
-
-				lastInstruction = instr;
+				if (lastInstruction != null)
+				{
+					if (trimmedLine.length() > 0)
+					{
+						lastInstruction.addCommentLine(trimmedLine);
+					}
+				}
 			}
 			else
 			{
-				// extended comment
-				if (lastInstruction != null)
+				AssemblyInstruction instr = createInstruction(trimmedLine);
+
+				if (instr != null)
 				{
-					if (cleanLine.length() > 0)
-					{
-						lastInstruction.addCommentLine(cleanLine);
-					}
+					currentBlock.addInstruction(instr);
+
+					lastInstruction = instr;
 				}
 			}
 		}
@@ -81,17 +103,42 @@ public final class AssemblyUtil
 		return method;
 	}
 
-	public static AssemblyInstruction createInstruction(final String line)
+	public static AssemblyInstruction createInstruction(final String inLine)
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("Trying to parse instruction : {}", inLine);
+		}
+
+		String line = inLine;
+
 		AssemblyInstruction instr = null;
+
+		String annotation = S_EMPTY;
+
+		int addressIndex = line.indexOf(S_ASSEMBLY_ADDRESS);
+
+		if (addressIndex != -1)
+		{
+			annotation = line.substring(0, addressIndex);
+			line = line.substring(addressIndex);
+		}
 
 		Matcher matcher = PATTERN_ASSEMBLY_INSTRUCTION.matcher(line);
 
 		if (matcher.find() && matcher.groupCount() == 3)
 		{
 			String address = matcher.group(1);
-			String middle = matcher.group(2);
+			String instructionString = matcher.group(2);
 			String comment = matcher.group(3);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug(" Annotation: '{}'", annotation);
+				logger.debug("    Address: '{}'", address);
+				logger.debug("Instruction: '{}'", instructionString);
+				logger.debug("    Comment: '{}'", comment);
+			}
 
             long addressValue = getValueFromAddress(address);
 
@@ -99,9 +146,9 @@ public final class AssemblyUtil
 			String mnemonic = null;
 			List<String> operands = new ArrayList<>();
 
-			if (middle != null)
+			if (instructionString != null)
 			{
-				String[] midParts = middle.trim().split(S_REGEX_WHITESPACE);
+				String[] midParts = instructionString.trim().split(S_REGEX_WHITESPACE);
 
 				// mnemonic
 				// mnemonic operands
@@ -132,7 +179,7 @@ public final class AssemblyUtil
 
                 addValidOperandsToList(operands, opString);
 
-                instr = new AssemblyInstruction(addressValue, modifier, mnemonic, operands, comment);
+                instr = new AssemblyInstruction(annotation, addressValue, modifier, mnemonic, operands, comment);
 			}
 		}
 		else
@@ -143,17 +190,21 @@ public final class AssemblyUtil
 		return instr;
 	}
 
-    private static String getModForThreeOrMoreOperands(String[] midParts) {
-        String modifier;
-        StringBuilder modBuilder = new StringBuilder();
+    private static long getValueFromAddress(String address) {
+        long addressValue = 0;
 
-        for (int i = 0; i < midParts.length - 2; i++)
+        if (address != null)
         {
-            modBuilder.append(midParts[i]).append(S_SPACE);
-        }
+            address = address.trim();
 
-        modifier = modBuilder.toString().trim();
-        return modifier;
+            if (address.startsWith(S_ASSEMBLY_ADDRESS))
+            {
+                address = address.substring(S_ASSEMBLY_ADDRESS.length());
+            }
+
+            addressValue = Long.parseLong(address, 16);
+        }
+        return addressValue;
     }
 
     private static void addValidOperandsToList(List<String> operands, String opString) {
@@ -201,21 +252,14 @@ public final class AssemblyUtil
         }
     }
 
-    private static long getValueFromAddress(String inAddress) {
-        String address = inAddress;
-        long addressValue = 0;
+    private static String getModForThreeOrMoreOperands(String[] midParts) {
+        StringBuilder modBuilder = new StringBuilder();
 
-        if (address != null)
+        for (int i = 0; i < midParts.length - 2; i++)
         {
-            address = address.trim();
-
-            if (address.startsWith(S_ASSEMBLY_ADDRESS))
-            {
-                address = address.substring(S_ASSEMBLY_ADDRESS.length());
-            }
-
-            addressValue = Long.parseLong(address, 16);
+            modBuilder.append(midParts[i]).append(S_SPACE);
         }
-        return addressValue;
+
+        return modBuilder.toString().trim();
     }
 }

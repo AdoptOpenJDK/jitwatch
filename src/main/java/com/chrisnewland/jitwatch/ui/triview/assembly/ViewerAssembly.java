@@ -37,6 +37,10 @@ public class ViewerAssembly extends Viewer
 
 		List<Label> labels = new ArrayList<>();
 
+		int annoWidth = asmMethod.getMaxAnnotationWidth();
+
+		String annoPad = StringUtil.repeat(C_SPACE,  annoWidth);
+		
 		String header = asmMethod.getHeader();
 		
 		if (header != null)
@@ -45,9 +49,10 @@ public class ViewerAssembly extends Viewer
 			
 			for (String headerLine : headerLines)
 			{
-				labels.add(createLabel(headerLine));
+				labels.add(createLabel(annoPad+headerLine));
 			}
-		}		
+		}
+		
 
 		for (AssemblyBlock block : asmMethod.getBlocks())
 		{
@@ -55,7 +60,7 @@ public class ViewerAssembly extends Viewer
 
 			if (title != null)
 			{
-				labels.add(createLabel(title));
+				labels.add(createLabel(annoPad+title));
 			}
 
 			for (final AssemblyInstruction instr : block.getInstructions())
@@ -64,7 +69,7 @@ public class ViewerAssembly extends Viewer
 
 				if (commentLines.size() == 0)
 				{
-					Label lblLine = createLabel(instr, 0);
+					Label lblLine = createLabel(instr, annoWidth, 0);
 					lblLine.setTooltip(new Tooltip(getToolTip(instr)));
 					labels.add(lblLine);
 				}
@@ -72,7 +77,7 @@ public class ViewerAssembly extends Viewer
 				{
 					for (int i = 0; i < commentLines.size(); i++)
 					{
-						Label lblLine = createLabel(instr, i);
+						Label lblLine = createLabel(instr, annoWidth, i);
 						lblLine.setTooltip(new Tooltip(getToolTip(instr)));
 						labels.add(lblLine);
 					}
@@ -232,9 +237,9 @@ public class ViewerAssembly extends Viewer
 		return lbl;
 	}
 
-	private AssemblyLabel createLabel(AssemblyInstruction instruction, int line)
+	private AssemblyLabel createLabel(AssemblyInstruction instruction, int annoWidth, int line)
 	{
-		AssemblyLabel lbl = new AssemblyLabel(instruction, line);
+		AssemblyLabel lbl = new AssemblyLabel(instruction, annoWidth, line);
 
 		lbl.setStyle(STYLE_UNHIGHLIGHTED);
 

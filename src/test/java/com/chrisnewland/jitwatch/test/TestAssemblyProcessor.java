@@ -14,11 +14,13 @@ import com.chrisnewland.jitwatch.model.MetaPackage;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyBlock;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyInstruction;
 import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
+
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +108,7 @@ public class TestAssemblyProcessor
 		for (String line : lines)
 		{
 			String trimmedLine = line.trim();
-			
+
 			if (!trimmedLine.startsWith(S_OPEN_ANGLE) && !trimmedLine.startsWith(LOADED))
 			{
 				asmProcessor.handleLine(trimmedLine);
@@ -364,10 +366,87 @@ public class TestAssemblyProcessor
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
-		
+
 		assertEquals(2, asmBlocks.size());
 
 		assertEquals(6, asmBlocks.get(0).getInstructions().size());
 		assertEquals(21, asmBlocks.get(1).getInstructions().size());
+	}
+
+	@Test
+	public void testJMHPerfAnnotations()
+	{
+		String[] lines = new String[] {
+				"                  Decoding compiled method 0x00007f25cd19c690:",
+				"                  Code:",
+				"                  [Entry Point]",
+				"                  [Constants]",
+				"                  # {method} {0x00007f25ccc5bc40} &apos;measureRight_avgt_jmhLoop&apos; &apos;(Lorg/openjdk/jmh/runner/InfraControl;Lorg/openjdk/jmh/results/RawResults;Lorg/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight$JMHSample_08_DeadCode_1_jmh;L",
+				"                 <writer thread='139800227780352'/>",
+				"                 <writer thread='139800228833024'/>",
+				"                 org/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight$Blackhole_1_jmh;)V&apos; in &apos;org/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight&apos;",
+				"                    # this:     rsi:rsi   = &apos;org/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight&apos;",
+				"                    # parm0:    rdx:rdx   = &apos;org/openjdk/jmh/runner/InfraControl&apos;",
+				"                    # parm1:    rcx:rcx   = &apos;org/openjdk/jmh/results/RawResults&apos;",
+				"                    # parm2:    r8:r8     = &apos;org/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight$JMHSample_08_DeadCode_1_jmh&apos;",
+				"                    # parm3:    r9:r9     = &apos;org/openjdk/jmh/samples/generated/JMHSample_08_DeadCode_measureRight$Blackhole_1_jmh&apos;",
+				"                    #           [sp+0x30]  (sp of caller)",
+				"                    0x00007f25cd19c7e0: mov    0x8(%rsi),%r10d",
+				"                    0x00007f25cd19c7e4: shl    $0x3,%r10",
+				"                    0x00007f25cd19c7e8: cmp    %r10,%rax",
+				"                    0x00007f25cd19c7eb: jne    0x00007f25cd045b60  ;   {runtime_call}",
+				"                    0x00007f25cd19c7f1: xchg   %ax,%ax",
+				"                    0x00007f25cd19c7f4: nopl   0x0(%rax,%rax,1)",
+				"                    0x00007f25cd19c7fc: xchg   %ax,%ax",
+				"                  [Verified Entry Point]",
+				"  1.34%             0x00007f25cd19c890: vmovsd 0xa0(%r13),%xmm0",
+				"                    0x00007f25cd19c899: vmovsd 0x10(%r8),%xmm1    ;*getfield d1",
+				"                                                                  ; - org.openjdk.jmh.infra.Blackhole::consume@2 (line 386)",
+				"                                                                  ; - org.openjdk.jmh.samples.generated.JMHSample_08_DeadCode_measureRight::measureRight_avgt_jmhLoop@19 (line 160)",
+				"                    0x00007f25cd19c89f: vmovsd 0xa8(%r13),%xmm2   ;*getfield d2",
+				"                                                                  ; - org.openjdk.jmh.infra.Blackhole::consume@16 (line 386)",
+				"                                                                  ; - org.openjdk.jmh.samples.generated.JMHSample_08_DeadCode_measureRight::measureRight_avgt_jmhLoop@19 (line 160)",
+				"                    0x00007f25cd19c8a8: fldln2 ", 
+				"  1.61%             0x00007f25cd19c8aa: sub    $0x8,%rsp",
+				"                    0x00007f25cd19c8ae: vmovsd %xmm1,(%rsp)",
+				"                    0x00007f25cd19c8b3: fldl   (%rsp)", 
+				"  0.95%    0.02%    0x00007f25cd19c8b6: fyl2x  ",
+				" 79.12%   95.68%    0x00007f25cd19c8b8: fstpl  (%rsp)",
+				"  1.41%             0x00007f25cd19c8bb: vmovsd (%rsp),%xmm1",
+				"  5.43%             0x00007f25cd19c8c0: add    $0x8,%rsp          ;*invokestatic log" };
+		
+		performAssemblyParsingOn(lines);
+
+		IMetaMember member = map.get("org.openjdk.jmh.samples.generated.JMHSample_08_DeadCode_measureRight measureRight_avgt_jmhLoop (Lorg.openjdk.jmh.runner.InfraControl;Lorg.openjdk.jmh.results.RawResults;Lorg.openjdk.jmh.samples.generated.JMHSample_08_DeadCode_measureRight$JMHSample_08_DeadCode_1_jmh;Lorg.openjdk.jmh.samples.generated.JMHSample_08_DeadCode_measureRight$Blackhole_1_jmh;)V");
+		assertNotNull(member);
+
+		AssemblyMethod assemblyMethod = member.getAssembly();
+
+		assertNotNull(assemblyMethod);
+		
+		assertEquals(19, assemblyMethod.getMaxAnnotationWidth());
+		
+		//System.out.println(assemblyMethod.toString());
+
+		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
+
+		assertEquals(2, asmBlocks.size());
+
+		assertEquals(7, asmBlocks.get(0).getInstructions().size());
+		assertEquals(11, asmBlocks.get(1).getInstructions().size());
+		
+		AssemblyInstruction instr9 = asmBlocks.get(1).getInstructions().get(8);
+		
+		assertEquals("79.12%   95.68%    ", instr9.getAnnotation());
+		assertEquals(Long.parseLong("00007f25cd19c8b8", 16), instr9.getAddress());
+		assertEquals("fstpl", instr9.getMnemonic());
+		
+		List<String> operands = new ArrayList<String>();
+		operands.add("(%rsp)");
+		
+		assertEquals(operands, instr9.getOperands());
+
+
+		
 	}
 }
