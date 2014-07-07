@@ -4,9 +4,14 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StreamCollector
 {
 	private StringBuilder builder = new StringBuilder();
+
+	private static final Logger logger = LoggerFactory.getLogger(StreamCollector.class);
 
 	public StreamCollector(InputStream stream)
 	{
@@ -29,7 +34,7 @@ public class StreamCollector
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					logger.error("Error collecting process output stream", e);
 				}
 			}
 		}).start();

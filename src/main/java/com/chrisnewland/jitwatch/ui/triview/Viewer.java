@@ -177,7 +177,7 @@ public class Viewer extends VBox
 					public void handle(MouseEvent arg0)
 					{
 						unhighlightPrevious();
-						
+
 						label.setStyle(STYLE_HIGHLIGHTED);
 						lineListener.lineHighlighted(finalPos, lineType);
 					}
@@ -226,21 +226,27 @@ public class Viewer extends VBox
 				final Clipboard clipboard = Clipboard.getSystemClipboard();
 				final ClipboardContent content = new ClipboardContent();
 
-				StringBuilder builder = new StringBuilder();
-
 				ObservableList<Node> items = vBoxRows.getChildren();
 
-				for (Node item : items)
-				{
-					String line = ((Label) item).getText();
-					builder.append(line).append(S_NEWLINE);
-				}
-
-				content.putString(builder.toString());
+				content.putString(transformNodeItemsToTextUsing(items));
 
 				clipboard.setContent(content);
 			}
 		});
+	}
+
+	private String transformNodeItemsToTextUsing(ObservableList<Node> items)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (Node item : items)
+		{
+			String line = ((Label) item).getText();
+
+			builder.append(line).append(S_NEWLINE);
+		}
+
+		return builder.toString();
 	}
 
 	public void jumpTo(IMetaMember member)
@@ -248,7 +254,7 @@ public class Viewer extends VBox
 		scrollIndex = -1;
 
 		int regexPos = findPosForRegex(member.getSignatureRegEx());
-		
+
 		if (regexPos == -1)
 		{
 			List<String> lines = Arrays.asList(originalSource.split(S_NEWLINE));
@@ -272,7 +278,7 @@ public class Viewer extends VBox
 			label.setStyle(STYLE_UNHIGHLIGHTED);
 		}
 	}
-	
+
 	private void unhighlightPrevious()
 	{
 		if (lastScrollIndex >= 0 && lastScrollIndex < vBoxRows.getChildren().size())

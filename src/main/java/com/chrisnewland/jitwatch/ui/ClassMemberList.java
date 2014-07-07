@@ -5,7 +5,7 @@
  */
 package com.chrisnewland.jitwatch.ui;
 
-import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static com.chrisnewland.jitwatch.core.JITWatchConstants.*;
 
 import java.util.List;
 import java.util.Map;
@@ -159,23 +159,9 @@ public class ClassMemberList extends VBox
 
 				Journal journal = member.getJournal();
 
-				StringBuilder builder = new StringBuilder();
+				String intrinsicsUsed = processIntrinsicsUsing(journal);
 
-				Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
-
-				if (intrinsics.size() > 0)
-				{
-					for (Map.Entry<String, String> entry : intrinsics.entrySet())
-					{
-						builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-					}
-				}
-				else
-				{
-					builder.append("No intrinsics used in this method");
-				}
-
-				parent.openTextViewer("Intrinsics used by " + member.toString(), builder.toString());
+				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed);
 			}
 		});
 
@@ -192,6 +178,32 @@ public class ClassMemberList extends VBox
 		getChildren().add(memberList);
 
 		memberList.prefHeightProperty().bind(heightProperty());
+	}
+
+	private String processIntrinsicsUsing(Journal journal)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+
+		if (intrinsics.size() > 0)
+		{
+			addArrowWithNewLineToEachIntrinsicEntry(builder, intrinsics);
+		}
+		else
+		{
+			builder.append("No intrinsics used in this method");
+		}
+		
+		return builder.toString();
+	}
+
+	private void addArrowWithNewLineToEachIntrinsicEntry(StringBuilder builder, Map<String, String> intrinsics)
+	{
+		for (Map.Entry<String, String> entry : intrinsics.entrySet())
+		{
+			builder.append(entry.getKey()).append(" -> ").append(entry.getValue()).append(C_NEWLINE);
+		}
 	}
 
 	public void setMetaClass(MetaClass metaClass)
@@ -249,13 +261,13 @@ public class ClassMemberList extends VBox
 		{
 			super.updateItem(item, empty);
 
-            if (item == null)
+			if (item == null)
 			{
 				setText(S_EMPTY);
-				setGraphic(null);	
+				setGraphic(null);
 			}
-            else
-            {
+			else
+			{
 				setText(item.toStringUnqualifiedMethodName(false));
 
 				if (item.isCompiled())

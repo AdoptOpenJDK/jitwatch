@@ -107,7 +107,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	{
 		String fullSignature = meta.toString();
 
-		for (String modifier : IMetaMember.MODIFIERS)
+		for (String modifier : MODIFIERS)
 		{
 			if (fullSignature.contains(modifier + S_SPACE))
 			{

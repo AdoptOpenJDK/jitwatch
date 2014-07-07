@@ -21,7 +21,7 @@ import java.util.zip.ZipFile;
 
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOT;
 
-public class ResourceLoader
+public final class ResourceLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 

@@ -16,14 +16,18 @@ import java.util.Map;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static com.chrisnewland.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 
-public class JVMSUtil
+public final class JVMSUtil
 {
-    private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(JVMSUtil.class);
 
-    private static Map<String, String> bcDescriptionMap = new HashMap<>();
+	private static Map<String, String> bcDescriptionMap = new HashMap<>();
 
 	private static final String JVMS_HTML_FILENAME = "JVMS.html";
 	private static final String JVMS_CSS_FILENAME = "JVMS.css";
+
+	private JVMSUtil()
+	{
+	}
 
 	public static boolean hasLocalJVMS()
 	{
@@ -72,7 +76,7 @@ public class JVMSUtil
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+				logger.error("", ioe);
 			}
 		}
 
@@ -117,7 +121,7 @@ public class JVMSUtil
 		}
 		catch (IOException ioe)
 		{
-            logger.error("", ioe);
+			logger.error("", ioe);
 		}
 	}
 
