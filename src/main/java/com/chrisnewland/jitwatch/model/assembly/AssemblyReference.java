@@ -13,7 +13,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class AssemblyReference
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class AssemblyReference
 {
 	private static Map<String, String> mnemonicMap = new HashMap<>();
 	
@@ -21,6 +24,8 @@ public class AssemblyReference
 	private static final String TAG_MNEM_CLOSE = "</mnem>";
 	private static final String TAG_BRIEF_OPEN = "<brief>";
 	private static final String TAG_BRIEF_CLOSE = "</brief>";
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	static
 	{
@@ -78,7 +83,7 @@ public class AssemblyReference
 		}
 		catch (IOException ioe)
 		{
-			ioe.printStackTrace();
+			LOGGER.error("Could not load assembly reference", ioe);
 		}
 		
 		// patch up missing descriptions

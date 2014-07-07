@@ -1,7 +1,6 @@
 package com.chrisnewland.jitwatch.sandbox;
 
 import java.io.File;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

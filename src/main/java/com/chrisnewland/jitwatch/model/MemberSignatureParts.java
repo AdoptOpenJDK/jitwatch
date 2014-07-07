@@ -73,9 +73,9 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
-        final Pattern PATTERN_BC_SIGNATURE = Pattern.compile(builder.toString());
+        final Pattern patternBytecodeSignature = Pattern.compile(builder.toString());
 
-		Matcher matcher = PATTERN_BC_SIGNATURE.matcher(toParse);
+		Matcher matcher = patternBytecodeSignature.matcher(toParse);
 
 		int modifierCount = modifierMap.size();
 

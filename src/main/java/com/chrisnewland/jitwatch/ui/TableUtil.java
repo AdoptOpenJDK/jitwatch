@@ -11,7 +11,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 // TODO prob better with own caller
-public class TableUtil
+public final class TableUtil
 {
     /*
         Hide Utility Class Constructor

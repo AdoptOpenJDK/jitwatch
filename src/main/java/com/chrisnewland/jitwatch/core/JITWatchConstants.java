@@ -8,21 +8,23 @@ package com.chrisnewland.jitwatch.core;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class JITWatchConstants
 {
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private JITWatchConstants() {
-    }
-    
-    public static final boolean DEBUG_LOGGING = false;
-    
-    public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
-    public static final int DEFAULT_MAX_INLINE_SIZE = 325;
-    public static final int DEFAULT_COMPILER_THRESHOLD = 10000;
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private JITWatchConstants()
+	{
+	}
+
+	public static final boolean DEBUG_LOGGING = false;
+
+	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
+	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
+	public static final int DEFAULT_COMPILER_THRESHOLD = 10000;
 
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";
@@ -32,10 +34,10 @@ public final class JITWatchConstants
 	public static final String TAG_HOTSPOT_LOG = "<hotspot_log";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
 
-	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG}));
-	
-	public static final Set<String> SKIP_BODY_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_TTY_CLOSE,
-			TAG_COMPILATION_LOG, TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG_CLOSE }));
+	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG }));
+
+	public static final Set<String> SKIP_BODY_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_TTY_CLOSE, TAG_COMPILATION_LOG,
+			TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG_CLOSE }));
 
 	public static final String NATIVE_CODE_START = "Decoding compiled method";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
@@ -98,14 +100,14 @@ public final class JITWatchConstants
 	public static final String ATTR_BRANCH_PROB = "prob";
 	public static final String ATTR_COUNT = "count";
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
-	
+
 	public static final String ALWAYS = "always";
 	public static final String NEVER = "never";
-	
+
 	public static final String S_ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";
 	public static final String S_ENTITY_GT = "&gt;";
-	
+
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
 
@@ -114,19 +116,19 @@ public final class JITWatchConstants
 	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
 	public static final String REGEX_UNICODE_PARAM_NAME = "([0-9\\p{L}_]+)";
 	public static final String REGEX_UNICODE_PACKAGE_NAME = "([0-9\\p{L}_\\.]*)";
-	
+
 	public static final String S_OPEN_PARENTHESES = "(";
 	public static final String S_CLOSE_PARENTHESES = ")";
 	public static final String S_ESCAPED_OPEN_PARENTHESES = "\\(";
 	public static final String S_ESCAPED_CLOSE_PARENTHESES = "\\)";
-    public static final String S_OPEN_ANGLE = "<";
-	public static final String S_CLOSE_ANGLE= ">";
-    public static final String S_OPEN_SQUARE = "[";
-	public static final String S_CLOSE_SQUARE= "]";
-    public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
-	public static final String S_ESCAPED_CLOSE_SQUARE= "\\]";
+	public static final String S_OPEN_ANGLE = "<";
+	public static final String S_CLOSE_ANGLE = ">";
+	public static final String S_OPEN_SQUARE = "[";
+	public static final String S_CLOSE_SQUARE = "]";
+	public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
+	public static final String S_ESCAPED_CLOSE_SQUARE = "\\]";
 	public static final String S_OPEN_BRACE = "{";
-	public static final String S_CLOSE_BRACE= "}";
+	public static final String S_CLOSE_BRACE = "}";
 	public static final String S_AT = "@";
 	public static final String S_PERCENT = "%";
 	public static final String S_DOLLAR = "$";
@@ -172,17 +174,33 @@ public final class JITWatchConstants
 	public static final char C_BACKSLASH = '\\';
 	public static final char C_HAT = '^';
 	public static final char C_DOLLAR = '$';
-	
+
 	public static final String S_ASSEMBLY_ADDRESS = "0x";
-	
+
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
-	
+
 	public static final String S_BYTECODE_CONSTANT_POOL = "Constant pool:";
 	public static final String S_BYTECODE_CODE = "Code:";
 	public static final String S_BYTECODE_EXCEPTIONS = "Exceptions:";
 	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
+
+	public static final String PUBLIC = "public";
+	public static final String PRIVATE = "private";
+	public static final String PROTECTED = "protected";
+	public static final String STATIC = "static";
+	public static final String FINAL = "final";
+	public static final String SYNCHRONIZED = "synchronized";
+	public static final String STRICTFP = "strictfp";
+	public static final String NATIVE = "native";
+	public static final String ABSTRACT = "abstract";
+
+	public static final String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP,
+			NATIVE, ABSTRACT };
+
+	public static final Pattern PATTERN_LOG_SIGNATURE = Pattern
+			.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 }

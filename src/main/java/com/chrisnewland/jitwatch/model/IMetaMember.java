@@ -12,22 +12,6 @@ import com.chrisnewland.jitwatch.model.assembly.AssemblyMethod;
 
 public interface IMetaMember
 {
-    //===================================
-    // This is dumb. Use modifier class
-    //===================================
-	String PUBLIC = "public";
-	String PRIVATE = "private";
-	String PROTECTED = "protected";
-	String STATIC = "static";
-	String FINAL = "final";
-	String SYNCHRONIZED = "synchronized";
-	String STRICTFP = "strictfp";
-	String NATIVE = "native";
-	String ABSTRACT = "abstract";
-
-	String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP, NATIVE, ABSTRACT };
-	//===================================
-
 	List<String> getQueuedAttributes();
 
 	MetaClass getMetaClass();

@@ -5,7 +5,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DisassemblyUtil
+public final class DisassemblyUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(DisassemblyUtil.class);
 
@@ -17,6 +17,10 @@ public class DisassemblyUtil
 	enum Architecture
 	{
 		BIT32, BIT64
+	}
+
+	private DisassemblyUtil()
+	{
 	}
 
 	public static boolean isDisassemblerAvailable()

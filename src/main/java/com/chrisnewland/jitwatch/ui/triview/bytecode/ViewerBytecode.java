@@ -33,7 +33,7 @@ public class ViewerBytecode extends Viewer
 	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
 	private boolean offsetMismatchDetected = false;
-	
+
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
@@ -42,7 +42,7 @@ public class ViewerBytecode extends Viewer
 	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
 	{
 		offsetMismatchDetected = false;
-		
+
 		if (metaClassBytecode != null)
 		{
 			MemberBytecode memberBytecode = metaClassBytecode.getMemberBytecode(member);
@@ -127,7 +127,7 @@ public class ViewerBytecode extends Viewer
 
 		setContent(labels);
 	}
-	
+
 	public boolean isOffsetMismatchDetected()
 	{
 		return offsetMismatchDetected;
@@ -187,35 +187,45 @@ public class ViewerBytecode extends Viewer
 
 					if (success)
 					{
-						JVMSUtil.loadJVMS();
-
-						final String html = JVMSUtil.getBytecodeDescriptions(opcode);
-
-						final String cssURI = JVMSUtil.getJVMSCSSURL();
-
-						Platform.runLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
-							}
-						});
+						downloadJVMSpecAndShowOpcode(opcode);
 					}
 					else
 					{
-						Platform.runLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								stageAccessProxy.openBrowser("Downloading Failed",
-										"Unable to download a local copy of the JVM Specification", null);
-							}
-						});
+						showDownloadFailure();
 					}
 				}
 			}).start();
 		}
+	}
+
+	private void downloadJVMSpecAndShowOpcode(final Opcode opcode)
+	{
+		JVMSUtil.loadJVMS();
+
+		final String html = JVMSUtil.getBytecodeDescriptions(opcode);
+
+		final String cssURI = JVMSUtil.getJVMSCSSURL();
+
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				stageAccessProxy.openBrowser("JMVS Browser - " + opcode.getMnemonic(), html, cssURI);
+			}
+		});
+	}
+
+	private void showDownloadFailure()
+	{
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				stageAccessProxy
+						.openBrowser("Downloading Failed", "Unable to download a local copy of the JVM Specification", null);
+			}
+		});
 	}
 }

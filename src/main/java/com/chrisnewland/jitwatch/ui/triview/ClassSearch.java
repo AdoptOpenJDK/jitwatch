@@ -74,25 +74,30 @@ public class ClassSearch extends Region
 					}
 					else
 					{
-						List<String> results = search(tfSearch.getText());
-
-						if (results.size() > 0)
-						{
-							buildResultsMenu(results);
-
-							if (!dropMenu.isShowing())
-							{
-								dropMenu.show(ClassSearch.this, Side.BOTTOM, 10, -5);
-							}
-						}
-						else
-						{
-							dropMenu.hide();
-						}
+						performActionUsingSearchResults();
 					}
 				}
 			}
 		});
+	}
+
+	private void performActionUsingSearchResults()
+	{
+		List<String> results = search(tfSearch.getText());
+
+		if (results.size() > 0)
+		{
+			buildResultsMenu(results);
+
+			if (!dropMenu.isShowing())
+			{
+				dropMenu.show(this, Side.BOTTOM, 10, -5);
+			}
+		}
+		else
+		{
+			dropMenu.hide();
+		}
 	}
 
 	public void setText(String text)
