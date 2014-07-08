@@ -52,13 +52,13 @@
 				<include name="images/**" />
 			</fileset>
 			<manifest>
-				<attribute name="Main-Class" value="com.chrisnewland.jitwatch.launch.LaunchUI" />
+				<attribute name="Main-Class" value="org.adoptopenjdk.jitwatch.launch.LaunchUI" />
 			</manifest>
 		</jar>
 	</target>
 
 	<target name="run" depends="jar">
-		<java classname="com.chrisnewland.jitwatch.launch.LaunchUI" classpathref="classpath">
+		<java classname="org.adoptopenjdk.jitwatch.launch.LaunchUI" classpathref="classpath">
 			<classpath>
 				<pathelement location="${target}/jitwatch-1.0.0-SNAPSHOT.jar" />
 			</classpath>

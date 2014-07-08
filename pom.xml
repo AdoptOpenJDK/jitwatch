@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.chrisnewland.jitwatch</groupId>
+    <groupId>org.adoptopenjdk.jitwatch</groupId>
     <artifactId>jitwatch</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
@@ -316,7 +316,7 @@
                     <configuration>
                         <includeProjectDependencies>true</includeProjectDependencies>
                         <includePluginDependencies>true</includePluginDependencies>
-                        <mainClass>com.chrisnewland.jitwatch.launch.LaunchUI</mainClass>
+                        <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
                         <additionalClasspathElements>
                             <additionalClasspathElement>src/main/resources</additionalClasspathElement>
                         </additionalClasspathElements>
