@@ -15,6 +15,6 @@
 @set CLASSPATH="%CLASSPATH%;target\jitwatch-1.0.0-SNAPSHOT.jar"
 
 
-     java -classpath "%CLASSPATH%" com.chrisnewland.jitwatch.launch.LaunchUI
+     java -classpath "%CLASSPATH%" org.adoptopenjdk.jitwatch.launch.LaunchUI
 @REM ---------------------------------------------------------------
 

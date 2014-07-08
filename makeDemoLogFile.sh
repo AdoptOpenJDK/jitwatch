@@ -2,7 +2,7 @@
 
 # This script makes an example HotSpot log for trying out JITWatch.
 
-# It executes the Java class com.chrisnewland.jitwatch.demo.MakeHotSpotLog
+# It executes the Java class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog
 # which contains methods that exercise various parts of the HotSpot JIT compilers
 # such as inlining, intrinsics, and branch analysis.
 
@@ -80,5 +80,5 @@ CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 
-$JAVA_HOME/bin/java $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp $CLASSPATH com.chrisnewland.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
+$JAVA_HOME/bin/java $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp $CLASSPATH org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
 echo "Done"

@@ -21,6 +21,6 @@ CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
 CLASSPATH=$CLASSPATH:target/classes
 
-$JAVA_HOME/bin/java -cp $CLASSPATH com.chrisnewland.jitwatch.demo.JarScan $TARGET_JAR > rtmethods.txt
+$JAVA_HOME/bin/java -cp $CLASSPATH org.adoptopenjdk.jitwatch.demo.JarScan $TARGET_JAR > rtmethods.txt
 
 echo "done"
