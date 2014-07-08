@@ -30,7 +30,7 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 public class Sandbox
 {
 	private ISandboxStage sandboxStage;
-	
+
 	public static final Path SANDBOX_DIR;
 	public static final Path SANDBOX_SOURCE_DIR;
 	public static final Path SANDBOX_CLASS_DIR;
@@ -44,7 +44,7 @@ public class Sandbox
 	private String firstClassName;
 
 	private String classContainingMain;
-		
+
 	static
 	{
 		String userDir = System.getProperty("user.dir");
@@ -55,36 +55,35 @@ public class Sandbox
 
 		initialise();
 	}
-	
+
 	private static void initialise()
 	{
 		File sandboxSources = SANDBOX_SOURCE_DIR.toFile();
-		
+
 		if (!sandboxSources.exists())
 		{
 			sandboxSources.mkdirs();
-			
+
 			if (sandboxSources.exists())
 			{
 				copyExamples();
 			}
 		}
-		
-		File sandboxClasses = SANDBOX_CLASS_DIR.toFile();
 
+		File sandboxClasses = SANDBOX_CLASS_DIR.toFile();
 
 		if (!sandboxClasses.exists())
 		{
 			sandboxClasses.mkdirs();
 		}
 	}
-	
+
 	public void reset()
 	{
-		FileUtil.emptyDir(SANDBOX_DIR.toFile());		
+		FileUtil.emptyDir(SANDBOX_DIR.toFile());
 		initialise();
 	}
-	
+
 	private static void copyExamples()
 	{
 		FileUtil.copyFilesToDir(new File("src/main/resources/examples"), SANDBOX_SOURCE_DIR.toFile());
@@ -166,7 +165,7 @@ public class Sandbox
 
 		String fqNameSource = fqNameSourceBuilder.toString();
 
-		if (source.contains("public static void main("))
+		if (source.contains("public static void main(") || source.contains("public static void main ("))
 		{
 			classContainingMain = fqNameSource;
 			sandboxStage.log("Found main method in " + classContainingMain);
@@ -187,7 +186,7 @@ public class Sandbox
 		List<String> classpath = new ArrayList<>();
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
-				
+
 		classpath.addAll(logParser.getConfig().getSandboxClassLocations());
 
 		List<String> options = new ArrayList<>();
@@ -205,9 +204,9 @@ public class Sandbox
 				options.add("-XX:PrintAssemblyOptions=intel");
 			}
 		}
-		
+
 		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
-		
+
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
 		{
 			options.add("-XX:+TieredCompilation");
@@ -216,9 +215,9 @@ public class Sandbox
 		{
 			options.add("-XX:-TieredCompilation");
 		}
-		
+
 		CompressedOops oopsMode = logParser.getConfig().getCompressedOopsMode();
-		
+
 		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
 		{
 			options.add("-XX:+TieredCompilation");
@@ -227,22 +226,22 @@ public class Sandbox
 		{
 			options.add("-XX:-TieredCompilation");
 		}
-		
+
 		if (logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
-			options.add("-XX:FreqInlineSize="+logParser.getConfig().getFreqInlineSize());
+			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());
 		}
-		
+
 		if (logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
 		{
-			options.add("-XX:MaxInlineSize="+logParser.getConfig().getMaxInlineSize());
+			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
 		}
-		
+
 		if (logParser.getConfig().getCompilerThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
 		{
-			options.add("-XX:CompilerThreshold="+logParser.getConfig().getCompilerThreshold());
+			options.add("-XX:CompilerThreshold=" + logParser.getConfig().getCompilerThreshold());
 		}
-		
+
 		sandboxStage.log("Executing: " + classContainingMain);
 		sandboxStage.log("Classpath: " + StringUtil.listToString(classpath, File.pathSeparatorChar));
 		sandboxStage.log("VM options: " + StringUtil.listToString(options));
@@ -257,9 +256,9 @@ public class Sandbox
 
 		sourceLocations.add(SANDBOX_SOURCE_DIR.toString());
 		classLocations.add(SANDBOX_CLASS_DIR.toString());
-		
+
 		File jdkSrcZip = JITWatchConfig.getJDKSourceZip();
-		
+
 		if (jdkSrcZip != null)
 		{
 			sourceLocations.add(jdkSrcZip.toPath().toString());
