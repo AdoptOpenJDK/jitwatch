@@ -18,6 +18,7 @@ import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class JarScan
 {
@@ -47,7 +48,7 @@ public final class JarScan
 
 				if (name.endsWith(".class"))
 				{
-					String fqName = name.replace("/", ".").substring(0, name.length() - 6);
+					String fqName = name.replace(S_SLASH, S_DOT).substring(0, name.length() - 6);
 
 					process(classLocations, fqName, maxMethodBytes, writer);
 				}
@@ -73,10 +74,10 @@ public final class JarScan
 				{
 					BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
 	
-					// assume final instruction is a return of some kind for 1 byte
+					// assume final instruction is a return for 1 byte
 					int bcSize = 1 + lastInstruction.getOffset();
 	
-					if (bcSize >= maxMethodBytes && !memberName.equals("static {}"))
+					if (bcSize >= maxMethodBytes && !memberName.equals(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
 					{
 						if (!shownClass)
 						{

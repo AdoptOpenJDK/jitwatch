@@ -847,6 +847,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			timeLineStage.redraw();
 		}
+		
+		if (codeCacheStage != null)
+		{
+			codeCacheStage.redraw();
+		}
 
 		if (statsStage != null)
 		{
