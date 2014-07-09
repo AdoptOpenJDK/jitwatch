@@ -20,7 +20,7 @@ public final class JITWatchConstants
 	{
 	}
 
-	public static final boolean DEBUG_LOGGING = false;
+	public static final boolean DEBUG_LOGGING = true;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
@@ -186,6 +186,7 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
+	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
 
 	public static final String PUBLIC = "public";
 	public static final String PRIVATE = "private";

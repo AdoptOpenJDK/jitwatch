@@ -64,18 +64,20 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT;
+	
+	private static final String JAVA_VERSION_7 = "1.7";
 
 	static
 	{
-		String version = System.getProperty("java.version", "1.7");
+		String version = System.getProperty("java.version", JAVA_VERSION_7);
 
-		if (version.contains("1.7"))
+		if (version.contains(JAVA_VERSION_7))
 		{
 			WINDOW_HEIGHT = 592;
 		}
 		else
 		{
-			// JavaFX 8 has more padding.
+			// JavaFX 8 buttons have more padding.
 			WINDOW_HEIGHT = 550;
 		}
 	}
@@ -507,9 +509,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setStyle("-fx-font-family:monospace;-fx-font-size:12px");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland and the AdoptOpenJDK project.\n");
+		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
 		
-		log("Please send feedback to the project lead chris@chrisnewland.com (@chriswhocodes on Twitter)\nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
+		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 		
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 

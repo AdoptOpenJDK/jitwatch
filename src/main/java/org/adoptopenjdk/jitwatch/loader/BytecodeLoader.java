@@ -17,7 +17,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,11 +31,20 @@ public final class BytecodeLoader
 
 	enum BytecodeSection
 	{
-		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE
+		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE
 	}
+	
+	private static final Map<String, BytecodeSection> sectionLabelMap = new HashMap<>();
 
+	//
+	
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("fetchBytecodeForClass: {}", fqClassName);
+		}
+		
 		ClassBC result = null;
 
 		String[] args;
@@ -78,14 +89,20 @@ public final class BytecodeLoader
 
 		if (byteCodeString != null)
 		{
-			result = parse(byteCodeString);
+			try
+			{
+				result = parse(byteCodeString);
+			}
+			catch (Exception ex)
+			{
+				logger.error("Exception parsing bytecode", ex);
+			}
 		}
 
 		return result;
 	}
 
-	// TODO: State machine much?
-	// refactor this class - can't be all statics
+	// TODO refactor this class - better stateful than all statics
 	public static ClassBC parse(String bytecode)
 	{
 		ClassBC classBytecode = new ClassBC();
@@ -134,14 +151,21 @@ public final class BytecodeLoader
 			switch (section)
 			{
 			case NONE:
-				if (line.endsWith(");"))
+				if (line.endsWith(");") || line.contains(" throws ") && line.endsWith(S_SEMICOLON))
 				{
-					memberSignature = fixSignature(line);
+					memberSignature = cleanBytecodeMemberSignature(line);
+					
 					if (DEBUG_LOGGING)
 					{
 						logger.debug("New signature: {}", memberSignature);
 					}
+					
 					memberBytecode = new MemberBytecode();
+					
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("Initialised new MemberBytecode");
+					}
 				}
 				else if (line.startsWith(S_BYTECODE_MINOR_VERSION))
 				{
@@ -205,6 +229,8 @@ public final class BytecodeLoader
 				break;
 			case LOCALVARIABLETABLE:
 				break;
+			case STACKMAPTABLE:
+				break;				
 			case EXCEPTIONS:
 				break;
 			}
@@ -230,12 +256,21 @@ public final class BytecodeLoader
 			memberBytecode.setInstructions(instructions);
 
 			classBytecode.putMemberBytecode(memberSignature, memberBytecode);
+			
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("stored bytecode for : {}", memberSignature);
+			}
+			
 		}
 		else if (lastSection == BytecodeSection.LINETABLE)
 		{
 			updateLineNumberTable(classBytecode, builder.toString(), memberSignature);
-
-			// classBytecode.putMemberBytecode(memberSignature, memberBytecode);
+			
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("stored line number table for : {}", memberSignature);
+			}
 		}
 
 		builder.delete(0, builder.length());
@@ -262,7 +297,6 @@ public final class BytecodeLoader
 		}
 		else
 		{
-
 			switch (line)
 			{
 			case S_BYTECODE_CONSTANT_POOL:
@@ -283,6 +317,9 @@ public final class BytecodeLoader
 			case S_BYTECODE_EXCEPTIONS:
 				nextSection = BytecodeSection.EXCEPTIONS;
 				break;
+			case S_BYTECODE_STACKMAPTABLE:
+				nextSection = BytecodeSection.STACKMAPTABLE;
+				break;				
 			}
 		}
 
@@ -312,8 +349,14 @@ public final class BytecodeLoader
 		return version;
 	}
 
-	private static String fixSignature(String signature)
+	private static String cleanBytecodeMemberSignature(String signature)
 	{
+		
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("cleanBytecodeMemberSignature: {}", signature);
+		}
+		
 		String result = null;
 
 		if (signature != null)
