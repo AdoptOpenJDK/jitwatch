@@ -186,6 +186,9 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
+	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
+	
+	public static final String S_BYTECODE_STATIC_INITIALISER_SIGNATURE = "static {}";
 
 	public static final String PUBLIC = "public";
 	public static final String PRIVATE = "private";
