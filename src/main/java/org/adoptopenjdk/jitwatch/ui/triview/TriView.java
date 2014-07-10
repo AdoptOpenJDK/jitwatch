@@ -155,40 +155,7 @@ public class TriView extends Stage implements ILineListener
 			}
 		});
 
-		comboMember.setCellFactory(new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-		{
-			@Override
-			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-			{
-				return new ListCell<IMetaMember>()
-				{
-					@Override
-					protected void updateItem(IMetaMember item, boolean empty)
-					{
-						super.updateItem(item, empty);
-
-						if (item == null || empty)
-						{
-							setText(S_EMPTY);
-							setGraphic(null);
-						}
-						else
-						{
-							setText(item.toStringUnqualifiedMethodName(false));
-
-							if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
-							{
-								setGraphic(new ImageView(UserInterfaceUtil.getTick()));
-							}
-							else
-							{
-								setGraphic(null);
-							}
-						}
-					}
-				};
-			}
-		});
+		comboMember.setCellFactory(getCallbackForCellFactory());
 
 		comboMember.setConverter(new StringConverter<IMetaMember>()
 		{
@@ -277,7 +244,52 @@ public class TriView extends Stage implements ILineListener
 		checkColumns();
 	}
 
-	private void checkColumns()
+    private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory() {
+        return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+        {
+            @Override
+            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+            {
+                return getiMetaMemberListCellInternal();
+            }
+
+            private ListCell<IMetaMember> getiMetaMemberListCellInternal() {
+                return getListCellInternal();
+            }
+
+            private ListCell<IMetaMember> getListCellInternal() {
+                return new ListCell<IMetaMember>()
+                {
+                    @Override
+                    protected void updateItem(IMetaMember item, boolean empty)
+                    {
+                        super.updateItem(item, empty);
+
+                        if (item == null || empty)
+                        {
+                            setText(S_EMPTY);
+                            setGraphic(null);
+                        }
+                        else
+                        {
+                            setText(item.toStringUnqualifiedMethodName(false));
+
+                            if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
+                            {
+                                setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+                            }
+                            else
+                            {
+                                setGraphic(null);
+                            }
+                        }
+                    }
+                };
+            }
+        };
+    }
+
+    private void checkColumns()
 	{
 		splitViewer.getItems().clear();
 

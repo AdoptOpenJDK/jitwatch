@@ -5,11 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
@@ -22,12 +17,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -35,19 +25,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
-
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.JITEvent;
-import org.adoptopenjdk.jitwatch.model.Journal;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.model.*;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
@@ -57,6 +41,13 @@ import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
@@ -281,36 +272,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		});
 
 		btnStart = new Button("Start");
-		btnStart.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				if (nothingMountedStage == null)
-				{
-					int classCount = getConfig().getClassLocations().size();
-					int sourceCount = getConfig().getSourceLocations().size();
-
-					if (classCount == 0 && sourceCount == 0)
-					{
-						if (getConfig().isShowNothingMounted())
-						{
-							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-							nothingMountedStage.show();
-
-							stageManager.add(nothingMountedStage);
-
-							startDelayedByConfig = true;
-						}
-					}
-				}
-
-				if (!startDelayedByConfig)
-				{
-					readLogFile();
-				}
-			}
-		});
+		btnStart.setOnAction(getEventHandlerForStartButton());
 
 		btnStop = new Button("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
@@ -333,19 +295,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		});
 
 		btnTimeLine = new Button("Chart");
-		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				timeLineStage = new TimeLineStage(JITWatchUI.this);
-				timeLineStage.show();
-
-				stageManager.add(timeLineStage);
-
-				btnTimeLine.setDisable(true);
-			}
-		});
+		btnTimeLine.setOnAction(getEventHandlerForTimelineButton());
 
 		btnStats = new Button("Stats");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
@@ -561,7 +511,56 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		updateButtons();
 	}
 
-	private void loadConfigFromFile()
+    private EventHandler<ActionEvent> getEventHandlerForTimelineButton() {
+        return new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                timeLineStage = new TimeLineStage(JITWatchUI.this);
+                timeLineStage.show();
+
+                stageManager.add(timeLineStage);
+
+                btnTimeLine.setDisable(true);
+            }
+        };
+    }
+
+    private EventHandler<ActionEvent> getEventHandlerForStartButton() {
+        return new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                if (nothingMountedStage == null)
+                {
+                    int classCount = getConfig().getClassLocations().size();
+                    int sourceCount = getConfig().getSourceLocations().size();
+
+                    if (classCount == 0 && sourceCount == 0)
+                    {
+                        if (getConfig().isShowNothingMounted())
+                        {
+                            nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
+                            nothingMountedStage.show();
+
+                            stageManager.add(nothingMountedStage);
+
+                            startDelayedByConfig = true;
+                        }
+                    }
+                }
+
+                if (!startDelayedByConfig)
+                {
+                    readLogFile();
+                }
+            }
+        };
+    }
+
+    private void loadConfigFromFile()
 	{
 		JITWatchConfig config = new JITWatchConfig();
 		config.loadFromProperties();
