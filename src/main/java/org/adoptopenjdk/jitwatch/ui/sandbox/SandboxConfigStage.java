@@ -36,7 +36,8 @@ import javafx.stage.WindowEvent;
 
 public class SandboxConfigStage extends Stage
 {
-	private TextField txtFreqInline;
+    private static final String DEFAULT_DISPLAY_STYLE = "-fx-padding:0px 8px 0px 0px";
+    private TextField txtFreqInline;
 	private TextField txtMaxInline;
 	private TextField txtCompilerThreshold;
 
@@ -173,7 +174,7 @@ public class SandboxConfigStage extends Stage
 		rbATT.setToggleGroup(groupAssemblySyntax);
 		rbIntel.setToggleGroup(groupAssemblySyntax);
 		
-		rbATT.setStyle("-fx-padding:0px 8px 0px 0px");
+		rbATT.setStyle(DEFAULT_DISPLAY_STYLE);
 
 		rbATT.setSelected(!intelMode);
 		rbIntel.setSelected(intelMode);
@@ -214,8 +215,8 @@ public class SandboxConfigStage extends Stage
 
 		final ToggleGroup groupTiered = new ToggleGroup();
 
-		rbVMDefault.setStyle("-fx-padding:0px 8px 0px 0px");
-		rbForceTiered.setStyle("-fx-padding:0px 8px 0px 0px");
+		rbVMDefault.setStyle(DEFAULT_DISPLAY_STYLE);
+		rbForceTiered.setStyle(DEFAULT_DISPLAY_STYLE);
 
 		TieredCompilation tieredMode = config.getTieredCompilationMode();
 
@@ -287,8 +288,8 @@ public class SandboxConfigStage extends Stage
 
 		final ToggleGroup groupOops = new ToggleGroup();
 
-		rbVMDefault.setStyle("-fx-padding:0px 8px 0px 0px");
-		rbForceCompressed.setStyle("-fx-padding:0px 8px 0px 0px");
+		rbVMDefault.setStyle(DEFAULT_DISPLAY_STYLE);
+		rbForceCompressed.setStyle(DEFAULT_DISPLAY_STYLE);
 
 		CompressedOops oopsMode = config.getCompressedOopsMode();
 

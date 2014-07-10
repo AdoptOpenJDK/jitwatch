@@ -83,7 +83,7 @@ public class TimeLineStage extends AbstractGraphStage
 				}
 			}
 
-			double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
+			double lastCX = graphGapLeft + normaliseX(minX);
 			double lastCY = GRAPH_GAP_Y + normaliseY(0);
 
 			drawAxes();
@@ -119,7 +119,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 					cumC++;
 
-					double x = GRAPH_GAP_LEFT + normaliseX(stamp);
+					double x = graphGapLeft + normaliseX(stamp);
 					double y = GRAPH_GAP_Y + normaliseY(cumC);
 
 					gc.setLineWidth(2);
@@ -131,7 +131,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 					if (compiledStampTime != -1 && stamp > compiledStampTime)
 					{
-						double smX = GRAPH_GAP_LEFT + normaliseX(compiledStampTime);
+						double smX = graphGapLeft + normaliseX(compiledStampTime);
 						
 						double blobX = fix(smX - markerDiameter / 2);
 						double blobY = fix(y - markerDiameter / 2);
@@ -215,6 +215,6 @@ public class TimeLineStage extends AbstractGraphStage
 		compiledStatsBuilder.append(" (C2N: ").append(stats.getCountC2N()).append(S_CLOSE_PARENTHESES);
 		compiledStatsBuilder.append(" (OSR: ").append(stats.getCountOSR()).append(S_CLOSE_PARENTHESES);
 		gc.setStroke(Color.BLACK);
-		gc.strokeText(compiledStatsBuilder.toString(), fix(GRAPH_GAP_LEFT), fix(12));
+		gc.strokeText(compiledStatsBuilder.toString(), fix(graphGapLeft), fix(12));
 	}
 }
