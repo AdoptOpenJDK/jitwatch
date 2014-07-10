@@ -90,13 +90,15 @@ public class JITWatchConfig
 	{
 		Properties loadProps = new Properties();
 
-		try (FileReader fr = new FileReader(getConfigFile()))
+		File configFile = getConfigFile();
+		
+		try (FileReader fr = new FileReader(configFile))
 		{
 			loadProps.load(fr);
 		}
 		catch (FileNotFoundException fnf)
 		{
-			logger.error("Could not find config file", fnf);
+			logger.warn("Could not find config file {}", configFile.getName());
 		}
 		catch (IOException ioe)
 		{
