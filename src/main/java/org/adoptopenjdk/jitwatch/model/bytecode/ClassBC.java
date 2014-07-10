@@ -23,6 +23,11 @@ public class ClassBC
 
 	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
+		if (memberName == null)
+		{
+			throw new RuntimeException("tried to add null");
+		}
+		
 		memberBytecodeMap.put(memberName, memberBytecode);
 	}
 

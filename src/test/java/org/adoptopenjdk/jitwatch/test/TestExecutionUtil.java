@@ -23,7 +23,9 @@ public class TestExecutionUtil
 	{
 		List<String> cp = new ArrayList<>();
 
-		cp.add("target/classes");
+		char sep = File.separatorChar;
+		
+		cp.add("target"+sep+"classes");
 
 		File libDir = new File("lib");
 
@@ -41,7 +43,7 @@ public class TestExecutionUtil
 
 		for (String jar : jarNames)
 		{
-			cp.add("lib/" + jar);
+			cp.add("lib" + sep + jar);
 		}
 
 		List<String> options = new ArrayList<>();
@@ -50,7 +52,7 @@ public class TestExecutionUtil
 		
 		boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options);
 
-		System.out.println(executor.getErrorStream());
+		//System.out.println(executor.getErrorStream());
 		//System.out.println(executor.getOutputStream());
 
 		

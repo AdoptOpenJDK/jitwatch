@@ -202,9 +202,9 @@ public abstract class AbstractGraphStage extends Stage
 
 	private long getXStepTime()
 	{
-		long rangeMillis = maxXQ - minXQ;
-
-		int requiredLines = 6;
+		long rangeMillis = maxX - minX;
+		
+		int requiredLines = 5;
 
 		long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
 				2 * 24 * 60 * 60000, 24 * 60 * 60000, 16 * 60 * 60000, 12 * 60 * 60000, 8 * 60 * 60000, 6 * 60 * 60000,

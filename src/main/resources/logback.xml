@@ -37,6 +37,7 @@
  <appender name="FILE" class="ch.qos.logback.core.FileAppender"> 
   <!-- "application-name" is a variable --> 
     <File>jitwatch.out</File> 
+    <append>false</append>
     <layout class="ch.qos.logback.classic.PatternLayout"> 
       <!-- <Pattern>%d %p %t %c - %m%n</Pattern> </layout> -->
       <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</Pattern>

@@ -17,7 +17,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,13 +29,31 @@ public final class BytecodeLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
 
-	enum ParseState
+	enum BytecodeSection
 	{
-		OTHER, BYTECODE, LINETABLE
+		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE
+	}
+
+	private static final Map<String, BytecodeSection> sectionLabelMap = new HashMap<>();
+
+	static
+	{
+		sectionLabelMap.put(S_BYTECODE_CONSTANT_POOL, BytecodeSection.CONSTANT_POOL);
+		sectionLabelMap.put(S_BYTECODE_CODE, BytecodeSection.CODE);
+		sectionLabelMap.put(S_BYTECODE_LINENUMBERTABLE, BytecodeSection.LINETABLE);
+		sectionLabelMap.put(S_BYTECODE_LOCALVARIABLETABLE, BytecodeSection.LOCALVARIABLETABLE);
+		sectionLabelMap.put(S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS, BytecodeSection.RUNTIMEVISIBLEANNOTATIONS);
+		sectionLabelMap.put(S_BYTECODE_EXCEPTIONS, BytecodeSection.EXCEPTIONS);
+		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
 	}
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("fetchBytecodeForClass: {}", fqClassName);
+		}
+
 		ClassBC result = null;
 
 		String[] args;
@@ -78,12 +98,20 @@ public final class BytecodeLoader
 
 		if (byteCodeString != null)
 		{
-			result = parse(byteCodeString);
+			try
+			{
+				result = parse(byteCodeString);
+			}
+			catch (Exception ex)
+			{
+				logger.error("Exception parsing bytecode", ex);
+			}
 		}
 
 		return result;
 	}
 
+	// TODO refactor this class - better stateful than all statics
 	public static ClassBC parse(String bytecode)
 	{
 		ClassBC classBytecode = new ClassBC();
@@ -94,7 +122,7 @@ public final class BytecodeLoader
 
 		StringBuilder builder = new StringBuilder();
 
-		ParseState parseState = ParseState.OTHER;
+		BytecodeSection section = BytecodeSection.NONE;
 
 		String memberSignature = null;
 
@@ -104,17 +132,49 @@ public final class BytecodeLoader
 		{
 			String line = lines[pos].trim();
 
-			switch (parseState)
+			if (DEBUG_LOGGING)
 			{
-			case OTHER:
-				if (line.endsWith(");"))
+				logger.debug("Line: {}", line);
+			}
+
+			BytecodeSection nextSection = getNextSection(line);
+
+			if (nextSection != null)
+			{
+				sectionFinished(section, memberSignature, builder, memberBytecode, classBytecode);
+
+				section = changeSection(nextSection);
+				pos++;
+
+				if (pos < lines.length)
 				{
-					memberSignature = fixSignature(line);
+					line = lines[pos].trim();
 				}
-				else if (line.startsWith("0:"))
+			}
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("{} Line: {}", section, line);
+			}
+
+			switch (section)
+			{
+			case NONE:
+				if (couldBeMemberSignature(line))
 				{
-					parseState = ParseState.BYTECODE;
-					pos--;
+					memberSignature = cleanBytecodeMemberSignature(line);
+
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("New signature: {}", memberSignature);
+					}
+
+					memberBytecode = new MemberBytecode();
+
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("Initialised new MemberBytecode");
+					}
 				}
 				else if (line.startsWith(S_BYTECODE_MINOR_VERSION))
 				{
@@ -127,7 +187,7 @@ public final class BytecodeLoader
 					classBytecode.setMajorVersion(majorVersion);
 				}
 				break;
-			case BYTECODE:
+			case CODE:
 				int firstColonIndex = line.indexOf(C_COLON);
 
 				if (firstColonIndex != -1)
@@ -143,22 +203,18 @@ public final class BytecodeLoader
 					}
 					catch (NumberFormatException nfe)
 					{
-						List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
+						sectionFinished(BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
 
-						memberBytecode = new MemberBytecode();
-						memberBytecode.setInstructions(instructions);
-						builder.delete(0, builder.length());
-
-						if (line.startsWith("LineNumberTable:"))
-						{
-							parseState = ParseState.LINETABLE;
-						}
-						else
-						{
-							classBytecode.addMemberBytecode(memberSignature, memberBytecode);
-							parseState = ParseState.OTHER;
-						}
+						section = changeSection(BytecodeSection.NONE);
 					}
+				}
+				break;
+			case CONSTANT_POOL:
+				if (!line.startsWith(S_HASH))
+				{
+					sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
+
+					section = changeSection(BytecodeSection.NONE);
 				}
 				break;
 			case LINETABLE:
@@ -168,12 +224,33 @@ public final class BytecodeLoader
 				}
 				else
 				{
-					updateLineNumberTable(classBytecode, builder.toString(), memberSignature);
-					builder.delete(0, builder.length());
+					sectionFinished(BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
 
-					classBytecode.addMemberBytecode(memberSignature, memberBytecode);
-					parseState = ParseState.OTHER;
+					section = changeSection(BytecodeSection.NONE);
 				}
+				break;
+			case RUNTIMEVISIBLEANNOTATIONS:
+				if (!isRunTimeVisibleAnnotation(line))
+				{
+					section = changeSection(BytecodeSection.NONE);
+					pos--;
+				}
+				break;
+			case LOCALVARIABLETABLE:
+				if (!isLocalVariableLine(line))
+				{
+					section = changeSection(BytecodeSection.NONE);
+					pos--;
+				}
+				break;
+			case STACKMAPTABLE:
+				if (!isStackMapTable(line))
+				{
+					section = changeSection(BytecodeSection.NONE);
+					pos--;
+				}
+				break;
+			case EXCEPTIONS:
 				break;
 			}
 
@@ -183,15 +260,107 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
-	private static int getVersionPart(String line)
+	private static boolean isRunTimeVisibleAnnotation(final String line)
+	{
+		return line.contains(": #");
+	}
+
+	private static boolean isLocalVariableLine(final String line)
+	{
+		return line.startsWith("Start") || (line.length() > 0 && Character.isDigit(line.charAt(0)));
+	}
+
+	private static boolean isStackMapTable(final String line)
+	{
+		String trimmedLine = line.trim();
+		return trimmedLine.startsWith("frame_type") || trimmedLine.startsWith("offset_delta") || trimmedLine.startsWith("locals")
+				|| trimmedLine.startsWith("stack");
+	}
+
+	private static boolean couldBeMemberSignature(String line)
+	{
+		return line.endsWith(");") || line.contains(" throws ") && line.endsWith(S_SEMICOLON)
+				|| line.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
+	}
+
+	private static void sectionFinished(BytecodeSection lastSection, String memberSignature, StringBuilder builder,
+			MemberBytecode memberBytecode, ClassBC classBytecode)
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("sectionFinished: {}", lastSection);
+		}
+
+		if (lastSection == BytecodeSection.CODE)
+		{
+			List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
+
+			memberBytecode.setInstructions(instructions);
+
+			classBytecode.putMemberBytecode(memberSignature, memberBytecode);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("stored bytecode for : {}", memberSignature);
+			}
+
+		}
+		else if (lastSection == BytecodeSection.LINETABLE)
+		{
+			updateLineNumberTable(classBytecode, builder.toString(), memberSignature);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("stored line number table for : {}", memberSignature);
+			}
+		}
+
+		builder.delete(0, builder.length());
+	}
+
+	private static BytecodeSection changeSection(BytecodeSection nextSection)
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("Changing section to: {}", nextSection);
+		}
+
+		return nextSection;
+	}
+
+	private static BytecodeSection getNextSection(final String line)
+	{
+		BytecodeSection nextSection = null;
+
+		if (line != null)
+		{
+			if (line.length() == 0)
+			{
+				nextSection = BytecodeSection.NONE;
+			}
+
+			for (Map.Entry<String, BytecodeSection> entry : sectionLabelMap.entrySet())
+			{
+				if (entry.getKey().startsWith(line.trim()))
+				{
+					nextSection = entry.getValue();
+					break;
+				}
+			}
+		}
+
+		return nextSection;
+	}
+
+	private static int getVersionPart(final String line)
 	{
 		int version = 0;
 
 		int colonPos = line.indexOf(C_COLON);
 
-		if (colonPos != -1 && colonPos != line.length()-1)
+		if (colonPos != -1 && colonPos != line.length() - 1)
 		{
-			String versionPart = line.substring(colonPos+1).trim();
+			String versionPart = line.substring(colonPos + 1).trim();
 
 			try
 			{
@@ -206,34 +375,46 @@ public final class BytecodeLoader
 		return version;
 	}
 
-	private static String fixSignature(String inSignature)
+	private static String cleanBytecodeMemberSignature(final String signature)
 	{
-        String signature = inSignature;
-               
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("cleanBytecodeMemberSignature: {}", signature);
+		}
+
+		String result = null;
+
 		if (signature != null)
 		{
-			// remove spaces between multiple method parameters
-
-			int openParentheses = signature.lastIndexOf(S_OPEN_PARENTHESES);
-
-			if (openParentheses != -1)
+			if (signature.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
 			{
-				int closeParentheses = signature.indexOf(S_CLOSE_PARENTHESES, openParentheses);
+				result = S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
+			}
+			else
+			{
+				// remove spaces between multiple method parameters
 
-				if (closeParentheses != -1)
+				int openParentheses = signature.lastIndexOf(S_OPEN_PARENTHESES);
+
+				if (openParentheses != -1)
 				{
-					String params = signature.substring(openParentheses, closeParentheses);
-					params = params.replace(S_SPACE, S_EMPTY);
+					int closeParentheses = signature.indexOf(S_CLOSE_PARENTHESES, openParentheses);
 
-					signature = signature.substring(0, openParentheses) + params + signature.substring(closeParentheses);
+					if (closeParentheses != -1)
+					{
+						String params = signature.substring(openParentheses, closeParentheses);
+						params = params.replace(S_SPACE, S_EMPTY);
+
+						result = signature.substring(0, openParentheses) + params + S_CLOSE_PARENTHESES;
+					}
 				}
 			}
 		}
 
-		return signature;
+		return result;
 	}
 
-	public static List<BytecodeInstruction> parseInstructions(String bytecode)
+	public static List<BytecodeInstruction> parseInstructions(final String bytecode)
 	{
 		List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 
