@@ -84,7 +84,7 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(buildHBoxCompressedOops(config));
 		
 		HBox hboxCompilerSettings = new HBox();
-		//hboxCompilerSettings.setPadding(new Insets(0, 20, 0, 0));
+
 		hboxCompilerSettings.setSpacing(20);
 
 		buildHBoxFreqInline(hboxCompilerSettings, config);
@@ -191,7 +191,6 @@ public class SandboxConfigStage extends Stage
                 getChangeListenerForGroupAssemblySyntax(config, rbIntel, groupAssemblySyntax));
 
 		HBox hbox = new HBox();
-		// hbox.setPadding(new Insets(0,10,0,10));
 
 		Label lblSyntax = new Label("Assembly syntax:");
 		lblSyntax.setMinWidth(labelWidth);
