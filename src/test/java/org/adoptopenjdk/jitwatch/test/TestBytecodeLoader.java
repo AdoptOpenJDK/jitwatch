@@ -9,6 +9,8 @@ import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.MetaMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.*;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -490,5 +492,85 @@ public class TestBytecodeLoader
 		assertEquals(8, lineTable.get(66).getBytecodeOffset());
 
 		assertEquals("public void measureWrong()", lineTable.get(65).getMemberSignature());	
+	}
+	
+	@Test
+	public void testStaticInitialiserRegression()
+	{
+		String[] lines = new String[]{
+				"  static {};",
+				"                        descriptor: ()V",
+				"                        flags: ACC_STATIC",
+				"                        Code:",
+				"                          stack=3, locals=0, args_size=0",
+				"                             0: ldc           #149                // class org/adoptopenjdk/jitwatch/loader/BytecodeLoader",
+				"                             2: invokestatic  #150                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;",
+				"                             5: putstatic     #33                 // Field logger:Lorg/slf4j/Logger;",
+				"                             8: new           #151                // class java/util/HashMap",
+				"                            11: dup",
+				"                            12: invokespecial #152                // Method java/util/HashMap.\"<init>\":()V",
+				"                            15: putstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            18: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            21: ldc           #153                // String Constant pool:",
+				"                            23: getstatic     #69                 // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.CONSTANT_POOL:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                            26: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                            31: pop",
+				"                            32: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            35: ldc           #155                // String Code:",
+				"                            37: getstatic     #67                 // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.CODE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                            40: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                            45: pop",
+				"                            46: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            49: ldc           #156                // String LineNumberTable:",
+				"                            51: getstatic     #71                 // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.LINETABLE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                            54: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                            59: pop",
+				"                            60: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            63: ldc           #157                // String LocalVariableTable:",
+				"                            65: getstatic     #158                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.LOCALVARIABLETABLE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                            68: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                            73: pop",
+				"                            74: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            77: ldc           #159                // String RuntimeVisibleAnnotations:",
+				"                            79: getstatic     #160                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.RUNTIMEVISIBLEANNOTATIONS:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSecti$",
+				"                            82: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                            87: pop",
+				"                            88: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                            91: ldc           #161                // String Exceptions:",
+				"                            93: getstatic     #162                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.EXCEPTIONS:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                            96: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                           101: pop",
+				"                           102: getstatic     #90                 // Field sectionLabelMap:Ljava/util/Map;",
+				"                           105: ldc           #163                // String StackMapTable:",
+				"                           107: getstatic     #164                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.STACKMAPTABLE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
+				"                           110: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				"                           115: pop",
+				"                           116: return",
+				"                          LineNumberTable:",
+				"                            line 30: 0",
+				"                            line 37: 8",
+				"                            line 41: 18",
+				"                            line 42: 32",
+				"                            line 43: 46",
+				"                            line 44: 60",
+				"                            line 45: 74"
+		};
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for (String line : lines)
+		{
+			builder.append(line).append(C_NEWLINE);
+		}
+		
+		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertEquals(43, instructions.size());
 	}
 }

@@ -317,6 +317,7 @@
                         <includeProjectDependencies>true</includeProjectDependencies>
                         <includePluginDependencies>true</includePluginDependencies>
                         <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
+	                <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         <additionalClasspathElements>
                             <additionalClasspathElement>src/main/resources</additionalClasspathElement>
                         </additionalClasspathElements>

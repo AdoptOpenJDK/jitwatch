@@ -18,6 +18,7 @@ import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class JarScan
 {
@@ -47,7 +48,7 @@ public final class JarScan
 
 				if (name.endsWith(".class"))
 				{
-					String fqName = name.replace("/", ".").substring(0, name.length() - 6);
+					String fqName = name.replace(S_SLASH, S_DOT).substring(0, name.length() - 6);
 
 					process(classLocations, fqName, maxMethodBytes, writer);
 				}
@@ -59,35 +60,43 @@ public final class JarScan
 	{
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, className);
 
-		boolean shownClass = false;
-
-		for (String memberName : classBytecode.getBytecodeMethodSignatures())
-		{			
-			MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
-			
-			List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
-
-			if (instructions != null && instructions.size() > 0)
-			{
-				BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
-
-				// assume final instruction is a return of some kind for 1 byte
-				int bcSize = 1 + lastInstruction.getOffset();
-
-				if (bcSize >= maxMethodBytes && !memberName.equals("static {}"))
+		if (classBytecode != null)
+		{		
+			boolean shownClass = false;
+	
+			for (String memberName : classBytecode.getBytecodeMethodSignatures())
+			{			
+				MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
+				
+				List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+	
+				if (instructions != null && instructions.size() > 0)
 				{
-					if (!shownClass)
+					BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
+	
+					// assume final instruction is a return for 1 byte
+					int bcSize = 1 + lastInstruction.getOffset();
+	
+					if (bcSize >= maxMethodBytes && !memberName.equals(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
 					{
-						writer.println(className);
-						shownClass = true;
+						if (!shownClass)
+						{
+							writer.println(className);
+							shownClass = true;
+						}
+	
+						writer.print(bcSize);
+						writer.print(" -> ");
+						writer.println(memberName);
+						writer.flush();
 					}
-
-					writer.print(bcSize);
-					writer.print(" -> ");
-					writer.println(memberName);
-					writer.flush();
 				}
 			}
+		}
+		else
+		{
+			System.err.println("An error occurred while parsing " + className + ". Please see jitwatch.out for details");
+			System.exit(-1);
 		}
 	}
 
