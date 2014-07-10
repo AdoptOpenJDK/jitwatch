@@ -364,27 +364,11 @@ public class TriView extends Stage implements ILineListener
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		if (!force)
-		{
-			if ((previousClass != null) && previousClass.equals(memberClass))
-			{
-				sameClass = true;
-			}
-		}
+        sameClass = evaluateSameClass(force, sameClass, previousClass, memberClass);
 
-		if (!sameClass)
-		{
-			classBytecodeMismatch = false;
-			
-			comboMember.getSelectionModel().clearSelection();
-			comboMember.getItems().clear();
-			comboMember.getItems().addAll(memberClass.getMetaMembers());
+        processIfNotSameClass(sameClass, memberClass);
 
-			String fqName = memberClass.getFullyQualifiedName();
-			classSearch.setText(fqName);
-		}
-
-		ignoreComboChanged = true;
+        ignoreComboChanged = true;
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
 
@@ -405,90 +389,127 @@ public class TriView extends Stage implements ILineListener
 
 		List<String> classLocations = config.getClassLocations();
 
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
-
-		if (classBytecode != null)
-		{
-			int majorVersion = classBytecode.getMajorVersion();
-			int minorVersion = classBytecode.getMinorVersion();
-			String javaVersion = classBytecode.getJavaVersion();
-
-			statusBarBuilder.append("Mounted class version: ");
-			statusBarBuilder.append(majorVersion).append(C_DOT).append(minorVersion);
-			statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
-			statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
-		}
+        ClassBC classBytecode = processStatusBarIfClassBytecodeIsValid(statusBarBuilder, classLocations);
 
 		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
 
 		AssemblyMethod asmMethod = null;
 
-		if (currentMember.isCompiled())
-		{
-			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
+        processIfCurrentMemberIsCompiled(statusBarBuilder);
 
-			asmMethod = currentMember.getAssembly();
+        applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
-			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+        lblMemberInfo.setText(statusBarBuilder.toString());
+	}
 
-			if (attrCompiler != null)
-			{
-				statusBarBuilder.append(" compiled with ").append(attrCompiler);
-			}
-			else
-			{
-				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
-
-				if (attrCompileKind != null && C2N.equals(attrCompileKind))
-				{
-					statusBarBuilder.append(" compiled native wrapper");
-				}
-			}
-
-			if (asmMethod == null)
-			{
-				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
-				viewerAssembly.setContent(msg, false);
-			}
-			else
-			{
-				viewerAssembly.setAssemblyMethod(asmMethod);
-			}
-		}
-		else
-		{
-			String msg = "Not JIT-compiled";
-			viewerAssembly.setContent(msg, false);
-
-			lblMemberInfo.setText(S_EMPTY);
-		}
-		
-		if (viewerBytecode.isOffsetMismatchDetected())
+    private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder) {
+        if (viewerBytecode.isOffsetMismatchDetected())
 		{
 			statusBarBuilder.append(C_SPACE).append("WARNING Class bytecode offsets do not match HotSpot log");
-		
+
 			if (!classBytecodeMismatch)
 			{
 				classBytecodeMismatch = true;
-				
-				Platform.runLater(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						Dialogs.showOKDialog(
-								TriView.this,
-								"Wrong classes mounted for log file?",
-								"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
-					}
-				});
+
+				Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Dialogs.showOKDialog(
+                                TriView.this,
+                                "Wrong classes mounted for log file?",
+                                "Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
+                    }
+                });
 			}
 		}
-		
-		lblMemberInfo.setText(statusBarBuilder.toString());
-	}
+    }
 
-	@Override
+    private void processIfCurrentMemberIsCompiled(StringBuilder statusBarBuilder) {
+        AssemblyMethod asmMethod;
+        if (currentMember.isCompiled())
+        {
+            statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
+
+            asmMethod = currentMember.getAssembly();
+
+            String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+
+            if (attrCompiler != null)
+            {
+                statusBarBuilder.append(" compiled with ").append(attrCompiler);
+            }
+            else
+            {
+                String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+
+                if (attrCompileKind != null && C2N.equals(attrCompileKind))
+                {
+                    statusBarBuilder.append(" compiled native wrapper");
+                }
+            }
+
+            if (asmMethod == null)
+            {
+                String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+                viewerAssembly.setContent(msg, false);
+            }
+            else
+            {
+                viewerAssembly.setAssemblyMethod(asmMethod);
+            }
+        }
+        else
+        {
+            String msg = "Not JIT-compiled";
+            viewerAssembly.setContent(msg, false);
+
+            lblMemberInfo.setText(S_EMPTY);
+        }
+    }
+
+    private ClassBC processStatusBarIfClassBytecodeIsValid(StringBuilder statusBarBuilder, List<String> classLocations) {
+        ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
+
+        if (classBytecode != null)
+        {
+            int majorVersion = classBytecode.getMajorVersion();
+            int minorVersion = classBytecode.getMinorVersion();
+            String javaVersion = classBytecode.getJavaVersion();
+
+            statusBarBuilder.append("Mounted class version: ");
+            statusBarBuilder.append(majorVersion).append(C_DOT).append(minorVersion);
+            statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
+            statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
+        }
+        return classBytecode;
+    }
+
+    private void processIfNotSameClass(boolean sameClass, MetaClass memberClass) {
+        if (!sameClass)
+		{
+			classBytecodeMismatch = false;
+
+			comboMember.getSelectionModel().clearSelection();
+			comboMember.getItems().clear();
+			comboMember.getItems().addAll(memberClass.getMetaMembers());
+
+			String fqName = memberClass.getFullyQualifiedName();
+			classSearch.setText(fqName);
+		}
+    }
+
+    private boolean evaluateSameClass(boolean force, boolean sameClass, MetaClass previousClass, MetaClass memberClass) {
+        if (!force)
+        {
+            if ((previousClass != null) && previousClass.equals(memberClass))
+            {
+                sameClass = true;
+            }
+        }
+        return sameClass;
+    }
+
+    @Override
 	public void lineHighlighted(int index, LineType lineType)
 	{		
 		switch (lineType)

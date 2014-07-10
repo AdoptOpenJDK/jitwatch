@@ -5,10 +5,12 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.StageStyle;
 import org.adoptopenjdk.jitwatch.model.EventType;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
@@ -17,13 +19,11 @@ import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.stage.StageStyle;
 
 public class TimeLineStage extends AbstractGraphStage
 {
@@ -90,111 +90,14 @@ public class TimeLineStage extends AbstractGraphStage
 
 			IMetaMember selectedMember = parent.getSelectedMember();
 
-			double compiledStampTime = -1;
+			double compiledStampTime = getCompiledStampTime(selectedMember);
 
-			if (selectedMember != null)
-			{
-				// last compile stamp write wins - plot all?
-				String cStamp = selectedMember.getCompiledAttribute("stamp");
-
-				if (cStamp != null)
-				{
-					compiledStampTime = ParseUtil.parseStamp(cStamp);
-				}
-			}
-
-			Color colourMarker = Color.BLUE;
+            Color colourMarker = Color.BLUE;
 
 			gc.setFill(colourMarker);
 			gc.setStroke(colourMarker);
 
-			int cumC = 0;
-			int markerDiameter = 10;
-
-			for (JITEvent event : events)
-			{
-				if (event.getEventType() != EventType.QUEUE)
-				{
-					long stamp = event.getStamp();
-
-					cumC++;
-
-					double x = graphGapLeft + normaliseX(stamp);
-					double y = GRAPH_GAP_Y + normaliseY(cumC);
-
-					gc.setLineWidth(2);
-					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-					gc.setLineWidth(1);
-
-					lastCX = x;
-					lastCY = y;
-
-					if (compiledStampTime != -1 && stamp > compiledStampTime)
-					{
-						double smX = graphGapLeft + normaliseX(compiledStampTime);
-						
-						double blobX = fix(smX - markerDiameter / 2);
-						double blobY = fix(y - markerDiameter / 2);
-
-						gc.fillOval(blobX, blobY, fix(markerDiameter),
-								fix(markerDiameter));
-
-						StringBuilder selectedItemBuilder = new StringBuilder();
-
-						selectedItemBuilder.append(selectedMember.toStringUnqualifiedMethodName(false));
-
-						String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
-
-						if (compiler == null)
-						{
-							compiler = selectedMember.getCompiledAttribute(ATTR_COMPILE_KIND);
-
-							if (compiler == null)
-							{
-								compiler = "unknown!";
-							}
-						}
-
-						selectedItemBuilder.append(" compiled at ")
-								.append(StringUtil.formatTimestamp((long) compiledStampTime, true)).append(" by ").append(compiler);
-
-						String compiletime = selectedMember.getCompiledAttribute("compileMillis");
-
-						if (compiletime != null)
-						{
-							selectedItemBuilder.append(" in ").append(compiletime).append("ms");
-						}
-
-						double approxWidth = selectedItemBuilder.length() * 5.5;
-						
-						double selectedLabelX;
-						
-						if (blobX + approxWidth > chartWidth)
-						{
-							selectedLabelX = blobX - approxWidth - 16;
-						}
-						else
-						{
-							selectedLabelX = blobX + 32;
-						}
-						
-						double selectedLabelY = Math.min(blobY+8, GRAPH_GAP_Y + chartHeight - 32);
-
-			            gc.setFill(Color.WHITE);
-			            gc.setStroke(Color.BLACK);
-
-			            gc.fillRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
-			            gc.strokeRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
-
-						gc.strokeText(selectedItemBuilder.toString(), fix(selectedLabelX), fix(selectedLabelY));
-
-						compiledStampTime = -1;
-						
-			            gc.setStroke(Color.BLUE);
-
-					}
-				}
-			}
+            processJITEvents(events, lastCX, lastCY, selectedMember, compiledStampTime);
 
 			showStatsLegend(gc);
 		}
@@ -204,7 +107,113 @@ public class TimeLineStage extends AbstractGraphStage
 		}
 	}
 
-	private void showStatsLegend(GraphicsContext gc)
+    private double getCompiledStampTime(IMetaMember selectedMember) {
+        double compiledStampTime = -1;
+
+        if (selectedMember != null)
+        {
+            // last compile stamp write wins - plot all?
+            String cStamp = selectedMember.getCompiledAttribute("stamp");
+
+            if (cStamp != null)
+            {
+                compiledStampTime = ParseUtil.parseStamp(cStamp);
+            }
+        }
+        return compiledStampTime;
+    }
+
+    private void processJITEvents(List<JITEvent> events, double lastCX, double lastCY, IMetaMember selectedMember, double compiledStampTime) {
+        int cumC = 0;
+        int markerDiameter = 10;
+
+        for (JITEvent event : events)
+        {
+            if (event.getEventType() != EventType.QUEUE)
+            {
+                long stamp = event.getStamp();
+
+                cumC++;
+
+                double x = graphGapLeft + normaliseX(stamp);
+                double y = GRAPH_GAP_Y + normaliseY(cumC);
+
+                gc.setLineWidth(2);
+                gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+                gc.setLineWidth(1);
+
+                lastCX = x;
+                lastCY = y;
+
+                if (compiledStampTime != -1 && stamp > compiledStampTime)
+                {
+                    double smX = graphGapLeft + normaliseX(compiledStampTime);
+
+                    double blobX = fix(smX - markerDiameter / 2);
+                    double blobY = fix(y - markerDiameter / 2);
+
+                    gc.fillOval(blobX, blobY, fix(markerDiameter),
+                            fix(markerDiameter));
+
+                    StringBuilder selectedItemBuilder = new StringBuilder();
+
+                    selectedItemBuilder.append(selectedMember.toStringUnqualifiedMethodName(false));
+
+                    String compiler = selectedMember.getCompiledAttribute(ATTR_COMPILER);
+
+                    if (compiler == null)
+                    {
+                        compiler = selectedMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+
+                        if (compiler == null)
+                        {
+                            compiler = "unknown!";
+                        }
+                    }
+
+                    selectedItemBuilder.append(" compiled at ")
+                            .append(StringUtil.formatTimestamp((long) compiledStampTime, true)).append(" by ").append(compiler);
+
+                    String compiletime = selectedMember.getCompiledAttribute("compileMillis");
+
+                    if (compiletime != null)
+                    {
+                        selectedItemBuilder.append(" in ").append(compiletime).append("ms");
+                    }
+
+                    double approxWidth = selectedItemBuilder.length() * 5.5;
+
+                    double selectedLabelX;
+
+                    if (blobX + approxWidth > chartWidth)
+                    {
+                        selectedLabelX = blobX - approxWidth - 16;
+                    }
+                    else
+                    {
+                        selectedLabelX = blobX + 32;
+                    }
+
+                    double selectedLabelY = Math.min(blobY+8, GRAPH_GAP_Y + chartHeight - 32);
+
+                    gc.setFill(Color.WHITE);
+                    gc.setStroke(Color.BLACK);
+
+                    gc.fillRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
+                    gc.strokeRect(fix(selectedLabelX-8), fix(selectedLabelY-12), fix(approxWidth), fix(18));
+
+                    gc.strokeText(selectedItemBuilder.toString(), fix(selectedLabelX), fix(selectedLabelY));
+
+                    compiledStampTime = -1;
+
+                    gc.setStroke(Color.BLUE);
+
+                }
+            }
+        }
+    }
+
+    private void showStatsLegend(GraphicsContext gc)
 	{
 		JITStats stats = parent.getJITDataModel().getJITStats();
 

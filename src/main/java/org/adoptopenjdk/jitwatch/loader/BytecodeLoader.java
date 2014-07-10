@@ -188,47 +188,14 @@ public final class BytecodeLoader
 				}
 				break;
 			case CODE:
-				int firstColonIndex = line.indexOf(C_COLON);
-
-				if (firstColonIndex != -1)
-				{
-					String beforeColon = line.substring(0, firstColonIndex);
-
-					try
-					{
-						// line number ?
-						Integer.parseInt(beforeColon);
-
-						builder.append(line).append(C_NEWLINE);
-					}
-					catch (NumberFormatException nfe)
-					{
-						sectionFinished(BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
-
-						section = changeSection(BytecodeSection.NONE);
-					}
-				}
+                section = performCODE(classBytecode, builder, section, memberSignature, memberBytecode, line);
 				break;
 			case CONSTANT_POOL:
-				if (!line.startsWith(S_HASH))
-				{
-					sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
-
-					section = changeSection(BytecodeSection.NONE);
-				}
-				break;
+                section = performCONSTANT_POOL(classBytecode, builder, section, memberSignature, memberBytecode, line);
+                break;
 			case LINETABLE:
-				if (line.startsWith("line "))
-				{
-					builder.append(line).append(C_NEWLINE);
-				}
-				else
-				{
-					sectionFinished(BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
-
-					section = changeSection(BytecodeSection.NONE);
-				}
-				break;
+                section = performLINETABLE(classBytecode, builder, section, memberSignature, memberBytecode, line);
+                break;
 			case RUNTIMEVISIBLEANNOTATIONS:
 				if (!isRunTimeVisibleAnnotation(line))
 				{
@@ -260,7 +227,55 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
-	private static boolean isRunTimeVisibleAnnotation(final String line)
+    private static BytecodeSection performLINETABLE(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        if (line.startsWith("line "))
+        {
+            builder.append(line).append(C_NEWLINE);
+        }
+        else
+        {
+            sectionFinished(BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
+
+            section = changeSection(BytecodeSection.NONE);
+        }
+        return section;
+    }
+
+    private static BytecodeSection performCONSTANT_POOL(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        if (!line.startsWith(S_HASH))
+        {
+            sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
+
+            section = changeSection(BytecodeSection.NONE);
+        }
+        return section;
+    }
+
+    private static BytecodeSection performCODE(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        int firstColonIndex = line.indexOf(C_COLON);
+
+        if (firstColonIndex != -1)
+        {
+            String beforeColon = line.substring(0, firstColonIndex);
+
+            try
+            {
+                // line number ?
+                Integer.parseInt(beforeColon);
+
+                builder.append(line).append(C_NEWLINE);
+            }
+            catch (NumberFormatException nfe)
+            {
+                sectionFinished(BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
+
+                section = changeSection(BytecodeSection.NONE);
+            }
+        }
+        return section;
+    }
+
+    private static boolean isRunTimeVisibleAnnotation(final String line)
 	{
 		return line.contains(": #");
 	}

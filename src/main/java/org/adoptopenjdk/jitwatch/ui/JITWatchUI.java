@@ -51,7 +51,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
-	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
+    private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT;
@@ -73,7 +73,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
-	private Stage stage;
+    public static final String DEFAULT_FX_PADDING_STYLE = "-fx-padding: 2 6;";
+
+    private Stage stage;
 
 	private ILogParser logParser;
 
@@ -245,165 +247,39 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		this.stage = stage;
 
-		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				stageManager.closeAll();
+        setupStageOnCloseRequest(stage);
 
-				stopParsing();
-			}
-		});
-
-		BorderPane borderPane = new BorderPane();
+        BorderPane borderPane = new BorderPane();
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		Button btnChooseWatchFile = new Button("Open Log");
-		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				stopParsing();
-				chooseHotSpotFile();
-			}
-		});
+        Button btnChooseWatchFile = initialiseBtnChooseWatchFile();
 
-		btnStart = new Button("Start");
-		btnStart.setOnAction(getEventHandlerForStartButton());
+        initialiseBtnStart();
 
-		btnStop = new Button("Stop");
-		btnStop.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				stopParsing();
-			}
-		});
+        initialiseBtnStop();
 
-		btnConfigure = new Button("Config");
-		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				openConfigStage();
-			}
-		});
+        initialiseBtnConfigure();
 
-		btnTimeLine = new Button("Chart");
-		btnTimeLine.setOnAction(getEventHandlerForTimelineButton());
+        initialiseBtnTimeLine();
 
-		btnStats = new Button("Stats");
-		btnStats.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				statsStage = new StatsStage(JITWatchUI.this);
-				statsStage.show();
+        initialiseBtnStats();
 
-				stageManager.add(statsStage);
+        initialiseBtnHisto();
 
-				btnStats.setDisable(true);
-			}
-		});
+        initialiseBtnTopList();
 
-		btnHisto = new Button("Histo");
-		btnHisto.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				histoStage = new HistoStage(JITWatchUI.this);
-				histoStage.show();
+        initialiseBtnCodeCache();
 
-				stageManager.add(histoStage);
+        initialiseBtnTriView();
 
-				btnHisto.setDisable(true);
-			}
-		});
+        initialiseBtnSuggest();
 
-		btnTopList = new Button("TopList");
-		btnTopList.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				topListStage = new TopListStage(JITWatchUI.this);
-				topListStage.show();
+        initialiseBtnSandbox();
 
-				stageManager.add(topListStage);
+        initialiseBtnErrorLog();
 
-				btnTopList.setDisable(true);
-			}
-		});
-
-		btnCodeCache = new Button("Code Cache");
-		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
-				codeCacheStage.show();
-
-				stageManager.add(codeCacheStage);
-
-				btnCodeCache.setDisable(true);
-			}
-		});
-
-		btnTriView = new Button("TriView");
-		btnTriView.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				openTriView(selectedMember, false);
-			}
-		});
-
-		btnSuggest = new Button("Suggest");
-		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				suggestStage = new SuggestStage(JITWatchUI.this);
-
-				suggestStage.show();
-
-				stageManager.add(suggestStage);
-
-				btnSuggest.setDisable(true);
-			}
-		});
-
-		btnSandbox = new Button("Sandbox");
-		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				openSandbox();
-			}
-		});
-
-		btnErrorLog = new Button("Errors (0)");
-		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				openTextViewer("Error Log", errorLog.toString(), false, false);
-			}
-		});
-
-		btnErrorLog.setStyle("-fx-padding: 2 6;");
+		btnErrorLog.setStyle(DEFAULT_FX_PADDING_STYLE);
 
 		lblHeap = new Label();
 
@@ -411,23 +287,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		int textAreaHeight = 100;
 		int statusBarHeight = 25;
 
-		HBox hboxTop = new HBox();
-
-		hboxTop.setPadding(new Insets(10));
-		hboxTop.setPrefHeight(menuBarHeight);
-		hboxTop.setSpacing(10);
-		hboxTop.getChildren().add(btnSandbox);
-		hboxTop.getChildren().add(btnChooseWatchFile);
-		hboxTop.getChildren().add(btnStart);
-		hboxTop.getChildren().add(btnStop);
-		hboxTop.getChildren().add(btnConfigure);
-		hboxTop.getChildren().add(btnTimeLine);
-		hboxTop.getChildren().add(btnStats);
-		hboxTop.getChildren().add(btnHisto);
-		hboxTop.getChildren().add(btnTopList);
-		hboxTop.getChildren().add(btnCodeCache);
-		hboxTop.getChildren().add(btnTriView);
-		hboxTop.getChildren().add(btnSuggest);
+        HBox hboxTop = initialiseHBox(btnChooseWatchFile, menuBarHeight);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -450,14 +310,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		SplitPane spMain = new SplitPane();
 		spMain.setOrientation(Orientation.VERTICAL);
 
-		SplitPane spCentre = new SplitPane();
-		spCentre.getItems().add(classTree);
-		spCentre.getItems().add(spMethodInfo);
-		spCentre.setDividerPositions(0.33, 0.67);
+        SplitPane spCentre = initialiseSpCentre(spMethodInfo);
 
-		textAreaLog = new TextArea();
-		textAreaLog.setStyle("-fx-font-family:monospace;-fx-font-size:12px");
-		textAreaLog.setPrefHeight(textAreaHeight);
+        initialiseTextAreaLog(textAreaHeight);
 
 		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
 		
@@ -473,25 +328,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
 		}
-		spMain.getItems().add(spCentre);
-		spMain.getItems().add(textAreaLog);
-		spMain.setDividerPositions(0.68, 0.32);
+        setupSpMain(spMain, spCentre);
 
-		HBox hboxBottom = new HBox();
+        HBox hboxBottom = initialiseHBoxBottom(statusBarHeight);
 
-		hboxBottom.setPadding(new Insets(4));
-		hboxBottom.setPrefHeight(statusBarHeight);
-		hboxBottom.setSpacing(4);
-		hboxBottom.getChildren().add(lblHeap);
-		hboxBottom.getChildren().add(btnErrorLog);
+        initialiseBorderPane(borderPane, hboxTop, spMain, hboxBottom);
 
-		borderPane.setTop(hboxTop);
-		borderPane.setCenter(spMain);
-		borderPane.setBottom(hboxBottom);
-
-		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
-		stage.setScene(scene);
-		stage.show();
+        showStage(stage, scene);
 
 		int refresh = 1000; // ms
 
@@ -510,6 +353,251 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		updateButtons();
 	}
+
+    private void showStage(Stage stage, Scene scene) {
+        stage.setTitle("JITWatch - HotSpot Compilation Inspector");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void setupSpMain(SplitPane spMain, SplitPane spCentre) {
+        spMain.getItems().add(spCentre);
+        spMain.getItems().add(textAreaLog);
+        spMain.setDividerPositions(0.68, 0.32);
+    }
+
+    private void setupStageOnCloseRequest(Stage stage) {
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>()
+        {
+            @Override
+            public void handle(WindowEvent arg0)
+            {
+                stageManager.closeAll();
+
+                stopParsing();
+            }
+        });
+    }
+
+    private void initialiseBorderPane(BorderPane borderPane, HBox hboxTop, SplitPane spMain, HBox hboxBottom) {
+        borderPane.setTop(hboxTop);
+        borderPane.setCenter(spMain);
+        borderPane.setBottom(hboxBottom);
+    }
+
+    private HBox initialiseHBoxBottom(int statusBarHeight) {
+        HBox hboxBottom = new HBox();
+        hboxBottom.setPadding(new Insets(4));
+        hboxBottom.setPrefHeight(statusBarHeight);
+        hboxBottom.setSpacing(4);
+        hboxBottom.getChildren().add(lblHeap);
+        hboxBottom.getChildren().add(btnErrorLog);
+        return hboxBottom;
+    }
+
+    private void initialiseTextAreaLog(int textAreaHeight) {
+        textAreaLog = new TextArea();
+        textAreaLog.setStyle("-fx-font-family:monospace;-fx-font-size:12px");
+        textAreaLog.setPrefHeight(textAreaHeight);
+    }
+
+    private SplitPane initialiseSpCentre(SplitPane spMethodInfo) {
+        SplitPane spCentre = new SplitPane();
+        spCentre.getItems().add(classTree);
+        spCentre.getItems().add(spMethodInfo);
+        spCentre.setDividerPositions(0.33, 0.67);
+        return spCentre;
+    }
+
+    private HBox initialiseHBox(Button btnChooseWatchFile, int menuBarHeight) {
+        HBox hboxTop = new HBox();
+        hboxTop.setPadding(new Insets(10));
+        hboxTop.setPrefHeight(menuBarHeight);
+        hboxTop.setSpacing(10);
+        hboxTop.getChildren().add(btnSandbox);
+        hboxTop.getChildren().add(btnChooseWatchFile);
+        hboxTop.getChildren().add(btnStart);
+        hboxTop.getChildren().add(btnStop);
+        hboxTop.getChildren().add(btnConfigure);
+        hboxTop.getChildren().add(btnTimeLine);
+        hboxTop.getChildren().add(btnStats);
+        hboxTop.getChildren().add(btnHisto);
+        hboxTop.getChildren().add(btnTopList);
+        hboxTop.getChildren().add(btnCodeCache);
+        hboxTop.getChildren().add(btnTriView);
+        hboxTop.getChildren().add(btnSuggest);
+        return hboxTop;
+    }
+
+    private void initialiseBtnErrorLog() {
+        btnErrorLog = new Button("Errors (0)");
+        btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                openTextViewer("Error Log", errorLog.toString(), false, false);
+            }
+        });
+    }
+
+    private void initialiseBtnSandbox() {
+        btnSandbox = new Button("Sandbox");
+        btnSandbox.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                openSandbox();
+            }
+        });
+    }
+
+    private void initialiseBtnSuggest() {
+        btnSuggest = new Button("Suggest");
+        btnSuggest.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                suggestStage = new SuggestStage(JITWatchUI.this);
+
+                suggestStage.show();
+
+                stageManager.add(suggestStage);
+
+                btnSuggest.setDisable(true);
+            }
+        });
+    }
+
+    private void initialiseBtnTriView() {
+        btnTriView = new Button("TriView");
+        btnTriView.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                openTriView(selectedMember, false);
+            }
+        });
+    }
+
+    private void initialiseBtnCodeCache() {
+        btnCodeCache = new Button("Code Cache");
+        btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                codeCacheStage = new CodeCacheStage(JITWatchUI.this);
+                codeCacheStage.show();
+
+                stageManager.add(codeCacheStage);
+
+                btnCodeCache.setDisable(true);
+            }
+        });
+    }
+
+    private void initialiseBtnTopList() {
+        btnTopList = new Button("TopList");
+        btnTopList.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                topListStage = new TopListStage(JITWatchUI.this);
+                topListStage.show();
+
+                stageManager.add(topListStage);
+
+                btnTopList.setDisable(true);
+            }
+        });
+    }
+
+    private void initialiseBtnHisto() {
+        btnHisto = new Button("Histo");
+        btnHisto.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                histoStage = new HistoStage(JITWatchUI.this);
+                histoStage.show();
+
+                stageManager.add(histoStage);
+
+                btnHisto.setDisable(true);
+            }
+        });
+    }
+
+    private void initialiseBtnStats() {
+        btnStats = new Button("Stats");
+        btnStats.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                statsStage = new StatsStage(JITWatchUI.this);
+                statsStage.show();
+
+                stageManager.add(statsStage);
+
+                btnStats.setDisable(true);
+            }
+        });
+    }
+
+    private void initialiseBtnTimeLine() {
+        btnTimeLine = new Button("Chart");
+        btnTimeLine.setOnAction(getEventHandlerForTimelineButton());
+    }
+
+    private void initialiseBtnConfigure() {
+        btnConfigure = new Button("Config");
+        btnConfigure.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                openConfigStage();
+            }
+        });
+    }
+
+    private void initialiseBtnStop() {
+        btnStop = new Button("Stop");
+        btnStop.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                stopParsing();
+            }
+        });
+    }
+
+    private void initialiseBtnStart() {
+        btnStart = new Button("Start");
+        btnStart.setOnAction(getEventHandlerForStartButton());
+    }
+
+    private Button initialiseBtnChooseWatchFile() {
+        Button btnChooseWatchFile = new Button("Open Log");
+        btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent e)
+            {
+                stopParsing();
+                chooseHotSpotFile();
+            }
+        });
+        return btnChooseWatchFile;
+    }
 
     private EventHandler<ActionEvent> getEventHandlerForTimelineButton() {
         return new EventHandler<ActionEvent>()
