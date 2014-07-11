@@ -24,10 +24,10 @@
 
 -->
 
-<configuration>
+<configuration debug="false">
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
     </encoder>
@@ -35,13 +35,11 @@
 
 
  <appender name="FILE" class="ch.qos.logback.core.FileAppender"> 
-  <!-- "application-name" is a variable --> 
     <File>jitwatch.out</File> 
     <append>false</append>
-    <layout class="ch.qos.logback.classic.PatternLayout"> 
-      <!-- <Pattern>%d %p %t %c - %m%n</Pattern> </layout> -->
-      <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</Pattern>
-    </layout>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"> 
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+    </encoder>
   </appender>
 
   <!-- Strictly speaking, the level attribute is not necessary since -->
