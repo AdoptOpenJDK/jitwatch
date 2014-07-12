@@ -159,7 +159,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				{
 					char firstChar = trimmedLine.charAt(0);
 
-					if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET)
+					if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET || firstChar == C_AT)
 					{
 						currentLine = trimmedLine;
 					}
@@ -255,6 +255,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		else if (currentLine.startsWith(LOADED))
 		{
 			handleLoaded(currentLine);
+		}
+		else if (currentLine.startsWith(S_AT))
+		{
+			// possible PrintCompilation was enabled as well as LogCompilation?
+			// jmh does this with perf annotations
+			// Ignore this line
 		}
 		else
 		{

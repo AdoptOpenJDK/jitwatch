@@ -22,10 +22,8 @@ public class TestExecutionUtil
 	public void testExecuteDemo()
 	{
 		List<String> cp = new ArrayList<>();
-
-		char sep = File.separatorChar;
 		
-		cp.add("target"+sep+"classes");
+		cp.add("target"+File.separatorChar+"classes");
 
 		File libDir = new File("lib");
 
@@ -43,7 +41,7 @@ public class TestExecutionUtil
 
 		for (String jar : jarNames)
 		{
-			cp.add("lib" + sep + jar);
+			cp.add("lib" + File.separatorChar + jar);
 		}
 
 		List<String> options = new ArrayList<>();

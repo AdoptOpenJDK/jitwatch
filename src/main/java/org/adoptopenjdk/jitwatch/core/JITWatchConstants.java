@@ -161,6 +161,7 @@ public final class JITWatchConstants
 	public static final char C_SPACE = ' ';
 	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
+	public static final char C_AT = '@';
 	public static final char C_COLON = ':';
 	public static final char C_EQUALS = '=';
 	public static final char C_QUOTE = '\'';

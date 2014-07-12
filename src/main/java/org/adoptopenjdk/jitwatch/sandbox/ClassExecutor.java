@@ -43,7 +43,7 @@ public class ClassExecutor
 
 			for (String cp : classpathEntries)
 			{
-				cpBuilder.append(cp).append(C_COLON);
+				cpBuilder.append(cp).append(File.pathSeparatorChar);
 			}
 
 			commands.add(cpBuilder.toString());

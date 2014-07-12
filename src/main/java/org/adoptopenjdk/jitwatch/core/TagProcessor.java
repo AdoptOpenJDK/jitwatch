@@ -62,7 +62,6 @@ public class TagProcessor
 			currentTag = null;
 			topTag = null;
 		}
-
 		
 		return result;
 	}
@@ -179,5 +178,4 @@ public class TagProcessor
 
 		return result;
 	}
-
 }

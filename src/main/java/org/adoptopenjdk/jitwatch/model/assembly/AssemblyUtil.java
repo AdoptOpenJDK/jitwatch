@@ -72,7 +72,7 @@ public class AssemblyUtil
 			{
 				if (DEBUG_LOGGING)
 				{
-					logger.debug("Extended comment? : {}", trimmedLine);
+					logger.debug("Extended comment? '{}'", trimmedLine);
 				}
 
 				if (lastInstruction != null)
