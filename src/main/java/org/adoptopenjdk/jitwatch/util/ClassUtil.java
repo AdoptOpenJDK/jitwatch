@@ -24,15 +24,7 @@ public final class ClassUtil
     	disposableClassLoader = new DisposableURLClassLoader(urls);
     }
 
-	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
-	{
-		try
-		{
-			return Class.forName(fqClassName, false, disposableClassLoader);
-		}
-		catch (Exception ex)
-		{
-			throw ex;
-		}
+	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException {
+        return Class.forName(fqClassName, false, disposableClassLoader);
 	}
 }

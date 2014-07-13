@@ -389,8 +389,6 @@ public class TriView extends Stage implements ILineListener
 
 		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
 
-		AssemblyMethod asmMethod = null;
-
         processIfCurrentMemberIsCompiled(statusBarBuilder);
 
         applyActionsIfOffsetMismatchDetected(statusBarBuilder);
@@ -421,7 +419,7 @@ public class TriView extends Stage implements ILineListener
     }
 
     private void processIfCurrentMemberIsCompiled(StringBuilder statusBarBuilder) {
-        AssemblyMethod asmMethod;
+        AssemblyMethod asmMethod = null;
         if (currentMember.isCompiled())
         {
             statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
