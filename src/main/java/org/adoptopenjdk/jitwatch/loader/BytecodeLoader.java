@@ -46,6 +46,13 @@ public final class BytecodeLoader
 		sectionLabelMap.put(S_BYTECODE_EXCEPTIONS, BytecodeSection.EXCEPTIONS);
 		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
 	}
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+
+    private BytecodeLoader()
+    {}
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{

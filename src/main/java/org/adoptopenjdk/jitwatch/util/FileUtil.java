@@ -1,7 +1,7 @@
 package org.adoptopenjdk.jitwatch.util;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,14 +9,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 
 public class FileUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-	
-	public static void copyFilesToDir(File sourceDir, File targetDir)
+
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+
+    private FileUtil()
+    {}
+
+    public static void copyFilesToDir(File sourceDir, File targetDir)
 	{
 		File exampleDir = new File("src/main/resources/examples");
 
