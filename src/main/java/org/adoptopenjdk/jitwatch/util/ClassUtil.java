@@ -5,9 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import java.net.URL;
-
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
+
+import java.net.URL;
+import java.util.Arrays;
 
 public final class ClassUtil
 {
@@ -17,8 +18,9 @@ public final class ClassUtil
     {
     }
     
-    public static void initialise(URL[] urls)
+    public static void initialise(URL[] inUrls)
     {
+        URL[] urls = Arrays.copyOf(inUrls, inUrls.length);
     	disposableClassLoader = new DisposableURLClassLoader(urls);
     }
 
