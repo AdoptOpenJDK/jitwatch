@@ -315,8 +315,9 @@ public final class JournalUtil
 		{
 			Opcode opcode = instr.getOpcode();
 
-			sane = opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
-					|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC;
+			sane = opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL;
+            sane = sane || (opcode == Opcode.INVOKESTATIC || opcode == Opcode.INVOKEINTERFACE
+                    || opcode == Opcode.INVOKEDYNAMIC);
 		}
 
 		return sane;
