@@ -250,14 +250,6 @@ public class TriView extends Stage implements ILineListener
             @Override
             public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
             {
-                return getiMetaMemberListCellInternal();
-            }
-
-            private ListCell<IMetaMember> getiMetaMemberListCellInternal() {
-                return getListCellInternal();
-            }
-
-            private ListCell<IMetaMember> getListCellInternal() {
                 return new ListCell<IMetaMember>()
                 {
                     @Override
@@ -272,16 +264,20 @@ public class TriView extends Stage implements ILineListener
                         }
                         else
                         {
-                            setText(item.toStringUnqualifiedMethodName(false));
+                            performUpdateOfItem(this, item);
+                        }
+                    }
 
-                            if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
-                            {
-                                setGraphic(new ImageView(UserInterfaceUtil.getTick()));
-                            }
-                            else
-                            {
-                                setGraphic(null);
-                            }
+                    private void performUpdateOfItem(ListCell<IMetaMember> listCell, IMetaMember item) {
+                        listCell.setText(item.toStringUnqualifiedMethodName(false));
+
+                        if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
+                        {
+                            listCell.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+                        }
+                        else
+                        {
+                            listCell.setGraphic(null);
                         }
                     }
                 };

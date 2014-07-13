@@ -626,18 +626,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
                     int classCount = getConfig().getClassLocations().size();
                     int sourceCount = getConfig().getSourceLocations().size();
 
-                    if (classCount == 0 && sourceCount == 0)
-                    {
-                        if (getConfig().isShowNothingMounted())
-                        {
-                            nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-                            nothingMountedStage.show();
-
-                            stageManager.add(nothingMountedStage);
-
-                            startDelayedByConfig = true;
-                        }
-                    }
+                    performActionForZeroClassAndSourceCounts(classCount, sourceCount);
                 }
 
                 if (!startDelayedByConfig)
@@ -646,6 +635,21 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
                 }
             }
         };
+    }
+
+    private void performActionForZeroClassAndSourceCounts(int classCount, int sourceCount) {
+        if (classCount == 0 && sourceCount == 0)
+        {
+            if (getConfig().isShowNothingMounted())
+            {
+                nothingMountedStage = new NothingMountedStage(this, getConfig());
+                nothingMountedStage.show();
+
+                stageManager.add(nothingMountedStage);
+
+                startDelayedByConfig = true;
+            }
+        }
     }
 
     private void loadConfigFromFile()

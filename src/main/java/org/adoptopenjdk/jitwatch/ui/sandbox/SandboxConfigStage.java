@@ -123,7 +123,9 @@ public class SandboxConfigStage extends Stage
         };
     }
 
-    private EventHandler<ActionEvent> getEventHandlerForSaveButton(final IStageCloseListener parent, final JITWatchConfig config, final FileChooserList chooserClasses) {
+    private EventHandler<ActionEvent> getEventHandlerForSaveButton(final IStageCloseListener parent,
+                                                                   final JITWatchConfig config,
+                                                                   final FileChooserList chooserClasses) {
         return new EventHandler<ActionEvent>()
         {
             @Override
@@ -131,32 +133,11 @@ public class SandboxConfigStage extends Stage
             {
                 config.setSandboxClassLocations(chooserClasses.getFiles());
 
-                try
-                {
-                    config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
-                }
-                catch (NumberFormatException nfe)
-                {
-                    logger.error("Bad FreqInlineSize value", nfe);
-                }
+                setFrequencyOfInlineSize(config);
 
-                try
-                {
-                    config.setMaxInlineSize(Integer.parseInt(txtMaxInline.getText()));
-                }
-                catch (NumberFormatException nfe)
-                {
-                    logger.error("Bad MaxInlineSize value", nfe);
-                }
+                setMaximumInlineSize(config);
 
-                try
-                {
-                    config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
-                }
-                catch (NumberFormatException nfe)
-                {
-                    logger.error("Bad CompilerThreshold value", nfe);
-                }
+                setCompilerThreshold(config);
 
                 config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
 
@@ -166,6 +147,39 @@ public class SandboxConfigStage extends Stage
                 close();
             }
         };
+    }
+
+    private void setCompilerThreshold(JITWatchConfig config) {
+        try
+        {
+            config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
+        }
+        catch (NumberFormatException nfe)
+        {
+            logger.error("Bad CompilerThreshold value", nfe);
+        }
+    }
+
+    private void setMaximumInlineSize(JITWatchConfig config) {
+        try
+        {
+            config.setMaxInlineSize(Integer.parseInt(txtMaxInline.getText()));
+        }
+        catch (NumberFormatException nfe)
+        {
+            logger.error("Bad MaxInlineSize value", nfe);
+        }
+    }
+
+    private void setFrequencyOfInlineSize(JITWatchConfig config) {
+        try
+        {
+            config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
+        }
+        catch (NumberFormatException nfe)
+        {
+            logger.error("Bad FreqInlineSize value", nfe);
+        }
     }
 
     private HBox buildHBoxAssemblySyntax(final JITWatchConfig config)
@@ -280,21 +294,35 @@ public class SandboxConfigStage extends Stage
             {
                 if (groupTiered.getSelectedToggle() != null)
                 {
-                    if (groupTiered.getSelectedToggle().equals(rbVMDefault))
-                    {
-                        config.setTieredCompilationMode(TieredCompilation.VM_DEFAULT);
-                    }
-                    else if (groupTiered.getSelectedToggle().equals(rbForceTiered))
-                    {
-                        config.setTieredCompilationMode(TieredCompilation.FORCE_TIERED);
-                    }
-                    else if (groupTiered.getSelectedToggle().equals(rbForceNoTiered))
-                    {
-                        config.setTieredCompilationMode(TieredCompilation.FORCE_NO_TIERED);
-                    }
+                    setTieredCompilationModeToVMDefault(groupTiered, rbVMDefault, config);
+
+                    orSetTieredCompilationModeToForceTiered(groupTiered, rbForceTiered, config);
+
+                    orSetTieredCompilationModeToForceNoTiered(groupTiered, rbForceNoTiered, config);
                 }
             }
         };
+    }
+
+    private void orSetTieredCompilationModeToForceNoTiered(ToggleGroup groupTiered, RadioButton rbForceNoTiered, JITWatchConfig config) {
+        if (groupTiered.getSelectedToggle().equals(rbForceNoTiered))
+        {
+            config.setTieredCompilationMode(TieredCompilation.FORCE_NO_TIERED);
+        }
+    }
+
+    private void orSetTieredCompilationModeToForceTiered(ToggleGroup groupTiered, RadioButton rbForceTiered, JITWatchConfig config) {
+        if (groupTiered.getSelectedToggle().equals(rbForceTiered))
+        {
+            config.setTieredCompilationMode(TieredCompilation.FORCE_TIERED);
+        }
+    }
+
+    private void setTieredCompilationModeToVMDefault(ToggleGroup groupTiered, RadioButton rbVMDefault, JITWatchConfig config) {
+        if (groupTiered.getSelectedToggle().equals(rbVMDefault))
+        {
+            config.setTieredCompilationMode(TieredCompilation.VM_DEFAULT);
+        }
     }
 
     private HBox buildHBoxCompressedOops(final JITWatchConfig config)
@@ -358,21 +386,33 @@ public class SandboxConfigStage extends Stage
             {
                 if (groupOops.getSelectedToggle() != null)
                 {
-                    if (groupOops.getSelectedToggle().equals(rbVMDefault))
-                    {
-                        config.setCompressedOopsMode(CompressedOops.VM_DEFAULT);
-                    }
-                    else if (groupOops.getSelectedToggle().equals(rbForceCompressed))
-                    {
-                        config.setCompressedOopsMode(CompressedOops.FORCE_COMPRESSED);
-                    }
-                    else if (groupOops.getSelectedToggle().equals(rbForceNoCompressed))
-                    {
-                        config.setCompressedOopsMode(CompressedOops.FORCE_NO_COMPRESSED);
-                    }
+                    setCompressedOopsModeToVMDefault(groupOops, rbVMDefault, config);
+                    orSetCompressedOopsModeToForcedCompreessed(groupOops, rbForceCompressed, config);
+                    orSetCompressedOopsModeToForceNoCompressed(groupOops, rbForceNoCompressed, config);
                 }
             }
         };
+    }
+
+    private void orSetCompressedOopsModeToForceNoCompressed(ToggleGroup groupOops, RadioButton rbForceNoCompressed, JITWatchConfig config) {
+        if (groupOops.getSelectedToggle().equals(rbForceNoCompressed))
+        {
+            config.setCompressedOopsMode(CompressedOops.FORCE_NO_COMPRESSED);
+        }
+    }
+
+    private void orSetCompressedOopsModeToForcedCompreessed(ToggleGroup groupOops, RadioButton rbForceCompressed, JITWatchConfig config) {
+        if (groupOops.getSelectedToggle().equals(rbForceCompressed))
+        {
+            config.setCompressedOopsMode(CompressedOops.FORCE_COMPRESSED);
+        }
+    }
+
+    private void setCompressedOopsModeToVMDefault(ToggleGroup groupOops, RadioButton rbVMDefault, JITWatchConfig config) {
+        if (groupOops.getSelectedToggle().equals(rbVMDefault))
+        {
+            config.setCompressedOopsMode(CompressedOops.VM_DEFAULT);
+        }
     }
 
     private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
