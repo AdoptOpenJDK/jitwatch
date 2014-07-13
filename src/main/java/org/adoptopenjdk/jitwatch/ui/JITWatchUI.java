@@ -255,29 +255,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
         Button btnChooseWatchFile = initialiseBtnChooseWatchFile();
 
-        initialiseBtnStart();
-
-        initialiseBtnStop();
-
-        initialiseBtnConfigure();
-
-        initialiseBtnTimeLine();
-
-        initialiseBtnStats();
-
-        initialiseBtnHisto();
-
-        initialiseBtnTopList();
-
-        initialiseBtnCodeCache();
-
-        initialiseBtnTriView();
-
-        initialiseBtnSuggest();
-
-        initialiseBtnSandbox();
-
-        initialiseBtnErrorLog();
+        intialiseAllButtons();
 
 		btnErrorLog.setStyle(DEFAULT_FX_PADDING_STYLE);
 
@@ -293,41 +271,24 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
 		attributeTableView.setPlaceholder(new Text("Select a JIT-compiled class member to view compilation attributes."));
 
-		SplitPane spMethodInfo = new SplitPane();
-		spMethodInfo.setOrientation(Orientation.VERTICAL);
+        SplitPane spMethodInfo = initialiseSpMain();
 
 		classMemberList = new ClassMemberList(this, getConfig());
 
-		spMethodInfo.getItems().add(classMemberList);
-		spMethodInfo.getItems().add(attributeTableView);
+        addEntitiesToSplitPaneMethodInfo(spMethodInfo);
 
-		classMemberList.prefHeightProperty().bind(scene.heightProperty());
-		attributeTableView.prefHeightProperty().bind(scene.heightProperty());
+        setPreferedHeightToEntities(scene);
 
-		classTree = new ClassTree(this, getConfig());
-		classTree.prefWidthProperty().bind(scene.widthProperty());
+        setPreferredWidthToClassTree(scene);
 
-		SplitPane spMain = new SplitPane();
-		spMain.setOrientation(Orientation.VERTICAL);
+        SplitPane spMain = initialiseSpMain();
 
         SplitPane spCentre = initialiseSpCentre(spMethodInfo);
 
         initialiseTextAreaLog(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
-		
-		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
-		
-		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
+        writeVariousLogMessages();
 
-		if (hsLogFile == null)
-		{
-			log("Choose a HotSpot log file or open the Sandbox");
-		}
-		else
-		{
-			log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
-		}
         setupSpMain(spMain, spCentre);
 
         HBox hboxBottom = initialiseHBoxBottom(statusBarHeight);
@@ -353,6 +314,70 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		updateButtons();
 	}
+
+    private void intialiseAllButtons() {
+        initialiseBtnStart();
+
+        initialiseBtnStop();
+
+        initialiseBtnConfigure();
+
+        initialiseBtnTimeLine();
+
+        initialiseBtnStats();
+
+        initialiseBtnHisto();
+
+        initialiseBtnTopList();
+
+        initialiseBtnCodeCache();
+
+        initialiseBtnTriView();
+
+        initialiseBtnSuggest();
+
+        initialiseBtnSandbox();
+
+        initialiseBtnErrorLog();
+    }
+
+    private void writeVariousLogMessages() {
+        log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
+
+        log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
+
+        log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
+
+        if (hsLogFile == null)
+        {
+            log("Choose a HotSpot log file or open the Sandbox");
+        }
+        else
+        {
+            log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
+        }
+    }
+
+    private void setPreferredWidthToClassTree(Scene scene) {
+        classTree = new ClassTree(this, getConfig());
+        classTree.prefWidthProperty().bind(scene.widthProperty());
+    }
+
+    private void setPreferedHeightToEntities(Scene scene) {
+        classMemberList.prefHeightProperty().bind(scene.heightProperty());
+        attributeTableView.prefHeightProperty().bind(scene.heightProperty());
+    }
+
+    private void addEntitiesToSplitPaneMethodInfo(SplitPane spMethodInfo) {
+        spMethodInfo.getItems().add(classMemberList);
+        spMethodInfo.getItems().add(attributeTableView);
+    }
+
+    private SplitPane initialiseSpMain() {
+        SplitPane splitPane = new SplitPane();
+        splitPane.setOrientation(Orientation.VERTICAL);
+        return splitPane;
+    }
 
     private void showStage(Stage stage, Scene scene) {
         stage.setTitle("JITWatch - HotSpot Compilation Inspector");

@@ -61,49 +61,16 @@ public final class BytecodeLoader
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
 		}
 
-		ClassBC result = null;
+		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);
 
-		String[] args;
+        String byteCodeString  = createJavapTaskFromArguments(fqClassName, args);
 
-		if (classLocations.size() == 0)
-		{
-			args = new String[] { "-c", "-p", "-v", fqClassName };
-		}
-		else
-		{
-			StringBuilder classPathBuilder = new StringBuilder();
+        return parsedByteCodeFrom(byteCodeString);
+	}
 
-			for (String cp : classLocations)
-			{
-				classPathBuilder.append(cp).append(File.pathSeparatorChar);
-			}
-
-			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
-
-			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
-		}
-
-		String byteCodeString = null;
-
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
-		{
-			JavapTask task = new JavapTask();
-			task.setLog(baos);
-			task.handleOptions(args);
-			task.call();
-
-			byteCodeString = baos.toString();
-		}
-		catch (BadArgs ba)
-		{
-			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
-		}
-		catch (IOException ioe)
-		{
-			logger.error("", ioe);
-		}
-
-		if (byteCodeString != null)
+    private static ClassBC parsedByteCodeFrom(String byteCodeString) {
+        ClassBC result = null;
+        if (byteCodeString != null)
 		{
 			try
 			{
@@ -114,11 +81,54 @@ public final class BytecodeLoader
 				logger.error("Exception parsing bytecode", ex);
 			}
 		}
+        return result;
+    }
 
-		return result;
-	}
+    private static String createJavapTaskFromArguments(String fqClassName, String[] args) {
+        String byteCodeString = null;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
+        {
+            JavapTask task = new JavapTask();
+            task.setLog(baos);
+            task.handleOptions(args);
+            task.call();
 
-	// TODO refactor this class - better stateful than all statics
+            byteCodeString = baos.toString();
+        }
+        catch (BadArgs ba)
+        {
+            logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
+        }
+        catch (IOException ioe)
+        {
+            logger.error("", ioe);
+        }
+        return byteCodeString;
+    }
+
+    private static String[] buildClassPathFromClassLocations(Collection<String> classLocations, String fqClassName) {
+        String[] args;
+        if (classLocations.size() == 0)
+        {
+            args = new String[] { "-c", "-p", "-v", fqClassName };
+        }
+        else
+        {
+            StringBuilder classPathBuilder = new StringBuilder();
+
+            for (String cp : classLocations)
+            {
+                classPathBuilder.append(cp).append(File.pathSeparatorChar);
+            }
+
+            classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
+
+            args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
+        }
+        return args;
+    }
+
+    // TODO refactor this class - better stateful than all statics
 	public static ClassBC parse(String bytecode)
 	{
 		ClassBC classBytecode = new ClassBC();
