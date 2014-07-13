@@ -5,15 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
@@ -170,7 +170,7 @@ public class JITWatchConfig
 	
 	private int loadIntFromProperty(Properties props, String propertyName, int defaultValue)
 	{
-		return Integer.parseInt(props.getProperty(propertyName, new Integer(defaultValue).toString()));
+		return Integer.parseInt(props.getProperty(propertyName, Integer.valueOf(defaultValue).toString()));
 	}
 
 	private List<String> loadLocationsFromProperty(Properties props, String propertyName)
