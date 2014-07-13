@@ -216,6 +216,8 @@ public class JITWatchConfig
 		case FORCE_NO_TIERED:
 			saveProps.put(KEY_SANDBOX_TIERED_MODE, "2");
 			break;
+        default:
+            break;
 		}
 		
 		switch (compressedOopsMode)
@@ -229,6 +231,8 @@ public class JITWatchConfig
 		case FORCE_NO_COMPRESSED:
 			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
+        default:
+            break;
 		}
 
 		if (lastLogDir != null)
