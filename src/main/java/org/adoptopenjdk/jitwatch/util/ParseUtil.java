@@ -109,6 +109,7 @@ public final class ParseUtil
 			return Float.TYPE;
 		}
 
+        logger.error("RuntimeException: Unknown class for " + c);
 		throw new RuntimeException("Unknown class for " + c);
 	}
 
@@ -205,8 +206,7 @@ public final class ParseUtil
 	 * 
 	 * @return String[] 0=className 1=methodSignature
 	 */
-	public static String[] parseLogSignature(String logSignature) throws Exception
-	{
+	public static String[] parseLogSignature(String logSignature) throws Exception {
 		String result[] = null;
 
 		String[] parts = splitLogSignatureWithRegex(logSignature);
