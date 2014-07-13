@@ -165,7 +165,7 @@ public class JITWatchConfig
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
 	{
-		return Boolean.parseBoolean(props.getProperty(propertyName, new Boolean(defaultValue).toString()));
+		return Boolean.parseBoolean(props.getProperty(propertyName, Boolean.valueOf(defaultValue).toString()));
 	}
 	
 	private int loadIntFromProperty(Properties props, String propertyName, int defaultValue)
