@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 
-public class FileUtil
+public final class FileUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
