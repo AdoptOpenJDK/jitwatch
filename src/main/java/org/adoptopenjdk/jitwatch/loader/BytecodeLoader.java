@@ -191,7 +191,7 @@ public final class BytecodeLoader
                 section = performCODE(classBytecode, builder, section, memberSignature, memberBytecode, line);
 				break;
 			case CONSTANT_POOL:
-                section = performCONSTANT_POOL(classBytecode, builder, section, memberSignature, memberBytecode, line);
+                section = performConstantPool(classBytecode, builder, section, memberSignature, memberBytecode, line);
                 break;
 			case LINETABLE:
                 section = performLINETABLE(classBytecode, builder, section, memberSignature, memberBytecode, line);
@@ -241,7 +241,7 @@ public final class BytecodeLoader
         return section;
     }
 
-    private static BytecodeSection performCONSTANT_POOL(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+    private static BytecodeSection performConstantPool(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
         if (!line.startsWith(S_HASH))
         {
             sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);

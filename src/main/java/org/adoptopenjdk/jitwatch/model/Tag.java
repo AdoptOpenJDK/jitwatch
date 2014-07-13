@@ -213,17 +213,34 @@ public class Tag
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Tag tag = (Tag) o;
 
-        if (selfClosing != tag.selfClosing) return false;
-        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null) return false;
-        if (children != null ? !children.equals(tag.children) : tag.children != null) return false;
-        if (name != null ? !name.equals(tag.name) : tag.name != null) return false;
-        if (parent != null ? !parent.equals(tag.parent) : tag.parent != null) return false;
-        if (textContent != null ? !textContent.equals(tag.textContent) : tag.textContent != null) return false;
+        if (selfClosing != tag.selfClosing) {
+            return false;
+        }
+        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null) {
+            return false;
+        }
+        if (children != null ? !children.equals(tag.children) : tag.children != null) {
+            return false;
+        }
+        if (name != null ? !name.equals(tag.name) : tag.name != null) {
+            return false;
+        }
+        if (parent != null ? !parent.equals(tag.parent) : tag.parent != null) {
+            return false;
+        }
+        if (textContent != null ? !textContent.equals(tag.textContent) : tag.textContent != null) {
+            return false;
+        }
 
         return true;
     }

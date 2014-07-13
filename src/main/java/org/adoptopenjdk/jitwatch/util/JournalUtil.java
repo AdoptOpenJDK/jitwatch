@@ -134,32 +134,32 @@ public final class JournalUtil
 				break;
 			case TAG_CALL:
 			{
-                performTAG_CALL(callAttrs, tagAttrs);
+                performTagCall(callAttrs, tagAttrs);
 			}
 				break;
 			case TAG_METHOD:
 			{
-                inMethod = performTAG_METHOD(methodAttrs, currentInstruction, tagAttrs);
+                inMethod = performTagMethod(methodAttrs, currentInstruction, tagAttrs);
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-                performTAG_INLINE_SUCCESS(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
+                performTagInlineSuccess(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
             }
 				break;
 			case TAG_INLINE_FAIL:
 			{
-                performTAG_INLINE_FAIL(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
+                performTagInlineFail(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
             }
 				break;
 			case TAG_BRANCH:
 			{
-                performTAG_BRANCH(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
+                performTagBranch(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
             }
 				break;
 			case TAG_INTRINSIC:
 			{
-                performTAG_INTRINSIC(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
+                performTagIntrinsic(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
             }
 				break;
 
@@ -169,7 +169,7 @@ public final class JournalUtil
 		}
 	}
 
-    private static void performTAG_INTRINSIC(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+    private static void performTagIntrinsic(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
         if (inMethod || isC2)
         {
             if (!sanityCheckIntrinsic(currentInstruction))
@@ -184,7 +184,7 @@ public final class JournalUtil
         }
     }
 
-    private static void performTAG_BRANCH(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+    private static void performTagBranch(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
         if (!result.containsKey(currentBytecode))
         {
             if (inMethod || isC2)
@@ -201,7 +201,7 @@ public final class JournalUtil
         }
     }
 
-    private static void performTAG_INLINE_FAIL(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+    private static void performTagInlineFail(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
         if (inMethod || isC2)
         {
             if (!sanityCheckInline(currentInstruction))
@@ -216,7 +216,7 @@ public final class JournalUtil
         }
     }
 
-    private static void performTAG_INLINE_SUCCESS(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+    private static void performTagInlineSuccess(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
         if (inMethod || isC2)
         {
             if (!sanityCheckInline(currentInstruction))
@@ -231,9 +231,9 @@ public final class JournalUtil
         }
     }
 
-    private static boolean performTAG_METHOD(Map<String, String> methodAttrs, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) {
+    private static boolean performTagMethod(Map<String, String> methodAttrs, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) {
         boolean inMethod;
-        performTAG_CALL(methodAttrs, tagAttrs);
+        performTagCall(methodAttrs, tagAttrs);
 
         String nameAttr = methodAttrs.get(ATTR_NAME);
 
@@ -248,7 +248,7 @@ public final class JournalUtil
         return inMethod;
     }
 
-    private static void performTAG_CALL(Map<String, String> callAttrs, Map<String, String> tagAttrs) {
+    private static void performTagCall(Map<String, String> callAttrs, Map<String, String> tagAttrs) {
         callAttrs.clear();
         callAttrs.putAll(tagAttrs);
     }
