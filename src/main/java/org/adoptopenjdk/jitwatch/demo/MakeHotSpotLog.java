@@ -492,7 +492,7 @@ public class MakeHotSpotLog
 		try
 		{
 			Thread.sleep(500);
-			System.out.println("done");
+			logger.info("done");
 		}
 		catch (InterruptedException ie)
 		{
@@ -512,7 +512,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				System.out.println("usage: MakeHotSpotLog [iterations]");
+                System.out.format("usage: MakeHotSpotLog [iterations]");
 			}
 		}
 

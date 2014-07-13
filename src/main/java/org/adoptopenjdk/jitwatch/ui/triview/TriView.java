@@ -498,7 +498,9 @@ public class TriView extends Stage implements ILineListener
 		}
     }
 
-    private boolean evaluateSameClass(boolean force, boolean sameClass, MetaClass previousClass, MetaClass memberClass) {
+    private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass,
+                                      MetaClass memberClass) {
+        boolean sameClass = inSameClass;
         if (!force)
         {
             if ((previousClass != null) && previousClass.equals(memberClass))

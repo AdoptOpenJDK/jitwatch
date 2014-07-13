@@ -123,7 +123,12 @@ public class TimeLineStage extends AbstractGraphStage
         return compiledStampTime;
     }
 
-    private void processJITEvents(List<JITEvent> events, double lastCX, double lastCY, IMetaMember selectedMember, double compiledStampTime) {
+    private void processJITEvents(List<JITEvent> events, double inLastCX, double inLastCY,
+                                  IMetaMember selectedMember, double inCompiledStampTime) {
+        double lastCX = inLastCX;
+        double lastCY = inLastCY;
+        double compiledStampTime = inCompiledStampTime;
+
         int cumC = 0;
         int markerDiameter = 10;
 
