@@ -4,9 +4,9 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface ISandboxStage
 {
-	public void log(String text);
+	void log(String text);
 	
-	public void openTriView(IMetaMember member);
+	void openTriView(IMetaMember member);
 	
-	public void showError(String error);
+	void showError(String error);
 }
