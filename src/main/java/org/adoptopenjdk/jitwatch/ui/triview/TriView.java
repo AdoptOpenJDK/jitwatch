@@ -411,7 +411,8 @@ public class TriView extends Stage implements ILineListener
                         Dialogs.showOKDialog(
                                 TriView.this,
                                 "Wrong classes mounted for log file?",
-                                "Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log.\nAre the mounted classes the same ones used at runtime when the log was created?");
+                                "Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log." + NEW_LINEFEED +
+                                        "Are the mounted classes the same ones used at runtime when the log was created?");
                     }
                 });
 			}

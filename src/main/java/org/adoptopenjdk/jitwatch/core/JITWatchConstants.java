@@ -134,7 +134,8 @@ public final class JITWatchConstants
 	public static final String S_DOLLAR = "$";
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
-	public static final String S_NEWLINE = "\n";
+	public static final String S_NEWLINE = System.getProperty("line.separator");
+    public static final String NEW_LINEFEED = S_NEWLINE;
 	public static final String S_TAB = "\t";
 	public static final String S_DOUBLE_SPACE = "  ";
 	public static final String S_EMPTY = "";

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -262,7 +263,8 @@ public class TestAssemblyProcessor
 		// Given
 		int expectedAssemblyResults = ZERO;
 		String[] lines = SINGLE_ASSEMBLY_METHOD.clone();
-		lines[6] = "  # {method} &apos;main&apos;\n &apos;([Ljava/lang/String;)V&apos; in &apos;org/adoptopenjdk/jitwatch/demo/SandboxTestLoad&apos;";
+		lines[6] = "  # {method} &apos;main&apos;" + NEW_LINEFEED + " &apos;([Ljava/lang/String;)V&apos; in " +
+                "&apos;org/adoptopenjdk/jitwatch/demo/SandboxTestLoad&apos;";
 
 		memberFinder = new IMemberFinder()
 		{

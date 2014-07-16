@@ -48,6 +48,7 @@ import java.util.List;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
 {
@@ -217,7 +218,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				public void run()
 				{
 					String title = "Missing VM Switch -XX:+TraceClassLoading";
-					String msg = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
+					String msg = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used." + NEW_LINEFEED +
+                            "Please recreate your log file with this switch enabled.";
 
 					Dialogs.showOKDialog(JITWatchUI.this.stage, title, msg);
 				}
@@ -342,11 +344,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
     }
 
     private void writeVariousLogMessages() {
-        log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
+        log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project." + NEW_LINEFEED);
 
-        log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
+        log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) " + NEW_LINEFEED +
+                "or come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch)." + NEW_LINEFEED);
 
-        log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
+        log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. " +
+                "Licenced under http://ref.x86asm.net/index.html#License" + NEW_LINEFEED);
 
         if (hsLogFile == null)
         {
@@ -858,7 +862,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			Dialogs.showOKDialog(
 					stage,
 					"Root method is not compiled",
-					"Can only display compile chain where the root method has been JIT-compiled.\n"
+					"Can only display compile chain where the root method has been JIT-compiled." + NEW_LINEFEED
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
 	}
@@ -913,7 +917,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			clearTextArea();
 			log("Selected file: " + hsLogFile.getAbsolutePath());
-			log("\nClick Start button to process the HotSpot log");
+			log(NEW_LINEFEED + "Click Start button to process the HotSpot log");
 			updateButtons();
 
 			refreshLog();
@@ -1112,14 +1116,14 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	@Override
 	public void handleErrorEntry(String entry)
 	{
-		errorLog.append(entry).append("\n");
+		errorLog.append(entry).append(NEW_LINEFEED);
 		errorCount++;
 	}
 
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-		logBuffer.append("\n");
+		logBuffer.append(NEW_LINEFEED);
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)

@@ -32,19 +32,19 @@ public final class InlineUtil
 		
 		if (callAttrs.containsKey(ATTR_COUNT))
 		{
-			builder.append("\nCount: ").append(callAttrs.get(ATTR_COUNT));
+			builder.append(NEW_LINEFEED + "Count: ").append(callAttrs.get(ATTR_COUNT));
 		}
 		if (methodAttrs.containsKey(ATTR_IICOUNT))
 		{
-			builder.append("\niicount: ").append(methodAttrs.get(ATTR_IICOUNT));
+			builder.append(NEW_LINEFEED + "iicount: ").append(methodAttrs.get(ATTR_IICOUNT));
 		}
 		if (methodAttrs.containsKey(ATTR_BYTES))
 		{
-			builder.append("\nBytes: ").append(methodAttrs.get(ATTR_BYTES));
+			builder.append(NEW_LINEFEED + "Bytes: ").append(methodAttrs.get(ATTR_BYTES));
 		}
 		if (callAttrs.containsKey(ATTR_PROF_FACTOR))
 		{
-			builder.append("\nProf factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
+			builder.append(NEW_LINEFEED + "Prof factor: ").append(callAttrs.get(ATTR_PROF_FACTOR));
 		}
 
 		return builder.toString();

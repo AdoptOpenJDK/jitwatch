@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -19,11 +18,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 public class CompileChainStage extends Stage
 {
@@ -191,12 +192,12 @@ public class CompileChainStage extends Stage
     private void highlightInGreenOrRed(CompileNode node, StringBuilder tipBuilder, Rectangle rect) {
         if (node.getMember().isCompiled())
         {
-            tipBuilder.append("Yes\n");
+            tipBuilder.append("Yes").append(NEW_LINEFEED);
             rect.setFill(Color.GREEN);
         }
         else
         {
-            tipBuilder.append("No\n");
+            tipBuilder.append("No").append(NEW_LINEFEED);
             rect.setFill(Color.RED);
         }
     }
