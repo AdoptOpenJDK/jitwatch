@@ -1,21 +1,21 @@
 package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
-import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
+import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 // https://github.com/yasm/yasm/wiki/GasSyntax
@@ -127,7 +127,7 @@ public class ViewerAssembly extends Viewer
 
 			if (opCount == 2)
 			{
-				builder.append("\nDestination: ");
+				builder.append(NEW_LINEFEED + "Destination: ");
 
 				String op2 = operands.get(1);
 

@@ -53,7 +53,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 		explanationMap
 				.put(REASON_HOT_METHOD_TOO_BIG,
-						"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
+						"The callee method is 'hot' but is too big to be inlined into the caller."+ NEW_LINEFEED+ "You may want to consider refactoring the callee into smaller methods.");
 		explanationMap.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
 		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
 				"The callee method is not 'hot' but is too big to be inlined into the caller method.");
@@ -182,10 +182,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					StringBuilder reasonBuilder = new StringBuilder();
 
-					reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to\n");
+					reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to").append(NEW_LINEFEED);
 					reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append(C_NEWLINE);
 					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName(false)).append(C_NEWLINE);
-					reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
+					reasonBuilder.append("was not inlined for reason: '").append(reason).append("'").append(NEW_LINEFEED);
 
 					if (explanationMap.containsKey(reason))
 					{

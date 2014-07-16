@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
+
 // Demo class to generate an example hotspot.log
 // run with VM arguments
 // -XX:+UnlockDiagnosticVMOptions
@@ -420,7 +422,7 @@ public class MakeHotSpotLog
 
 	private void testToUpperCase(long iterations)
 	{
-		String sentence = "The quick brown fox jumps over the lazy dog\n";
+		String sentence = "The quick brown fox jumps over the lazy dog" + NEW_LINEFEED;
 
 		String[] lcWords = sentence.split(" ");
 
