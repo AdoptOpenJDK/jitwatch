@@ -5,16 +5,16 @@
  */
 package org.adoptopenjdk.jitwatch.chain;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.adoptopenjdk.jitwatch.model.*;
 import org.adoptopenjdk.jitwatch.util.InlineUtil;
 import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -121,21 +121,8 @@ public class CompileChainWalker
 			{
 				inlined = false; // reset
 
-				IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
-
-				if (childCall != null)
-				{
-					CompileNode childNode = new CompileNode(childCall, methodID);
-					parentNode.addChild(childNode);
-
-					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-					childNode.setInlined(inlined, annotationText);
-				}
-				else
-				{
-					logger.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
-				}
+                performChildCallForTagInlineFail(parentNode, methodID, inlined,
+                        methodAttrs, callAttrs, tagAttrs);
 
 				methodID = null;
 			}
@@ -149,27 +136,7 @@ public class CompileChainWalker
 
 			case TAG_PARSE: // call depth
 			{
-				String childMethodID = tagAttrs.get(ATTR_METHOD);
-
-				IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
-
-				if (childCall != null)
-				{
-					CompileNode childNode = new CompileNode(childCall, childMethodID);
-
-					parentNode.addChild(childNode);
-
-					if (methodID != null && methodID.equals(childMethodID))
-					{
-						childNode.setInlined(inlined, inlineReason);
-					}
-
-					processParseTag(child, childNode);
-				}
-				else
-				{
-					logger.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
-				}
+                performTagParse(parentNode, methodID, inlined, inlineReason, child, tagAttrs);
 			}
 				break;
 
@@ -178,4 +145,46 @@ public class CompileChainWalker
 			}
 		}
 	}
+
+    private void performChildCallForTagInlineFail(CompileNode parentNode, String methodID, boolean inlined, Map<String, String> methodAttrs, Map<String, String> callAttrs, Map<String, String> tagAttrs) {
+        IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
+
+        if (childCall != null)
+        {
+            CompileNode childNode = new CompileNode(childCall, methodID);
+            parentNode.addChild(childNode);
+
+            String reason = tagAttrs.get(ATTR_REASON);
+            String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+            childNode.setInlined(inlined, annotationText);
+        }
+        else
+        {
+            logger.error("TAG_INLINE_FAIL Failed to create CompileNode with null member. Method was {}", methodID);
+        }
+    }
+
+    private void performTagParse(CompileNode parentNode, String methodID, boolean inlined, String inlineReason, Tag child, Map<String, String> tagAttrs) {
+        String childMethodID = tagAttrs.get(ATTR_METHOD);
+
+        IMetaMember childCall = ParseUtil.lookupMember(childMethodID, parseDictionary, model);
+
+        if (childCall != null)
+        {
+            CompileNode childNode = new CompileNode(childCall, childMethodID);
+
+            parentNode.addChild(childNode);
+
+            if (methodID != null && methodID.equals(childMethodID))
+            {
+                childNode.setInlined(inlined, inlineReason);
+            }
+
+            processParseTag(child, childNode);
+        }
+        else
+        {
+            logger.error("TAG_PARSE Failed to create CompileNode with null member. Method was {}", childMethodID);
+        }
+    }
 }

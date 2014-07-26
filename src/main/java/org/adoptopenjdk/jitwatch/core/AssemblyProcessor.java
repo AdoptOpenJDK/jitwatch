@@ -5,14 +5,14 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyProcessor
 {
@@ -95,7 +95,7 @@ public class AssemblyProcessor
 	{
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("completed assembly\n{}", builder.toString());
+			logger.debug("completed assembly{}{}", NEW_LINEFEED, builder.toString());
 		}
 
 		String asmString = builder.toString();
@@ -110,7 +110,7 @@ public class AssemblyProcessor
 
 			if (DEBUG_LOGGING)
 			{
-				logger.debug("Parsed assembly sig {}\nfrom {}", sig, firstLine);
+				logger.debug("Parsed assembly sig {}{}from {}", sig, NEW_LINEFEED, firstLine);
 			}
 
 			IMetaMember currentMember = memberFinder.findMemberWithSignature(sig);

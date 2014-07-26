@@ -5,15 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
@@ -165,12 +165,12 @@ public class JITWatchConfig
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
 	{
-		return Boolean.parseBoolean(props.getProperty(propertyName, new Boolean(defaultValue).toString()));
+		return Boolean.parseBoolean(props.getProperty(propertyName, Boolean.valueOf(defaultValue).toString()));
 	}
 	
 	private int loadIntFromProperty(Properties props, String propertyName, int defaultValue)
 	{
-		return Integer.parseInt(props.getProperty(propertyName, new Integer(defaultValue).toString()));
+		return Integer.parseInt(props.getProperty(propertyName, Integer.valueOf(defaultValue).toString()));
 	}
 
 	private List<String> loadLocationsFromProperty(Properties props, String propertyName)
@@ -216,6 +216,8 @@ public class JITWatchConfig
 		case FORCE_NO_TIERED:
 			saveProps.put(KEY_SANDBOX_TIERED_MODE, "2");
 			break;
+        default:
+            break;
 		}
 		
 		switch (compressedOopsMode)
@@ -229,6 +231,8 @@ public class JITWatchConfig
 		case FORCE_NO_COMPRESSED:
 			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
+        default:
+            break;
 		}
 
 		if (lastLogDir != null)

@@ -19,9 +19,12 @@ public final class DisassemblyUtil
 		BIT32, BIT64
 	}
 
-	private DisassemblyUtil()
-	{
-	}
+    /*
+        Hide Utility Class Constructor
+        Utility classes should not have a public or default constructor.
+    */
+    private DisassemblyUtil() {
+    }
 
 	public static boolean isDisassemblerAvailable()
 	{

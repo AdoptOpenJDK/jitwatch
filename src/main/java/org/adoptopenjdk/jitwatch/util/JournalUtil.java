@@ -5,24 +5,18 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import javafx.scene.paint.Color;
+import org.adoptopenjdk.jitwatch.model.*;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javafx.scene.paint.Color;
-
-import org.adoptopenjdk.jitwatch.model.AnnotationException;
-import org.adoptopenjdk.jitwatch.model.CompilerName;
-import org.adoptopenjdk.jitwatch.model.Journal;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
-import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.model.Task;
-import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class JournalUtil
 {
@@ -140,92 +134,33 @@ public final class JournalUtil
 				break;
 			case TAG_CALL:
 			{
-				callAttrs.clear();
-				callAttrs.putAll(tagAttrs);
+                performTagCall(callAttrs, tagAttrs);
 			}
 				break;
 			case TAG_METHOD:
 			{
-				methodAttrs.clear();
-				methodAttrs.putAll(tagAttrs);
-
-				String nameAttr = methodAttrs.get(ATTR_NAME);
-
-				inMethod = false;
-
-				if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
-				{
-					String comment = currentInstruction.getComment();
-
-					inMethod = comment.contains(nameAttr);
-				}
+                inMethod = performTagMethod(methodAttrs, currentInstruction, tagAttrs);
 			}
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-				if (inMethod || isC2)
-				{
-					if (!sanityCheckInline(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
-					}
-
-					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
-						
-					result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
-				}
-			}
+                performTagInlineSuccess(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
+            }
 				break;
 			case TAG_INLINE_FAIL:
 			{
-				if (inMethod || isC2)
-				{
-					if (!sanityCheckInline(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
-					}
-					
-					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-		
-					result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
-				}
-			}
+                performTagInlineFail(result, currentBytecode, methodAttrs, callAttrs, isC2, inMethod, currentInstruction, tagAttrs);
+            }
 				break;
 			case TAG_BRANCH:
 			{
-				if (!result.containsKey(currentBytecode))
-				{
-					if (inMethod || isC2)
-					{
-						if (!sanityCheckBranch(currentInstruction))
-						{
-							throw new AnnotationException("Expected a branch instruction", currentBytecode, currentInstruction);
-						}						
-						
-						String branchAnnotation = buildBranchAnnotation(tagAttrs);
-
-						result.put(currentBytecode, new LineAnnotation(branchAnnotation, Color.BLUE));
-					}
-				}
-			}
+                performTagBranch(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
+            }
 				break;
 			case TAG_INTRINSIC:
 			{
-				if (inMethod || isC2)
-				{
-					if (!sanityCheckIntrinsic(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
-					}
-					
-					StringBuilder reason = new StringBuilder();
-					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
-
-					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
-				}
-			}
+                performTagIntrinsic(result, currentBytecode, isC2, inMethod, currentInstruction, tagAttrs);
+            }
 				break;
 
 			default:
@@ -233,8 +168,92 @@ public final class JournalUtil
 			}
 		}
 	}
-	
-	private static String buildBranchAnnotation(Map<String, String> tagAttrs)
+
+    private static void performTagIntrinsic(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+        if (inMethod || isC2)
+        {
+            if (!sanityCheckIntrinsic(currentInstruction))
+            {
+                throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+            }
+
+            StringBuilder reason = new StringBuilder();
+            reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
+
+            result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
+        }
+    }
+
+    private static void performTagBranch(Map<Integer, LineAnnotation> result, int currentBytecode, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+        if (!result.containsKey(currentBytecode))
+        {
+            if (inMethod || isC2)
+            {
+                if (!sanityCheckBranch(currentInstruction))
+                {
+                    throw new AnnotationException("Expected a branch instruction", currentBytecode, currentInstruction);
+                }
+
+                String branchAnnotation = buildBranchAnnotation(tagAttrs);
+
+                result.put(currentBytecode, new LineAnnotation(branchAnnotation, Color.BLUE));
+            }
+        }
+    }
+
+    private static void performTagInlineFail(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+        if (inMethod || isC2)
+        {
+            if (!sanityCheckInline(currentInstruction))
+            {
+                throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+            }
+
+            String reason = tagAttrs.get(ATTR_REASON);
+            String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+
+            result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
+        }
+    }
+
+    private static void performTagInlineSuccess(Map<Integer, LineAnnotation> result, int currentBytecode, Map<String, String> methodAttrs, Map<String, String> callAttrs, boolean isC2, boolean inMethod, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) throws AnnotationException {
+        if (inMethod || isC2)
+        {
+            if (!sanityCheckInline(currentInstruction))
+            {
+                throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+            }
+
+            String reason = tagAttrs.get(ATTR_REASON);
+            String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
+
+            result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
+        }
+    }
+
+    private static boolean performTagMethod(Map<String, String> methodAttrs, BytecodeInstruction currentInstruction, Map<String, String> tagAttrs) {
+        boolean inMethod;
+        performTagCall(methodAttrs, tagAttrs);
+
+        String nameAttr = methodAttrs.get(ATTR_NAME);
+
+        inMethod = false;
+
+        if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
+        {
+            String comment = currentInstruction.getComment();
+
+            inMethod = comment.contains(nameAttr);
+        }
+        return inMethod;
+    }
+
+    private static void performTagCall(Map<String, String> callAttrs, Map<String, String> tagAttrs) {
+        callAttrs.clear();
+        callAttrs.putAll(tagAttrs);
+    }
+
+    private static String buildBranchAnnotation(Map<String, String> tagAttrs)
 	{
 		String count = tagAttrs.get(ATTR_BRANCH_COUNT);
 		String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
@@ -296,8 +315,9 @@ public final class JournalUtil
 		{
 			Opcode opcode = instr.getOpcode();
 
-			sane = opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
-					|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC;
+			sane = opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL;
+            sane = sane || (opcode == Opcode.INVOKESTATIC || opcode == Opcode.INVOKEINTERFACE
+                    || opcode == Opcode.INVOKEDYNAMIC);
 		}
 
 		return sane;

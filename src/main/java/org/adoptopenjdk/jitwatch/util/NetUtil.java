@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
+
 public final class NetUtil
 {
     /*
@@ -36,7 +38,7 @@ public final class NetUtil
 
 			while ((inputLine = in.readLine()) != null)
 			{
-				builder.append(inputLine).append("\n");
+				builder.append(inputLine).append(NEW_LINEFEED);
 			}
 
 		} catch (MalformedURLException e) {

@@ -315,7 +315,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		if (theThreadIsNotFound(threadName))
 		{
-			logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
+			logger.error("Thread name not found (attribute '{}' missing in tag).{}", ATTR_NAME, NEW_LINEFEED);
 			return;
 		}
 

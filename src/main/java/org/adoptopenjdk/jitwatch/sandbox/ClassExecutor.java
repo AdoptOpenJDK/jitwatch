@@ -1,15 +1,15 @@
 package org.adoptopenjdk.jitwatch.sandbox;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
 public class ClassExecutor
 {
@@ -64,10 +64,6 @@ public class ClassExecutor
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
-			
-			// use this instead of StreamCollectors if missing start of output
-			//pb.redirectErrorStream(true);
-			//pb.redirectOutput(Redirect.INHERIT);
 			
 			Process proc = pb.start();
 

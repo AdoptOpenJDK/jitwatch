@@ -5,18 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.adoptopenjdk.jitwatch.sandbox.ClassCompiler;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 public class TestCompilationUtil
 {
@@ -52,12 +54,12 @@ public class TestCompilationUtil
 	public void testCompileSimple()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append("package org.adoptopenjdk.jitwatch.compiletest;\n");
-		builder.append("public class CompileTest\n");
-		builder.append("{\n");
-		builder.append("private int foo = 0;\n");
-		builder.append("public void setFoo(int foo) {this.foo=foo;}\n");
-		builder.append("public int getFoo() {return foo;}\n");
+		builder.append("package org.adoptopenjdk.jitwatch.compiletest;").append(NEW_LINEFEED);
+		builder.append("public class CompileTest").append(NEW_LINEFEED);
+		builder.append("{").append(NEW_LINEFEED);
+		builder.append("private int foo = 0;").append(NEW_LINEFEED);
+		builder.append("public void setFoo(int foo) {this.foo=foo;}").append(NEW_LINEFEED);
+		builder.append("public int getFoo() {return foo;}").append(NEW_LINEFEED);
 		builder.append("}");
 
 		try

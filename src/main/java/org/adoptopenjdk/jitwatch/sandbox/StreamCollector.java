@@ -1,11 +1,13 @@
 package org.adoptopenjdk.jitwatch.sandbox;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 public class StreamCollector
 {
@@ -29,7 +31,7 @@ public class StreamCollector
 					while (line != null)
 					{
 						line = reader.readLine();
-						builder.append(line).append("\n");
+						builder.append(line).append(NEW_LINEFEED);
 					}
 				}
 				catch (Exception e)

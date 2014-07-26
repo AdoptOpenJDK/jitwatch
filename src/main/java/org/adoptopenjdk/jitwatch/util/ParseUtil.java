@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
-public class ParseUtil
+public final class ParseUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
@@ -109,6 +109,7 @@ public class ParseUtil
 			return Float.TYPE;
 		}
 
+        logger.error("RuntimeException: Unknown class for " + c);
 		throw new RuntimeException("Unknown class for " + c);
 	}
 
@@ -205,8 +206,7 @@ public class ParseUtil
 	 * 
 	 * @return String[] 0=className 1=methodSignature
 	 */
-	public static String[] parseLogSignature(String logSignature) throws Exception
-	{
+	public static String[] parseLogSignature(String logSignature) throws Exception {
 		String result[] = null;
 
 		String[] parts = splitLogSignatureWithRegex(logSignature);

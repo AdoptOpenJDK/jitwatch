@@ -5,10 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.demo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 // Demo class to generate an example hotspot.log
 // run with VM arguments
@@ -25,6 +30,8 @@ import java.util.Random;
 
 public class MakeHotSpotLog
 {
+    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+
 	public MakeHotSpotLog(int iterations)
 	{
 		addVariable(iterations);
@@ -415,7 +422,7 @@ public class MakeHotSpotLog
 
 	private void testToUpperCase(long iterations)
 	{
-		String sentence = "The quick brown fox jumps over the lazy dog\n";
+		String sentence = "The quick brown fox jumps over the lazy dog" + NEW_LINEFEED;
 
 		String[] lcWords = sentence.split(" ");
 
@@ -487,11 +494,11 @@ public class MakeHotSpotLog
 		try
 		{
 			Thread.sleep(500);
-			System.out.println("done");
+			logger.info("done");
 		}
 		catch (InterruptedException ie)
 		{
-			ie.printStackTrace();
+            logger.error("", ie);
 		}
 	}
 
@@ -507,7 +514,7 @@ public class MakeHotSpotLog
 			}
 			catch (NumberFormatException nfe)
 			{
-				System.out.println("usage: MakeHotSpotLog [iterations]");
+                System.out.format("usage: MakeHotSpotLog [iterations]");
 			}
 		}
 

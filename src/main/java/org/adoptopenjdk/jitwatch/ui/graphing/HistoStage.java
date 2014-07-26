@@ -70,7 +70,7 @@ public class HistoStage extends AbstractGraphStage
         });
         
         HBox hbox = new HBox();
-        hbox.setPadding(new Insets(4, 0, 0, GRAPH_GAP_LEFT));
+        hbox.setPadding(new Insets(4, 0, 0, graphGapLeft));
         hbox.getChildren().add(comboBox);
         hbox.setMinHeight(30); // prevent combo clipping when highlighted
 
@@ -124,7 +124,7 @@ public class HistoStage extends AbstractGraphStage
                 long key = entry.getKey();
                 int value = entry.getValue();
 
-                double x = GRAPH_GAP_LEFT + normaliseX(key);
+                double x = graphGapLeft + normaliseX(key);
 
                 gc.setStroke(colourLine);
 
@@ -155,7 +155,7 @@ public class HistoStage extends AbstractGraphStage
         }
         else
         {
-            gc.strokeText("No data for histogram.", fix(GRAPH_GAP_LEFT + 8), fix(GRAPH_GAP_Y + 16));
+            gc.strokeText("No data for histogram.", fix(graphGapLeft + 8), fix(GRAPH_GAP_Y + 16));
         }
     }
 }

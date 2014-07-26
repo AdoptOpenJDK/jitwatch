@@ -20,6 +20,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEW_LINEFEED;
 
 public final class ResourceLoader
 {
@@ -127,7 +128,7 @@ public final class ResourceLoader
 					String line = reader.readLine();
 					while (line != null)
 					{
-						sb.append(line).append("\n");
+						sb.append(line).append(NEW_LINEFEED);
 						line = reader.readLine();
 					}
 
