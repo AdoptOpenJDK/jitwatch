@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileChooserList extends VBox
 {
-    private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
+	private static final Logger logger = LoggerFactory.getLogger(FileChooserList.class);
 
 	private Stage stage;
 
@@ -34,9 +34,9 @@ public class FileChooserList extends VBox
 
 	private File lastFolder = null;
 
-    protected VBox vboxButtons;
+	protected VBox vboxButtons;
 
-    public FileChooserList(Stage stage, String title, List<String> items)
+	public FileChooserList(Stage stage, String title, List<String> items)
 	{
 		this.stage = stage;
 
@@ -44,10 +44,7 @@ public class FileChooserList extends VBox
 
 		fileList = new ListView<Label>();
 
-		for (String item : items)
-		{
-			fileList.getItems().add(new Label(item));
-		}
+		setItems(items);
 
 		Button btnOpenFileDialog = new Button("Add File(s)");
 		btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
@@ -106,6 +103,16 @@ public class FileChooserList extends VBox
 		setSpacing(10);
 	}
 
+	public void setItems(List<String> items)
+	{
+		fileList.getItems().clear();
+
+		for (String item : items)
+		{
+			fileList.getItems().add(new Label(item));
+		}
+	}
+
 	private void chooseFile()
 	{
 		FileChooser fc = new FileChooser();
@@ -136,7 +143,7 @@ public class FileChooserList extends VBox
 				}
 				catch (IOException ioe)
 				{
-                    logger.error("", ioe);
+					logger.error("", ioe);
 				}
 
 				lastFolder = f.getParentFile();
@@ -168,13 +175,15 @@ public class FileChooserList extends VBox
 		{
 			try
 			{
-				fileList.getItems().add(new Label(result.getCanonicalPath()));
+				String path = result.getCanonicalPath();
+
+				addPathToList(path);
 			}
 			catch (IOException ioe)
 			{
-                logger.error("", ioe);
+				logger.error("", ioe);
 			}
-			
+
 			lastFolder = result.getParentFile();
 		}
 	}
@@ -189,5 +198,24 @@ public class FileChooserList extends VBox
 		}
 
 		return result;
+	}
+
+	protected void addPathToList(String path)
+	{
+		boolean found = false;
+
+		for (Label label : fileList.getItems())
+		{
+			if (path.equals(label.getText()))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			fileList.getItems().add(new Label(path));
+		}
 	}
 }

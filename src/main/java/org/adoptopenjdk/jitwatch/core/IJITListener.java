@@ -7,11 +7,9 @@ package org.adoptopenjdk.jitwatch.core;
 
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 
-public interface IJITListener
+public interface IJITListener extends IMainLogListener
 {
 	void handleJITEvent(JITEvent event);
-	void handleLogEntry(String entry);
-	void handleErrorEntry(String entry);
 	void handleReadStart();
 	void handleReadComplete();
 }

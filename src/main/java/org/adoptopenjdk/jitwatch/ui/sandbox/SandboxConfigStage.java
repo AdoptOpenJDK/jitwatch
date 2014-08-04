@@ -55,7 +55,7 @@ public class SandboxConfigStage extends Stage
 		vbox.setSpacing(10);
 
 		final FileChooserList chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath",
-				config.getSandboxClassLocations());
+				config.getClassLocations());
 
 		HBox hboxButtons = new HBox();
 		hboxButtons.setSpacing(20);
@@ -70,8 +70,8 @@ public class SandboxConfigStage extends Stage
 			@Override
 			public void handle(ActionEvent e)
 			{
-				config.setSandboxClassLocations(chooserClasses.getFiles());
-				
+				config.setClassLocations(chooserClasses.getFiles());
+
 				try
 				{
 					config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
@@ -89,7 +89,7 @@ public class SandboxConfigStage extends Stage
 				{
 					logger.error("Bad MaxInlineSize value", nfe);
 				}
-				
+
 				try
 				{
 					config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
@@ -98,7 +98,7 @@ public class SandboxConfigStage extends Stage
 				{
 					logger.error("Bad CompilerThreshold value", nfe);
 				}
-				
+
 				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
 
 				config.saveConfig();
@@ -124,21 +124,21 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(chooserClasses);
 
 		vbox.getChildren().add(buildCheckBoxPrintAssembly(config));
-		
+
 		vbox.getChildren().add(buildHBoxAssemblySyntax(config));
 
 		vbox.getChildren().add(buildHBoxTieredCompilation(config));
-		
+
 		vbox.getChildren().add(buildHBoxCompressedOops(config));
-		
+
 		HBox hboxCompilerSettings = new HBox();
-		//hboxCompilerSettings.setPadding(new Insets(0, 20, 0, 0));
+		// hboxCompilerSettings.setPadding(new Insets(0, 20, 0, 0));
 		hboxCompilerSettings.setSpacing(20);
 
 		buildHBoxFreqInline(hboxCompilerSettings, config);
 		buildHBoxMaxInline(hboxCompilerSettings, config);
 		buildHBoxCompilationThreshold(hboxCompilerSettings, config);
-		
+
 		vbox.getChildren().add(hboxCompilerSettings);
 
 		vbox.getChildren().add(hboxButtons);
@@ -172,7 +172,7 @@ public class SandboxConfigStage extends Stage
 
 		rbATT.setToggleGroup(groupAssemblySyntax);
 		rbIntel.setToggleGroup(groupAssemblySyntax);
-		
+
 		rbATT.setStyle("-fx-padding:0px 8px 0px 0px");
 
 		rbATT.setSelected(!intelMode);
@@ -351,7 +351,7 @@ public class SandboxConfigStage extends Stage
 
 		return hbox;
 	}
-	
+
 	private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtFreqInline = new TextField(Integer.toString(config.getFreqInlineSize()));
@@ -375,7 +375,7 @@ public class SandboxConfigStage extends Stage
 		hbCompilerSettings.getChildren().add(label);
 		hbCompilerSettings.getChildren().add(txtMaxInline);
 	}
-	
+
 	private void buildHBoxCompilationThreshold(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtCompilerThreshold = new TextField(Integer.toString(config.getCompilerThreshold()));
@@ -391,7 +391,7 @@ public class SandboxConfigStage extends Stage
 	private CheckBox buildCheckBoxPrintAssembly(final JITWatchConfig config)
 	{
 		checkBoxPrintAssembly = new CheckBox("Disassemble native code");
-		
+
 		boolean checked = false;
 
 		if (DisassemblyUtil.isDisassemblerAvailable())

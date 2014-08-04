@@ -12,7 +12,6 @@ import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
@@ -39,7 +38,9 @@ public class FileChooserListSrcZip extends FileChooserList
 				{
 					try
 					{
-						fileList.getItems().add(new Label(srcZipFile.getCanonicalPath()));
+						String srcZipPath = srcZipFile.getCanonicalPath();
+						
+						addPathToList(srcZipPath);
 					}
 					catch (IOException ioe)
 					{
