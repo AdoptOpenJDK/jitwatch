@@ -187,7 +187,7 @@ public class Sandbox
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
 
-		classpath.addAll(logParser.getConfig().getSandboxClassLocations());
+		classpath.addAll(logParser.getConfig().getClassLocations());
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
@@ -251,26 +251,50 @@ public class Sandbox
 
 	private void runJITWatch() throws IOException
 	{
-		List<String> sourceLocations = new ArrayList<>();
-		List<String> classLocations = new ArrayList<>();
+		JITWatchConfig config = logParser.getConfig();
 
-		sourceLocations.add(SANDBOX_SOURCE_DIR.toString());
-		classLocations.add(SANDBOX_CLASS_DIR.toString());
+		List<String> sourceLocations = new ArrayList<>(config.getSourceLocations());
+		List<String> classLocations = new ArrayList<>(config.getClassLocations());
+
+		String sandboxSourceDirString = SANDBOX_SOURCE_DIR.toString();
+		String sandboxClassDirString = SANDBOX_CLASS_DIR.toString();
+		
+		boolean configChanged = false;
+
+		if (!sourceLocations.contains(sandboxSourceDirString))
+		{
+			configChanged = true;
+			sourceLocations.add(sandboxSourceDirString);
+		}
+
+		if (!classLocations.contains(sandboxClassDirString))
+		{
+			configChanged = true;
+			classLocations.add(sandboxClassDirString);
+		}
 
 		File jdkSrcZip = JITWatchConfig.getJDKSourceZip();
 
 		if (jdkSrcZip != null)
 		{
-			sourceLocations.add(jdkSrcZip.toPath().toString());
+			String jdkSourceZipString = jdkSrcZip.toPath().toString();
+
+			if (!sourceLocations.contains(jdkSourceZipString))
+			{
+				configChanged = true;
+				sourceLocations.add(jdkSourceZipString);
+			}
 		}
 
-		JITWatchConfig config = logParser.getConfig().clone();
 		config.setSourceLocations(sourceLocations);
 		config.setClassLocations(classLocations);
-
+		
+		if (configChanged)
+		{
+			config.saveConfig();
+		}
+		
 		logParser.reset();
-
-		logParser.setConfig(config);
 
 		logParser.readLogFile(sandboxLogFile);
 

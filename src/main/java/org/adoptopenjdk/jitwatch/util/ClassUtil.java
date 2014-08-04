@@ -12,25 +12,18 @@ import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
 public final class ClassUtil
 {
 	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
-    
-    private ClassUtil()
-    {
-    }
-    
-    public static void initialise(URL[] urls)
-    {
-    	disposableClassLoader = new DisposableURLClassLoader(urls);
-    }
+
+	private ClassUtil()
+	{
+	}
+
+	public static void initialise(URL[] urls)
+	{
+		disposableClassLoader = new DisposableURLClassLoader(urls);
+	}
 
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
-		try
-		{
-			return Class.forName(fqClassName, false, disposableClassLoader);
-		}
-		catch (Exception ex)
-		{
-			throw ex;
-		}
+		return Class.forName(fqClassName, false, disposableClassLoader);
 	}
 }

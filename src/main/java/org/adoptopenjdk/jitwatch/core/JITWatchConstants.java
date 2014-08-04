@@ -110,6 +110,9 @@ public final class JITWatchConstants
 
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
+	
+	public static final String S_PROFILE_DEFAULT = "Default";
+	public static final String S_PROFILE_SANDBOX = "Sandbox";
 
 	public static final String REGEX_GROUP_ANY = "(.*)";
 	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";

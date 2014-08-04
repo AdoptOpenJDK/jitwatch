@@ -58,6 +58,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
+		
+		parser.getConfig().switchToSandbox();
 
 		sandbox = new Sandbox(parser, this);
 
@@ -165,6 +167,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void handle(WindowEvent arg0)
 			{
+				parser.getConfig().switchFromSandbox();
+
 				stageManager.closeAll();
 				closeListener.handleStageClosed(SandboxStage.this);
 			}

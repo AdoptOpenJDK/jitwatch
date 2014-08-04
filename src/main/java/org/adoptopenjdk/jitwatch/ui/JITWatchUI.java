@@ -41,6 +41,7 @@ import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
+import org.adoptopenjdk.jitwatch.core.IMainLogListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -146,7 +147,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		logParser = new HotSpotLogParser(this);
 
-		loadConfigFromFile();
+		JITWatchConfig config = new JITWatchConfig();
+		
+		logParser.setConfig(config);
 	}
 
 	public JITWatchUI(String[] args)
@@ -561,20 +564,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		updateButtons();
 	}
 
-	private void loadConfigFromFile()
-	{
-		JITWatchConfig config = new JITWatchConfig();
-		config.loadFromProperties();
-		logParser.setConfig(config);
-	}
-
 	void openConfigStage()
 	{
 		if (configStage == null)
 		{
-			loadConfigFromFile();
-
-			configStage = new MainConfigStage(JITWatchUI.this, getConfig());
+			configStage = new MainConfigStage(this, this, getConfig());
 			configStage.show();
 
 			stageManager.add(configStage);
@@ -756,8 +750,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private void chooseHotSpotFile()
 	{
-		loadConfigFromFile();
-
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 
@@ -796,7 +788,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			getConfig().saveConfig();
 
 			clearTextArea();
-			log("Selected file: " + hsLogFile.getAbsolutePath());
+			log("Selected log file: " + hsLogFile.getAbsolutePath());
+			
+			log("\nUsing Config: " + getConfig().getProfileName());
+
 			log("\nClick Start button to process the HotSpot log");
 			updateButtons();
 
