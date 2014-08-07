@@ -89,8 +89,8 @@ public class CodeCacheStage extends AbstractGraphStage
 
 			drawAxes();
 
-			double lastCX = GRAPH_GAP_LEFT + normaliseX(minX);
-			double lastCY = GRAPH_GAP_Y + normaliseY(getFreeCodeCacheFromTag(firstTag));
+			double lastCX = graphGapLeft + normaliseX(minX);
+			double lastCY = graphGapTop + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
 			gc.setStroke(Color.BLACK);
 			gc.setFont(new Font("monospace", 10));
@@ -106,8 +106,8 @@ public class CodeCacheStage extends AbstractGraphStage
 				long stamp = getStampFromTag(ccTag);
 				long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
 
-				double x = GRAPH_GAP_LEFT + normaliseX(stamp);
-				double y = GRAPH_GAP_Y + normaliseY(freeCodeCache);
+				double x = graphGapLeft + normaliseX(stamp);
+				double y = graphGapTop + normaliseY(freeCodeCache);
 
 				gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
 

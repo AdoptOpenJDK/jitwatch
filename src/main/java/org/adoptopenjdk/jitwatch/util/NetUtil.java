@@ -9,18 +9,21 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 public final class NetUtil
 {
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private NetUtil() {
-    }
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+	private NetUtil()
+	{
+	}
 
-    private static final Logger logger = LoggerFactory.getLogger(NetUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(NetUtil.class);
 
-    public static String fetchURL(String toFetch)
+	public static String fetchURL(String toFetch)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -36,14 +39,19 @@ public final class NetUtil
 
 			while ((inputLine = in.readLine()) != null)
 			{
-				builder.append(inputLine).append("\n");
+				builder.append(inputLine).append(S_NEWLINE);
 			}
 
-		} catch (MalformedURLException e) {
-            logger.error("", e);
-        } catch (IOException e) {
-            logger.error("", e);
-        } finally
+		}
+		catch (MalformedURLException e)
+		{
+			logger.error("", e);
+		}
+		catch (IOException e)
+		{
+			logger.error("", e);
+		}
+		finally
 		{
 			if (in != null)
 			{
