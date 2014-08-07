@@ -41,7 +41,6 @@ import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
-import org.adoptopenjdk.jitwatch.core.IMainLogListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -991,14 +990,14 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	@Override
 	public void handleErrorEntry(String entry)
 	{
-		errorLog.append(entry).append("\n");
+		errorLog.append(entry).append(S_NEWLINE);
 		errorCount++;
 	}
 
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-		logBuffer.append("\n");
+		logBuffer.append(S_NEWLINE);
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)

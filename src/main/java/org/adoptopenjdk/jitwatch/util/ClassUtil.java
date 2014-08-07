@@ -5,22 +5,24 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import java.net.URL;
-
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
+
+import java.net.URL;
+import java.util.Arrays;
 
 public final class ClassUtil
 {
 	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
-
-	private ClassUtil()
-	{
-	}
-
-	public static void initialise(URL[] urls)
-	{
-		disposableClassLoader = new DisposableURLClassLoader(urls);
-	}
+    
+    private ClassUtil()
+    {
+    }
+    
+    public static void initialise(URL[] inUrls)
+    {
+        URL[] urls = Arrays.copyOf(inUrls, inUrls.length);
+    	disposableClassLoader = new DisposableURLClassLoader(urls);
+    }
 
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{

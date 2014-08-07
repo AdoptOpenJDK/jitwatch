@@ -8,6 +8,8 @@ package org.adoptopenjdk.jitwatch.ui.suggestion;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextArea;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 class SuggestionTableCell extends TableCell<SuggestTableRow, String>
 {
 	private TextArea textArea;
@@ -26,7 +28,7 @@ class SuggestionTableCell extends TableCell<SuggestTableRow, String>
 	{
 		if (suggestion != null)
 		{
-			int rows = suggestion.split("\n").length;
+			int rows = suggestion.split(S_NEWLINE).length;
 
 			textArea.setText(suggestion);
 			textArea.setPrefHeight(70 + rows * 10);

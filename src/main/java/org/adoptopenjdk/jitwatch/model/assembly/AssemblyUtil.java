@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
-public class AssemblyUtil
+public final class AssemblyUtil
 {
 	// http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
@@ -190,20 +190,20 @@ public class AssemblyUtil
 		return instr;
 	}
 
-	private static long getValueFromAddress(String address)
+	private static long getValueFromAddress(final String address)
 	{
 		long addressValue = 0;
 
 		if (address != null)
 		{
-			address = address.trim();
+			String trimmedAddress = address.trim();
 
-			if (address.startsWith(S_ASSEMBLY_ADDRESS))
+			if (trimmedAddress.startsWith(S_ASSEMBLY_ADDRESS))
 			{
-				address = address.substring(S_ASSEMBLY_ADDRESS.length());
+				trimmedAddress = trimmedAddress.substring(S_ASSEMBLY_ADDRESS.length());
 			}
 
-			addressValue = Long.parseLong(address, 16);
+			addressValue = Long.parseLong(trimmedAddress, 16);
 		}
 		return addressValue;
 	}

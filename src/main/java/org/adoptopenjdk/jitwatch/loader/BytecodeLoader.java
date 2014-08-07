@@ -46,6 +46,13 @@ public final class BytecodeLoader
 		sectionLabelMap.put(S_BYTECODE_EXCEPTIONS, BytecodeSection.EXCEPTIONS);
 		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
 	}
+	/*
+	 * Hide Utility Class Constructor Utility classes should not have a public
+	 * or default constructor.
+	 */
+
+    private BytecodeLoader()
+    {}
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
@@ -54,49 +61,16 @@ public final class BytecodeLoader
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
 		}
 
-		ClassBC result = null;
+		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);
 
-		String[] args;
+        String byteCodeString  = createJavapTaskFromArguments(fqClassName, args);
 
-		if (classLocations.size() == 0)
-		{
-			args = new String[] { "-c", "-p", "-v", fqClassName };
-		}
-		else
-		{
-			StringBuilder classPathBuilder = new StringBuilder();
+        return parsedByteCodeFrom(byteCodeString);
+	}
 
-			for (String cp : classLocations)
-			{
-				classPathBuilder.append(cp).append(File.pathSeparatorChar);
-			}
-
-			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
-
-			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
-		}
-
-		String byteCodeString = null;
-
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
-		{
-			JavapTask task = new JavapTask();
-			task.setLog(baos);
-			task.handleOptions(args);
-			task.call();
-
-			byteCodeString = baos.toString();
-		}
-		catch (BadArgs ba)
-		{
-			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
-		}
-		catch (IOException ioe)
-		{
-			logger.error("", ioe);
-		}
-
-		if (byteCodeString != null)
+    private static ClassBC parsedByteCodeFrom(String byteCodeString) {
+        ClassBC result = null;
+        if (byteCodeString != null)
 		{
 			try
 			{
@@ -107,11 +81,54 @@ public final class BytecodeLoader
 				logger.error("Exception parsing bytecode", ex);
 			}
 		}
+        return result;
+    }
 
-		return result;
-	}
+    private static String createJavapTaskFromArguments(String fqClassName, String[] args) {
+        String byteCodeString = null;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
+        {
+            JavapTask task = new JavapTask();
+            task.setLog(baos);
+            task.handleOptions(args);
+            task.call();
 
-	// TODO refactor this class - better stateful than all statics
+            byteCodeString = baos.toString();
+        }
+        catch (BadArgs ba)
+        {
+            logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
+        }
+        catch (IOException ioe)
+        {
+            logger.error("", ioe);
+        }
+        return byteCodeString;
+    }
+
+    private static String[] buildClassPathFromClassLocations(Collection<String> classLocations, String fqClassName) {
+        String[] args;
+        if (classLocations.size() == 0)
+        {
+            args = new String[] { "-c", "-p", "-v", fqClassName };
+        }
+        else
+        {
+            StringBuilder classPathBuilder = new StringBuilder();
+
+            for (String cp : classLocations)
+            {
+                classPathBuilder.append(cp).append(File.pathSeparatorChar);
+            }
+
+            classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
+
+            args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
+        }
+        return args;
+    }
+
+    // TODO refactor this class - better stateful than all statics
 	public static ClassBC parse(String bytecode)
 	{
 		ClassBC classBytecode = new ClassBC();
@@ -188,47 +205,14 @@ public final class BytecodeLoader
 				}
 				break;
 			case CODE:
-				int firstColonIndex = line.indexOf(C_COLON);
-
-				if (firstColonIndex != -1)
-				{
-					String beforeColon = line.substring(0, firstColonIndex);
-
-					try
-					{
-						// line number ?
-						Integer.parseInt(beforeColon);
-
-						builder.append(line).append(C_NEWLINE);
-					}
-					catch (NumberFormatException nfe)
-					{
-						sectionFinished(BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
-
-						section = changeSection(BytecodeSection.NONE);
-					}
-				}
+                section = performCODE(classBytecode, builder, section, memberSignature, memberBytecode, line);
 				break;
 			case CONSTANT_POOL:
-				if (!line.startsWith(S_HASH))
-				{
-					sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
-
-					section = changeSection(BytecodeSection.NONE);
-				}
-				break;
+                section = performConstantPool(classBytecode, builder, section, memberSignature, memberBytecode, line);
+                break;
 			case LINETABLE:
-				if (line.startsWith("line "))
-				{
-					builder.append(line).append(C_NEWLINE);
-				}
-				else
-				{
-					sectionFinished(BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
-
-					section = changeSection(BytecodeSection.NONE);
-				}
-				break;
+                section = performLINETABLE(classBytecode, builder, section, memberSignature, memberBytecode, line);
+                break;
 			case RUNTIMEVISIBLEANNOTATIONS:
 				if (!isRunTimeVisibleAnnotation(line))
 				{
@@ -260,7 +244,55 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
-	private static boolean isRunTimeVisibleAnnotation(final String line)
+    private static BytecodeSection performLINETABLE(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        if (line.startsWith("line "))
+        {
+            builder.append(line).append(C_NEWLINE);
+        }
+        else
+        {
+            sectionFinished(BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
+
+            section = changeSection(BytecodeSection.NONE);
+        }
+        return section;
+    }
+
+    private static BytecodeSection performConstantPool(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        if (!line.startsWith(S_HASH))
+        {
+            sectionFinished(BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
+
+            section = changeSection(BytecodeSection.NONE);
+        }
+        return section;
+    }
+
+    private static BytecodeSection performCODE(ClassBC classBytecode, StringBuilder builder, BytecodeSection section, String memberSignature, MemberBytecode memberBytecode, String line) {
+        int firstColonIndex = line.indexOf(C_COLON);
+
+        if (firstColonIndex != -1)
+        {
+            String beforeColon = line.substring(0, firstColonIndex);
+
+            try
+            {
+                // line number ?
+                Integer.parseInt(beforeColon);
+
+                builder.append(line).append(C_NEWLINE);
+            }
+            catch (NumberFormatException nfe)
+            {
+                sectionFinished(BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
+
+                section = changeSection(BytecodeSection.NONE);
+            }
+        }
+        return section;
+    }
+
+    private static boolean isRunTimeVisibleAnnotation(final String line)
 	{
 		return line.contains(": #");
 	}
@@ -413,6 +445,9 @@ public final class BytecodeLoader
 
 		return result;
 	}
+
+    static final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
+            .compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 	public static List<BytecodeInstruction> parseInstructions(final String bytecode)
 	{
