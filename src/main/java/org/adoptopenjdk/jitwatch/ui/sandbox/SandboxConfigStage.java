@@ -53,7 +53,7 @@ public class SandboxConfigStage extends Stage
 		VBox vbox = new VBox();
 
 		vbox.setPadding(new Insets(15));
-		vbox.setSpacing(10);
+		vbox.setSpacing(15);
 
 		final FileChooserList chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath",
 				config.getClassLocations());
@@ -74,6 +74,8 @@ public class SandboxConfigStage extends Stage
 		hboxButtons.getChildren().add(btnSave);
 
 		vbox.getChildren().add(chooserClasses);
+		
+		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.4));
 
 		vbox.getChildren().add(buildCheckBoxPrintAssembly(config));
 		
@@ -97,7 +99,7 @@ public class SandboxConfigStage extends Stage
 
 		setTitle("Sandbox Configuration");
 
-		Scene scene = new Scene(vbox, 740, 480);
+		Scene scene = new Scene(vbox, 720, 460);
 
 		setScene(scene);
 

@@ -328,8 +328,6 @@ public class JITWatchConfig
 	{
 		String searchName = getProfilePropertyName(propertyName);
 
-		logger.debug("getting property: {}", searchName);
-
 		return props.getProperty(searchName, defaultValue);
 	}
 
@@ -424,11 +422,6 @@ public class JITWatchConfig
 	public void savePropertiesToFile()
 	{
 		logger.debug("savePropertiesToFile({})", propertiesFile);
-
-		for (Object key : loadedProps.keySet())
-		{
-			logger.debug("Saving key: {}", key.toString());
-		}
 
 		try (FileWriter fw = new FileWriter(propertiesFile))
 		{

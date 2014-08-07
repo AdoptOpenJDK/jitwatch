@@ -48,17 +48,17 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	private Sandbox sandbox;
 
 	private SplitPane splitEditorPanes;
-	
+
 	private Button btnSandboxConfig;
-	
+
 	private SandboxConfigStage sandboxConfigStage;
-	
+
 	private StageManager stageManager = new StageManager();
 
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
-		
+
 		parser.getConfig().switchToSandbox();
 
 		sandbox = new Sandbox(parser, this);
@@ -105,7 +105,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				addEditor(null);
 			}
 		});
-		
+
 		btnSandboxConfig = new Button("Configure Sandbox");
 		btnSandboxConfig.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -113,9 +113,9 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			public void handle(ActionEvent e)
 			{
 				sandboxConfigStage = new SandboxConfigStage(SandboxStage.this, parser.getConfig());
-				
+
 				stageManager.add(sandboxConfigStage);
-				
+
 				sandboxConfigStage.show();
 
 				btnSandboxConfig.setDisable(true);
@@ -181,7 +181,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	{
 		editorPanes.clear();
 		splitEditorPanes.getItems().clear();
-		
+
 		addEditor("SandboxTest.java");
 		addEditor("SandboxTestLoad.java");
 	}
@@ -319,10 +319,19 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	public void handleStageClosed(Stage stage)
 	{
 		stageManager.remove(stage);
-		
+
 		if (stage instanceof SandboxConfigStage)
 		{
 			btnSandboxConfig.setDisable(false);
 		}
+	}
+
+	@Override
+	public void close()
+	{
+		// ensure SandboxConfig closes when this stage is closed by JITWatchUI
+		stageManager.closeAll();
+		
+		super.close();
 	}
 }
