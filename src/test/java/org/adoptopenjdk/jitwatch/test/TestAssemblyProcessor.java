@@ -444,8 +444,5 @@ public class TestAssemblyProcessor
 		operands.add("(%rsp)");
 		
 		assertEquals(operands, instr9.getOperands());
-
-
-		
 	}
 }

@@ -95,8 +95,7 @@ public class Sandbox
 		this.sandboxStage = logger;
 	}
 
-	public void runSandbox(List<String> sourceFiles) throws Exception
-	{
+	public void runSandbox(List<String> sourceFiles) throws IOException {
 		firstClassName = null;
 		classContainingMain = null;
 
@@ -181,8 +180,7 @@ public class Sandbox
 		return FileUtil.writeSource(SANDBOX_SOURCE_DIR.toFile(), fqNameSource, source);
 	}
 
-	private boolean executeTestLoad(ClassExecutor classExecutor, boolean intelMode) throws Exception
-	{
+	private boolean executeTestLoad(ClassExecutor classExecutor, boolean intelMode) throws IOException {
 		List<String> classpath = new ArrayList<>();
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
