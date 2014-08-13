@@ -359,4 +359,37 @@ public class TestTagProcessor
                 actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
+
+    /*
+        Scenario: Parsing a line containing a tag of type 'Task' and a tag type
+            Given a line containing a tag of type 'Task' is available
+            And a tag type of 'tag' is also available
+            When the tag processor parses such a block
+            Then a the task object is added to the dictionary of types
+            And null is returned
+    */
+    @Test
+    public void givenBlockContainingTypeTask_WhenTheTagProcessorParsesIt_ThenTaskTagIsAddedToDictionaryAndNullIsReturned() {
+        // Given
+        String[] withTypeTask = new String[] {
+                "<task compile_id='3557' method='org/eclipse/jdt/internal/compiler/util/SimpleLookupTable get (Ljava/lang/Object;)Ljava/lang/Object;' bytes='59' count='4064' backedge_count='5293' iicount='4722' stamp='597.034'>",
+                "<phase name='parse' nodes='3' live='3' stamp='597.034'>",
+                "<klass id='645' name='java/lang/Object' flags='1'/>"
+        };
+
+        Tag actualParseResult = null;
+
+        // When
+        TagProcessor tagProcessor = new TagProcessor();
+
+        for (String token: withTypeTask) {
+            actualParseResult = tagProcessor.processLine(token);
+        }
+
+        // Then
+        assertThat("The line should have been parsed correctly, producing a tag..",
+                actualParseResult,
+                is(equalTo(null)));
+
+    }
 }

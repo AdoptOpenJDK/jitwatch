@@ -5,6 +5,9 @@
  */
 package org.adoptopenjdk.jitwatch.demo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +28,8 @@ import java.util.Random;
 
 public class MakeHotSpotLog
 {
+    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+
 	public MakeHotSpotLog(int iterations)
 	{
 		addVariable(iterations);
@@ -491,7 +496,7 @@ public class MakeHotSpotLog
 		}
 		catch (InterruptedException ie)
 		{
-			ie.printStackTrace();
+            logger.error("", ie);
 		}
 	}
 
