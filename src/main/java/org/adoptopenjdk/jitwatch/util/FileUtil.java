@@ -12,11 +12,14 @@ import java.nio.file.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileUtil
+public final class FileUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-	
-	public static void copyFilesToDir(File sourceDir, File targetDir)
+
+    private FileUtil()
+    {}
+
+    public static void copyFilesToDir(File sourceDir, File targetDir)
 	{
 		File exampleDir = new File("src/main/resources/examples");
 

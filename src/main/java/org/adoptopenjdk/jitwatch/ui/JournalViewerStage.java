@@ -42,7 +42,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 		for (Tag tag : journal.getEntryList())
 		{
-			String[] tagLines = tag.toString().split("\n");
+			String[] tagLines = tag.toString().split(S_NEWLINE);
 
 			for (int i = 0; i < tagLines.length; i++)
 			{

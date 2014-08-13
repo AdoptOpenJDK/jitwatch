@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
-public class ParseUtil
+public final class ParseUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
