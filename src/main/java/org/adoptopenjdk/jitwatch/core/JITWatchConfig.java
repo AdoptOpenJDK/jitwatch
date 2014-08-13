@@ -158,9 +158,7 @@ public class JITWatchConfig
 			for (String key : keys)
 			{
 				String deletePropertyKey = key + S_DOT + name;
-				
-				logger.debug("removing property: {}", deletePropertyKey);
-				
+								
 				loadedProps.remove(deletePropertyKey);
 			}
 
@@ -189,15 +187,11 @@ public class JITWatchConfig
 		{
 			String keyString = key.toString();
 
-			logger.debug("getProfileNames: {}", keyString);
-
 			if (keyString.startsWith(KEY_SOURCE_LOCATIONS))
 			{
 				if (keyString.length() > KEY_SOURCE_LOCATIONS.length())
 				{
 					String profileName = keyString.substring(1 + KEY_SOURCE_LOCATIONS.length());
-
-					logger.debug("found: {}", profileName);
 
 					result.add(profileName);
 				}

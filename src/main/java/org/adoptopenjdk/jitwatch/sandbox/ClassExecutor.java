@@ -65,10 +65,6 @@ public class ClassExecutor
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
 			
-			// use this instead of StreamCollectors if missing start of output
-			//pb.redirectErrorStream(true);
-			//pb.redirectOutput(Redirect.INHERIT);
-			
 			Process proc = pb.start();
 
 			//TODO: how to not miss start of output?

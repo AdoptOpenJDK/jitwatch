@@ -29,6 +29,9 @@ public final class BytecodeLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
 
+    private static final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
+            .compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+
 	enum BytecodeSection
 	{
 		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE
@@ -446,8 +449,7 @@ public final class BytecodeLoader
 		return result;
 	}
 
-    static final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
-            .compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+
 
 	public static List<BytecodeInstruction> parseInstructions(final String bytecode)
 	{
@@ -455,8 +457,6 @@ public final class BytecodeLoader
 
 		String[] lines = bytecode.split(S_NEWLINE);
 
-		final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
-				.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 		boolean inSwitch = false;
 		BCParamSwitch table = new BCParamSwitch();
