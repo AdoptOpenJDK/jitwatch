@@ -61,9 +61,9 @@ public class TriView extends Stage implements ILineListener
 
 	private SplitPane splitViewer;
 
-	private VBox colSource;
-	private VBox colBytecode;
-	private VBox colAssembly;
+	private TriViewPane paneSource;
+	private TriViewPane paneBytecode;
+	private TriViewPane paneAssembly;
 
 	private CheckBox checkSource;
 	private CheckBox checkBytecode;
@@ -75,10 +75,12 @@ public class TriView extends Stage implements ILineListener
 	private Label lblMemberInfo;
 
 	private boolean ignoreComboChanged = false;
-	
+
 	private boolean classBytecodeMismatch = false;
 
 	private static final Logger logger = LoggerFactory.getLogger(TriView.class);
+
+	private LineType focussedViewer = LineType.SOURCE;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -187,45 +189,15 @@ public class TriView extends Stage implements ILineListener
 		splitViewer = new SplitPane();
 		splitViewer.setOrientation(Orientation.HORIZONTAL);
 
-		colSource = new VBox();
-		colBytecode = new VBox();
-		colAssembly = new VBox();
-
-		Label lblSource = new Label("Source");
-		Label lblBytecode = new Label("Bytecode (double click for JVMS)");
-		Label lblAssembly = new Label("Assembly");
-
-		lblSource.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-		lblBytecode.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-		lblAssembly.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
-
-		lblSource.prefWidthProperty().bind(colSource.widthProperty());
-		lblBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
-		lblAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
-
 		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
 		viewerBytecode = new ViewerBytecode(parent, this, LineType.BYTECODE);
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
-
-		colSource.getChildren().add(lblSource);
-		colSource.getChildren().add(viewerSource);
-
-		colBytecode.getChildren().add(lblBytecode);
-		colBytecode.getChildren().add(viewerBytecode);
-
-		colAssembly.getChildren().add(lblAssembly);
-		colAssembly.getChildren().add(viewerAssembly);
+		
+		paneSource = new TriViewPane("Source", viewerSource);
+		paneBytecode = new TriViewPane("Bytecode (double click for JVMS)", viewerBytecode);
+		paneAssembly = new TriViewPane("Assembly", viewerAssembly);
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
-
-		viewerSource.prefWidthProperty().bind(colSource.widthProperty());
-		viewerSource.prefHeightProperty().bind(colSource.heightProperty());
-
-		viewerBytecode.prefWidthProperty().bind(colBytecode.widthProperty());
-		viewerBytecode.prefHeightProperty().bind(colBytecode.heightProperty());
-
-		viewerAssembly.prefWidthProperty().bind(colAssembly.widthProperty());
-		viewerAssembly.prefHeightProperty().bind(colAssembly.heightProperty());
 
 		lblMemberInfo = new Label();
 
@@ -248,50 +220,61 @@ public class TriView extends Stage implements ILineListener
 		});
 
 		checkColumns();
+		
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				focusSource();		
+			}
+		});
 	}
 
-    private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory() {
-        return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
-        {
-            @Override
-            public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
-            {
-                return new ListCell<IMetaMember>()
-                {
-                    @Override
-                    protected void updateItem(IMetaMember item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
+	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()
+	{
+		return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
+		{
+			@Override
+			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			{
+				return new ListCell<IMetaMember>()
+				{
+					@Override
+					protected void updateItem(IMetaMember item, boolean empty)
+					{
+						super.updateItem(item, empty);
 
-                        if (item == null || empty)
-                        {
-                            setText(S_EMPTY);
-                            setGraphic(null);
-                        }
-                        else
-                        {
-                            performUpdateOfItem(this, item);
-                        }
-                    }
+						if (item == null || empty)
+						{
+							setText(S_EMPTY);
+							setGraphic(null);
+						}
+						else
+						{
+							performUpdateOfItem(this, item);
+						}
+					}
 
-                    private void performUpdateOfItem(ListCell<IMetaMember> listCell, IMetaMember item) {
-                        listCell.setText(item.toStringUnqualifiedMethodName(false));
+					private void performUpdateOfItem(ListCell<IMetaMember> listCell, IMetaMember item)
+					{
+						listCell.setText(item.toStringUnqualifiedMethodName(false));
 
-                        if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
-                        {
-                            listCell.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
-                        }
-                        else
-                        {
-                            listCell.setGraphic(null);
-                        }
-                    }
-                };
-            }
-        };
-    }
+						if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
+						{
+							listCell.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+						}
+						else
+						{
+							listCell.setGraphic(null);
+						}
+					}
+				};
+			}
+		};
+	}
 
-    private void checkColumns()
+	private void checkColumns()
 	{
 		splitViewer.getItems().clear();
 
@@ -299,17 +282,17 @@ public class TriView extends Stage implements ILineListener
 
 		if (checkSource.isSelected())
 		{
-			splitViewer.getItems().add(colSource);
+			splitViewer.getItems().add(paneSource);
 			colCount++;
 		}
 		if (checkBytecode.isSelected())
 		{
-			splitViewer.getItems().add(colBytecode);
+			splitViewer.getItems().add(paneBytecode);
 			colCount++;
 		}
 		if (checkAssembly.isSelected())
 		{
-			splitViewer.getItems().add(colAssembly);
+			splitViewer.getItems().add(paneAssembly);
 			colCount++;
 		}
 
@@ -366,11 +349,11 @@ public class TriView extends Stage implements ILineListener
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-        sameClass = evaluateSameClass(force, sameClass, previousClass, memberClass);
+		sameClass = evaluateSameClass(force, sameClass, previousClass, memberClass);
 
-        processIfNotSameClass(sameClass, memberClass);
+		processIfNotSameClass(sameClass, memberClass);
 
-        ignoreComboChanged = true;
+		ignoreComboChanged = true;
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
 
@@ -391,19 +374,20 @@ public class TriView extends Stage implements ILineListener
 
 		List<String> classLocations = config.getClassLocations();
 
-        ClassBC classBytecode = processStatusBarIfClassBytecodeIsValid(statusBarBuilder, classLocations);
+		ClassBC classBytecode = processStatusBarIfClassBytecodeIsValid(statusBarBuilder, classLocations);
 
 		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
 
-        processIfCurrentMemberIsCompiled(statusBarBuilder);
+		processIfCurrentMemberIsCompiled(statusBarBuilder);
 
-        applyActionsIfOffsetMismatchDetected(statusBarBuilder);
+		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
-        lblMemberInfo.setText(statusBarBuilder.toString());
+		lblMemberInfo.setText(statusBarBuilder.toString());
 	}
 
-    private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder) {
-        if (viewerBytecode.isOffsetMismatchDetected())
+	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)
+	{
+		if (viewerBytecode.isOffsetMismatchDetected())
 		{
 			statusBarBuilder.append(C_SPACE).append("WARNING Class bytecode offsets do not match HotSpot log");
 
@@ -411,82 +395,86 @@ public class TriView extends Stage implements ILineListener
 			{
 				classBytecodeMismatch = true;
 
-				Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Dialogs.showOKDialog(
-                                TriView.this,
-                                "Wrong classes mounted for log file?",
-                                "Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log." + S_NEWLINE +
-                                        "Are the mounted classes the same ones used at runtime when the log was created?");
-                    }
-                });
+				Platform.runLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						Dialogs.showOKDialog(TriView.this, "Wrong classes mounted for log file?",
+								"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log."
+										+ S_NEWLINE
+										+ "Are the mounted classes the same ones used at runtime when the log was created?");
+					}
+				});
 			}
 		}
-    }
+	}
 
-    private void processIfCurrentMemberIsCompiled(StringBuilder statusBarBuilder) {
-        AssemblyMethod asmMethod = null;
-        if (currentMember.isCompiled())
-        {
-            statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
+	private void processIfCurrentMemberIsCompiled(StringBuilder statusBarBuilder)
+	{
+		AssemblyMethod asmMethod = null;
+		if (currentMember.isCompiled())
+		{
+			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
 
-            asmMethod = currentMember.getAssembly();
+			asmMethod = currentMember.getAssembly();
 
-            String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
+			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
 
-            if (attrCompiler != null)
-            {
-                statusBarBuilder.append(" compiled with ").append(attrCompiler);
-            }
-            else
-            {
-                String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
+			if (attrCompiler != null)
+			{
+				statusBarBuilder.append(" compiled with ").append(attrCompiler);
+			}
+			else
+			{
+				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
 
-                if (attrCompileKind != null && C2N.equals(attrCompileKind))
-                {
-                    statusBarBuilder.append(" compiled native wrapper");
-                }
-            }
+				if (attrCompileKind != null && C2N.equals(attrCompileKind))
+				{
+					statusBarBuilder.append(" compiled native wrapper");
+				}
+			}
 
-            if (asmMethod == null)
-            {
-                String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
-                viewerAssembly.setContent(msg, false);
-            }
-            else
-            {
-                viewerAssembly.setAssemblyMethod(asmMethod);
-            }
-        }
-        else
-        {
-            String msg = "Not JIT-compiled";
-            viewerAssembly.setContent(msg, false);
+			if (asmMethod == null)
+			{
+				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				viewerAssembly.setContent(msg, false);
+			}
+			else
+			{
+				viewerAssembly.setAssemblyMethod(asmMethod);
+			}
+		}
+		else
+		{
+			String msg = "Not JIT-compiled";
+			viewerAssembly.setContent(msg, false);
 
-            lblMemberInfo.setText(S_EMPTY);
-        }
-    }
+			lblMemberInfo.setText(S_EMPTY);
+		}
+	}
 
-    private ClassBC processStatusBarIfClassBytecodeIsValid(StringBuilder statusBarBuilder, List<String> classLocations) {
-        ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
+	private ClassBC processStatusBarIfClassBytecodeIsValid(StringBuilder statusBarBuilder, List<String> classLocations)
+	{
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
 
-        if (classBytecode != null)
-        {
-            int majorVersion = classBytecode.getMajorVersion();
-            int minorVersion = classBytecode.getMinorVersion();
-            String javaVersion = classBytecode.getJavaVersion();
+		if (classBytecode != null)
+		{
+			int majorVersion = classBytecode.getMajorVersion();
+			int minorVersion = classBytecode.getMinorVersion();
+			String javaVersion = classBytecode.getJavaVersion();
 
-            statusBarBuilder.append("Mounted class version: ");
-            statusBarBuilder.append(majorVersion).append(C_DOT).append(minorVersion);
-            statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
-            statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
-        }
-        return classBytecode;
-    }
+			statusBarBuilder.append("Mounted class version: ");
+			statusBarBuilder.append(majorVersion).append(C_DOT).append(minorVersion);
+			statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
+			statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
+		}
+		return classBytecode;
+	}
 
-    private void processIfNotSameClass(boolean sameClass, MetaClass memberClass) {
-        if (!sameClass)
+	private void processIfNotSameClass(boolean sameClass, MetaClass memberClass)
+	{
+		if (!sameClass)
 		{
 			classBytecodeMismatch = false;
 
@@ -497,24 +485,24 @@ public class TriView extends Stage implements ILineListener
 			String fqName = memberClass.getFullyQualifiedName();
 			classSearch.setText(fqName);
 		}
-    }
+	}
 
-    private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass,
-                                      MetaClass memberClass) {
-        boolean sameClass = inSameClass;
-        if (!force)
-        {
-            if ((previousClass != null) && previousClass.equals(memberClass))
-            {
-                sameClass = true;
-            }
-        }
-        return sameClass;
-    }
+	private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass, MetaClass memberClass)
+	{
+		boolean sameClass = inSameClass;
+		if (!force)
+		{
+			if ((previousClass != null) && previousClass.equals(memberClass))
+			{
+				sameClass = true;
+			}
+		}
+		return sameClass;
+	}
 
-    @Override
+	@Override
 	public void lineHighlighted(int index, LineType lineType)
-	{		
+	{
 		switch (lineType)
 		{
 		case SOURCE:
@@ -537,16 +525,16 @@ public class TriView extends Stage implements ILineListener
 
 		int bytecodeHighlight = -1;
 		int assemblyHighlight = -1;
-		
+
 		if (classBytecode != null)
 		{
 			LineTable lineTable = classBytecode.getLineTable();
-			
+
 			if (lineTable.size() == 0)
 			{
 				logger.warn("LineNumberTable not found in class file. TriView highlight linking will not be available.");
 			}
-			
+
 			LineTableEntry entry = lineTable.get(sourceLine);
 
 			if (entry != null)
@@ -574,7 +562,7 @@ public class TriView extends Stage implements ILineListener
 		}
 
 		assemblyHighlight = viewerAssembly.getIndexForSourceLine(currentMember.getMetaClass().getFullyQualifiedName(), sourceLine);
-		
+
 		viewerBytecode.highlightLine(bytecodeHighlight);
 		viewerAssembly.highlightLine(assemblyHighlight);
 	}
@@ -588,29 +576,32 @@ public class TriView extends Stage implements ILineListener
 
 		BytecodeLabel bcLabel = (BytecodeLabel) viewerBytecode.getLabelAtIndex(index);
 
-		BytecodeInstruction instruction = bcLabel.getInstruction();
-
-		int bytecodeOffset = instruction.getOffset();
-
-		int sourceHighlight = -1;
-		int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(),
-				bytecodeOffset);
-		
-		if (classBytecode != null)
+		if (bcLabel != null)
 		{
-			LineTable lineTable = classBytecode.getLineTable();
+			BytecodeInstruction instruction = bcLabel.getInstruction();
 
-			sourceHighlight = lineTable.findSourceLine(currentMember, bytecodeOffset);
+			int bytecodeOffset = instruction.getOffset();
 
-			if (sourceHighlight != -1)
+			int sourceHighlight = -1;
+			int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(currentMember.getMetaClass().getFullyQualifiedName(),
+					bytecodeOffset);
+
+			if (classBytecode != null)
 			{
-				// starts at 1
-				sourceHighlight--;
-			}
-		}
+				LineTable lineTable = classBytecode.getLineTable();
 
-		viewerSource.highlightLine(sourceHighlight);
-		viewerAssembly.highlightLine(assemblyHighlight);
+				sourceHighlight = lineTable.findSourceLine(currentMember, bytecodeOffset);
+
+				if (sourceHighlight != -1)
+				{
+					// starts at 1
+					sourceHighlight--;
+				}
+			}
+
+			viewerSource.highlightLine(sourceHighlight);
+			viewerAssembly.highlightLine(assemblyHighlight);
+		}
 	}
 
 	private void highlightFromAssembly(int index)
@@ -661,4 +652,102 @@ public class TriView extends Stage implements ILineListener
 		viewerBytecode.highlightLine(bytecodeHighlight);
 	}
 
+	public void handleFocusNext()
+	{
+		switch (focussedViewer)
+		{
+		case SOURCE:
+			if (checkBytecode.isSelected())
+			{
+				focusBytecode();
+			}
+			else if (checkAssembly.isSelected())
+			{
+				focusAssembly();
+			}
+			break;
+		case BYTECODE:
+			if (checkAssembly.isSelected())
+			{
+				focusAssembly();
+			}
+			else if (checkSource.isSelected())
+			{
+				focusSource();
+			}
+			break;
+		case ASSEMBLY:
+			if (checkSource.isSelected())
+			{
+				focusSource();
+			}
+			else if (checkBytecode.isSelected())
+			{
+				focusBytecode();
+			}
+			break;
+		}
+	}
+
+	public void handleFocusPrev()
+	{
+		switch (focussedViewer)
+		{
+		case SOURCE:
+			focusAssembly();
+			break;
+		case BYTECODE:
+			focusSource();
+			break;
+		case ASSEMBLY:
+			focusBytecode();
+			break;
+		}
+	}
+	
+	public void handleFocusSelf(LineType lineType)
+	{
+		switch (lineType)
+		{
+		case SOURCE:
+			focusSource();
+			break;
+		case BYTECODE:
+			focusBytecode();
+			break;
+		case ASSEMBLY:
+			focusAssembly();
+			break;
+		}
+	}
+
+	private void focusSource()
+	{
+		paneSource.focus();
+		paneBytecode.unFocus();
+		paneAssembly.unFocus();
+
+		focussedViewer = LineType.SOURCE;
+		viewerSource.requestFocus();
+	}
+
+	private void focusBytecode()
+	{
+		paneSource.unFocus();
+		paneBytecode.focus();
+		paneAssembly.unFocus();
+
+		focussedViewer = LineType.BYTECODE;
+		viewerBytecode.requestFocus();
+	}
+
+	private void focusAssembly()
+	{
+		paneSource.unFocus();
+		paneBytecode.unFocus();
+		paneAssembly.focus();;
+
+		focussedViewer = LineType.ASSEMBLY;
+		viewerAssembly.requestFocus();
+	}
 }

@@ -38,6 +38,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
@@ -54,6 +56,8 @@ public class Viewer extends VBox
 	private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
+
+	private boolean keyboardMode = false;
 
 	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
@@ -107,6 +111,75 @@ public class Viewer extends VBox
 		scrollPane.setFitToHeight(true);
 
 		scrollPane.prefHeightProperty().bind(heightProperty());
+
+		EventHandler<KeyEvent> keyHandler = new EventHandler<KeyEvent>()
+		{
+			@Override
+			public void handle(KeyEvent event)
+			{
+				KeyCode code = event.getCode();
+
+				keyboardMode = true;
+				clearAllHighlighting();
+
+				System.out.println("KC: " + code);
+
+				switch (code)
+				{
+				case UP:
+					handleKeyUp();
+					break;
+				case DOWN:
+					handleKeyDown();
+					break;
+				case LEFT:
+					handleKeyLeft();
+					break;
+				case RIGHT:
+					handleKeyRight();
+					break;
+				case PAGE_UP:
+					handleKeyPageUp();
+					break;
+				case PAGE_DOWN:
+					handleKeyPageDown();
+					break;
+				default:
+					break;
+				}
+			}
+		};
+
+		focusedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				System.out.println("Viewer gained focus: " + lineType);
+				scrollPane.requestFocus();
+			}
+		});
+
+		scrollPane.focusedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				System.out.println("scrollpane gained focus: " + lineType);
+			}
+		});
+
+		scrollPane.setOnMouseEntered(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent arg0)
+			{
+				System.out.println("sp on mouse entered");
+				lineListener.handleFocusSelf(lineType);
+			}
+		});
+
+		scrollPane.setOnKeyPressed(keyHandler);
 
 		getChildren().add(scrollPane);
 
@@ -175,10 +248,13 @@ public class Viewer extends VBox
 					@Override
 					public void handle(MouseEvent arg0)
 					{
-						unhighlightPrevious();
+						if (!keyboardMode)
+						{
+							unhighlightPrevious();
 
-						label.setStyle(STYLE_HIGHLIGHTED);
-						lineListener.lineHighlighted(finalPos, lineType);
+							label.setStyle(STYLE_HIGHLIGHTED);
+							lineListener.lineHighlighted(finalPos, lineType);
+						}
 					}
 				});
 
@@ -187,7 +263,20 @@ public class Viewer extends VBox
 					@Override
 					public void handle(MouseEvent arg0)
 					{
-						unhighlightLabel(label);
+						if (!keyboardMode)
+						{
+							unhighlightLabel(label);
+						}
+					}
+				});
+
+				label.setOnMouseMoved(new EventHandler<MouseEvent>()
+				{
+					@Override
+					public void handle(MouseEvent arg0)
+					{
+						keyboardMode = false;
+						System.out.println("mouse moved");
 					}
 				});
 			}
@@ -195,6 +284,70 @@ public class Viewer extends VBox
 			label.minWidthProperty().bind(scrollPane.widthProperty());
 			pos++;
 		}
+	}
+
+	private int checkBounds(int scrollIndex)
+	{
+		int min = 0;
+		int max = vBoxRows.getChildren().size() - 1;
+		
+		return Math.min(Math.max(scrollIndex, min), max);	
+	}
+	
+	private void handleKeyUp()
+	{
+		scrollIndex--;
+		
+		scrollIndex = checkBounds(scrollIndex);
+		
+		lineListener.lineHighlighted(scrollIndex, lineType);
+		highlightLine(scrollIndex);
+	}
+
+	private void handleKeyDown()
+	{
+		scrollIndex++;
+		
+		scrollIndex = checkBounds(scrollIndex);
+
+		lineListener.lineHighlighted(scrollIndex, lineType);
+		highlightLine(scrollIndex);
+	}
+
+	private void handleKeyLeft()
+	{
+		lineListener.handleFocusPrev();
+	}
+
+	private void handleKeyRight()
+	{
+		System.out.println(lineType + " handling key right");
+		lineListener.handleFocusNext();
+	}
+
+	private void handleKeyPageUp()
+	{
+		scrollIndex -= linesPerPane();
+		
+		scrollIndex = checkBounds(scrollIndex);
+		
+		lineListener.lineHighlighted(scrollIndex, lineType);
+		highlightLine(scrollIndex);
+	}
+
+	private void handleKeyPageDown()
+	{
+		scrollIndex += linesPerPane();
+
+		scrollIndex = checkBounds(scrollIndex);
+		
+		lineListener.lineHighlighted(scrollIndex, lineType);
+		highlightLine(scrollIndex);
+	}
+
+	private int linesPerPane()
+	{
+		return (int) (scrollPane.getHeight() / 10);
 	}
 
 	private void setUpContextMenu()
@@ -266,22 +419,32 @@ public class Viewer extends VBox
 		}
 	}
 
-	private void unhighlightLabel(Label label)
+	public void clearAllHighlighting()
 	{
-		if (label instanceof BytecodeLabel)
+		for (Node item : vBoxRows.getChildren())
 		{
-			label.setStyle(((BytecodeLabel) label).getUnhighlightedStyle());
-		}
-		else
-		{
-			label.setStyle(STYLE_UNHIGHLIGHTED);
+			unhighlightLabel(item);
 		}
 	}
 
-	private void unhighlightPrevious()
+	private void unhighlightLabel(Node node)
 	{
+		if (node instanceof BytecodeLabel)
+		{
+			node.setStyle(((BytecodeLabel) node).getUnhighlightedStyle());
+		}
+		else
+		{
+			node.setStyle(STYLE_UNHIGHLIGHTED);
+		}
+	}
+
+	public void unhighlightPrevious()
+	{		
 		if (lastScrollIndex >= 0 && lastScrollIndex < vBoxRows.getChildren().size())
 		{
+			System.out.println("Viewer: " + lineType + " unhighlighting " + lastScrollIndex);
+
 			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
 			unhighlightLabel(label);
@@ -290,10 +453,18 @@ public class Viewer extends VBox
 
 	public void highlightLine(int index)
 	{
+		System.out.println("Viewer: " + lineType + " highlighting " + index);
+
 		unhighlightPrevious();
 
-		if (index >= 0 && index < vBoxRows.getChildren().size())
+		if (index >= vBoxRows.getChildren().size())
 		{
+			index = vBoxRows.getChildren().size() - 1;
+		}
+
+		if (index >= 0)
+		{
+			// leave source position unchanged if not a known source line
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
 
@@ -314,6 +485,11 @@ public class Viewer extends VBox
 		if (index >= 0 && index < items.size())
 		{
 			result = (Label) items.get(index);
+		}
+
+		if (result == null)
+		{
+			logger.warn("No label at index {}", index);
 		}
 
 		return result;
