@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,22 +17,28 @@ public final class FileUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
-    private FileUtil()
-    {}
-
-    public static void copyFilesToDir(File sourceDir, File targetDir)
+	private FileUtil()
 	{
-		File exampleDir = new File("src/main/resources/examples");
+	}
 
-		if (exampleDir.exists() && exampleDir.isDirectory())
+	public static void copyFilesToDir(File sourceDir, File targetDir)
+	{
+		if (sourceDir.exists() && sourceDir.isDirectory())
 		{
-			File[] exampleFiles = exampleDir.listFiles();
+			File[] sourceFiles = sourceDir.listFiles();
+			
+			logger.debug("Copying {} files", sourceFiles.length);
 
-			for (File exampleFile : exampleFiles)
+			for (File exampleFile : sourceFiles)
 			{
 				try
 				{
-					Files.copy(exampleFile.toPath(), targetDir.toPath().resolve(exampleFile.getName()));
+					Path srcPath = exampleFile.toPath();
+					Path dstPath = targetDir.toPath().resolve(exampleFile.getName());
+
+					logger.debug("Copying file {} -> {}", srcPath, dstPath);
+					
+					Files.copy(srcPath, dstPath);
 				}
 				catch (IOException ioe)
 				{
@@ -39,8 +46,11 @@ public final class FileUtil
 				}
 			}
 		}
+		else
+		{
+			logger.error("Could not find source directory {}", sourceDir);
+		}
 	}
-	
 
 	public static File writeSource(File sourceDir, String fqClassName, String sourceCode) throws IOException
 	{
@@ -99,13 +109,13 @@ public final class FileUtil
 
 		return sourceFile;
 	}
-	
+
 	public static void emptyDir(File directory)
 	{
 		if (directory.exists() && directory.isDirectory())
 		{
 			File[] contents = directory.listFiles();
-			
+
 			for (File file : contents)
 			{
 				if (file.isDirectory())
@@ -117,7 +127,7 @@ public final class FileUtil
 				{
 					file.delete();
 				}
-			}			
+			}
 		}
 	}
 }

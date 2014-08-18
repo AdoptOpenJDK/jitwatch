@@ -26,9 +26,13 @@ import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Sandbox
 {
+	private static final Logger logger = LoggerFactory.getLogger(Sandbox.class);
+
 	private ISandboxStage sandboxStage;
 
 	public static final Path SANDBOX_DIR;
@@ -62,6 +66,8 @@ public class Sandbox
 
 		if (!sandboxSources.exists())
 		{
+			logger.debug("Creating Sandbox source directory {}", sandboxSources);
+
 			sandboxSources.mkdirs();
 
 			if (sandboxSources.exists())
@@ -80,13 +86,20 @@ public class Sandbox
 
 	public void reset()
 	{
+		logger.debug("Resetting Sandbox to default settings");
 		FileUtil.emptyDir(SANDBOX_DIR.toFile());
 		initialise();
 	}
 
 	private static void copyExamples()
 	{
-		FileUtil.copyFilesToDir(new File("src/main/resources/examples"), SANDBOX_SOURCE_DIR.toFile());
+
+		File srcDir = new File("src/main/resources/examples");
+		File dstDir = SANDBOX_SOURCE_DIR.toFile();
+
+		logger.debug("Copying Sandbox examples from {} to {}", srcDir, dstDir);
+
+		FileUtil.copyFilesToDir(srcDir, dstDir);
 	}
 
 	public Sandbox(ILogParser parser, ISandboxStage logger)
@@ -258,7 +271,7 @@ public class Sandbox
 
 		String sandboxSourceDirString = SANDBOX_SOURCE_DIR.toString();
 		String sandboxClassDirString = SANDBOX_CLASS_DIR.toString();
-		
+
 		boolean configChanged = false;
 
 		if (!sourceLocations.contains(sandboxSourceDirString))
@@ -288,12 +301,12 @@ public class Sandbox
 
 		config.setSourceLocations(sourceLocations);
 		config.setClassLocations(classLocations);
-		
+
 		if (configChanged)
 		{
 			config.saveConfig();
 		}
-		
+
 		logParser.reset();
 
 		logParser.readLogFile(sandboxLogFile);
@@ -309,7 +322,7 @@ public class Sandbox
 
 		MetaClass metaClass = model.getPackageManager().getMetaClass(firstClassName);
 
-		IMetaMember firstCompiled = null;
+		IMetaMember triViewMember = null;
 
 		if (metaClass != null)
 		{
@@ -322,14 +335,23 @@ public class Sandbox
 
 			for (IMetaMember mm : memberList)
 			{
+				sandboxStage.log("Checking JIT compilation status of " + mm.toString());
+
+				if (triViewMember == null)
+				{
+					// take the first member encountered
+					triViewMember = mm;
+				}
+
 				if (mm.isCompiled())
 				{
-					firstCompiled = mm;
+					// override with the first JIT-compiled member
+					triViewMember = mm;
 					break;
 				}
 			}
 		}
 
-		sandboxStage.openTriView(firstCompiled);
+		sandboxStage.openTriView(triViewMember);
 	}
 }

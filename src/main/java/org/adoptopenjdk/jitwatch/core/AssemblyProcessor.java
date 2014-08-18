@@ -95,7 +95,7 @@ public class AssemblyProcessor
 	{
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("completed assembly\n{}", builder.toString());
+			logger.debug("completed assembly");
 		}
 
 		String asmString = builder.toString();

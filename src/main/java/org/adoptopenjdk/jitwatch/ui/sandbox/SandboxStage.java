@@ -31,7 +31,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -133,6 +135,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 				if (resp == Response.YES)
 				{
+					initialiseLog();
 					sandbox.reset();
 					loadDefaultEditors();
 				}
@@ -149,16 +152,22 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		hBoxTools.getChildren().add(btnSandboxConfig);
 		hBoxTools.getChildren().add(btnResetSandbox);
 
-		splitVertical.getItems().add(hBoxTools);
 		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
-		splitVertical.setDividerPositions(0.1, 0.7, 0.2);
+		splitVertical.setDividerPositions(0.7, 0.3);
+		
+		VBox vBoxMain = new VBox();
+		vBoxMain.getChildren().add(hBoxTools);
+		vBoxMain.getChildren().add(splitVertical);
+		
+		BorderPane borderPane = new BorderPane();
+		borderPane.setTop(hBoxTools); 
+		borderPane.setCenter(splitVertical);
+		
+		initialiseLog();
 
-		log("Sandbox ready");
-		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
-
-		Scene scene = new Scene(splitVertical, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = new Scene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setScene(scene);
 
@@ -175,6 +184,13 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		});
 
 		loadDefaultEditors();
+	}
+	
+	private void initialiseLog()
+	{
+		taLog.setText(S_EMPTY);
+		log("Sandbox ready");
+		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
 	}
 
 	private void loadDefaultEditors()
