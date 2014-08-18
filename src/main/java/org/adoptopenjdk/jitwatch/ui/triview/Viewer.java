@@ -166,6 +166,9 @@ public class Viewer extends VBox
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
 			{
 				System.out.println("scrollpane gained focus: " + lineType);
+
+				lineListener.lineHighlighted(scrollIndex, lineType);
+				highlightLine(scrollIndex);
 			}
 		});
 
@@ -290,16 +293,16 @@ public class Viewer extends VBox
 	{
 		int min = 0;
 		int max = vBoxRows.getChildren().size() - 1;
-		
-		return Math.min(Math.max(scrollIndex, min), max);	
+
+		return Math.min(Math.max(scrollIndex, min), max);
 	}
-	
+
 	private void handleKeyUp()
 	{
 		scrollIndex--;
-		
+
 		scrollIndex = checkBounds(scrollIndex);
-		
+
 		lineListener.lineHighlighted(scrollIndex, lineType);
 		highlightLine(scrollIndex);
 	}
@@ -307,7 +310,7 @@ public class Viewer extends VBox
 	private void handleKeyDown()
 	{
 		scrollIndex++;
-		
+
 		scrollIndex = checkBounds(scrollIndex);
 
 		lineListener.lineHighlighted(scrollIndex, lineType);
@@ -316,6 +319,8 @@ public class Viewer extends VBox
 
 	private void handleKeyLeft()
 	{
+		System.out.println(lineType + " handling key left");
+
 		lineListener.handleFocusPrev();
 	}
 
@@ -328,9 +333,9 @@ public class Viewer extends VBox
 	private void handleKeyPageUp()
 	{
 		scrollIndex -= linesPerPane();
-		
+
 		scrollIndex = checkBounds(scrollIndex);
-		
+
 		lineListener.lineHighlighted(scrollIndex, lineType);
 		highlightLine(scrollIndex);
 	}
@@ -340,7 +345,7 @@ public class Viewer extends VBox
 		scrollIndex += linesPerPane();
 
 		scrollIndex = checkBounds(scrollIndex);
-		
+
 		lineListener.lineHighlighted(scrollIndex, lineType);
 		highlightLine(scrollIndex);
 	}
@@ -440,7 +445,7 @@ public class Viewer extends VBox
 	}
 
 	public void unhighlightPrevious()
-	{		
+	{
 		if (lastScrollIndex >= 0 && lastScrollIndex < vBoxRows.getChildren().size())
 		{
 			System.out.println("Viewer: " + lineType + " unhighlighting " + lastScrollIndex);
@@ -529,9 +534,12 @@ public class Viewer extends VBox
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
 
-			double scrollPercent = (double) scrollIndex / (double) vBoxRows.getChildren().size();
+			double scrollPercent = (double) scrollIndex / (double) (vBoxRows.getChildren().size() - 1);
 
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
+
+			System.out.println("scroll: " + scrollIndex + " / " + (vBoxRows.getChildren().size() - 1) + " = " + scrollPercent
+					+ " : " + scrollPos);
 
 			scrollPane.setVvalue(scrollPos);
 		}
