@@ -155,7 +155,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
-		splitVertical.setDividerPositions(0.7, 0.3);
+		splitVertical.setDividerPositions(0.75, 0.25);
 		
 		VBox vBoxMain = new VBox();
 		vBoxMain.getChildren().add(hBoxTools);

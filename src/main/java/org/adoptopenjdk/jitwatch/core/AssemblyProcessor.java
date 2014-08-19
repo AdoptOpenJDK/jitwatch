@@ -31,15 +31,34 @@ public class AssemblyProcessor
 		this.memberFinder = memberFinder;
 	}
 
-	public void handleLine(final String inLine)
+	public String handleLine(final String inLine)
 	{
+		String remainder = null;
+		
 		String line = inLine.trim();
-
+		
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("handleLine: '{}'", line);
 		}
 
+		// need to cope with nmethod appearing on same line as last hlt
+		// 0x0000 hlt <nmethod compile_id= ....
+
+		int indexNMethod = line.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
+		
+		if (indexNMethod != -1)
+		{
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("detected nmethod tag mangled with assembly");
+			}
+			
+			remainder = line.substring(indexNMethod);
+
+			line = line.substring(0, indexNMethod);
+		}
+		
 		if (line.startsWith(NATIVE_CODE_START))
 		{
 			if (DEBUG_LOGGING)
@@ -89,13 +108,20 @@ public class AssemblyProcessor
 				}
 			}
 		}
+		
+		if (DEBUG_LOGGING && remainder != null)
+		{
+			logger.debug("remainder: '{}'", remainder);
+		}
+		
+		return remainder;
 	}
 
 	public void complete()
 	{
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("completed assembly");
+			logger.debug("completed assembly\n{}", builder.toString());
 		}
 
 		String asmString = builder.toString();

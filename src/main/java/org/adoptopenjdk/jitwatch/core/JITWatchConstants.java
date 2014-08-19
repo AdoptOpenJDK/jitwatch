@@ -20,7 +20,7 @@ public final class JITWatchConstants
 	{
 	}
 
-	public static final boolean DEBUG_LOGGING = true;
+	public static final boolean DEBUG_LOGGING = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;

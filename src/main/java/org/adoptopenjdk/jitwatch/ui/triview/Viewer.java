@@ -122,8 +122,6 @@ public class Viewer extends VBox
 				keyboardMode = true;
 				clearAllHighlighting();
 
-				System.out.println("KC: " + code);
-
 				switch (code)
 				{
 				case UP:
@@ -155,7 +153,6 @@ public class Viewer extends VBox
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
 			{
-				System.out.println("Viewer gained focus: " + lineType);
 				scrollPane.requestFocus();
 			}
 		});
@@ -165,8 +162,6 @@ public class Viewer extends VBox
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
 			{
-				System.out.println("scrollpane gained focus: " + lineType);
-
 				lineListener.lineHighlighted(scrollIndex, lineType);
 				highlightLine(scrollIndex);
 			}
@@ -177,7 +172,6 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				System.out.println("sp on mouse entered");
 				lineListener.handleFocusSelf(lineType);
 			}
 		});
@@ -279,7 +273,6 @@ public class Viewer extends VBox
 					public void handle(MouseEvent arg0)
 					{
 						keyboardMode = false;
-						System.out.println("mouse moved");
 					}
 				});
 			}
@@ -319,14 +312,11 @@ public class Viewer extends VBox
 
 	private void handleKeyLeft()
 	{
-		System.out.println(lineType + " handling key left");
-
 		lineListener.handleFocusPrev();
 	}
 
 	private void handleKeyRight()
 	{
-		System.out.println(lineType + " handling key right");
 		lineListener.handleFocusNext();
 	}
 
@@ -448,8 +438,6 @@ public class Viewer extends VBox
 	{
 		if (lastScrollIndex >= 0 && lastScrollIndex < vBoxRows.getChildren().size())
 		{
-			System.out.println("Viewer: " + lineType + " unhighlighting " + lastScrollIndex);
-
 			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
 			unhighlightLabel(label);
@@ -458,8 +446,6 @@ public class Viewer extends VBox
 
 	public void highlightLine(int index)
 	{
-		System.out.println("Viewer: " + lineType + " highlighting " + index);
-
 		unhighlightPrevious();
 
 		if (index >= vBoxRows.getChildren().size())
@@ -533,13 +519,17 @@ public class Viewer extends VBox
 		{
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
-
-			double scrollPercent = (double) scrollIndex / (double) (vBoxRows.getChildren().size() - 1);
-
+			
+			double count =  vBoxRows.getChildren().size() - 1;
+			
+			double scrollPercent = 0;
+			
+			if (count > 0)
+			{
+				scrollPercent = (double) scrollIndex / count;
+			}
+			
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
-
-			System.out.println("scroll: " + scrollIndex + " / " + (vBoxRows.getChildren().size() - 1) + " = " + scrollPercent
-					+ " : " + scrollPos);
 
 			scrollPane.setVvalue(scrollPos);
 		}

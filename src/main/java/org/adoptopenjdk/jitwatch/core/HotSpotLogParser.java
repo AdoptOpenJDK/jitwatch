@@ -264,7 +264,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		else
 		{
-			asmProcessor.handleLine(currentLine);
+			String remainder = asmProcessor.handleLine(currentLine);
+			
+			// handle next <nmethod appearing on last line of assembly
+			if (remainder != null)
+			{
+				handleLogLine(remainder);
+			}
 		}
 
 		currentLineNumber++;
