@@ -49,7 +49,7 @@ public class EditorPane extends VBox
 	public EditorPane(SandboxStage stage)
 	{
 		this.sandboxStage = stage;
-
+				
 		lblTitle = new Label("New File");
 
 		Button btnOpen = new Button("Open");
