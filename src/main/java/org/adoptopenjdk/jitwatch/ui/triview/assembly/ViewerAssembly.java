@@ -95,7 +95,7 @@ public class ViewerAssembly extends Viewer
 
 		if (ref == null)
 		{
-			ref = "Unknown instruction";
+			ref = "Unknown instruction. Assembly reference loaded?";
 		}
 
 		builder.append(ref).append(S_NEWLINE);
