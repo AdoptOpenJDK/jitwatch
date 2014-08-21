@@ -172,7 +172,10 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				lineListener.handleFocusSelf(lineType);
+				if (lineListener != null)
+				{
+					lineListener.handleFocusSelf(lineType);
+				}
 			}
 		});
 
@@ -519,16 +522,16 @@ public class Viewer extends VBox
 		{
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
-			
-			double count =  vBoxRows.getChildren().size() - 1;
-			
+
+			double count = vBoxRows.getChildren().size() - 1;
+
 			double scrollPercent = 0;
-			
+
 			if (count > 0)
 			{
 				scrollPercent = (double) scrollIndex / count;
 			}
-			
+
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
 
 			scrollPane.setVvalue(scrollPos);
