@@ -72,9 +72,11 @@ public class TriView extends Stage implements ILineListener
 	private CheckBox checkAssembly;
 
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
-	
+
 	private ClassSearch classSearch;
 	private ComboBox<IMetaMember> comboMember;
+
+	private MemberInfo memberInfo;
 
 	private Label lblMemberInfo;
 
@@ -136,10 +138,14 @@ public class TriView extends Stage implements ILineListener
 			}
 		});
 
+		memberInfo = new MemberInfo();
+		memberInfo.setStyle("-fx-padding:0px 0px 0px 110px;");
+
 		hBoxToolBarButtons.getChildren().add(checkSource);
 		hBoxToolBarButtons.getChildren().add(checkBytecode);
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCallChain);
+		hBoxToolBarButtons.getChildren().add(memberInfo);
 
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
@@ -360,6 +366,8 @@ public class TriView extends Stage implements ILineListener
 		ignoreComboChanged = true;
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
+
+		memberInfo.setMember(member);
 
 		if (!sameClass)
 		{
