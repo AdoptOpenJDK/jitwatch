@@ -330,15 +330,28 @@ public final class BytecodeLoader
 		{
 			List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
 
-			memberBytecode.setInstructions(instructions);
+			if (memberBytecode != null)
+			{			
+				memberBytecode.setInstructions(instructions);
+				
+				classBytecode.putMemberBytecode(memberSignature, memberBytecode);
 
-			classBytecode.putMemberBytecode(memberSignature, memberBytecode);
-
-			if (DEBUG_LOGGING)
-			{
-				logger.debug("stored bytecode for : {}", memberSignature);
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("stored bytecode for : {}", memberSignature);
+				}
 			}
+			else
+			{
+				// TODO - This is probably a static initialiser block
+				// need to support as used for class level stuff in Scala
+				logger.warn("No member for these instructions");
 
+				for (BytecodeInstruction instr : instructions)
+				{
+					logger.warn("{}", instr);
+				}
+			}
 		}
 		else if (lastSection == BytecodeSection.LINETABLE)
 		{

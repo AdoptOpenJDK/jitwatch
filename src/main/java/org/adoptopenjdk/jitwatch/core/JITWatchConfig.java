@@ -93,30 +93,43 @@ public class JITWatchConfig
 
 	private void initialise()
 	{
-		logger.debug("initialise: {}", propertiesFile);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("initialise: {}", propertiesFile);
+		}
+		
 		loadedProps = new Properties();
 		loadPropertiesFromFile();
 	}
 
 	public void switchToSandbox()
 	{
-		logger.debug("switchToSandbox()");
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("switchToSandbox()");
+		}
+		
 		preSandboxProfile = profileName;
 		setProfileName(S_PROFILE_SANDBOX);
 	}
 	
 	public void switchFromSandbox()
 	{
-		logger.debug("switchFromSandbox()");
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("switchFromSandbox()");
+		}
+		
 		setProfileName(preSandboxProfile);
 	}
 	
 	public JITWatchConfig clone()
 	{
-		logger.debug("clone()");
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("clone()");
+		}
+		
 		JITWatchConfig copy = new JITWatchConfig();
 
 		marshalConfigToProperties();
@@ -132,8 +145,11 @@ public class JITWatchConfig
 	{
 		this.profileName = name;
 
-		logger.debug("setProfileName: {}", name);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("setProfileName: {}", name);
+		}
+		
 		unmarshalPropertiesToConfig();
 
 		marshalConfigToProperties();
@@ -148,8 +164,11 @@ public class JITWatchConfig
 
 	public void deleteProfile(String name)
 	{
-		logger.debug("deleteProfile: {}", name);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("deleteProfile: {}", name);
+		}
+		
 		if (name != null && !isBuiltInProfile(name))
 		{
 			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS,
@@ -203,8 +222,11 @@ public class JITWatchConfig
 
 	private void loadPropertiesFromFile()
 	{
-		logger.debug("loadPropertiesFromFile({})", propertiesFile);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("loadPropertiesFromFile({})", propertiesFile);
+		}
+		
 		try (FileReader fr = new FileReader(propertiesFile))
 		{
 			loadedProps.load(fr);
@@ -231,8 +253,11 @@ public class JITWatchConfig
 
 	public void unmarshalPropertiesToConfig()
 	{
-		logger.debug("unmarshalPropertiesToConfig({})", profileName);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("unmarshalPropertiesToConfig({})", profileName);
+		}
+		
 		classLocations = loadLocationsFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
 		sourceLocations = loadLocationsFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
 
@@ -354,15 +379,22 @@ public class JITWatchConfig
 
 	public void saveConfig()
 	{
-		logger.debug("saveConfig()");
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("saveConfig()");
+		}
+		
 		marshalConfigToProperties();
 		savePropertiesToFile();
 	}
 
 	public void marshalConfigToProperties()
 	{
-		logger.debug("marshalConfigToProperties({})", profileName);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("marshalConfigToProperties({})", profileName);
+		}
+		
 		loadedProps.put(KEY_LAST_PROFILE, profileName);
 
 		putProperty(loadedProps, KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
@@ -415,8 +447,11 @@ public class JITWatchConfig
 
 	public void savePropertiesToFile()
 	{
-		logger.debug("savePropertiesToFile({})", propertiesFile);
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("savePropertiesToFile({})", propertiesFile);
+		}
+		
 		try (FileWriter fw = new FileWriter(propertiesFile))
 		{
 			loadedProps.store(fw, null);

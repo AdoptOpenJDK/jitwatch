@@ -12,15 +12,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adoptopenjdk.jitwatch.core.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
+	private static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
+
+	
 	protected MetaClass methodClass;
 	private AssemblyMethod asmMethod = null;
 
@@ -259,6 +265,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public void setAssembly(AssemblyMethod asmMethod)
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
+		}
+		
 		this.asmMethod = asmMethod;
 	}
 

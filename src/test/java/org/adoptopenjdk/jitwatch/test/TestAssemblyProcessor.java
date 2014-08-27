@@ -70,11 +70,16 @@ public class TestAssemblyProcessor
 
 				IMetaMember fakeMember = new MetaMethod(objToStringMethod, fakeClass);
 
-				map.put(logSignature, fakeMember);
+				putMap(logSignature, fakeMember);
 
 				return map.get(logSignature);
 			}
 		};
+	}
+	
+	private void putMap(String key, IMetaMember value)
+	{
+		map.put(key, value);
 	}
 
 	@Test
@@ -311,7 +316,7 @@ public class TestAssemblyProcessor
 		IMetaMember actualMember = map.get("org.adoptopenjdk.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
 
 		// Then
-		assertThat("One assembly results should have been returned.", actualAssemblyResults, is(equalTo(expectedAssemblyResults)));
+		assertThat("One assembly result should have been returned.", actualAssemblyResults, is(equalTo(expectedAssemblyResults)));
 		assertThat("An object should have been returned", actualMember, is(available()));
 	}
 
@@ -553,5 +558,70 @@ public class TestAssemblyProcessor
 		assertEquals(1, nonAssemblyLines.size());
 		assertEquals(nmethodTag, nonAssemblyLines.get(0));
 
+	}
+	
+	
+	@Test
+	public void testCanParseAssemblyWhenMethodCommentIsMangled()
+	{		
+		String[] lines = new String[] {
+				"<writer thread='139769647986432'/>",
+				"Decoding compiled method 0x00007f1eaad25d50:",
+				"Code:",
+				"[Entry Point]",
+				"[Constants]",
+				"  # ",
+				"<writer thread='139769789089536'/>",
+				"<uncommon_trap thread='139769789089536' reason='unloaded' action='reinterpret' index='39' compile_id='2' compile_kind='osr' compiler='C2' unresolved='1' name='java/lang/System' stamp='0.560'>",
+				"<jvms bci='31' method='SandboxTestLoad main ([Ljava/lang/String;)V' bytes='57' count='10000' backedge_count='6024' iicount='1'/>",
+				"</uncommon_trap>",
+				"<writer thread='139769647986432'/>",
+				"{method} &apos;add&apos; &apos;(II)I&apos; in &apos;SandboxTest&apos;",
+				"  # this:     rsi:rsi   = &apos;SandboxTest&apos;",
+				"  # parm0:    rdx       = int",
+				"  # parm1:    rcx       = int",
+				"  #           [sp+0x20]  (sp of caller)",
+				"  0x00007f1eaad25e80: mov    0x8(%rsi),%r10d",
+				"  0x00007f1eaad25e84: cmp    %r10,%rax",
+				"  0x00007f1eaad25e87: jne    0x00007f1eaacfd960  ;   {runtime_call}",
+				"  0x00007f1eaad25e8d: data32 xchg %ax,%ax",
+				"[Verified Entry Point]",
+				"  0x00007f1eaad25e90: sub    $0x18,%rsp",
+				"  0x00007f1eaad25e97: mov    %rbp,0x10(%rsp)    ;*synchronization entry",
+				"                                                ; - SandboxTest::add@-1 (line 5)",
+				"  0x00007f1eaad25e9c: mov    %edx,%eax",
+				"  0x00007f1eaad25e9e: add    %ecx,%eax          ;*iadd",
+				"                                                ; - SandboxTest::add@2 (line 5)",
+				"  0x00007f1eaad25ea0: add    $0x10,%rsp",
+				"  0x00007f1eaad25ea4: pop    %rbp",
+				"  0x00007f1eaad25ea5: test   %eax,0x5d06155(%rip)        # 0x00007f1eb0a2c000",
+				"                                                ;   {poll_return}",
+				"  0x00007f1eaad25eab: retq   ",
+				"  0x00007f1eaad25eac: hlt    "
+		};
+		
+		performAssemblyParsingOn(lines);
+
+		IMetaMember member = map.get("SandboxTest add (II)I");
+
+		assertNotNull(member);
+
+		AssemblyMethod assemblyMethod = member.getAssembly();
+
+		assertNotNull(assemblyMethod);
+
+		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
+
+		// code, deopt handler
+		assertEquals(2, asmBlocks.size());
+
+		AssemblyBlock block0 = asmBlocks.get(0);
+		List<AssemblyInstruction> instructions0 = block0.getInstructions();
+		assertEquals(4, instructions0.size());		
+		
+		AssemblyBlock block1 = asmBlocks.get(1);
+		List<AssemblyInstruction> instructions1 = block1.getInstructions();
+		assertEquals(9, instructions1.size());
+		
 	}
 }

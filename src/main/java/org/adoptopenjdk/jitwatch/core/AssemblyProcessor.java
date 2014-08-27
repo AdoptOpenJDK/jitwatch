@@ -24,6 +24,8 @@ public class AssemblyProcessor
 	private boolean methodStarted = false;
 	private boolean methodInterrupted = false;
 
+	private String previousLine = null;
+
 	private IMemberFinder memberFinder;
 
 	public AssemblyProcessor(IMemberFinder memberFinder)
@@ -34,9 +36,9 @@ public class AssemblyProcessor
 	public String handleLine(final String inLine)
 	{
 		String remainder = null;
-		
+
 		String line = inLine.trim();
-		
+
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("handleLine: '{}'", line);
@@ -46,19 +48,29 @@ public class AssemblyProcessor
 		// 0x0000 hlt <nmethod compile_id= ....
 
 		int indexNMethod = line.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
-		
+
 		if (indexNMethod != -1)
 		{
 			if (DEBUG_LOGGING)
 			{
 				logger.debug("detected nmethod tag mangled with assembly");
 			}
-			
+
 			remainder = line.substring(indexNMethod);
 
 			line = line.substring(0, indexNMethod);
 		}
-		
+
+		if (S_HASH.equals(previousLine) && line.startsWith("{method}"))
+		{
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("fixup mangled {method} line");
+			}
+
+			line = S_HASH + S_SPACE + line;
+		}
+
 		if (line.startsWith(NATIVE_CODE_START))
 		{
 			if (DEBUG_LOGGING)
@@ -75,7 +87,11 @@ public class AssemblyProcessor
 		}
 		else if (assemblyStarted)
 		{
-			if (line.trim().startsWith(NATIVE_CODE_METHOD_MARK))
+			boolean couldBeNativeMethodMark = false;
+
+			couldBeNativeMethodMark = line.startsWith(NATIVE_CODE_METHOD_MARK);
+
+			if (couldBeNativeMethodMark)
 			{
 				if (DEBUG_LOGGING)
 				{
@@ -108,12 +124,14 @@ public class AssemblyProcessor
 				}
 			}
 		}
-		
+
 		if (DEBUG_LOGGING && remainder != null)
 		{
 			logger.debug("remainder: '{}'", remainder);
 		}
-		
+
+		previousLine = line;
+
 		return remainder;
 	}
 
@@ -147,7 +165,7 @@ public class AssemblyProcessor
 				{
 					logger.debug("Found member {}", currentMember);
 				}
-				
+
 				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
 
 				currentMember.setAssembly(asmMethod);

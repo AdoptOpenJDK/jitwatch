@@ -25,6 +25,9 @@ public final class ResourceLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 
+	public static String SUFFIX_SRC_JAVA = "java";
+	public static String SUFFIX_SRC_SCALA = "scala";
+	
 	/*
 	 * Hide Utility Class Constructor Utility classes should not have a public
 	 * or default constructor.
@@ -33,7 +36,7 @@ public final class ResourceLoader
 	{
 	}
 
-	public static String getSourceFilename(MetaClass metaClass)
+	public static String getSourceFilename(MetaClass metaClass, final String suffix)
 	{
 		String fqName = metaClass.getFullyQualifiedName();
 
@@ -44,7 +47,7 @@ public final class ResourceLoader
 			fqName = fqName.substring(0, dollarPos);
 		}
 
-		fqName = fqName.replace(S_DOT, File.separator) + ".java";
+		fqName = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
 
 		return fqName;
 	}
