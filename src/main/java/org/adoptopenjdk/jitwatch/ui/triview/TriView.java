@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
+import java.io.File;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
@@ -363,8 +364,16 @@ public class TriView extends Stage implements ILineListener
 
 		if (!sameClass)
 		{
-			String sourceFileName = ResourceLoader.getSourceFilename(memberClass);
+			String sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_JAVA);			
 			String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+			
+			//TODO Ughhh!
+			if (source == null)
+			{
+				sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_SCALA);			
+				source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
+			}
+			
 			viewerSource.setContent(source, true);
 		}
 

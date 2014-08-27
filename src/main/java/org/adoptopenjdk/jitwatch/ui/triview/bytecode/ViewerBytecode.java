@@ -70,8 +70,8 @@ public class ViewerBytecode extends Viewer
 			}
 			catch (AnnotationException annoEx)
 			{
-				logger.error("class bytcode mismatch: {}", annoEx.getMessage());
-
+				logger.error("class bytecode mismatch: {}", annoEx.getMessage());
+				logger.info("Member is {}", member);
 				offsetMismatchDetected = true;
 			}
 

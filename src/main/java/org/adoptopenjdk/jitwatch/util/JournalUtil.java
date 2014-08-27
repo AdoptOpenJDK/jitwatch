@@ -37,7 +37,8 @@ public final class JournalUtil
 	{
 	}
 
-	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<BytecodeInstruction> instructions) throws AnnotationException
+	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<BytecodeInstruction> instructions)
+			throws AnnotationException
 	{
 		Map<Integer, LineAnnotation> result = new HashMap<>();
 
@@ -113,17 +114,27 @@ public final class JournalUtil
 				int code = Integer.parseInt(codeAttr);
 				callAttrs.clear();
 
-				// we found a LogCompilation bc tag 
+				// we found a LogCompilation bc tag
 				// e.g. "<bc code='182' bci='2'/>"
 				// Now check in the current class bytecode
 				// that the instruction at offset bci
 				// has the same opcode as attribute code
 				// if not then this is probably a TieredCompilation
 				// context change. (TieredCompilation does not use
-				// nested parse tags so have to use this heuristic 
+				// nested parse tags so have to use this heuristic
 				// to check if we are still in the same method.
 
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("BC Tag {} {}", currentBytecode, code);
+				}
+
 				currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
+
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Instruction at {} is {}", currentBytecode, currentInstruction);
+				}
 
 				inMethod = false;
 
@@ -163,16 +174,18 @@ public final class JournalUtil
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
+
 				if (inMethod || isC2)
 				{
 					if (!sanityCheckInline(currentInstruction))
 					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+						throw new AnnotationException("Expected an invoke instruction (in INLINE_SUCCESS)", currentBytecode,
+								currentInstruction);
 					}
 
 					String reason = tagAttrs.get(ATTR_REASON);
 					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
-						
+
 					result.put(currentBytecode, new LineAnnotation(annotationText, Color.GREEN));
 				}
 			}
@@ -183,12 +196,13 @@ public final class JournalUtil
 				{
 					if (!sanityCheckInline(currentInstruction))
 					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+						throw new AnnotationException("Expected an invoke instruction (in INLINE_FAIL)", currentBytecode,
+								currentInstruction);
 					}
-					
+
 					String reason = tagAttrs.get(ATTR_REASON);
 					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
-		
+
 					result.put(currentBytecode, new LineAnnotation(annotationText, Color.RED));
 				}
 			}
@@ -201,9 +215,10 @@ public final class JournalUtil
 					{
 						if (!sanityCheckBranch(currentInstruction))
 						{
-							throw new AnnotationException("Expected a branch instruction", currentBytecode, currentInstruction);
-						}						
-						
+							throw new AnnotationException("Expected a branch instruction (in BRANCH)", currentBytecode,
+									currentInstruction);
+						}
+
 						String branchAnnotation = buildBranchAnnotation(tagAttrs);
 
 						result.put(currentBytecode, new LineAnnotation(branchAnnotation, Color.BLUE));
@@ -217,9 +232,15 @@ public final class JournalUtil
 				{
 					if (!sanityCheckIntrinsic(currentInstruction))
 					{
-						throw new AnnotationException("Expected an invoke instruction", currentBytecode, currentInstruction);
+						for (BytecodeInstruction ins : instructions)
+						{
+							logger.info("! instruction: {}", ins);
+						}
+
+						throw new AnnotationException("Expected an invoke instruction (IN INTRINSIC)", currentBytecode,
+								currentInstruction);
 					}
-					
+
 					StringBuilder reason = new StringBuilder();
 					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
@@ -233,7 +254,7 @@ public final class JournalUtil
 			}
 		}
 	}
-	
+
 	private static String buildBranchAnnotation(Map<String, String> tagAttrs)
 	{
 		String count = tagAttrs.get(ATTR_BRANCH_COUNT);
@@ -254,7 +275,7 @@ public final class JournalUtil
 		{
 			reason.append(C_NEWLINE).append("Taken Probability: ").append(prob);
 		}
-		
+
 		return reason.toString();
 	}
 
@@ -287,7 +308,7 @@ public final class JournalUtil
 	{
 		return sanityCheckInvoke(instr);
 	}
-	
+
 	private static boolean sanityCheckInvoke(BytecodeInstruction instr)
 	{
 		boolean sane = false;
