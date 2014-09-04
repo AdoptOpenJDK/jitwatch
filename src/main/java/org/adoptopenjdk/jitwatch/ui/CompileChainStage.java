@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
+	//TODO show compilation order markers
+	
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
 
 	private ScrollPane scrollPane;

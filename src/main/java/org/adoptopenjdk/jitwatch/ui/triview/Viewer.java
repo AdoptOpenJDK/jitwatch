@@ -178,7 +178,10 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				lineListener.handleFocusSelf(lineType);
+				if (lineListener != null)
+				{
+					lineListener.handleFocusSelf(lineType);
+				}
 			}
 		});
 
