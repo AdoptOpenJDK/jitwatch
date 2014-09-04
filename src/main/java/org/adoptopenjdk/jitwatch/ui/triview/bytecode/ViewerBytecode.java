@@ -40,7 +40,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
-	{
+	{		
 		offsetMismatchDetected = false;
 
 		if (metaClassBytecode != null)
@@ -71,7 +71,7 @@ public class ViewerBytecode extends Viewer
 			catch (AnnotationException annoEx)
 			{
 				logger.error("class bytecode mismatch: {}", annoEx.getMessage());
-				logger.info("Member is {}", member);
+				logger.error("Member was {}", member);
 				offsetMismatchDetected = true;
 			}
 

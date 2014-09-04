@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adoptopenjdk.jitwatch.core.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;

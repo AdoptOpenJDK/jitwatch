@@ -151,19 +151,25 @@ public class Viewer extends VBox
 		focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
 			{
-				scrollPane.requestFocus();
+				if (hasFocus)
+				{
+					scrollPane.requestFocus();
+				}
 			}
 		});
 
 		scrollPane.focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
 			{
-				lineListener.lineHighlighted(scrollIndex, lineType);
-				highlightLine(scrollIndex);
+				if (hasFocus)
+				{
+					lineListener.lineHighlighted(scrollIndex, lineType);
+					highlightLine(scrollIndex);
+				}
 			}
 		});
 
@@ -519,16 +525,16 @@ public class Viewer extends VBox
 		{
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
-			
-			double count =  vBoxRows.getChildren().size() - 1;
-			
+
+			double count = vBoxRows.getChildren().size() - 1;
+
 			double scrollPercent = 0;
-			
+
 			if (count > 0)
 			{
 				scrollPercent = (double) scrollIndex / count;
 			}
-			
+
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
 
 			scrollPane.setVvalue(scrollPos);

@@ -13,7 +13,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
@@ -22,8 +21,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
-    //private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
-	
+	// private static final Logger logger =
+	// LoggerFactory.getLogger(MetaClass.class);
+
 	private String className;
 	private MetaPackage classPackage;
 
@@ -37,12 +37,29 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private ClassBC classBytecode = null;
 
-	//private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
+	// private static final Logger logger =
+	// LoggerFactory.getLogger(MetaClass.class);
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;
 		this.className = className;
+	}
+
+	public IMetaMember getFirstConstructor()
+	{
+		IMetaMember result = null;
+
+		for (IMetaMember member : getMetaMembers())
+		{
+			if (member instanceof MetaConstructor)
+			{
+				result = member;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	public boolean isInterface()
@@ -187,14 +204,14 @@ public class MetaClass implements Comparable<MetaClass>
 
 		return result;
 	}
-	
+
 	public IMetaMember getMemberFromSignature(final String inMemberName, final Class<?> inReturnType, final Class<?>[] inParamTypes)
-	{		
+	{
 		IMetaMember result = null;
 
 		for (IMetaMember member : getMetaMembers())
 		{
-			if(member.signatureMatches(inMemberName, inReturnType, inParamTypes))
+			if (member.signatureMatches(inMemberName, inReturnType, inParamTypes))
 			{
 				result = member;
 				break;
@@ -205,10 +222,10 @@ public class MetaClass implements Comparable<MetaClass>
 	}
 
 	public IMetaMember getMemberFromSignature(final String inName, final String inReturnType, final String[] paramTypes)
-	{		
+	{
 		String returnType = inReturnType;
 		String name = inName;
-		
+
 		IMetaMember result = null;
 
 		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))

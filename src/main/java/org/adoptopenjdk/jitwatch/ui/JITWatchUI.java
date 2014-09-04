@@ -64,7 +64,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT;
-	
+
 	private static final String JAVA_VERSION_7 = "1.7";
 
 	static
@@ -129,6 +129,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private NothingMountedStage nothingMountedStage;
 
 	private IMetaMember selectedMember;
+	private MetaClass selectedMetaClass;
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -147,7 +148,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		logParser = new HotSpotLogParser(this);
 
 		JITWatchConfig config = new JITWatchConfig();
-		
+
 		logParser.setConfig(config);
 	}
 
@@ -415,6 +416,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(ActionEvent e)
 			{
+				if (selectedMember == null && selectedMetaClass != null)
+				{
+					selectedMember = selectedMetaClass.getFirstConstructor();
+				}
+
 				openTriView(selectedMember, false);
 			}
 		});
@@ -512,9 +518,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setPrefHeight(textAreaHeight);
 
 		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
-		
+
 		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
-		
+
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
@@ -788,7 +794,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 			clearTextArea();
 			log("Selected log file: " + hsLogFile.getAbsolutePath());
-			
+
 			log("\nUsing Config: " + getConfig().getProfileName());
 
 			log("\nClick Start button to process the HotSpot log");
@@ -841,7 +847,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			timeLineStage.redraw();
 		}
-		
+
 		if (codeCacheStage != null)
 		{
 			codeCacheStage.redraw();
@@ -1003,6 +1009,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	void refreshSelectedTreeNode(MetaClass metaClass)
 	{
 		classMemberList.clearClassMembers();
+		selectedMetaClass = metaClass;
 
 		showMemberInfo(null);
 

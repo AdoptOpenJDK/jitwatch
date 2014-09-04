@@ -95,7 +95,10 @@ public class MainConfigStage extends Stage
 
 					if (name != null)
 					{
-						logger.debug("setting new name: {}", name);
+						if (DEBUG_LOGGING)
+						{
+							logger.debug("setting new name: {}", name);
+						}
 
 						config.setProfileName(name);
 
@@ -104,7 +107,10 @@ public class MainConfigStage extends Stage
 
 						createComboOptions(config);
 
-						logger.debug("setting combo name: {}", name);
+						if (DEBUG_LOGGING)
+						{
+							logger.debug("setting combo name: {}", name);
+						}
 
 						comboBox.setValue(name);
 					}
@@ -128,8 +134,10 @@ public class MainConfigStage extends Stage
 
 					if (resp == Response.YES)
 					{
-						logger.debug("deleting: {}", profileName);
-
+						if (DEBUG_LOGGING)
+						{
+							logger.debug("deleting: {}", profileName);
+						}
 						config.deleteProfile(profileName);
 						config.setProfileName(S_PROFILE_DEFAULT);
 
@@ -143,7 +151,8 @@ public class MainConfigStage extends Stage
 				}
 				else
 				{
-					Dialogs.showOKDialog(MainConfigStage.this, "Cannot delete profile", "Cannot delete built-in profile '" + profileName + "'");
+					Dialogs.showOKDialog(MainConfigStage.this, "Cannot delete profile", "Cannot delete built-in profile '"
+							+ profileName + "'");
 				}
 			}
 		});
@@ -216,7 +225,10 @@ public class MainConfigStage extends Stage
 
 	private void createComboOptions(JITWatchConfig config)
 	{
-		logger.debug("createComboOptions");
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("createComboOptions");
+		}
 
 		profileList.clear();
 
@@ -224,9 +236,12 @@ public class MainConfigStage extends Stage
 
 		Collections.sort(configNameList);
 
-		for (String name : configNameList)
+		if (DEBUG_LOGGING)
 		{
-			logger.debug("option: {}", name);
+			for (String name : configNameList)
+			{
+				logger.debug("option: {}", name);
+			}
 		}
 
 		profileList.addAll(configNameList);
