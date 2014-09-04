@@ -331,9 +331,9 @@ public final class BytecodeLoader
 			List<BytecodeInstruction> instructions = parseInstructions(builder.toString());
 
 			if (memberBytecode != null)
-			{			
+			{
 				memberBytecode.setInstructions(instructions);
-				
+
 				classBytecode.putMemberBytecode(memberSignature, memberBytecode);
 
 				if (DEBUG_LOGGING)
@@ -343,19 +343,17 @@ public final class BytecodeLoader
 			}
 			else
 			{
-				// TODO - This is probably a static initialiser block
-				// need to support as used for class level stuff in Scala
-				logger.warn("No member for these instructions");
+				logger.error("No member for these instructions");
 
 				for (BytecodeInstruction instr : instructions)
 				{
-					logger.warn("{}", instr);
+					logger.error("{}", instr);
 				}
 			}
 		}
 		else if (lastSection == BytecodeSection.LINETABLE)
 		{
-			updateLineNumberTable(classBytecode, builder.toString(), memberSignature);
+			storeLineNumberTable(memberBytecode, builder.toString(), memberSignature);
 
 			if (DEBUG_LOGGING)
 			{
@@ -554,7 +552,7 @@ public final class BytecodeLoader
 		return bytecodeInstructions;
 	}
 
-	private static void updateLineNumberTable(ClassBC classBytecode, String tableLines, String memberSignature)
+	private static void storeLineNumberTable(MemberBytecode memberBytecode, String tableLines, String memberSignature)
 	{
 		String[] lines = tableLines.split(S_NEWLINE);
 
@@ -572,8 +570,8 @@ public final class BytecodeLoader
 
 				try
 				{
-					LineTableEntry entry = new LineTableEntry(memberSignature, Integer.parseInt(offset));
-					classBytecode.getLineTable().put(Integer.parseInt(source), entry);
+					LineTableEntry entry = new LineTableEntry(memberSignature, Integer.parseInt(source), Integer.parseInt(offset));
+					memberBytecode.getLineTable().add(entry);
 				}
 				catch (NumberFormatException nfe)
 				{

@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import java.io.File;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
@@ -17,6 +16,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
@@ -162,8 +162,6 @@ public class TriView extends Stage implements ILineListener
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
 			{
-				// TODO Looks like a bug in JavaFX 2.2 here
-				// sometimes combo contains only selected member
 				if (!ignoreComboChanged)
 				{
 					if (newVal != null)
@@ -372,16 +370,16 @@ public class TriView extends Stage implements ILineListener
 
 		if (!sameClass)
 		{
-			String sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_JAVA);			
+			String sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_JAVA);
 			String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-			
-			//TODO Ughhh!
+
+			// TODO Ughhh!
 			if (source == null)
 			{
-				sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_SCALA);			
+				sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_SCALA);
 				source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
 			}
-			
+
 			viewerSource.setContent(source, true);
 		}
 
@@ -510,20 +508,22 @@ public class TriView extends Stage implements ILineListener
 
 	private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass, MetaClass memberClass)
 	{
-		boolean sameClass = inSameClass;
+		boolean result = inSameClass;
+		
 		if (!force)
 		{
 			if ((previousClass != null) && previousClass.equals(memberClass))
 			{
-				sameClass = true;
+				result = true;
 			}
 		}
-		return sameClass;
+		
+		return result;
 	}
 
 	@Override
 	public void lineHighlighted(int index, LineType lineType)
-	{
+	{		
 		switch (lineType)
 		{
 		case SOURCE:
@@ -539,10 +539,8 @@ public class TriView extends Stage implements ILineListener
 	}
 
 	private void highlightFromSource(int index)
-	{
+	{		
 		int sourceLine = index + 1;
-
-		ClassBC classBytecode = null;
 
 		int bytecodeHighlight = -1;
 		int assemblyHighlight = -1;
@@ -556,40 +554,28 @@ public class TriView extends Stage implements ILineListener
 
 		if (metaClass != null)
 		{
-			classBytecode = metaClass.getClassBytecode(config.getClassLocations());
+			LineTableEntry entry = getLineTableEntryForSourceLine(metaClass, sourceLine);
 
-			if (classBytecode != null)
+			if (entry != null)
 			{
-				LineTable lineTable = classBytecode.getLineTable();
+				String memberSig = entry.getMemberSignature();
 
-				if (lineTable.size() == 0)
+				IMetaMember nextMember = metaClass.findMemberByBytecodeSignature(memberSig);
+
+				if (nextMember != null)
 				{
-					logger.warn("LineNumberTable not found in class file. TriView highlight linking will not be available.");
+					if (!nextMember.equals(currentMember))
+					{
+						setMember(nextMember, false, false);
+					}
+
+					int bcOffset = entry.getBytecodeOffset();
+
+					bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
 				}
-
-				LineTableEntry entry = lineTable.get(sourceLine);
-
-				if (entry != null)
+				else
 				{
-					String memberSig = entry.getMemberSignature();
-
-					IMetaMember nextMember = metaClass.findMemberByBytecodeSignature(memberSig);
-
-					if (nextMember != null)
-					{
-						if (!nextMember.equals(currentMember))
-						{
-							setMember(nextMember, false, false);
-						}
-
-						int bcOffset = entry.getBytecodeOffset();
-
-						bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
-					}
-					else
-					{
-						logger.warn("Could not find member for bc sig: {}", memberSig);
-					}
+					logger.warn("Could not find member for bc sig: {}", memberSig);
 				}
 			}
 
@@ -600,11 +586,27 @@ public class TriView extends Stage implements ILineListener
 		viewerAssembly.highlightLine(assemblyHighlight);
 	}
 
+	private LineTableEntry getLineTableEntryForSourceLine(MetaClass metaClass, int sourceIndex)
+	{		
+		LineTableEntry result = null;
+
+		ClassBC classBytecode = metaClass.getClassBytecode(config.getClassLocations());
+
+		if (classBytecode != null)
+		{
+			result = classBytecode.findLineTableEntryForSourceLine(sourceIndex);
+		}
+
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("source: {} result: {}", sourceIndex, result);
+		}
+		
+		return result;
+	}
+
 	private void highlightFromBytecode(int index)
 	{
-		// each source line can map to multiple bytecodes?
-		// but bytecode only maps to 1 source line
-
 		MetaClass metaClass = null;
 
 		if (currentMember != null)
@@ -629,9 +631,11 @@ public class TriView extends Stage implements ILineListener
 
 				if (classBytecode != null)
 				{
-					LineTable lineTable = classBytecode.getLineTable();
+					MemberBytecode memberBytecode = classBytecode.getMemberBytecode(currentMember);
 
-					sourceHighlight = lineTable.findSourceLine(currentMember, bytecodeOffset);
+					LineTable lineTable = memberBytecode.getLineTable();
+
+					sourceHighlight = lineTable.findSourceLineForBytecodeOffset(bytecodeOffset);
 
 					if (sourceHighlight != -1)
 					{

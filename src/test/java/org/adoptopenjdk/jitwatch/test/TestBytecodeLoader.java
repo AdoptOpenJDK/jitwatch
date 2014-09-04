@@ -345,11 +345,11 @@ public class TestBytecodeLoader
 
 		assertEquals(4, instructions.size());
 
-		LineTable lineTable = classBytecode.getLineTable();
+		LineTable lineTable = memberBytecode.getLineTable();
 
-		assertEquals(2, lineTable.size());
+		assertEquals(1, lineTable.size());
 
-		LineTableEntry entry = lineTable.get(7);
+		LineTableEntry entry = lineTable.getEntryForSourceLine(7);
 
 		int offset = entry.getBytecodeOffset();
 
@@ -363,8 +363,10 @@ public class TestBytecodeLoader
 		List<BytecodeInstruction> instructions2 = memberBytecode2.getInstructions();
 
 		assertEquals(3, instructions2.size());
+		
+		LineTable lineTable2 = memberBytecode2.getLineTable();
 
-		LineTableEntry entry2 = lineTable.get(3);
+		LineTableEntry entry2 = lineTable2.getEntryForSourceLine(3);
 
 		int offset2 = entry2.getBytecodeOffset();
 
@@ -484,14 +486,27 @@ public class TestBytecodeLoader
 		assertEquals(false, i5.hasParameters());
 		assertEquals(0, i5.getParameters().size());
 
-		LineTable lineTable = classBytecode.getLineTable();
+		LineTable lineTable = memberBytecode.getLineTable();
 
 		assertEquals(2, lineTable.size());
 
-		assertEquals(0, lineTable.get(65).getBytecodeOffset());
-		assertEquals(8, lineTable.get(66).getBytecodeOffset());
+		assertEquals(0, lineTable.getEntryForSourceLine(65).getBytecodeOffset());
+		assertEquals(8, lineTable.getEntryForSourceLine(66).getBytecodeOffset());
 
-		assertEquals("public void measureWrong()", lineTable.get(65).getMemberSignature());	
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(0));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(1));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(2));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(3));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(4));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(5));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(6));
+		assertEquals(65, lineTable.findSourceLineForBytecodeOffset(7));
+		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(8));
+		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(9));
+		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(100));
+
+		
+		assertEquals("public void measureWrong()", lineTable.getEntryForSourceLine(65).getMemberSignature());	
 	}
 	
 	@Test

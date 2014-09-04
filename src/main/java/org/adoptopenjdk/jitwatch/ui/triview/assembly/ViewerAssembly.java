@@ -52,7 +52,6 @@ public class ViewerAssembly extends Viewer
 			}
 		}
 		
-
 		for (AssemblyBlock block : asmMethod.getBlocks())
 		{
 			String title = block.getTitle();

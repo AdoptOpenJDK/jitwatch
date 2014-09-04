@@ -151,19 +151,25 @@ public class Viewer extends VBox
 		focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
 			{
-				scrollPane.requestFocus();
+				if (hasFocus)
+				{
+					scrollPane.requestFocus();
+				}
 			}
 		});
 
 		scrollPane.focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
 			{
-				lineListener.lineHighlighted(scrollIndex, lineType);
-				highlightLine(scrollIndex);
+				if (hasFocus)
+				{
+					lineListener.lineHighlighted(scrollIndex, lineType);
+					highlightLine(scrollIndex);
+				}
 			}
 		});
 
