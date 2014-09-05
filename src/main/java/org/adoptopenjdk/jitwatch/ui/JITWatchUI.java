@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -30,6 +31,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -464,6 +467,16 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		btnErrorLog.setStyle("-fx-padding: 2 6;");
 
 		lblHeap = new Label();
+		
+		Label lblVmVersion = new Label();
+		
+		StringBuilder vmBuilder = new StringBuilder();
+		vmBuilder.append("VM is ");
+		vmBuilder.append(Runtime.class.getPackage().getImplementationVendor());
+		vmBuilder.append(C_SPACE);
+		vmBuilder.append(Runtime.class.getPackage().getImplementationVersion());
+
+		lblVmVersion.setText(vmBuilder.toString());
 
 		int menuBarHeight = 40;
 		int textAreaHeight = 100;
@@ -522,7 +535,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 
 		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
-
+		
 		if (hsLogFile == null)
 		{
 			log("Choose a HotSpot log file or open the Sandbox");
@@ -536,12 +549,21 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		spMain.setDividerPositions(0.68, 0.32);
 
 		HBox hboxBottom = new HBox();
+		
+		Region spring = new Region();
 
+		HBox.setHgrow(spring, Priority.ALWAYS);
+		
+		lblHeap.setStyle("-fx-padding: 3 0 0 0;");
+		lblVmVersion.setStyle("-fx-padding: 3 0 0 0;");
+		
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
+		hboxBottom.getChildren().add(spring);
+		hboxBottom.getChildren().add(lblVmVersion);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
