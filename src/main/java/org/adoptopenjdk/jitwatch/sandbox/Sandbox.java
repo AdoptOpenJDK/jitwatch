@@ -217,6 +217,13 @@ public class Sandbox
 				options.add("-XX:PrintAssemblyOptions=intel");
 			}
 		}
+		
+		boolean isDisableInlining = logParser.getConfig().isDisableInlining();
+		
+		if (isDisableInlining)
+		{
+			options.add("-XX:-Inline");
+		}
 
 		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
 
@@ -233,19 +240,19 @@ public class Sandbox
 
 		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
 		{
-			options.add("-XX:+TieredCompilation");
+			options.add("-XX:+UseCompressedOops");
 		}
 		else if (oopsMode == CompressedOops.FORCE_NO_COMPRESSED)
 		{
-			options.add("-XX:-TieredCompilation");
+			options.add("-XX:-UseCompressedOops");
 		}
 
-		if (logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
 			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());
 		}
 
-		if (logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
 		{
 			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
 		}

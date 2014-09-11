@@ -36,12 +36,14 @@ import javafx.stage.WindowEvent;
 
 public class SandboxConfigStage extends Stage
 {
-    private static final String DEFAULT_DISPLAY_STYLE = "-fx-padding:0px 8px 0px 0px";
-    private TextField txtFreqInline;
+	private static final String DEFAULT_DISPLAY_STYLE = "-fx-padding:0px 8px 0px 0px";
+	private TextField txtFreqInline;
 	private TextField txtMaxInline;
 	private TextField txtCompilerThreshold;
 
 	private CheckBox checkBoxPrintAssembly;
+	private CheckBox checkBoxDisableInlining;
+
 	private static final int labelWidth = 150;
 
 	private static final Logger logger = LoggerFactory.getLogger(SandboxConfigStage.class);
@@ -74,32 +76,26 @@ public class SandboxConfigStage extends Stage
 		hboxButtons.getChildren().add(btnSave);
 
 		vbox.getChildren().add(chooserClasses);
-		
+
 		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.4));
 
 		vbox.getChildren().add(buildCheckBoxPrintAssembly(config));
-		
+
 		vbox.getChildren().add(buildHBoxAssemblySyntax(config));
 
 		vbox.getChildren().add(buildHBoxTieredCompilation(config));
-		
+
 		vbox.getChildren().add(buildHBoxCompressedOops(config));
-		
-		HBox hboxCompilerSettings = new HBox();
 
-		hboxCompilerSettings.setSpacing(20);
+		vbox.getChildren().add(buildHBoxInliningSettings(config));
 
-		buildHBoxFreqInline(hboxCompilerSettings, config);
-		buildHBoxMaxInline(hboxCompilerSettings, config);
-		buildHBoxCompilationThreshold(hboxCompilerSettings, config);
-		
-		vbox.getChildren().add(hboxCompilerSettings);
+		vbox.getChildren().add(buildHBoxCompilationThresholds(config));
 
 		vbox.getChildren().add(hboxButtons);
 
 		setTitle("Sandbox Configuration");
 
-		Scene scene = new Scene(vbox, 720, 460);
+		Scene scene = new Scene(vbox, 720, 480);
 
 		setScene(scene);
 
@@ -113,78 +109,83 @@ public class SandboxConfigStage extends Stage
 		});
 	}
 
-    private EventHandler<ActionEvent> getEventHandlerForCancelButton(final IStageCloseListener parent) {
-        return new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                parent.handleStageClosed(SandboxConfigStage.this);
-                close();
-            }
-        };
-    }
+	private EventHandler<ActionEvent> getEventHandlerForCancelButton(final IStageCloseListener parent)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.handleStageClosed(SandboxConfigStage.this);
+				close();
+			}
+		};
+	}
 
-    private EventHandler<ActionEvent> getEventHandlerForSaveButton(final IStageCloseListener parent,
-                                                                   final JITWatchConfig config,
-                                                                   final FileChooserList chooserClasses) {
-        return new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                config.setClassLocations(chooserClasses.getFiles());
+	private EventHandler<ActionEvent> getEventHandlerForSaveButton(final IStageCloseListener parent, final JITWatchConfig config,
+			final FileChooserList chooserClasses)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				config.setClassLocations(chooserClasses.getFiles());
 
-                setFrequencyOfInlineSize(config);
+				setFrequencyOfInlineSize(config);
 
-                setMaximumInlineSize(config);
+				setMaximumInlineSize(config);
 
-                setCompilerThreshold(config);
+				setCompilerThreshold(config);
 
-                config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
+				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
+				config.setDisableInlining(checkBoxDisableInlining.isSelected());
 
-                config.saveConfig();
+				config.saveConfig();
 
-                parent.handleStageClosed(SandboxConfigStage.this);
-                close();
-            }
-        };
-    }
+				parent.handleStageClosed(SandboxConfigStage.this);
+				close();
+			}
+		};
+	}
 
-    private void setCompilerThreshold(JITWatchConfig config) {
-        try
-        {
-            config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
-        }
-        catch (NumberFormatException nfe)
-        {
-            logger.error("Bad CompilerThreshold value", nfe);
-        }
-    }
+	private void setCompilerThreshold(JITWatchConfig config)
+	{
+		try
+		{
+			config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
+		}
+		catch (NumberFormatException nfe)
+		{
+			logger.error("Bad CompilerThreshold value", nfe);
+		}
+	}
 
-    private void setMaximumInlineSize(JITWatchConfig config) {
-        try
-        {
-            config.setMaxInlineSize(Integer.parseInt(txtMaxInline.getText()));
-        }
-        catch (NumberFormatException nfe)
-        {
-            logger.error("Bad MaxInlineSize value", nfe);
-        }
-    }
+	private void setMaximumInlineSize(JITWatchConfig config)
+	{
+		try
+		{
+			config.setMaxInlineSize(Integer.parseInt(txtMaxInline.getText()));
+		}
+		catch (NumberFormatException nfe)
+		{
+			logger.error("Bad MaxInlineSize value", nfe);
+		}
+	}
 
-    private void setFrequencyOfInlineSize(JITWatchConfig config) {
-        try
-        {
-            config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
-        }
-        catch (NumberFormatException nfe)
-        {
-            logger.error("Bad FreqInlineSize value", nfe);
-        }
-    }
+	private void setFrequencyOfInlineSize(JITWatchConfig config)
+	{
+		try
+		{
+			config.setFreqInlineSize(Integer.parseInt(txtFreqInline.getText()));
+		}
+		catch (NumberFormatException nfe)
+		{
+			logger.error("Bad FreqInlineSize value", nfe);
+		}
+	}
 
-    private HBox buildHBoxAssemblySyntax(final JITWatchConfig config)
+	private HBox buildHBoxAssemblySyntax(final JITWatchConfig config)
 	{
 		final RadioButton rbATT = new RadioButton("AT&T");
 		final RadioButton rbIntel = new RadioButton("Intel");
@@ -197,14 +198,14 @@ public class SandboxConfigStage extends Stage
 
 		rbATT.setToggleGroup(groupAssemblySyntax);
 		rbIntel.setToggleGroup(groupAssemblySyntax);
-		
+
 		rbATT.setStyle(DEFAULT_DISPLAY_STYLE);
 
 		rbATT.setSelected(!intelMode);
 		rbIntel.setSelected(intelMode);
 
 		groupAssemblySyntax.selectedToggleProperty().addListener(
-                getChangeListenerForGroupAssemblySyntax(config, rbIntel, groupAssemblySyntax));
+				getChangeListenerForGroupAssemblySyntax(config, rbIntel, groupAssemblySyntax));
 
 		HBox hbox = new HBox();
 
@@ -219,23 +220,25 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-    private ChangeListener<Toggle> getChangeListenerForGroupAssemblySyntax(final JITWatchConfig config, final RadioButton rbIntel, final ToggleGroup groupAssemblySyntax) {
-        return new ChangeListener<Toggle>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
-            {
-                if (groupAssemblySyntax.getSelectedToggle() != null)
-                {
-                    boolean nextIntelMode = groupAssemblySyntax.getSelectedToggle().equals(rbIntel);
+	private ChangeListener<Toggle> getChangeListenerForGroupAssemblySyntax(final JITWatchConfig config, final RadioButton rbIntel,
+			final ToggleGroup groupAssemblySyntax)
+	{
+		return new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				if (groupAssemblySyntax.getSelectedToggle() != null)
+				{
+					boolean nextIntelMode = groupAssemblySyntax.getSelectedToggle().equals(rbIntel);
 
-                    config.setSandboxIntelMode(nextIntelMode);
-                }
-            }
-        };
-    }
+					config.setSandboxIntelMode(nextIntelMode);
+				}
+			}
+		};
+	}
 
-    private HBox buildHBoxTieredCompilation(final JITWatchConfig config)
+	private HBox buildHBoxTieredCompilation(final JITWatchConfig config)
 	{
 		final RadioButton rbVMDefault = new RadioButton("VM Default");
 		final RadioButton rbForceTiered = new RadioButton("-XX:+TieredCompilation");
@@ -271,8 +274,8 @@ public class SandboxConfigStage extends Stage
 		rbForceTiered.setToggleGroup(groupTiered);
 		rbForceNoTiered.setToggleGroup(groupTiered);
 
-		groupTiered.selectedToggleProperty().addListener(getChangeListenerForGroupTiered(
-                        config, rbVMDefault, rbForceTiered, rbForceNoTiered, groupTiered));
+		groupTiered.selectedToggleProperty().addListener(
+				getChangeListenerForGroupTiered(config, rbVMDefault, rbForceTiered, rbForceNoTiered, groupTiered));
 
 		HBox hbox = new HBox();
 
@@ -288,46 +291,52 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-    private ChangeListener<Toggle> getChangeListenerForGroupTiered(final JITWatchConfig config, final RadioButton rbVMDefault, final RadioButton rbForceTiered, final RadioButton rbForceNoTiered, final ToggleGroup groupTiered) {
-        return new ChangeListener<Toggle>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
-            {
-                if (groupTiered.getSelectedToggle() != null)
-                {
-                    setTieredCompilationModeToVMDefault(groupTiered, rbVMDefault, config);
+	private ChangeListener<Toggle> getChangeListenerForGroupTiered(final JITWatchConfig config, final RadioButton rbVMDefault,
+			final RadioButton rbForceTiered, final RadioButton rbForceNoTiered, final ToggleGroup groupTiered)
+	{
+		return new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				if (groupTiered.getSelectedToggle() != null)
+				{
+					setTieredCompilationModeToVMDefault(groupTiered, rbVMDefault, config);
 
-                    orSetTieredCompilationModeToForceTiered(groupTiered, rbForceTiered, config);
+					orSetTieredCompilationModeToForceTiered(groupTiered, rbForceTiered, config);
 
-                    orSetTieredCompilationModeToForceNoTiered(groupTiered, rbForceNoTiered, config);
-                }
-            }
-        };
-    }
+					orSetTieredCompilationModeToForceNoTiered(groupTiered, rbForceNoTiered, config);
+				}
+			}
+		};
+	}
 
-    private void orSetTieredCompilationModeToForceNoTiered(ToggleGroup groupTiered, RadioButton rbForceNoTiered, JITWatchConfig config) {
-        if (groupTiered.getSelectedToggle().equals(rbForceNoTiered))
-        {
-            config.setTieredCompilationMode(TieredCompilation.FORCE_NO_TIERED);
-        }
-    }
+	private void orSetTieredCompilationModeToForceNoTiered(ToggleGroup groupTiered, RadioButton rbForceNoTiered,
+			JITWatchConfig config)
+	{
+		if (groupTiered.getSelectedToggle().equals(rbForceNoTiered))
+		{
+			config.setTieredCompilationMode(TieredCompilation.FORCE_NO_TIERED);
+		}
+	}
 
-    private void orSetTieredCompilationModeToForceTiered(ToggleGroup groupTiered, RadioButton rbForceTiered, JITWatchConfig config) {
-        if (groupTiered.getSelectedToggle().equals(rbForceTiered))
-        {
-            config.setTieredCompilationMode(TieredCompilation.FORCE_TIERED);
-        }
-    }
+	private void orSetTieredCompilationModeToForceTiered(ToggleGroup groupTiered, RadioButton rbForceTiered, JITWatchConfig config)
+	{
+		if (groupTiered.getSelectedToggle().equals(rbForceTiered))
+		{
+			config.setTieredCompilationMode(TieredCompilation.FORCE_TIERED);
+		}
+	}
 
-    private void setTieredCompilationModeToVMDefault(ToggleGroup groupTiered, RadioButton rbVMDefault, JITWatchConfig config) {
-        if (groupTiered.getSelectedToggle().equals(rbVMDefault))
-        {
-            config.setTieredCompilationMode(TieredCompilation.VM_DEFAULT);
-        }
-    }
+	private void setTieredCompilationModeToVMDefault(ToggleGroup groupTiered, RadioButton rbVMDefault, JITWatchConfig config)
+	{
+		if (groupTiered.getSelectedToggle().equals(rbVMDefault))
+		{
+			config.setTieredCompilationMode(TieredCompilation.VM_DEFAULT);
+		}
+	}
 
-    private HBox buildHBoxCompressedOops(final JITWatchConfig config)
+	private HBox buildHBoxCompressedOops(final JITWatchConfig config)
 	{
 		final RadioButton rbVMDefault = new RadioButton("VM Default");
 		final RadioButton rbForceCompressed = new RadioButton("-XX:+UseCompressedOops");
@@ -363,8 +372,8 @@ public class SandboxConfigStage extends Stage
 		rbForceCompressed.setToggleGroup(groupOops);
 		rbForceNoCompressed.setToggleGroup(groupOops);
 
-		groupOops.selectedToggleProperty().addListener(getChangeListenerForGroupOops(
-                config, rbVMDefault, rbForceCompressed, rbForceNoCompressed, groupOops));
+		groupOops.selectedToggleProperty().addListener(
+				getChangeListenerForGroupOops(config, rbVMDefault, rbForceCompressed, rbForceNoCompressed, groupOops));
 
 		HBox hbox = new HBox();
 
@@ -380,48 +389,87 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-    private ChangeListener<Toggle> getChangeListenerForGroupOops(final JITWatchConfig config, final RadioButton rbVMDefault, final RadioButton rbForceCompressed, final RadioButton rbForceNoCompressed, final ToggleGroup groupOops) {
-        return new ChangeListener<Toggle>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
-            {
-                if (groupOops.getSelectedToggle() != null)
-                {
-                    setCompressedOopsModeToVMDefault(groupOops, rbVMDefault, config);
-                    orSetCompressedOopsModeToForcedCompreessed(groupOops, rbForceCompressed, config);
-                    orSetCompressedOopsModeToForceNoCompressed(groupOops, rbForceNoCompressed, config);
-                }
-            }
-        };
-    }
+	private HBox buildHBoxInliningSettings(final JITWatchConfig config)
+	{
+		HBox hbox = new HBox();
 
-    private void orSetCompressedOopsModeToForceNoCompressed(ToggleGroup groupOops, RadioButton rbForceNoCompressed, JITWatchConfig config) {
-        if (groupOops.getSelectedToggle().equals(rbForceNoCompressed))
-        {
-            config.setCompressedOopsMode(CompressedOops.FORCE_NO_COMPRESSED);
-        }
-    }
+		hbox.setSpacing(20);
 
-    private void orSetCompressedOopsModeToForcedCompreessed(ToggleGroup groupOops, RadioButton rbForceCompressed, JITWatchConfig config) {
-        if (groupOops.getSelectedToggle().equals(rbForceCompressed))
-        {
-            config.setCompressedOopsMode(CompressedOops.FORCE_COMPRESSED);
-        }
-    }
+		hbox.getChildren().add(buildCheckBoxDisableInlining(config));
+		buildHBoxFreqInline(hbox, config);
+		buildHBoxMaxInline(hbox, config);
 
-    private void setCompressedOopsModeToVMDefault(ToggleGroup groupOops, RadioButton rbVMDefault, JITWatchConfig config) {
-        if (groupOops.getSelectedToggle().equals(rbVMDefault))
-        {
-            config.setCompressedOopsMode(CompressedOops.VM_DEFAULT);
-        }
-    }
+		return hbox;
+	}
 
-    private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
+	private HBox buildHBoxCompilationThresholds(final JITWatchConfig config)
+	{
+		HBox hbox = new HBox();
+
+		hbox.setSpacing(20);
+
+		txtCompilerThreshold = new TextField(Integer.toString(config.getCompilerThreshold()));
+		txtCompilerThreshold.setMaxWidth(70);
+		txtCompilerThreshold.setAlignment(Pos.BASELINE_RIGHT);
+
+		Label label = new Label("-XX:CompilationThreshold:");
+
+		hbox.getChildren().add(label);
+		hbox.getChildren().add(txtCompilerThreshold);
+		return hbox;
+
+	}
+
+	private ChangeListener<Toggle> getChangeListenerForGroupOops(final JITWatchConfig config, final RadioButton rbVMDefault,
+			final RadioButton rbForceCompressed, final RadioButton rbForceNoCompressed, final ToggleGroup groupOops)
+	{
+		return new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				if (groupOops.getSelectedToggle() != null)
+				{
+					setCompressedOopsModeToVMDefault(groupOops, rbVMDefault, config);
+					orSetCompressedOopsModeToForcedCompreessed(groupOops, rbForceCompressed, config);
+					orSetCompressedOopsModeToForceNoCompressed(groupOops, rbForceNoCompressed, config);
+				}
+			}
+		};
+	}
+
+	private void orSetCompressedOopsModeToForceNoCompressed(ToggleGroup groupOops, RadioButton rbForceNoCompressed,
+			JITWatchConfig config)
+	{
+		if (groupOops.getSelectedToggle().equals(rbForceNoCompressed))
+		{
+			config.setCompressedOopsMode(CompressedOops.FORCE_NO_COMPRESSED);
+		}
+	}
+
+	private void orSetCompressedOopsModeToForcedCompreessed(ToggleGroup groupOops, RadioButton rbForceCompressed,
+			JITWatchConfig config)
+	{
+		if (groupOops.getSelectedToggle().equals(rbForceCompressed))
+		{
+			config.setCompressedOopsMode(CompressedOops.FORCE_COMPRESSED);
+		}
+	}
+
+	private void setCompressedOopsModeToVMDefault(ToggleGroup groupOops, RadioButton rbVMDefault, JITWatchConfig config)
+	{
+		if (groupOops.getSelectedToggle().equals(rbVMDefault))
+		{
+			config.setCompressedOopsMode(CompressedOops.VM_DEFAULT);
+		}
+	}
+
+	private void buildHBoxFreqInline(HBox hbCompilerSettings, final JITWatchConfig config)
 	{
 		txtFreqInline = new TextField(Integer.toString(config.getFreqInlineSize()));
 		txtFreqInline.setMaxWidth(50);
 		txtFreqInline.setAlignment(Pos.BASELINE_RIGHT);
+		txtFreqInline.setDisable(config.isDisableInlining());
 
 		Label label = new Label("-XX:FreqInlineSize:");
 
@@ -434,29 +482,18 @@ public class SandboxConfigStage extends Stage
 		txtMaxInline = new TextField(Integer.toString(config.getMaxInlineSize()));
 		txtMaxInline.setMaxWidth(50);
 		txtMaxInline.setAlignment(Pos.BASELINE_RIGHT);
+		txtMaxInline.setDisable(config.isDisableInlining());
 
 		Label label = new Label("-XX:MaxInlineSize:");
 
 		hbCompilerSettings.getChildren().add(label);
 		hbCompilerSettings.getChildren().add(txtMaxInline);
 	}
-	
-	private void buildHBoxCompilationThreshold(HBox hbCompilerSettings, final JITWatchConfig config)
-	{
-		txtCompilerThreshold = new TextField(Integer.toString(config.getCompilerThreshold()));
-		txtCompilerThreshold.setMaxWidth(70);
-		txtCompilerThreshold.setAlignment(Pos.BASELINE_RIGHT);
-
-		Label label = new Label("-XX:CompilationThreshold:");
-
-		hbCompilerSettings.getChildren().add(label);
-		hbCompilerSettings.getChildren().add(txtCompilerThreshold);
-	}
 
 	private CheckBox buildCheckBoxPrintAssembly(final JITWatchConfig config)
 	{
 		checkBoxPrintAssembly = new CheckBox("Disassemble native code");
-		
+
 		boolean checked = false;
 
 		if (DisassemblyUtil.isDisassemblerAvailable())
@@ -474,5 +511,24 @@ public class SandboxConfigStage extends Stage
 		checkBoxPrintAssembly.setSelected(checked);
 
 		return checkBoxPrintAssembly;
+	}
+	
+	private CheckBox buildCheckBoxDisableInlining(final JITWatchConfig config)
+	{
+		checkBoxDisableInlining = new CheckBox("Disable Inlining (-XX:-Inline)");
+
+		checkBoxDisableInlining.setSelected(config.isDisableInlining());
+		
+		checkBoxDisableInlining.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				txtFreqInline.setDisable(newVal);
+				txtMaxInline.setDisable(newVal);
+			}
+		});
+
+		return checkBoxDisableInlining;
 	}
 }

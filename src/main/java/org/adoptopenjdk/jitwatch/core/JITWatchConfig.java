@@ -51,6 +51,7 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_FREQ_INLINE_SIZE = SANDBOX_PREFIX + ".freq.inline.size";
 	private static final String KEY_SANDBOX_MAX_INLINE_SIZE = SANDBOX_PREFIX + ".max.inline.size";
 	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = SANDBOX_PREFIX + ".print.assembly";
+	private static final String KEY_SANDBOX_DISABLE_INLINING = SANDBOX_PREFIX + ".disable.inlining";
 	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
 
 	private static final String KEY_LAST_PROFILE = "last.profile";
@@ -70,6 +71,8 @@ public class JITWatchConfig
 	private int freqInlineSize;
 	private int maxInlineSize;
 	private boolean printAssembly;
+	private boolean disableInlining = false;
+
 	private int compilerThreshold;
 
 	private String profileName = S_PROFILE_DEFAULT;
@@ -305,6 +308,7 @@ public class JITWatchConfig
 		maxInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
 
 		printAssembly = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, true);
+		disableInlining = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, false);
 
 		compilerThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
@@ -441,7 +445,9 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, Integer.toString(maxInlineSize));
 
 		putProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
-
+		
+		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
+		
 		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
 	}
 
@@ -605,6 +611,16 @@ public class JITWatchConfig
 	public void setPrintAssembly(boolean printAssembly)
 	{
 		this.printAssembly = printAssembly;
+	}
+	
+	public boolean isDisableInlining()
+	{
+		return disableInlining;
+	}
+
+	public void setDisableInlining(boolean disableInlining)
+	{
+		this.disableInlining = disableInlining;
 	}
 
 	public int getCompilerThreshold()

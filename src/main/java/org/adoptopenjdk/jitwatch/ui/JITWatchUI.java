@@ -551,11 +551,13 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		HBox hboxBottom = new HBox();
 		
 		Region spring = new Region();
+		
+		final String labelStyle = "-fx-padding: 3 0 0 0;";
 
 		HBox.setHgrow(spring, Priority.ALWAYS);
 		
-		lblHeap.setStyle("-fx-padding: 3 0 0 0;");
-		lblVmVersion.setStyle("-fx-padding: 3 0 0 0;");
+		lblHeap.setStyle(labelStyle);
+		lblVmVersion.setStyle(labelStyle);
 		
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
