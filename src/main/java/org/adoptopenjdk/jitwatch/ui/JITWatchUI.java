@@ -21,7 +21,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -94,8 +93,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private TableView<AttributeTableRow> attributeTableView;
 	private ObservableList<AttributeTableRow> memberAttrList;
-
-	private StageManager stageManager = new StageManager();
 
 	private TextArea textAreaLog;
 
@@ -265,7 +262,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				stageManager.closeAll();
+				StageManager.closeAll();
 
 				stopParsing();
 			}
@@ -302,9 +299,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 						if (getConfig().isShowNothingMounted())
 						{
 							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-							nothingMountedStage.show();
 
-							stageManager.add(nothingMountedStage);
+							StageManager.addAndShow(nothingMountedStage);
 
 							startDelayedByConfig = true;
 						}
@@ -345,9 +341,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
-				timeLineStage.show();
 
-				stageManager.add(timeLineStage);
+				StageManager.addAndShow(timeLineStage);
 
 				btnTimeLine.setDisable(true);
 			}
@@ -360,9 +355,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
-				statsStage.show();
 
-				stageManager.add(statsStage);
+				StageManager.addAndShow(statsStage);
 
 				btnStats.setDisable(true);
 			}
@@ -375,9 +369,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
-				histoStage.show();
 
-				stageManager.add(histoStage);
+				StageManager.addAndShow(histoStage);
 
 				btnHisto.setDisable(true);
 			}
@@ -390,9 +383,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				topListStage = new TopListStage(JITWatchUI.this);
-				topListStage.show();
 
-				stageManager.add(topListStage);
+				StageManager.addAndShow(topListStage);
 
 				btnTopList.setDisable(true);
 			}
@@ -405,9 +397,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
-				codeCacheStage.show();
 
-				stageManager.add(codeCacheStage);
+				StageManager.addAndShow(codeCacheStage);
 
 				btnCodeCache.setDisable(true);
 			}
@@ -436,9 +427,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				suggestStage = new SuggestStage(JITWatchUI.this);
 
-				suggestStage.show();
-
-				stageManager.add(suggestStage);
+				StageManager.addAndShow(suggestStage);
 
 				btnSuggest.setDisable(true);
 			}
@@ -598,9 +587,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		if (configStage == null)
 		{
 			configStage = new MainConfigStage(this, this, getConfig());
-			configStage.show();
 
-			stageManager.add(configStage);
+			StageManager.addAndShow(configStage);
 
 			btnConfigure.setDisable(true);
 		}
@@ -613,9 +601,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			triViewStage = new TriView(JITWatchUI.this, getConfig());
 
-			triViewStage.show();
-
-			stageManager.add(triViewStage);
+			StageManager.addAndShow(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -632,9 +618,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			sandBoxStage = new SandboxStage(this, this, logParser);
 
-			sandBoxStage.show();
-
-			stageManager.add(sandBoxStage);
+			StageManager.addAndShow(sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
@@ -647,9 +631,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			browserStage = new BrowserStage(JITWatchUI.this);
 
-			browserStage.show();
-
-			stageManager.add(browserStage);
+			StageManager.addAndShow(browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -730,8 +712,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
-		tvs.show();
-		stageManager.add(tvs);
+		StageManager.addAndShow(tvs);
 	}
 
 	public void openTextViewer(String title, String content)
@@ -751,9 +732,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				CompileChainStage ccs = new CompileChainStage(this, root);
 
-				ccs.show();
-
-				stageManager.add(ccs);
+				StageManager.addAndShow(ccs);
 			}
 			else
 			{
@@ -773,8 +752,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	void openJournalViewer(String title, Journal journal)
 	{
 		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
-		jvs.show();
-		stageManager.add(jvs);
+		StageManager.addAndShow(jvs);
 	}
 
 	private void chooseHotSpotFile()
@@ -936,7 +914,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		stageManager.remove(stage);
+		StageManager.remove(stage);
 
 		// map?
 		if (stage instanceof TimeLineStage)

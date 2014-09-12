@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.util;
 
 import org.slf4j.Logger;
@@ -13,10 +18,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class NetUtil
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private NetUtil()
 	{
 	}

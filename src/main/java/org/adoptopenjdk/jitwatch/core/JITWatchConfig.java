@@ -38,6 +38,9 @@ public class JITWatchConfig
 	private static final String KEY_SOURCE_LOCATIONS = "Sources";
 	private static final String KEY_CLASS_LOCATIONS = "Classes";
 
+	private static final String KEY_VM_LANGUAGE_COMPILER = "vm.language.compiler";
+	private static final String KEY_VM_LANGUAGE_RUNTIME = "vm.language.runtime";
+
 	private static final String KEY_SHOW_JIT_ONLY_MEMBERS = "JitOnly";
 	private static final String KEY_SHOW_JIT_ONLY_CLASSES = "JitOnlyClasses";
 	private static final String KEY_SHOW_HIDE_INTERFACES = "HideInterfaces";
@@ -80,7 +83,7 @@ public class JITWatchConfig
 	private File propertiesFile = new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 
 	private Properties loadedProps;
-	
+
 	private String preSandboxProfile = S_PROFILE_DEFAULT;
 
 	public JITWatchConfig()
@@ -100,7 +103,7 @@ public class JITWatchConfig
 		{
 			logger.debug("initialise: {}", propertiesFile);
 		}
-		
+
 		loadedProps = new Properties();
 		loadPropertiesFromFile();
 	}
@@ -111,28 +114,28 @@ public class JITWatchConfig
 		{
 			logger.debug("switchToSandbox()");
 		}
-		
+
 		preSandboxProfile = profileName;
 		setProfileName(S_PROFILE_SANDBOX);
 	}
-	
+
 	public void switchFromSandbox()
 	{
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("switchFromSandbox()");
 		}
-		
+
 		setProfileName(preSandboxProfile);
 	}
-	
+
 	public JITWatchConfig clone()
 	{
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("clone()");
 		}
-		
+
 		JITWatchConfig copy = new JITWatchConfig();
 
 		marshalConfigToProperties();
@@ -152,7 +155,7 @@ public class JITWatchConfig
 		{
 			logger.debug("setProfileName: {}", name);
 		}
-		
+
 		unmarshalPropertiesToConfig();
 
 		marshalConfigToProperties();
@@ -171,23 +174,23 @@ public class JITWatchConfig
 		{
 			logger.debug("deleteProfile: {}", name);
 		}
-		
+
 		if (name != null && !isBuiltInProfile(name))
 		{
-			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS,
-					KEY_SHOW_JIT_ONLY_MEMBERS, KEY_SHOW_JIT_ONLY_CLASSES, KEY_SHOW_HIDE_INTERFACES };
+			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS, KEY_SHOW_JIT_ONLY_MEMBERS,
+					KEY_SHOW_JIT_ONLY_CLASSES, KEY_SHOW_HIDE_INTERFACES };
 
 			for (String key : keys)
 			{
 				String deletePropertyKey = key + S_DOT + name;
-								
+
 				loadedProps.remove(deletePropertyKey);
 			}
 
 			setProfileName(S_PROFILE_DEFAULT);
 		}
 	}
-	
+
 	public boolean isBuiltInProfile(String profileName)
 	{
 		return S_PROFILE_DEFAULT.equals(profileName) || S_PROFILE_SANDBOX.equals(profileName);
@@ -229,7 +232,7 @@ public class JITWatchConfig
 		{
 			logger.debug("loadPropertiesFromFile({})", propertiesFile);
 		}
-		
+
 		try (FileReader fr = new FileReader(propertiesFile))
 		{
 			loadedProps.load(fr);
@@ -244,7 +247,7 @@ public class JITWatchConfig
 		}
 
 		profileName = loadedProps.getProperty(KEY_LAST_PROFILE, S_PROFILE_DEFAULT);
-		
+
 		if (S_PROFILE_SANDBOX.equals(profileName))
 		{
 			logger.debug("Resetting last used profile to Default from Sandbox");
@@ -260,7 +263,7 @@ public class JITWatchConfig
 		{
 			logger.debug("unmarshalPropertiesToConfig({})", profileName);
 		}
-		
+
 		classLocations = loadLocationsFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
 		sourceLocations = loadLocationsFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
 
@@ -360,7 +363,7 @@ public class JITWatchConfig
 
 		props.put(putName, value);
 	}
-	
+
 	private String getProfilePropertyName(final String propertyName)
 	{
 		String result = propertyName;
@@ -372,10 +375,10 @@ public class JITWatchConfig
 				result = propertyName + S_DOT + profileName;
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	private boolean isSandboxProperty(String propertyName)
 	{
 		return propertyName.startsWith(SANDBOX_PREFIX);
@@ -387,7 +390,7 @@ public class JITWatchConfig
 		{
 			logger.debug("saveConfig()");
 		}
-		
+
 		marshalConfigToProperties();
 		savePropertiesToFile();
 	}
@@ -398,7 +401,7 @@ public class JITWatchConfig
 		{
 			logger.debug("marshalConfigToProperties({})", profileName);
 		}
-		
+
 		loadedProps.put(KEY_LAST_PROFILE, profileName);
 
 		putProperty(loadedProps, KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
@@ -445,9 +448,9 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, Integer.toString(maxInlineSize));
 
 		putProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
-		
+
 		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
-		
+
 		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
 	}
 
@@ -457,7 +460,7 @@ public class JITWatchConfig
 		{
 			logger.debug("savePropertiesToFile({})", propertiesFile);
 		}
-		
+
 		try (FileWriter fw = new FileWriter(propertiesFile))
 		{
 			loadedProps.store(fw, null);
@@ -612,7 +615,7 @@ public class JITWatchConfig
 	{
 		this.printAssembly = printAssembly;
 	}
-	
+
 	public boolean isDisableInlining()
 	{
 		return disableInlining;
@@ -641,5 +644,73 @@ public class JITWatchConfig
 	public void setCompressedOopsMode(CompressedOops compressedOopsMode)
 	{
 		this.compressedOopsMode = compressedOopsMode;
+	}
+
+	public void addOrUpdateVMLanguage(String language, String compilerPath, String runtimePath)
+	{
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+		
+		loadedProps.setProperty(compilerKey, compilerPath);
+		loadedProps.setProperty(runtimeKey, runtimePath);
+	}
+
+	public String getVMLanguageCompilerPath(String language)
+	{
+		String result = S_EMPTY;
+		
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+
+		if (loadedProps.containsKey(compilerKey))
+		{
+			result = loadedProps.getProperty(compilerKey);
+		}
+		
+		return result;
+	}
+
+	public String getVMLanguageRuntimePath(String language)
+	{
+		String result = S_EMPTY;
+		
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+
+		if (loadedProps.containsKey(runtimeKey))
+		{
+			result = loadedProps.getProperty(runtimeKey);
+		}
+		
+		return result;
+	}
+
+	public void removeVMLanguage(String language)
+	{
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+
+		loadedProps.remove(compilerKey);
+		loadedProps.remove(runtimeKey);
+	}
+
+	public List<String> getVMLanguageList()
+	{
+		List<String> languageList = new ArrayList<>();
+
+		for (Object key : loadedProps.keySet())
+		{
+			String keyString = key.toString();
+
+			if (keyString.startsWith(KEY_VM_LANGUAGE_COMPILER))
+			{
+				if (keyString.length() > KEY_VM_LANGUAGE_COMPILER.length())
+				{
+					String language = keyString.substring(1 + KEY_VM_LANGUAGE_COMPILER.length());
+
+					languageList.add(language);
+				}
+			}
+		}
+
+		return languageList;
 	}
 }

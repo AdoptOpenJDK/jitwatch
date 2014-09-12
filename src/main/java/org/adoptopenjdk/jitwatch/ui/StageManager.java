@@ -12,19 +12,24 @@ import javafx.stage.Stage;
 
 public class StageManager
 {
-	private List<Stage> openStages = new ArrayList<>();
+	private static List<Stage> openStages = new ArrayList<>();
 	
-	public void add(Stage stage)
+	private StageManager()
 	{
-		openStages.add(stage);
 	}
 	
-	public void remove(Stage stage)
+	public static void addAndShow(Stage stage)
+	{
+		openStages.add(stage);
+		stage.show();
+	}
+	
+	public static void remove(Stage stage)
 	{
 		openStages.remove(stage);
 	}
 
-	public void closeAll()
+	public static void closeAll()
 	{
 		for (Stage s : openStages)
 		{

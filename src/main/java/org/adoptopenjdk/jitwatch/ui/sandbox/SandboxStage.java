@@ -55,8 +55,6 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private SandboxConfigStage sandboxConfigStage;
 
-	private StageManager stageManager = new StageManager();
-
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
@@ -116,9 +114,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				sandboxConfigStage = new SandboxConfigStage(SandboxStage.this, parser.getConfig());
 
-				stageManager.add(sandboxConfigStage);
-
-				sandboxConfigStage.show();
+				StageManager.addAndShow(sandboxConfigStage);
 
 				btnSandboxConfig.setDisable(true);
 			}
@@ -178,7 +174,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				parser.getConfig().switchFromSandbox();
 
-				stageManager.closeAll();
+				StageManager.closeAll();
 				closeListener.handleStageClosed(SandboxStage.this);
 			}
 		});
@@ -334,20 +330,11 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		stageManager.remove(stage);
+		StageManager.remove(stage);
 
 		if (stage instanceof SandboxConfigStage)
 		{
 			btnSandboxConfig.setDisable(false);
 		}
-	}
-
-	@Override
-	public void close()
-	{
-		// ensure SandboxConfig closes when this stage is closed by JITWatchUI
-		stageManager.closeAll();
-		
-		super.close();
 	}
 }

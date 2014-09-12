@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.test;
 
 import static org.junit.Assert.*;
 
-import org.adoptopenjdk.jitwatch.histo.*;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.junit.Test;
