@@ -30,22 +30,70 @@ public class VMLanguageConfigStage extends Stage
 	private TextField tfLanguage;
 	private TextField tfCompilerPath;
 	private TextField tfRuntimePath;
+	
+	private IStageCloseListener parent;
+	private JITWatchConfig config;
 
 	public VMLanguageConfigStage(final IStageCloseListener parent, final JITWatchConfig config, final String language)
 	{
+		this.parent = parent;
+		this.config = config;
+		
 		initStyle(StageStyle.UTILITY);
 
 		VBox vbox = new VBox();
 
 		vbox.setPadding(new Insets(15));
-		vbox.setSpacing(15);
+		vbox.setSpacing(20);
+		
+		vbox.getChildren().add(getVBoxLanguage());
+		vbox.getChildren().add(getVBoxCompilerPath());
+		vbox.getChildren().add(getVBoxRuntimePath());
+
+		if (language != null)
+		{
+			tfLanguage.setText(language);
+			tfLanguage.setDisable(true);
+
+			tfCompilerPath.setText(config.getVMLanguageCompilerPath(language));
+			tfRuntimePath.setText(config.getVMLanguageRuntimePath(language));
+		}
+		
+		vbox.getChildren().add(getHBoxButtons());
+
+		setTitle("VM Language Configuration");
+
+		Scene scene = new Scene(vbox, 480, 250);
+
+		setScene(scene);
+
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(VMLanguageConfigStage.this);
+			}
+		});
+	}
+	
+	private VBox getVBoxLanguage()
+	{
+		VBox vbox = new VBox();
 
 		tfLanguage = new TextField();
-		tfCompilerPath = new TextField();
-		tfRuntimePath = new TextField();
 
 		vbox.getChildren().add(new Label("Language Name"));
 		vbox.getChildren().add(tfLanguage);
+		
+		return vbox;
+	}
+	
+	private VBox getVBoxCompilerPath()
+	{
+		VBox vbox = new VBox();
+		
+		tfCompilerPath = new TextField();
 
 		Button btnChooseCompilerPath = new Button("Choose");
 		btnChooseCompilerPath.setOnAction(new EventHandler<ActionEvent>()
@@ -62,15 +110,26 @@ public class VMLanguageConfigStage extends Stage
 			}
 		});
 
-		vbox.getChildren().add(new Label("Compiler Path"));
 		HBox hboxCompiler = new HBox();
+		hboxCompiler.setSpacing(10);
+
 		hboxCompiler.getChildren().add(tfCompilerPath);
 		hboxCompiler.getChildren().add(btnChooseCompilerPath);
 		
 		tfCompilerPath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.8));
 		btnChooseCompilerPath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.2));
-		
+
+		vbox.getChildren().add(new Label("Compiler Path"));
 		vbox.getChildren().add(hboxCompiler);
+		
+		return vbox;
+	}
+	
+	private VBox getVBoxRuntimePath()
+	{
+		VBox vbox = new VBox();
+		
+		tfRuntimePath = new TextField();
 
 		Button btnChooseRuntimePath = new Button("Choose");
 		btnChooseRuntimePath.setOnAction(new EventHandler<ActionEvent>()
@@ -87,29 +146,26 @@ public class VMLanguageConfigStage extends Stage
 			}
 		});
 
-		vbox.getChildren().add(new Label("Runtime Path"));
 		HBox hboxRuntime = new HBox();
+		hboxRuntime.setSpacing(10);
 		hboxRuntime.getChildren().add(tfRuntimePath);
 		hboxRuntime.getChildren().add(btnChooseRuntimePath);
 		
 		tfRuntimePath.prefWidthProperty().bind(hboxRuntime.widthProperty().multiply(0.8));
 		btnChooseRuntimePath.prefWidthProperty().bind(hboxRuntime.widthProperty().multiply(0.2));
 
+		vbox.getChildren().add(new Label("Runtime Path"));
 		vbox.getChildren().add(hboxRuntime);
-
-		if (language != null)
-		{
-			tfLanguage.setText(language);
-			tfLanguage.setDisable(true);
-
-			tfCompilerPath.setText(config.getVMLanguageCompilerPath(language));
-			tfRuntimePath.setText(config.getVMLanguageRuntimePath(language));
-		}
-
-		HBox hboxButtons = new HBox();
-		hboxButtons.setSpacing(20);
-		hboxButtons.setPadding(new Insets(10));
-		hboxButtons.setAlignment(Pos.CENTER);
+		
+		return vbox;
+	}
+	
+	private HBox getHBoxButtons()
+	{
+		HBox hbox = new HBox();
+		hbox.setSpacing(20);
+		hbox.setPadding(new Insets(10));
+		hbox.setAlignment(Pos.CENTER);
 
 		Button btnSave = new Button("Save");
 		Button btnCancel = new Button("Cancel");
@@ -118,31 +174,10 @@ public class VMLanguageConfigStage extends Stage
 
 		btnCancel.setOnAction(getEventHandlerForCancelButton(parent));
 
-		hboxButtons.getChildren().add(btnCancel);
-		hboxButtons.getChildren().add(btnSave);
-
-		HBox hboxCompilerSettings = new HBox();
-
-		hboxCompilerSettings.setSpacing(10);
-
-		vbox.getChildren().add(hboxCompilerSettings);
-
-		vbox.getChildren().add(hboxButtons);
-
-		setTitle("VM Language Configuration");
-
-		Scene scene = new Scene(vbox, 480, 240);
-
-		setScene(scene);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(VMLanguageConfigStage.this);
-			}
-		});
+		hbox.getChildren().add(btnCancel);
+		hbox.getChildren().add(btnSave);
+		
+		return hbox;
 	}
 
 	private File chooseFile(String name)
