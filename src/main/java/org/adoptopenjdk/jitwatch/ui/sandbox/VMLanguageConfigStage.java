@@ -53,7 +53,7 @@ public class VMLanguageConfigStage extends Stage
 		if (language != null)
 		{
 			tfLanguage.setText(language);
-			tfLanguage.setDisable(true);
+			tfLanguage.setEditable(false);
 
 			tfCompilerPath.setText(config.getVMLanguageCompilerPath(language));
 			tfRuntimePath.setText(config.getVMLanguageRuntimePath(language));

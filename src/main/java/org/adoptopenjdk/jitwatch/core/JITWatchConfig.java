@@ -506,6 +506,16 @@ public class JITWatchConfig
 		return Collections.unmodifiableList(sourceLocations);
 	}
 
+	public void addSourceFolder(File sourceFolder)
+	{
+		String absPath = sourceFolder.getAbsolutePath();
+		
+		if (!sourceLocations.contains(absPath))
+		{
+			sourceLocations.add(absPath);
+		}
+	}
+	
 	public void setSourceLocations(List<String> sourceLocations)
 	{
 		this.sourceLocations = sourceLocations;

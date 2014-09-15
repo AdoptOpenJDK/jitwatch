@@ -210,4 +210,9 @@ public final class JITWatchConstants
 	public static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
+	public static final String VM_LANGUAGE_JAVA = "Java";
+	public static final String VM_LANGUAGE_SCALA = "Scala";
+
+
+	
 }

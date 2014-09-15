@@ -20,7 +20,7 @@ public class LineTable
 	{
 		lineTableEntries.add(entry);
 	}
-	
+
 	public void add(LineTable lineTable)
 	{
 		if (lineTable != null)
@@ -28,7 +28,7 @@ public class LineTable
 			lineTableEntries.addAll(lineTable.lineTableEntries);
 		}
 	}
-	
+
 	public void sort()
 	{
 		Collections.sort(lineTableEntries, new Comparator<LineTableEntry>()
@@ -79,7 +79,10 @@ public class LineTable
 			}
 			else if (offset < currentBytecodeOffset)
 			{
-				result = previousEntry.getSourceOffset();
+				if (previousEntry != null)
+				{
+					result = previousEntry.getSourceOffset();
+				}
 				break;
 			}
 
@@ -89,7 +92,10 @@ public class LineTable
 		// unmatched so return last offset
 		if (result == -1)
 		{
-			result = previousEntry.getSourceOffset();
+			if (previousEntry != null)
+			{
+				result = previousEntry.getSourceOffset();
+			}
 		}
 
 		return result;

@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import java.util.Collections;
 import java.util.List;
 
 import javafx.event.ActionEvent;
@@ -41,40 +42,13 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 
 		updateList();
 
-		Button btnOpenFileDialog = new Button("Add");
-		btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
+		Button btnConfigureLanguage = new Button("Configure");
+		btnConfigureLanguage.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				addLanguage();
-			}
-		});
-
-		Button btnOpenFolderDialog = new Button("Edit");
-		btnOpenFolderDialog.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				editLanguage();
-			}
-		});
-
-		Button btnRemove = new Button("Remove");
-		btnRemove.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				Label selected = languageList.getSelectionModel().getSelectedItem();
-
-				if (selected != null)
-				{
-					String language = selected.getText();
-					config.removeVMLanguage(language);
-					updateList();
-				}
+				configureLanguage();
 			}
 		});
 
@@ -82,9 +56,7 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 		vboxButtons.setPadding(new Insets(10));
 		vboxButtons.setSpacing(10);
 
-		vboxButtons.getChildren().add(btnOpenFileDialog);
-		vboxButtons.getChildren().add(btnOpenFolderDialog);
-		vboxButtons.getChildren().add(btnRemove);
+		vboxButtons.getChildren().add(btnConfigureLanguage);
 
 		hbox.getChildren().add(languageList);
 		hbox.getChildren().add(vboxButtons);
@@ -100,12 +72,7 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 		setSpacing(10);
 	}
 
-	private void addLanguage()
-	{
-		openVMLCStage(null);
-	}
-
-	private void editLanguage()
+	private void configureLanguage()
 	{
 		Label selected = languageList.getSelectionModel().getSelectedItem();
 
@@ -113,16 +80,11 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 		{
 			String language = selected.getText();
 
-			openVMLCStage(language);
-		}
-	}
-
-	private void openVMLCStage(String language)
-	{
-		if (openVMLCStage == null)
-		{
-			openVMLCStage = new VMLanguageConfigStage(this, config, language);
-			StageManager.addAndShow(openVMLCStage);
+			if (openVMLCStage == null)
+			{
+				openVMLCStage = new VMLanguageConfigStage(this, config, language);
+				StageManager.addAndShow(openVMLCStage);
+			}
 		}
 	}
 
@@ -136,6 +98,8 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 	private void updateList()
 	{
 		List<String> vmLanguageList = config.getVMLanguageList();
+
+		Collections.sort(vmLanguageList);
 
 		languageList.getItems().clear();
 

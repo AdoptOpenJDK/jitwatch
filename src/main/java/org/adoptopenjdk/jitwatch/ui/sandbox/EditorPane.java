@@ -103,6 +103,16 @@ public class EditorPane extends VBox
 				sandboxStage.editorClosed(EditorPane.this);
 			}
 		});
+		
+		Button btnRun = new Button("Run");
+		btnRun.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				sandboxStage.runFile(EditorPane.this);
+			}
+		});
 
 		hBoxTitle = new HBox();
 		hBoxTitle.setSpacing(10);
@@ -112,6 +122,7 @@ public class EditorPane extends VBox
 		hBoxTitle.getChildren().add(btnSave);
 		hBoxTitle.getChildren().add(btnClear);
 		hBoxTitle.getChildren().add(btnClose);
+		hBoxTitle.getChildren().add(btnRun);
 
 		hBoxTitle.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
 
@@ -233,6 +244,11 @@ public class EditorPane extends VBox
 	{
 		return taSource.getText().trim();
 	}
+	
+	public File getSourceFile()
+	{
+		return sourceFile;
+	}
 
 	public void loadSource(File dir, String filename)
 	{
@@ -248,6 +264,18 @@ public class EditorPane extends VBox
 			taSource.setText(source.trim());
 
 			setModified(false);
+			
+			// add parent folder so source can be loaded in TriView
+			sandboxStage.addSourceFolder(dir);
+			
+			int lastDotPos = filename.lastIndexOf(C_DOT);
+			
+			if (lastDotPos != -1)
+			{
+				String fileExtension = filename.substring(lastDotPos+1);
+				
+				sandboxStage.setVMLanguageFromFileExtension(fileExtension);
+			}
 		}
 	}
 

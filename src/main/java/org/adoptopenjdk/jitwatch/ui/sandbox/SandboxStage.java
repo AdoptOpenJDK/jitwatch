@@ -5,11 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.ILogParser;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
@@ -23,12 +29,17 @@ import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
@@ -37,7 +48,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener
+public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ISandboxLogListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
@@ -55,34 +66,25 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private SandboxConfigStage sandboxConfigStage;
 
+	private ObservableList<String> languageList = FXCollections.observableArrayList();
+
+	private ComboBox<String> comboBoxVMLanguage = new ComboBox<>(languageList);
+
+	private JITWatchConfig config;
+
 	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
 
-		parser.getConfig().switchToSandbox();
+		config = parser.getConfig();
 
-		sandbox = new Sandbox(parser, this);
+		config.switchToSandbox();
+
+		setupVMLanguages();
+
+		sandbox = new Sandbox(parser, this, this);
 
 		setTitle("JIT Sandbox");
-
-		Button btnRun = new Button("Run");
-		btnRun.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				saveUnsavedEditors();
-
-				new Thread(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						runSandbox();
-					}
-				}).start();
-			}
-		});
 
 		splitEditorPanes = new SplitPane();
 		splitEditorPanes.setOrientation(Orientation.HORIZONTAL);
@@ -138,29 +140,41 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
+		comboBoxVMLanguage.valueProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+			{
+				if (newVal != null)
+				{
+					log("Changed language to " + newVal);
+				}
+			}
+		});
+
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(10);
 		hBoxTools.setPadding(new Insets(10));
 
-		hBoxTools.getChildren().add(btnRun);
 		hBoxTools.getChildren().add(btnNewEditor);
 		hBoxTools.getChildren().add(btnSandboxConfig);
 		hBoxTools.getChildren().add(btnResetSandbox);
+		hBoxTools.getChildren().add(comboBoxVMLanguage);
 
 		splitVertical.getItems().add(splitEditorPanes);
 		splitVertical.getItems().add(taLog);
 
 		splitVertical.setDividerPositions(0.75, 0.25);
-		
+
 		VBox vBoxMain = new VBox();
 		vBoxMain.getChildren().add(hBoxTools);
 		vBoxMain.getChildren().add(splitVertical);
-		
+
 		BorderPane borderPane = new BorderPane();
-		borderPane.setTop(hBoxTools); 
+		borderPane.setTop(hBoxTools);
 		borderPane.setCenter(splitVertical);
-		
+
 		initialiseLog();
 
 		Scene scene = new Scene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
@@ -181,7 +195,21 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		loadDefaultEditors();
 	}
-	
+
+	public void runFile(final EditorPane pane)
+	{
+		saveUnsavedEditors();
+
+		new Thread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				runSandbox(pane.getSourceFile());
+			}
+		}).start();
+	}
+
 	private void initialiseLog()
 	{
 		taLog.setText(S_EMPTY);
@@ -241,7 +269,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 	}
 
-	private void runSandbox()
+	private void runSandbox(File fileToRun)
 	{
 		try
 		{
@@ -254,19 +282,26 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				}
 			});
 
-			List<String> sources = new ArrayList<>();
+			List<File> compileList = new ArrayList<>();
 
 			for (EditorPane editor : editorPanes)
 			{
-				if (editor.getSource().length() > 0)
+				File sourceFile = editor.getSourceFile();
+
+				if (sourceFile != null)
 				{
-					sources.add(editor.getSource());
+					compileList.add(sourceFile);
 				}
 			}
 
-			if (sources.size() > 0)
+			if (compileList.size() > 0)
 			{
-				sandbox.runSandbox(sources);
+				String language = comboBoxVMLanguage.getValue();
+
+				if (language != null)
+				{
+					sandbox.runSandbox(language, compileList, fileToRun);
+				}
 			}
 			else
 			{
@@ -284,6 +319,26 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		editorPanes.remove(editor);
 		splitEditorPanes.getItems().remove(editor);
 		setEditorDividers();
+	}
+
+	void addSourceFolder(File sourceFolder)
+	{
+		config.addSourceFolder(sourceFolder);
+	}
+
+	void setVMLanguageFromFileExtension(String vmLanguage)
+	{
+		if (vmLanguage != null)
+		{
+			for (String knownLang : languageList)
+			{
+				if (knownLang.toLowerCase().equals(vmLanguage.toLowerCase()))
+				{
+					comboBoxVMLanguage.getSelectionModel().select(knownLang);
+					break;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -336,5 +391,33 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		{
 			btnSandboxConfig.setDisable(false);
 		}
+	}
+
+	private void setupVMLanguages()
+	{
+		List<String> vmLanguageList = config.getVMLanguageList();
+
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVA))
+		{
+			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toString();
+			String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java").toString();
+
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVA, javaCompiler, javaRuntime);
+			config.saveConfig();
+		}
+
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_SCALA))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_SCALA, S_EMPTY, S_EMPTY);
+			config.saveConfig();
+		}
+
+		vmLanguageList = config.getVMLanguageList();
+
+		Collections.sort(vmLanguageList);
+
+		languageList.addAll(vmLanguageList);
+
+		comboBoxVMLanguage.getSelectionModel().select(VM_LANGUAGE_JAVA);
 	}
 }
