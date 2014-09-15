@@ -45,7 +45,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
-	{		
+	{				
 		offsetMismatchDetected = false;
 
 		if (metaClassBytecode != null)

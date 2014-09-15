@@ -188,16 +188,19 @@ public class Sandbox
 
 		if (compiledOK)
 		{
-			String fqClassName = runtime.getClassToExecute(fileToRun);
+			String fqClassNameToRun = runtime.getClassToExecute(fileToRun);
 			
-			boolean executionSuccess = executeClass(fqClassName, runtime, logParser.getConfig().isSandboxIntelMode());
+			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
 
 			logListener.log("Execution success: " + executionSuccess);
 
 			if (executionSuccess)
 			{
 				runJITWatch();
-				showTriView(fqClassName);
+				
+				String fqClassNameForTriView = runtime.getClassForTriView(fileToRun);
+				
+				showTriView(fqClassNameForTriView);
 			}
 			else
 			{

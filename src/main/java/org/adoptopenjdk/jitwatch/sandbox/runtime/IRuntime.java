@@ -16,4 +16,6 @@ public interface IRuntime extends IExternalProcess
 	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ISandboxLogListener logListener);
 	
 	public String getClassToExecute(File fileToRun);
+	
+	public String getClassForTriView(File fileToRun);
 }

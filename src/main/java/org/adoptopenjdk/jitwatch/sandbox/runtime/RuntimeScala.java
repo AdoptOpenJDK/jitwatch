@@ -60,4 +60,11 @@ public class RuntimeScala extends AbstractRuntime
 		String filename = fileToRun.getName();
 		return filename.substring(0, filename.length() - (VM_LANGUAGE_SCALA.length() + 1));
 	}
+	
+	@Override
+	public String getClassForTriView(File fileToRun)
+	{
+		// http://stackoverflow.com/questions/9350528/how-to-work-with-javap-for-scala-java-interoperability
+		return getClassToExecute(fileToRun) + C_DOLLAR;
+	}
 }

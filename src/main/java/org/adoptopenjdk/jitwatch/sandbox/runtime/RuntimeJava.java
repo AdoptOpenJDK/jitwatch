@@ -60,4 +60,10 @@ public class RuntimeJava extends AbstractRuntime
 		String filename = fileToRun.getName();
 		return filename.substring(0, filename.length() - (VM_LANGUAGE_JAVA.length() + 1));
 	}
+	
+	@Override
+	public String getClassForTriView(File fileToRun)
+	{
+		return getClassToExecute(fileToRun);
+	}
 }
