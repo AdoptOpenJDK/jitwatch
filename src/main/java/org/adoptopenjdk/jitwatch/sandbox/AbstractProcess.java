@@ -7,6 +7,11 @@ package org.adoptopenjdk.jitwatch.sandbox;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
@@ -17,35 +22,49 @@ public abstract class AbstractProcess implements IExternalProcess
 {
 	protected static final Logger logger = LoggerFactory.getLogger(RuntimeJava.class);
 
-	protected StreamCollector outBuilder;
-	protected StreamCollector errBuilder;
-	
+	private static final Path PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
+	private static final Path PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
+
 	@Override
 	public String getOutputStream()
 	{
 		String result = null;
-		
-		if (outBuilder != null)
+
+		if (PATH_STD_OUT.toFile().exists())
 		{
-			result = outBuilder.getStreamString();
+			try
+			{
+				result = new String(Files.readAllBytes(PATH_STD_OUT), StandardCharsets.UTF_8);
+			}
+			catch (IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
 		}
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public String getErrorStream()
 	{
 		String result = null;
-		
-		if (errBuilder != null)
+
+		if (PATH_STD_ERR.toFile().exists())
 		{
-			result = errBuilder.getStreamString();
+			try
+			{
+				result = new String(Files.readAllBytes(PATH_STD_ERR), StandardCharsets.UTF_8);
+			}
+			catch (IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
 		}
-		
+
 		return result;
 	}
-	
+
 	protected boolean runCommands(List<String> commands, ISandboxLogListener logListener)
 	{
 		StringBuilder cmdBuilder = new StringBuilder();
@@ -54,20 +73,19 @@ public abstract class AbstractProcess implements IExternalProcess
 		{
 			cmdBuilder.append(part).append(C_SPACE);
 		}
-		
+
 		logListener.log("Executing: " + cmdBuilder.toString());
 
 		int result = -1;
-		
+
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
-			
-			Process proc = pb.start();
 
-			//TODO: how to not miss start of output?
-			errBuilder = new StreamCollector(proc.getErrorStream());
-			outBuilder = new StreamCollector(proc.getInputStream());
+			pb.redirectError(PATH_STD_ERR.toFile());
+			pb.redirectOutput(PATH_STD_OUT.toFile());
+
+			Process proc = pb.start();
 
 			result = proc.waitFor();
 		}
@@ -76,7 +94,7 @@ public abstract class AbstractProcess implements IExternalProcess
 			logListener.log("Could not run compiler:" + e);
 			logger.error("Could not run compiler:", e);
 		}
-		
+
 		return result == 0; // normal completion
 	}
 }
