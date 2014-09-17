@@ -68,6 +68,10 @@ public class BytecodeInstruction
 		{
 			return comment.substring(S_BYTECODE_METHOD_COMMENT.length()).trim();
 		}
+		else if (comment != null && comment.startsWith(S_BYTECODE_INTERFACEMETHOD_COMMENT))
+		{
+			return comment.substring(S_BYTECODE_INTERFACEMETHOD_COMMENT.length()).trim();
+		}
 		else
 		{
 			return comment;

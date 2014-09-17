@@ -88,7 +88,7 @@ public class TriView extends Stage implements ILineListener
 	private static final Logger logger = LoggerFactory.getLogger(TriView.class);
 
 	private LineType focussedViewer = LineType.SOURCE;
-	
+
 	private TriViewNavigationStack navigationStack;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
@@ -199,7 +199,7 @@ public class TriView extends Stage implements ILineListener
 
 		splitViewer = new SplitPane();
 		splitViewer.setOrientation(Orientation.HORIZONTAL);
-		
+
 		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 		navigationStack = new TriViewNavigationStack(this, scene);
 
@@ -230,7 +230,7 @@ public class TriView extends Stage implements ILineListener
 				parent.handleStageClosed(TriView.this);
 			}
 		});
-				
+
 		checkColumns();
 
 		Platform.runLater(new Runnable()
@@ -242,7 +242,7 @@ public class TriView extends Stage implements ILineListener
 			}
 		});
 	}
-	
+
 	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()
 	{
 		return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
@@ -350,7 +350,7 @@ public class TriView extends Stage implements ILineListener
 	{
 		return currentMember;
 	}
-	
+
 	public void setMember(IMetaMember member, boolean force)
 	{
 		setMember(member, force, true);
@@ -517,7 +517,7 @@ public class TriView extends Stage implements ILineListener
 	private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass, MetaClass memberClass)
 	{
 		boolean result = inSameClass;
-		
+
 		if (!force)
 		{
 			if ((previousClass != null) && previousClass.equals(memberClass))
@@ -525,13 +525,13 @@ public class TriView extends Stage implements ILineListener
 				result = true;
 			}
 		}
-		
+
 		return result;
 	}
 
 	@Override
 	public void lineHighlighted(int index, LineType lineType)
-	{		
+	{
 		switch (lineType)
 		{
 		case SOURCE:
@@ -547,7 +547,7 @@ public class TriView extends Stage implements ILineListener
 	}
 
 	private void highlightFromSource(int index)
-	{		
+	{
 		int sourceLine = index + 1;
 
 		int bytecodeHighlight = -1;
@@ -595,7 +595,7 @@ public class TriView extends Stage implements ILineListener
 	}
 
 	private LineTableEntry getLineTableEntryForSourceLine(MetaClass metaClass, int sourceIndex)
-	{		
+	{
 		LineTableEntry result = null;
 
 		ClassBC classBytecode = metaClass.getClassBytecode(config.getClassLocations());
@@ -609,7 +609,7 @@ public class TriView extends Stage implements ILineListener
 		{
 			logger.debug("source: {} result: {}", sourceIndex, result);
 		}
-		
+
 		return result;
 	}
 
@@ -641,9 +641,16 @@ public class TriView extends Stage implements ILineListener
 				{
 					MemberBytecode memberBytecode = classBytecode.getMemberBytecode(currentMember);
 
-					LineTable lineTable = memberBytecode.getLineTable();
+					if (memberBytecode != null)
+					{
+						LineTable lineTable = memberBytecode.getLineTable();
 
-					sourceHighlight = lineTable.findSourceLineForBytecodeOffset(bytecodeOffset);
+						sourceHighlight = lineTable.findSourceLineForBytecodeOffset(bytecodeOffset);
+					}
+					else
+					{
+						logger.warn("No MemberBytecode found for {}", currentMember);
+					}
 
 					if (sourceHighlight != -1)
 					{
