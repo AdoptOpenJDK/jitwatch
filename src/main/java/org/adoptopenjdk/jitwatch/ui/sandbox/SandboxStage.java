@@ -84,7 +84,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		sandbox = new Sandbox(parser, this, this);
 
-		setTitle("JIT Sandbox");
+		setTitle("JITWatch Sandbox");
 
 		splitEditorPanes = new SplitPane();
 		splitEditorPanes.setOrientation(Orientation.HORIZONTAL);

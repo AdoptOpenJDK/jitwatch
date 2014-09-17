@@ -95,7 +95,7 @@ public class TriView extends Stage implements ILineListener
 	{
 		this.config = config;
 
-		setTitle("TriView: Source, Bytecode, Assembly Viewer");
+		setTitle("JITWatch TriView: Source, Bytecode, Assembly Viewer");
 
 		VBox vBox = new VBox();
 
@@ -208,7 +208,7 @@ public class TriView extends Stage implements ILineListener
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
 		paneSource = new TriViewPane("Source", viewerSource);
-		paneBytecode = new TriViewPane("Bytecode (double click for JVMS)", viewerBytecode);
+		paneBytecode = new TriViewPane("Bytecode (double click for JVM spec)", viewerBytecode);
 		paneAssembly = new TriViewPane("Assembly", viewerAssembly);
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());

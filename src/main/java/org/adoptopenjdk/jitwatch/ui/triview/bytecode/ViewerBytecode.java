@@ -99,25 +99,40 @@ public class ViewerBytecode extends Viewer
 
 				int offset = instruction.getOffset();
 
-				String annotationText = null;
-
+				StringBuilder instructionToolTipBuilder = new StringBuilder();
+				
+				String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+				
 				if (annotations != null)
 				{
 					LineAnnotation annotation = annotations.get(offset);
 
-					String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
-
 					if (annotation != null)
-					{
-						annotationText = annotation.getAnnotation();
+					{						
 						Color colour = annotation.getColour();
 
 						unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";";
 
-						lblLine.setTooltip(new Tooltip(annotationText));
+						instructionToolTipBuilder = new StringBuilder();
+						instructionToolTipBuilder.append(annotation.getAnnotation());
 					}
-
-					lblLine.setUnhighlightedStyle(unhighlightedStyle);
+				}
+				
+				lblLine.setUnhighlightedStyle(unhighlightedStyle);
+				
+				if (instruction.isInvoke())
+				{
+					if (instructionToolTipBuilder.length() > 0)
+					{
+						instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
+					}
+					
+					instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
+				}
+				
+				if (instructionToolTipBuilder.length() > 0)
+				{
+					lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
 				}
 
 				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()

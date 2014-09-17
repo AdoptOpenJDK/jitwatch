@@ -48,7 +48,6 @@ public class TriViewPane extends VBox
 				unFocus();
 			}
 		});
-
 	}
 
 	public void focus()

@@ -523,7 +523,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 
-		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
+		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
 		
 		if (hsLogFile == null)
 		{
