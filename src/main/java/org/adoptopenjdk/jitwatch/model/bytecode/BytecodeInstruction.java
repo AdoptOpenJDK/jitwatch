@@ -10,8 +10,7 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class BytecodeInstruction
 {
@@ -63,6 +62,18 @@ public class BytecodeInstruction
 		return comment;
 	}
 
+	public String getCommentWithMethodPrefixStripped()
+	{
+		if (comment != null && comment.startsWith(S_BYTECODE_METHOD_COMMENT))
+		{
+			return comment.substring(S_BYTECODE_METHOD_COMMENT.length()).trim();
+		}
+		else
+		{
+			return comment;
+		}
+	}
+
 	public void setComment(String comment)
 	{
 		this.comment = comment;
@@ -73,11 +84,19 @@ public class BytecodeInstruction
 	{
 		return hasComment;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return toString(0);
+	}
+
+	public boolean isInvoke()
+	{
+		return opcode != null
+				&& (opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
+						|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC);
+
 	}
 
 	public String toString(int maxOffset)
@@ -100,7 +119,7 @@ public class BytecodeInstruction
 			}
 
 			int paramLength = paramBuilder.length();
-			
+
 			paramBuilder.delete(paramLength - 2, paramLength);
 
 			builder.append(StringUtil.padRight(paramBuilder.toString(), 5));

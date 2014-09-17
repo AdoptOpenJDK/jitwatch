@@ -155,6 +155,7 @@ public final class JITWatchConstants
 	public static final String S_XML_COMMENT_END = "-->";
 	public static final String S_XML_DOC_START = "<?xml";
 	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
+	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';

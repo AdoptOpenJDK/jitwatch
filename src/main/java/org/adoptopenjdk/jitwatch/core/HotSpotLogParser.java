@@ -343,38 +343,25 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return threadName == null;
 	}
-
+	
 	public IMetaMember findMemberWithSignature(String logSignature)
 	{
-		IMetaMember metaMember = null;
-
-		String[] parsedResult = null;
-
+		IMetaMember result = null;
+		
 		try
 		{
-			parsedResult = ParseUtil.parseLogSignature(logSignature);
+			result = ParseUtil.findMemberWithSignature(model, logSignature);
 		}
-		catch (Exception e)
-		{
-			logError(e.getMessage());
+		catch (Exception ex)
+		{			
 		}
-
-		if (parsedResult != null)
-		{
-			String className = parsedResult[0];
-			String parsedSignature = parsedResult[1];
-
-			if (parsedSignature != null)
-			{
-				metaMember = model.findMetaMember(className, parsedSignature);
-			}
-		}
-		else
+		
+		if (result == null)
 		{
 			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
 		}
-
-		return metaMember;
+		
+		return result;
 	}
 
 	private void handleTagQueued(Tag tag)

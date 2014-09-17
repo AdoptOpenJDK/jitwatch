@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaConstructor;
 import org.adoptopenjdk.jitwatch.model.MetaMethod;
@@ -386,5 +388,31 @@ public class TestParser
     	String name = ParseUtil.convertNativeCodeMethodName(sig);
 
     	assertEquals("java.lang.String hashCode ()I", name);
-    }    
+    }
+    
+    @Test
+    public void testParseMemberFromBytecodeInvokeComment() throws Exception
+    {
+		String comment1 = "java/lang/Object.\"<init>\":()V";
+		String comment2 = "java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;";
+		String comment3 = "org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog.chainA1:(J)J";
+
+		JITDataModel model = new JITDataModel();
+		
+		model.buildMetaClass("java.lang.Object", Object.class);
+		model.buildMetaClass("java.lang.StringBuilder", StringBuilder.class);
+		model.buildMetaClass("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", MakeHotSpotLog.class);
+
+		IMetaMember member1 = ParseUtil.getMemberFromComment(model, comment1);
+		IMetaMember member2 = ParseUtil.getMemberFromComment(model, comment2);		
+		IMetaMember member3 = ParseUtil.getMemberFromComment(model, comment3);		
+
+		
+		assertEquals("public java.lang.Object()", member1.toString());
+		assertEquals("public java.lang.StringBuilder java.lang.StringBuilder.append(int)", member2.toString());
+		assertEquals("private long org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.chainA1(long)", member3.toString());
+
+
+
+    }
 }

@@ -20,7 +20,6 @@ import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -315,10 +314,7 @@ public final class JournalUtil
 
 		if (instr != null)
 		{
-			Opcode opcode = instr.getOpcode();
-
-			sane = opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
-					|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC;
+			sane = instr.isInvoke();
 		}
 
 		return sane;

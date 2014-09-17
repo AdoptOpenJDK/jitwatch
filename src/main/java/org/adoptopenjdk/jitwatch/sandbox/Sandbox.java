@@ -387,9 +387,7 @@ public class Sandbox
 
 		if (metaClass != null)
 		{
-			logListener.log("Found: " + metaClass.getFullyQualifiedName());
-
-			logListener.log("looking for compiled members");
+			logListener.log("looking for compiled members of " + metaClass.getFullyQualifiedName());
 
 			// select first compiled member if any
 			List<IMetaMember> memberList = metaClass.getMetaMembers();

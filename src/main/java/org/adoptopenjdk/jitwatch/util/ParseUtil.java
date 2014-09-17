@@ -199,6 +199,25 @@ public final class ParseUtil
 		return parts;
 	}
 
+	public static IMetaMember findMemberWithSignature(IReadOnlyJITDataModel model, String logSignature) throws Exception
+	{
+		IMetaMember metaMember = null;
+
+		String[] parsedResult = null;
+
+		parsedResult = ParseUtil.parseLogSignature(logSignature);
+
+		String className = parsedResult[0];
+		String parsedSignature = parsedResult[1];
+
+		if (parsedSignature != null)
+		{
+			metaMember = model.findMetaMember(className, parsedSignature);
+		}
+		
+		return metaMember;
+	}
+
 	/*
 	 * Parses a log file signature into a class name and java declaration-style
 	 * method signature
@@ -206,7 +225,7 @@ public final class ParseUtil
 	 * @return String[] 0=className 1=methodSignature
 	 */
 	public static String[] parseLogSignature(String logSignature) throws Exception
-	{
+	{		
 		String result[] = null;
 
 		String[] parts = splitLogSignatureWithRegex(logSignature);
@@ -721,4 +740,15 @@ public final class ParseUtil
 		return result;
 	}
 
+	public static IMetaMember getMemberFromComment(IReadOnlyJITDataModel model, final String comment) throws Exception
+	{
+		//java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+
+		String replace1 = comment.replace(C_DOT, C_SPACE);
+		String replace2 = replace1.replace(C_COLON, C_SPACE);
+		String replace3 = replace2.replace(C_SLASH, C_DOT);
+		String replace4 = replace3.replace(S_DOUBLE_QUOTE, S_EMPTY);
+
+		return ParseUtil.findMemberWithSignature(model, replace4);
+	}
 }

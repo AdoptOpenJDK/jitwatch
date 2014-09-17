@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -20,11 +21,14 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
+import org.adoptopenjdk.jitwatch.ui.triview.TriViewNavigationStack;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.util.JVMSUtil;
 import org.adoptopenjdk.jitwatch.util.JournalUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
@@ -38,14 +42,19 @@ public class ViewerBytecode extends Viewer
 	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
 	private boolean offsetMismatchDetected = false;
+	private IReadOnlyJITDataModel model;
+	private TriViewNavigationStack navigationStack;
 
-	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model, ILineListener lineListener,
+			LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
+		this.model = model;
+		this.navigationStack = navigationStack;
 	}
 
-	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
-	{				
+	public void setContent(final IMetaMember member, final ClassBC metaClassBytecode, final List<String> classLocations)
+	{
 		offsetMismatchDetected = false;
 
 		if (metaClassBytecode != null)
@@ -124,6 +133,10 @@ public class ViewerBytecode extends Viewer
 
 								browseMnemonic(opcode);
 							}
+							else if (mouseEvent.getClickCount() == 1)
+							{
+								handleNavigate(member, instruction);
+							}
 						}
 					}
 				});
@@ -133,6 +146,53 @@ public class ViewerBytecode extends Viewer
 		setContent(labels);
 	}
 
+	private void handleNavigate(IMetaMember currentMember, BytecodeInstruction instruction)
+	{
+		if (navigationStack.isCtrlPressed())
+		{
+			if (instruction != null && instruction.isInvoke())
+			{
+				String comment = instruction.getCommentWithMethodPrefixStripped();
+
+				if (comment != null)
+				{
+					if (commentMethodHasNoClassPrefix(comment))
+					{
+						comment = prependCurrentMember(comment, currentMember);
+					}
+
+					try
+					{
+						IMetaMember member = ParseUtil.getMemberFromComment(model, comment);
+
+						if (member != null)
+						{
+							navigationStack.navigateTo(member);
+						}
+					}
+					catch (Exception ex)
+					{
+						logger.error("Could not calculate member for comment: {}", comment, ex);
+					}
+				}
+			}
+		}
+	}
+	
+	private boolean commentMethodHasNoClassPrefix(String comment)
+	{
+		return (comment.indexOf(C_DOT) == -1);
+	}
+
+	private String prependCurrentMember(String comment, IMetaMember member)
+	{
+		String currentClass = member.getMetaClass().getFullyQualifiedName();
+		
+		currentClass = currentClass.replace(C_DOT, C_SLASH);
+
+		return currentClass + C_DOT + comment;
+	}
+	
 	public boolean isOffsetMismatchDetected()
 	{
 		return offsetMismatchDetected;

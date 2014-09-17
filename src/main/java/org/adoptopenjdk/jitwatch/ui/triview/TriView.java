@@ -88,6 +88,8 @@ public class TriView extends Stage implements ILineListener
 	private static final Logger logger = LoggerFactory.getLogger(TriView.class);
 
 	private LineType focussedViewer = LineType.SOURCE;
+	
+	private TriViewNavigationStack navigationStack;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -197,9 +199,12 @@ public class TriView extends Stage implements ILineListener
 
 		splitViewer = new SplitPane();
 		splitViewer.setOrientation(Orientation.HORIZONTAL);
+		
+		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		navigationStack = new TriViewNavigationStack(this, scene);
 
 		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
-		viewerBytecode = new ViewerBytecode(parent, this, LineType.BYTECODE);
+		viewerBytecode = new ViewerBytecode(parent, navigationStack, parent.getJITDataModel(), this, LineType.BYTECODE);
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
 		paneSource = new TriViewPane("Source", viewerSource);
@@ -215,8 +220,6 @@ public class TriView extends Stage implements ILineListener
 		vBox.getChildren().add(splitViewer);
 		vBox.getChildren().add(lblMemberInfo);
 
-		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-
 		setScene(scene);
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -227,7 +230,7 @@ public class TriView extends Stage implements ILineListener
 				parent.handleStageClosed(TriView.this);
 			}
 		});
-
+				
 		checkColumns();
 
 		Platform.runLater(new Runnable()
@@ -239,7 +242,7 @@ public class TriView extends Stage implements ILineListener
 			}
 		});
 	}
-
+	
 	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()
 	{
 		return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
@@ -343,6 +346,11 @@ public class TriView extends Stage implements ILineListener
 		}
 	}
 
+	public IMetaMember getMetaMember()
+	{
+		return currentMember;
+	}
+	
 	public void setMember(IMetaMember member, boolean force)
 	{
 		setMember(member, force, true);
@@ -698,6 +706,7 @@ public class TriView extends Stage implements ILineListener
 		viewerBytecode.highlightLine(bytecodeHighlight);
 	}
 
+	@Override
 	public void handleFocusNext()
 	{
 		switch (focussedViewer)
@@ -723,6 +732,7 @@ public class TriView extends Stage implements ILineListener
 		}
 	}
 
+	@Override
 	public void handleFocusPrev()
 	{
 		switch (focussedViewer)
@@ -748,6 +758,7 @@ public class TriView extends Stage implements ILineListener
 		}
 	}
 
+	@Override
 	public void handleFocusSelf(LineType lineType)
 	{
 		switch (lineType)
