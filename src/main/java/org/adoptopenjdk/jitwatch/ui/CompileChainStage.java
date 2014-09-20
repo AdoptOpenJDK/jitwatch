@@ -90,7 +90,7 @@ public class CompileChainStage extends Stage
 
 		if (rootNode.getChildren().size() == 0)
 		{
-			Text text = new Text(rootNode.getMember().toStringUnqualifiedMethodName(false) + " makes no calls");
+			Text text = new Text("No method calls made by " + rootNode.getMember().toStringUnqualifiedMethodName(false) + " were inlined or JIT compiled");
 			text.setX(X_OFFSET);
 			text.setY(y);
 

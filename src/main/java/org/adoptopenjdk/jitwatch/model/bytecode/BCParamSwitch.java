@@ -13,13 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+
 public class BCParamSwitch implements IBytecodeParam
 {
 	private Map<String, String> table = new HashMap<>();
 
 	public BCParamSwitch()
 	{
-
 	}
 
 	public void put(String key, String value)
@@ -33,19 +34,42 @@ public class BCParamSwitch implements IBytecodeParam
 		StringBuilder builder = new StringBuilder();
 
 		List<String> keyList = new ArrayList<>(table.keySet());
-		
+
 		Collections.sort(keyList);
-		
-		builder.append(S_OPEN_BRACE).append(S_NEWLINE);
-		
+
 		for (String key : keyList)
 		{
-			builder.append(key).append(C_COLON).append(table.get(key)).append(S_NEWLINE);
+			String line = new StringBuilder(key).append(C_COLON).append(table.get(key)).toString();
+
+			builder.append(StringUtil.alignRight(line, 16)).append(S_NEWLINE);
 		}
-		
-		builder.append(S_CLOSE_BRACE).append(S_NEWLINE);
 
 		return builder.toString();
+	}
+
+	public String toString(int entryIndex)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		List<String> keyList = new ArrayList<>(table.keySet());
+
+		Collections.sort(keyList);
+
+		if (entryIndex < keyList.size())
+		{
+			String key = keyList.get(entryIndex);
+
+			String line = new StringBuilder(key).append(C_COLON).append(table.get(key)).toString();
+
+			builder.append(StringUtil.alignRight(line, 16));
+		}
+
+		return builder.toString();
+	}
+
+	public int getSize()
+	{
+		return table.size();
 	}
 
 	@Override
