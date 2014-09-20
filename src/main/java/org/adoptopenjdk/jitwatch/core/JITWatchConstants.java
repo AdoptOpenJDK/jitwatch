@@ -20,7 +20,7 @@ public final class JITWatchConstants
 	{
 	}
 
-	public static final boolean DEBUG_LOGGING = false;
+	public static final boolean DEBUG_LOGGING = true;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
@@ -157,6 +157,7 @@ public final class JITWatchConstants
 	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
 	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
 	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
+	public static final String S_DEFAULT = "default";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';

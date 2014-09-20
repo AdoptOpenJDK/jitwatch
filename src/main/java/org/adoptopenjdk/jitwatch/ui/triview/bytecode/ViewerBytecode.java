@@ -91,6 +91,10 @@ public class ViewerBytecode extends Viewer
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
+			System.out.println("there are " + instructions.size());
+
+			System.out.println("max offset is " + maxOffset);
+			
 			for (final BytecodeInstruction instruction : instructions)
 			{
 				BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset);

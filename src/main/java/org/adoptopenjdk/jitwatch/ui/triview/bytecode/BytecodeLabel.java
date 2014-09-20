@@ -16,6 +16,7 @@ public class BytecodeLabel extends Label
 	
 	public BytecodeLabel(BytecodeInstruction instr, int maxOffset)
 	{
+		System.out.println("BCL: " + instr.toString());
 		setText(instr.toString(maxOffset));
 		instruction = instr;
 	}
