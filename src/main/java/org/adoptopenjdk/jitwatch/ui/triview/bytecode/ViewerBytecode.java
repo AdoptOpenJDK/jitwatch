@@ -90,75 +90,94 @@ public class ViewerBytecode extends Viewer
 			}
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
-
+			
 			for (final BytecodeInstruction instruction : instructions)
-			{
-				BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset);
-
-				labels.add(lblLine);
-
-				int offset = instruction.getOffset();
-
-				StringBuilder instructionToolTipBuilder = new StringBuilder();
+			{				
+				int labelLines = instruction.getLabelLines();
 				
-				String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
-				
-				if (annotations != null)
+				if (labelLines == 0)
 				{
-					LineAnnotation annotation = annotations.get(offset);
-
-					if (annotation != null)
-					{						
-						Color colour = annotation.getColour();
-
-						unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";";
-
-						instructionToolTipBuilder = new StringBuilder();
-						instructionToolTipBuilder.append(annotation.getAnnotation());
-					}
+					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member);
+					labels.add(lblLine);
 				}
-				
-				lblLine.setUnhighlightedStyle(unhighlightedStyle);
-				
-				if (instruction.isInvoke())
+				else
 				{
-					if (instructionToolTipBuilder.length() > 0)
+					for (int i = 0; i < labelLines; i++)
 					{
-						instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
+						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, annotations, member);
+						labels.add(lblLine);
 					}
-					
-					instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
 				}
-				
-				if (instructionToolTipBuilder.length() > 0)
-				{
-					lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
-				}
-
-				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
-				{
-					@Override
-					public void handle(MouseEvent mouseEvent)
-					{
-						if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-						{
-							if (mouseEvent.getClickCount() == 2)
-							{
-								Opcode opcode = instruction.getOpcode();
-
-								browseMnemonic(opcode);
-							}
-							else if (mouseEvent.getClickCount() == 1)
-							{
-								handleNavigate(member, instruction);
-							}
-						}
-					}
-				});
 			}
 		}
 
 		setContent(labels);
+	}
+	
+	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line, final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
+	{
+		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
+		
+		int offset = instruction.getOffset();
+
+		StringBuilder instructionToolTipBuilder = new StringBuilder();
+		
+		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+		
+		if (annotations != null)
+		{
+			LineAnnotation annotation = annotations.get(offset);
+
+			if (annotation != null)
+			{						
+				Color colour = annotation.getColour();
+
+				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
+
+				instructionToolTipBuilder = new StringBuilder();
+				instructionToolTipBuilder.append(annotation.getAnnotation());
+			}
+		}
+		
+		lblLine.setUnhighlightedStyle(unhighlightedStyle);
+		
+		if (instruction.isInvoke())
+		{
+			if (instructionToolTipBuilder.length() > 0)
+			{
+				instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
+			}
+			
+			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
+		}
+		
+		if (instructionToolTipBuilder.length() > 0)
+		{
+			lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
+		}
+
+		lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent mouseEvent)
+			{
+				if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+				{
+					if (mouseEvent.getClickCount() == 2)
+					{
+						Opcode opcode = instruction.getOpcode();
+
+						browseMnemonic(opcode);
+					}
+					else if (mouseEvent.getClickCount() == 1)
+					{
+						handleNavigate(member, instruction);
+					}
+				}
+			}
+		});
+	
+		return lblLine;
 	}
 
 	private void handleNavigate(IMetaMember currentMember, BytecodeInstruction instruction)

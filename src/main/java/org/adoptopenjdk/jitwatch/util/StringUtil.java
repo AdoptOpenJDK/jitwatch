@@ -84,22 +84,22 @@ public final class StringUtil
 		return string.replaceAll("\\s+$", "");
 	}
 
-	public static String padLeft(long num, int width)
+	public static String alignRight(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, true);
 	}
 
-	public static String padLeft(String str, int width)
+	public static String alignRight(String str, int width)
 	{
 		return pad(str, width, C_SPACE, true);
 	}
 
-	public static String padRight(long num, int width)
+	public static String alignLeft(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, false);
 	}
 
-	public static String padRight(String str, int width)
+	public static String alignLeft(String str, int width)
 	{
 		return pad(str, width, C_SPACE, false);
 	}
@@ -222,7 +222,7 @@ public final class StringUtil
 
 	public static String padLineNumber(int number, int maxWidth)
 	{
-		return padLeft(Integer.toString(number), maxWidth);
+		return alignRight(Integer.toString(number), maxWidth);
 	}
 
 	public static Map<String, String> getLineAttributes(String line)

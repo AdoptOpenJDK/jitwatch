@@ -233,8 +233,48 @@ public class TestBytecodeLoader
 
 		IBytecodeParam paramI0 = i3.getParameters().get(0);
 		assertTrue(paramI0 instanceof BCParamSwitch);
+		
+		BytecodeInstruction i99 = instructions.get(4);
+		assertEquals(99, i99.getOffset());
+		assertEquals(Opcode.LSTORE_2, i99.getOpcode());
+		assertEquals(false, i99.hasParameters());
 	}
 
+	@Test
+	public void testParseBytecodeRegressionTableSwitch2()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("39: ldc           #8                  // int 1000000").append(S_NEWLINE);
+		builder.append("41: if_icmpge     104").append(S_NEWLINE);
+		builder.append("44: iload         5").append(S_NEWLINE);
+		builder.append("46: iconst_3").append(S_NEWLINE);      
+		builder.append("47: irem          ").append(S_NEWLINE);
+		builder.append("48: tableswitch   { // 0 to 2").append(S_NEWLINE);
+		builder.append("             0: 76").append(S_NEWLINE);
+		builder.append("             1: 82").append(S_NEWLINE);
+		builder.append("             2: 88").append(S_NEWLINE);
+		builder.append("       default: 91").append(S_NEWLINE);
+		builder.append("  }").append(S_NEWLINE);
+		builder.append("76: aload_1       ").append(S_NEWLINE);
+		builder.append("77: astore        4").append(S_NEWLINE);
+		builder.append("79: goto          91").append(S_NEWLINE);
+
+		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
+
+		assertEquals(9, instructions.size());
+
+		BytecodeInstruction i47 = instructions.get(4);
+		assertEquals(47, i47.getOffset());
+		assertEquals(Opcode.IREM, i47.getOpcode());
+		assertEquals(false, i47.hasParameters());
+		
+		BytecodeInstruction i76 = instructions.get(6);
+		assertEquals(76, i76.getOffset());
+		assertEquals(Opcode.ALOAD_1, i76.getOpcode());
+		assertEquals(false, i76.hasParameters());
+	}
+
+	
 	@Test
 	public void testParseBytecodeRegressionLookupSwitch()
 	{

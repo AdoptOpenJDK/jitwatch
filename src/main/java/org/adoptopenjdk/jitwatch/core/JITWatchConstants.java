@@ -157,12 +157,15 @@ public final class JITWatchConstants
 	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
 	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
 	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
+	public static final String S_DEFAULT = "default";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
 	public static final char C_CLOSE_ANGLE = '>';
 	public static final char C_OPEN_PARENTHESES = '(';
 	public static final char C_CLOSE_PARENTHESES = ')';
+	public static final char C_OPEN_BRACE = '{';
+	public static final char C_CLOSE_BRACE = '}';
 	public static final char C_SPACE = ' ';
 	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
