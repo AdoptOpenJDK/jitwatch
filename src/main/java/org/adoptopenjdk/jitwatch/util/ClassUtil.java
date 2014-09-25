@@ -7,25 +7,50 @@ package org.adoptopenjdk.jitwatch.util;
 
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class ClassUtil
 {
-	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
-    
-    private ClassUtil()
-    {
+  private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new URL[0]);
+  private static Set<URL> urls;
+
+  private ClassUtil()
+  {
+  }
+
+  public static void initialise(URL[] inUrls)
+  {
+    urls = new HashSet<URL>();
+    for (URL url: inUrls) {
+      urls.add(url);
     }
-    
-    public static void initialise(URL[] inUrls)
-    {
-        URL[] urls = Arrays.copyOf(inUrls, inUrls.length);
-    	disposableClassLoader = new DisposableURLClassLoader(urls);
+    disposableClassLoader = new DisposableURLClassLoader(inUrls);
+  }
+
+  public static Class<?> loadClassWithoutInitialising(String fqClassName, String location)
+      throws ClassNotFoundException
+  {
+    if (location != null) {
+      try {
+        URL url = new URL("file://" + location);
+        if (!urls.contains(url)) {
+          urls.add(url);
+          URL[] inputs = urls.toArray(new URL[urls.size()]);
+          disposableClassLoader = new DisposableURLClassLoader(inputs);
+        }
+      } catch (MalformedURLException ex) {
+        // skip
+      }
     }
 
-	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
-	{
-		return Class.forName(fqClassName, false, disposableClassLoader);
-	}
+    return loadClassWithoutInitialising(fqClassName);
+  }
+
+  public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
+  {
+    return Class.forName(fqClassName, false, disposableClassLoader);
+  }
 }
