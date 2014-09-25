@@ -265,7 +265,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		else
 		{
 			String remainder = asmProcessor.handleLine(currentLine);
-			
+
 			// handle next <nmethod appearing on last line of assembly
 			if (remainder != null)
 			{
@@ -343,24 +343,24 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return threadName == null;
 	}
-	
+
 	public IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember result = null;
-		
+
 		try
 		{
 			result = ParseUtil.findMemberWithSignature(model, logSignature);
 		}
 		catch (Exception ex)
-		{			
+		{
 		}
-		
+
 		if (result == null)
 		{
 			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
 		}
-		
+
 		return result;
 	}
 
@@ -522,20 +522,26 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
+		int offset = inCurrentLine.indexOf("from");
+		String location = null;
+		if (offset != -1)
+			location = inCurrentLine.substring(offset + "from ".length(), inCurrentLine.length() - 1);
+		if (location != null && location.startsWith("file:"))
+			location = location.substring("file:".length());
 
 		if (fqClassName != null)
 		{
-			addToClassModel(fqClassName);
+			addToClassModel(fqClassName, location);
 		}
 	}
 
-	private void addToClassModel(String fqClassName)
+	private void addToClassModel(String fqClassName, String location)
 	{
 		Class<?> clazz = null;
 
 		try
 		{
-			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
+			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName, location);
 
 			if (clazz != null)
 			{
