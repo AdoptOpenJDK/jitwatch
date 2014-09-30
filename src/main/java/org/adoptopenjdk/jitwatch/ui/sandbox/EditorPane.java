@@ -21,10 +21,15 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -54,7 +59,7 @@ public class EditorPane extends VBox
 	public EditorPane(SandboxStage stage)
 	{
 		this.sandboxStage = stage;
-				
+
 		lblTitle = new Label("New File");
 
 		Button btnOpen = new Button("Open");
@@ -103,7 +108,7 @@ public class EditorPane extends VBox
 				sandboxStage.editorClosed(EditorPane.this);
 			}
 		});
-		
+
 		Button btnRun = new Button("Run");
 		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -139,6 +144,8 @@ public class EditorPane extends VBox
 			}
 		});
 
+		setTextAreaSaveCombo(taSource);
+		
 		taLineNumbers = new TextArea();
 		String styleLineNumber = "-fx-padding:0; -fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:#eeeeee;";
 		taLineNumbers.setStyle(styleLineNumber);
@@ -162,9 +169,29 @@ public class EditorPane extends VBox
 		hBoxTextAreas.prefHeightProperty().bind(heightProperty().multiply(0.9));
 	}
 
+	private void setTextAreaSaveCombo(TextArea textArea)
+	{
+		textArea.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
+		{
+			final KeyCombination combo = new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN);
+
+			@Override
+			public void handle(KeyEvent event)
+			{
+				// check for only tab key
+				if (combo.match(event))
+				{
+					saveFile();
+					event.consume();
+				}
+			}
+		});
+	}
+
 	private void setModified(final boolean modified)
 	{
 		this.isModified = modified;
+
 		Platform.runLater(new Runnable()
 		{
 			@Override
@@ -244,7 +271,7 @@ public class EditorPane extends VBox
 	{
 		return taSource.getText().trim();
 	}
-	
+
 	public File getSourceFile()
 	{
 		return sourceFile;
@@ -264,16 +291,16 @@ public class EditorPane extends VBox
 			taSource.setText(source.trim());
 
 			setModified(false);
-			
+
 			// add parent folder so source can be loaded in TriView
 			sandboxStage.addSourceFolder(dir);
-			
+
 			int lastDotPos = filename.lastIndexOf(C_DOT);
-			
+
 			if (lastDotPos != -1)
 			{
-				String fileExtension = filename.substring(lastDotPos+1);
-				
+				String fileExtension = filename.substring(lastDotPos + 1);
+
 				sandboxStage.setVMLanguageFromFileExtension(fileExtension);
 			}
 		}
