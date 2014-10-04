@@ -364,7 +364,7 @@ public class Sandbox
 
 		logParser.reset();
 
-		logParser.readLogFile(sandboxLogFile);
+		logParser.processLogFile(sandboxLogFile);
 
 		logListener.log("Parsing complete");
 	}

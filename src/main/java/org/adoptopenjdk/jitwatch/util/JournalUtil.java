@@ -123,14 +123,14 @@ public final class JournalUtil
 				// nested parse tags so have to use this heuristic
 				// to check if we are still in the same method.
 
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_BYTECODE)
 				{
 					logger.debug("BC Tag {} {}", currentBytecode, code);
 				}
 
 				currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
 
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_BYTECODE)
 				{
 					logger.debug("Instruction at {} is {}", currentBytecode, currentInstruction);
 				}

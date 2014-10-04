@@ -25,7 +25,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
 
-	
 	protected MetaClass methodClass;
 	private AssemblyMethod asmMethod = null;
 
@@ -229,7 +228,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public boolean matches(String input)
+	public boolean matchesSignature(String input)
 	{
 		// strip access mode and modifiers
 		String nameToMatch = this.toString();
@@ -264,7 +263,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public void setAssembly(AssemblyMethod asmMethod)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
 		}

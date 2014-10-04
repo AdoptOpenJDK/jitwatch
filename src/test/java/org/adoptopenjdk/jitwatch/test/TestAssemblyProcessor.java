@@ -36,7 +36,6 @@ public class TestAssemblyProcessor
 	private static final int ONE = 1;
 	private Map<String, IMetaMember> map;
 	private IMemberFinder memberFinder;
-	private List<String> nonAssemblyLines;
 
 	private static final String[] SINGLE_ASSEMBLY_METHOD = new String[] {
 			"Decoding compiled method 0x00007f7d73364190:",
@@ -111,8 +110,6 @@ public class TestAssemblyProcessor
 	private void performAssemblyParsingOn(String[] lines)
 	{
 		AssemblyProcessor asmProcessor = new AssemblyProcessor(memberFinder);
-
-		nonAssemblyLines = new ArrayList<>();
 		
 		for (String line : lines)
 		{
@@ -120,12 +117,7 @@ public class TestAssemblyProcessor
 
 			if (!trimmedLine.startsWith(S_OPEN_ANGLE) && !trimmedLine.startsWith(LOADED))
 			{
-				String remainder = asmProcessor.handleLine(trimmedLine);
-				
-				if (remainder != null)
-				{
-					nonAssemblyLines.add(remainder);
-				}
+				asmProcessor.handleLine(trimmedLine);
 			}
 		}
 
@@ -505,61 +497,9 @@ public class TestAssemblyProcessor
 		AssemblyBlock block1 = asmBlocks.get(1);
 		List<AssemblyInstruction> instructions1 = block1.getInstructions();
 		assertEquals(6, instructions1.size());
-		
-		assertEquals(0, nonAssemblyLines.size());
 	}
 	
-	@Test
-	public void testCanParseAssemblyAndNMethodMangled()
-	{
-		String nmethodTag = "<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288'/>";
 		
-		String[] lines = new String[] {
-				"Decoding compiled method 0x00007f7d73364190:",
-				"Code:",
-				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
-				"[Entry Point]",
-				"[Verified Entry Point]",
-				"[Constants]",
-				"  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;org/adoptopenjdk/jitwatch/demo/SandboxTestLoad&apos;",
-				"  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
-				"[Deopt Handler Code]",
-				"0x00007fb5ad0fe95c: movabs $0x7fb5ad0fe95c,%r10  ;   {section_word}",
-				"0x00007fb5ad0fe966: push   %r10",
-				"0x00007fb5ad0fe968: jmpq   0x00007fb5ad047100  ;   {runtime_call}",
-				"0x00007fb5ad0fe96d: hlt",
-				"0x00007fb5ad0fe96e: hlt",
-				"0x00007fb5ad0fe96f: hlt " + nmethodTag,
-				"<writer thread='140418643298048'/>" };
-		
-		performAssemblyParsingOn(lines);
-
-		IMetaMember member = map.get("org.adoptopenjdk.jitwatch.demo.SandboxTestLoad main ([Ljava.lang.String;)V");
-
-		assertNotNull(member);
-
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
-		assertNotNull(assemblyMethod);
-
-		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
-
-		// code, deopt handler
-		assertEquals(2, asmBlocks.size());
-
-		AssemblyBlock block0 = asmBlocks.get(0);
-		List<AssemblyInstruction> instructions0 = block0.getInstructions();
-		assertEquals(1, instructions0.size());		
-		
-		AssemblyBlock block1 = asmBlocks.get(1);
-		List<AssemblyInstruction> instructions1 = block1.getInstructions();
-		assertEquals(6, instructions1.size());
-		
-		assertEquals(1, nonAssemblyLines.size());
-		assertEquals(nmethodTag, nonAssemblyLines.get(0));
-
-	}
-	
 	
 	@Test
 	public void testCanParseAssemblyWhenMethodCommentIsMangled()

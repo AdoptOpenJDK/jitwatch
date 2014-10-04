@@ -29,7 +29,7 @@ public class LaunchHeadless implements IJITListener
 		HotSpotLogParser parser = new HotSpotLogParser(this);
 		parser.setConfig(config);
 
-		parser.readLogFile(new File(filename));
+		parser.processLogFile(new File(filename));
 	}
 
 	@Override

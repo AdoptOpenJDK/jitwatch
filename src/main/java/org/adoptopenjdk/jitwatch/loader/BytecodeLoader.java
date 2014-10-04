@@ -61,7 +61,7 @@ public final class BytecodeLoader
 
 	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
 		}
@@ -157,7 +157,7 @@ public final class BytecodeLoader
 		{
 			String line = lines[pos].trim();
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("Line: {}", line);
 			}
@@ -177,7 +177,7 @@ public final class BytecodeLoader
 				}
 			}
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("{} Line: {}", section, line);
 			}
@@ -189,14 +189,14 @@ public final class BytecodeLoader
 				{
 					memberSignature = cleanBytecodeMemberSignature(line);
 
-					if (DEBUG_LOGGING)
+					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("New signature: {}", memberSignature);
 					}
 
 					memberBytecode = new MemberBytecode();
 
-					if (DEBUG_LOGGING)
+					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("Initialised new MemberBytecode");
 					}
@@ -344,7 +344,7 @@ public final class BytecodeLoader
 	private static void sectionFinished(BytecodeSection lastSection, String memberSignature, StringBuilder builder,
 			MemberBytecode memberBytecode, ClassBC classBytecode)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("sectionFinished: {}", lastSection);
 		}
@@ -359,7 +359,7 @@ public final class BytecodeLoader
 
 				classBytecode.putMemberBytecode(memberSignature, memberBytecode);
 
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_BYTECODE)
 				{
 					logger.debug("stored bytecode for : {}", memberSignature);
 				}
@@ -378,7 +378,7 @@ public final class BytecodeLoader
 		{
 			storeLineNumberTable(memberBytecode, builder.toString(), memberSignature);
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("stored line number table for : {}", memberSignature);
 			}
@@ -389,7 +389,7 @@ public final class BytecodeLoader
 
 	private static BytecodeSection changeSection(BytecodeSection nextSection)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("Changing section to: {}", nextSection);
 		}
@@ -446,7 +446,7 @@ public final class BytecodeLoader
 
 	private static String cleanBytecodeMemberSignature(final String signature)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("cleanBytecodeMemberSignature: {}", signature);
 		}
@@ -487,7 +487,7 @@ public final class BytecodeLoader
 	{
 		List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("Raw bytecode: '{}'", bytecode);
 		}
@@ -502,7 +502,7 @@ public final class BytecodeLoader
 		{
 			line = line.trim();
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("parsing bytecode line: '{}' inSwitch: {}", line, inSwitch);
 			}
@@ -516,7 +516,7 @@ public final class BytecodeLoader
 					bytecodeInstructions.add(instruction);
 					inSwitch = false;
 					
-					if (DEBUG_LOGGING)
+					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("finished switch");
 					}
@@ -560,7 +560,7 @@ public final class BytecodeLoader
 
 						if (instruction.getOpcode() == Opcode.TABLESWITCH || instruction.getOpcode() == Opcode.LOOKUPSWITCH)
 						{
-							if (DEBUG_LOGGING)
+							if (DEBUG_LOGGING_BYTECODE)
 							{
 								logger.debug("Found a table or lookup switch");
 							}

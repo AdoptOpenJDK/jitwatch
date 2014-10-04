@@ -369,6 +369,20 @@ public class TestParser
     	assertEquals("Ljava.lang.Comparable;[Ljava.lang.Object;III", parts[2]);
     	assertEquals("I", parts[3]);   	
     }
+
+    @Test
+    public void testEclipseLogParseRegression()
+    {
+    	String sig = "org.eclipse.e4.ui.css.swt.engine.AbstractCSSSWTEngineImpl getElement (Ljava.lang.Object;)Lorg.w3c.dom.Element;";
+    	
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("org.eclipse.e4.ui.css.swt.engine.AbstractCSSSWTEngineImpl", parts[0]);
+    	assertEquals("getElement", parts[1]);
+    	assertEquals("Ljava.lang.Object;", parts[2]);
+    	assertEquals("Lorg.w3c.dom.Element;", parts[3]); 
+    }
     
     @Test
     public void testJava7DisassemblySignature()

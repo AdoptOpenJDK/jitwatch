@@ -8,6 +8,8 @@ package org.adoptopenjdk.jitwatch.test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import org.adoptopenjdk.jitwatch.core.IJITListener;
+import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 
 public class UnitTestUtil
@@ -44,5 +46,36 @@ public class UnitTestUtil
 		}
 
 		return c;
+	}
+	
+	public static IJITListener getNoOpJITListener()
+	{
+		return new IJITListener()
+		{
+			@Override
+			public void handleLogEntry(String entry)
+			{
+			}
+			
+			@Override
+			public void handleErrorEntry(String entry)
+			{
+			}
+			
+			@Override
+			public void handleReadStart()
+			{
+			}
+			
+			@Override
+			public void handleReadComplete()
+			{
+			}
+			
+			@Override
+			public void handleJITEvent(JITEvent event)
+			{	
+			}
+		};
 	}
 }

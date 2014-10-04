@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,15 +40,19 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private IJITListener logListener = null;
 
-	private boolean inHeader = true;
+	private boolean inHeader = false;
 
 	private long currentLineNumber;
 
-	private JITWatchConfig config;
+	private JITWatchConfig config = new JITWatchConfig();
 
 	private TagProcessor tagProcessor;
 
 	private AssemblyProcessor asmProcessor;
+
+	private SplitLog splitLog = new SplitLog();
+
+	private ParsedClasspath parsedClasspath = new ParsedClasspath();
 
 	public HotSpotLogParser(IJITListener logListener)
 	{
@@ -66,21 +72,36 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		return config;
 	}
 
-	private void mountAdditionalClasses()
+	@Override
+	public SplitLog getSplitLog()
 	{
-		URL[] classURLs = new URL[config.getClassLocations().size()];
+		return splitLog;
+	}
 
-		int pos = 0;
+	private void configureDisposableClassLoader()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("configureDisposableClassLoader()");
+		}
 
-		for (String filename : config.getClassLocations())
+		List<String> configuredClassLocations = config.getClassLocations();
+		List<String> parsedClassLocations = parsedClasspath.getClassLocations();
+
+		int configuredClasspathCount = configuredClassLocations.size();
+		int parsedClasspathCount = parsedClassLocations.size();
+
+		List<URL> classpathURLList = new ArrayList<URL>(configuredClasspathCount + parsedClasspathCount);
+
+		for (String filename : configuredClassLocations)
 		{
 			URI uri = new File(filename).toURI();
 
-			logListener.handleLogEntry("Adding classpath: " + uri.toString());
+			logListener.handleLogEntry("Adding configured classpath: " + uri.toString());
 
 			try
 			{
-				classURLs[pos++] = uri.toURL();
+				classpathURLList.add(uri.toURL());
 			}
 			catch (MalformedURLException e)
 			{
@@ -88,7 +109,26 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			}
 		}
 
-		ClassUtil.initialise(classURLs);
+		for (String filename : parsedClasspath.getClassLocations())
+		{
+			if (!configuredClassLocations.contains(filename))
+			{
+				URI uri = new File(filename).toURI();
+
+				logListener.handleLogEntry("Adding parsed classpath: " + uri.toString());
+
+				try
+				{
+					classpathURLList.add(uri.toURL());
+				}
+				catch (MalformedURLException e)
+				{
+					logger.error("Could not create URL: {} ", uri, e);
+				}
+			}
+		}
+
+		ClassUtil.initialise(classpathURLList);
 	}
 
 	private void logEvent(JITEvent event)
@@ -118,16 +158,18 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		getModel().reset();
 
+		splitLog.clear();
+
 		hasTraceClassLoad = false;
 
 		reading = false;
+
+		inHeader = false;
 
 		currentMember = null;
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
-
-		mountAdditionalClasses();
 
 		currentLineNumber = 0;
 
@@ -137,56 +179,155 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	@Override
-	public void readLogFile(File hotspotLog) throws IOException
+	public void processLogFile(File hotspotLog)
 	{
 		reset();
 
-		reading = true;
+		splitLogFile(hotspotLog);
 
-		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
+		logSplitStats();
 
-		String currentLine = reader.readLine();
+		parseLogFile();
+	}
 
-		inHeader = true;
+	private void parseLogFile()
+	{
+		parseHeaderLines();
 
-		while (reading && currentLine != null)
+		buildParsedClasspath();
+
+		configureDisposableClassLoader();
+
+		buildClassModel();
+
+		parseLogCompilationLines();
+
+		parseAssemblyLines();
+
+		logListener.handleReadComplete();
+	}
+
+	private void parseHeaderLines()
+	{
+		if (DEBUG_LOGGING)
 		{
-			try
+			logger.debug("parseHeaderLines()");
+		}
+
+		for (String line : splitLog.getHeaderLines())
+		{
+			if (!skipLine(line, SKIP_HEADER_TAGS))
 			{
-				String trimmedLine = currentLine.trim();
+				Tag tag = tagProcessor.processLine(line);
 
-				if (trimmedLine.length() > 0)
+				if (tag != null)
 				{
-					char firstChar = trimmedLine.charAt(0);
-
-					if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET || firstChar == C_AT)
-					{
-						currentLine = trimmedLine;
-					}
-				}
-
-				if (inHeader)
-				{
-					handleLogHeader(currentLine);
-				}
-				else
-				{
-					handleLogLine(currentLine);
+					handleTag(tag);
 				}
 			}
-			catch (Exception ex)
-			{
-				logger.error("Exception handling: '{}'", currentLine, ex);
-			}
+		}
+	}
 
-			currentLine = reader.readLine();
+	private void parseLogCompilationLines()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("parseLogCompilationLines()");
+		}
+
+		for (String line : splitLog.getLogCompilationLines())
+		{
+			if (!skipLine(line, SKIP_BODY_TAGS))
+			{
+				Tag tag = tagProcessor.processLine(line);
+
+				if (tag != null)
+				{
+					handleTag(tag);
+				}
+			}
+		}
+	}
+
+	private void parseAssemblyLines()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("parseAssemblyLines()");
+		}
+
+		for (String line : splitLog.getAssemblyLines())
+		{
+			asmProcessor.handleLine(line);
 		}
 
 		asmProcessor.complete();
+	}
 
-		reader.close();
+	private void splitLogFile(File hotspotLog)
+	{
+		reading = true;
 
-		logListener.handleReadComplete();
+		BufferedReader reader = null;
+
+		try
+		{
+			reader = new BufferedReader(new FileReader(hotspotLog), 65536);
+
+			String currentLine = reader.readLine();
+
+			while (reading && currentLine != null)
+			{
+				try
+				{
+					String trimmedLine = currentLine.trim();
+
+					if (trimmedLine.length() > 0)
+					{
+						char firstChar = trimmedLine.charAt(0);
+
+						if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET || firstChar == C_AT)
+						{
+							currentLine = trimmedLine;
+						}
+
+						handleLogLine(currentLine);
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.error("Exception handling: '{}'", currentLine, ex);
+				}
+
+				currentLine = reader.readLine();
+			}
+		}
+		catch (IOException ioe)
+		{
+			logger.error("Exception while splitting log file", ioe);
+		}
+		finally
+		{
+			if (reader != null)
+			{
+				try
+				{
+					reader.close();
+				}
+				catch (Exception e)
+				{
+					logger.error("Could not close reader");
+				}
+			}
+		}
+	}
+
+	private void logSplitStats()
+	{
+		logger.info("Header lines        : {}", splitLog.getHeaderLines().size());
+		logger.info("ClassLoader lines   : {}", splitLog.getClassLoaderLines().size());
+		logger.info("LogCompilation lines: {}", splitLog.getLogCompilationLines().size());
+		logger.info("Assembly lines      : {}", splitLog.getAssemblyLines().size());
 	}
 
 	@Override
@@ -211,28 +352,6 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		return isSkip;
 	}
 
-	// HotSpot log header XML can have text nodes
-	private void handleLogHeader(final String inCurrentLine)
-	{
-		if (TAG_TTY.equals(inCurrentLine))
-		{
-			inHeader = false;
-		}
-		else
-		{
-			if (!skipLine(inCurrentLine, SKIP_HEADER_TAGS))
-			{
-				Tag tag = tagProcessor.processLine(inCurrentLine);
-
-				if (tag != null)
-				{
-					handleTag(tag);
-				}
-			}
-		}
-	}
-
-	// After the header, XML nodes do not have text nodes
 	private void handleLogLine(final String inCurrentLine)
 	{
 		String currentLine = inCurrentLine;
@@ -242,19 +361,31 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		if (currentLine.startsWith(S_OPEN_ANGLE))
 		{
-			if (!skipLine(inCurrentLine, SKIP_BODY_TAGS))
+			if (TAG_TTY.equals(currentLine))
 			{
-				Tag tag = tagProcessor.processLine(currentLine);
-
-				if (tag != null)
+				inHeader = false;
+			}
+			else if (currentLine.startsWith(TAG_XML))
+			{
+				inHeader = true;
+			}
+			else
+			{
+				if (inHeader)
 				{
-					handleTag(tag);
+					// HotSpot log header XML can have text nodes
+					splitLog.addHeaderLine(currentLine);
+				}
+				else
+				{
+					// After the header, XML nodes do not have text nodes
+					splitLog.addLogCompilationLine(currentLine);
 				}
 			}
 		}
 		else if (currentLine.startsWith(LOADED))
 		{
-			handleLoaded(currentLine);
+			splitLog.addClassLoaderLine(currentLine);
 		}
 		else if (currentLine.startsWith(S_AT))
 		{
@@ -264,12 +395,29 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		else
 		{
-			String remainder = asmProcessor.handleLine(currentLine);
-			
-			// handle next <nmethod appearing on last line of assembly
-			if (remainder != null)
+			// need to cope with nmethod appearing on same line as last hlt
+			// 0x0000 hlt <nmethod compile_id= ....
+
+			int indexNMethod = currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
+
+			if (indexNMethod != -1)
 			{
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("detected nmethod tag mangled with assembly");
+				}
+
+				String assembly = currentLine.substring(0, indexNMethod);
+
+				String remainder = currentLine.substring(indexNMethod);
+
+				splitLog.addAssemblyLine(assembly);
+
 				handleLogLine(remainder);
+			}
+			else
+			{
+				splitLog.addAssemblyLine(currentLine);
 			}
 		}
 
@@ -343,24 +491,25 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return threadName == null;
 	}
-	
+
 	public IMetaMember findMemberWithSignature(String logSignature)
 	{
 		IMetaMember result = null;
-		
+
 		try
 		{
 			result = ParseUtil.findMemberWithSignature(model, logSignature);
 		}
 		catch (Exception ex)
-		{			
+		{
+			logger.warn("Exception parsing signature: {}", logSignature, ex);
 		}
-		
+
 		if (result == null)
 		{
 			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
 		}
-		
+
 		return result;
 	}
 
@@ -510,17 +659,60 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 	}
 
-	/*
-	 * JITWatch needs classloader information so it can show classes which have
-	 * no JIT-compiled methods in the class tree
-	 */
-	private void handleLoaded(String inCurrentLine)
+	private void buildParsedClasspath()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildParsedClasspath()");
+		}
+
+		for (String line : splitLog.getClassLoaderLines())
+		{
+			buildParsedClasspath(line);
+		}
+	}
+
+	private void buildClassModel()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildClassModel()");
+		}
+
+		for (String line : splitLog.getClassLoaderLines())
+		{
+			buildClassModel(line);
+		}
+	}
+
+	private void buildParsedClasspath(String inCurrentLine)
 	{
 		if (!hasTraceClassLoad)
 		{
 			hasTraceClassLoad = true;
 		}
 
+		final String FROM_SPACE = "from ";
+
+		String originalLocation = null;
+
+		int fromSpacePos = inCurrentLine.indexOf(FROM_SPACE);
+
+		if (fromSpacePos != -1)
+		{
+			originalLocation = inCurrentLine.substring(fromSpacePos + FROM_SPACE.length(), inCurrentLine.length() - 1);
+		}
+
+		if (originalLocation != null && originalLocation.startsWith(S_FILE_COLON))
+		{
+			originalLocation = originalLocation.substring(S_FILE_COLON.length());
+
+			parsedClasspath.addClassLocation(originalLocation);
+		}
+	}
+
+	private void buildClassModel(String inCurrentLine)
+	{
 		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
@@ -548,13 +740,14 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		catch (NoClassDefFoundError ncdf)
 		{
-			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
+			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + "requires " + ncdf.getMessage() + C_QUOTE);
 		}
 		catch (Throwable t)
 		{
-			// Throwable because of possible VerifyError
+			// Possibly a VerifyError
 
 			logger.error("Could not addClassToModel {}", fqClassName, t);
+
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
 	}

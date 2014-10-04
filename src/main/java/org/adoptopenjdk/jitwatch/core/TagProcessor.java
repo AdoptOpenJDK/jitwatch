@@ -38,7 +38,7 @@ public class TagProcessor
 	}
 	
 	public Tag processLine(String line)
-	{
+	{		
 		Tag result = null;
 
 		if (line != null)
@@ -72,11 +72,11 @@ public class TagProcessor
 
 		// closing tag
 		if (line.charAt(1) == C_SLASH)
-		{
+		{			
 			String closeName = line.substring(2, line.length() - 1);
 
 			if (closeName.equals(currentTag.getName()))
-			{
+			{				
 				if (currentTag.getParent() == null)
 				{
 					result = currentTag;

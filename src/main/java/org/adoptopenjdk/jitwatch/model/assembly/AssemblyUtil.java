@@ -41,7 +41,7 @@ public final class AssemblyUtil
 
 		for (String line : lines)
 		{
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("line: '{}'", line);
 			}
@@ -50,7 +50,7 @@ public final class AssemblyUtil
 
 			if (trimmedLine.startsWith(S_HASH))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Assembly header: {}", trimmedLine);
 				}
@@ -59,7 +59,7 @@ public final class AssemblyUtil
 			}
 			else if (trimmedLine.startsWith(S_OPEN_SQUARE))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("new AssemblyBlock: {}", trimmedLine);
 				}
@@ -70,7 +70,7 @@ public final class AssemblyUtil
 			}
 			else if (trimmedLine.startsWith(S_SEMICOLON))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Extended comment? '{}'", trimmedLine);
 				}
@@ -105,7 +105,7 @@ public final class AssemblyUtil
 
 	public static AssemblyInstruction createInstruction(final String inLine)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("Trying to parse instruction : {}", inLine);
 		}
@@ -132,12 +132,12 @@ public final class AssemblyUtil
 			String instructionString = matcher.group(2);
 			String comment = matcher.group(3);
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
-				logger.debug(" Annotation: '{}'", annotation);
-				logger.debug(" Address: '{}'", address);
+				logger.debug("Annotation : '{}'", annotation);
+				logger.debug("Address    : '{}'", address);
 				logger.debug("Instruction: '{}'", instructionString);
-				logger.debug(" Comment: '{}'", comment);
+				logger.debug("Comment    : '{}'", comment);
 			}
 
 			long addressValue = getValueFromAddress(address);

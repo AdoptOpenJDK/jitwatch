@@ -51,7 +51,7 @@ public interface IMetaMember
 
 	boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes);
 	
-	boolean matches(String input);
+	boolean matchesSignature(String input);
 
 	AssemblyMethod getAssembly();
 

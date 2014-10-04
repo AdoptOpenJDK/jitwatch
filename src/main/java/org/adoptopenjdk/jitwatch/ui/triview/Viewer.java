@@ -78,6 +78,8 @@ public class Viewer extends VBox
 		this.stageAccessProxy = stageAccessProxy;
 		this.isHighlighting = highlighting;
 
+		lineListener = new NoOpLineListener();
+
 		setup();
 	}
 
@@ -178,10 +180,7 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				if (lineListener != null)
-				{
-					lineListener.handleFocusSelf(lineType);
-				}
+				lineListener.handleFocusSelf(lineType);
 			}
 		});
 

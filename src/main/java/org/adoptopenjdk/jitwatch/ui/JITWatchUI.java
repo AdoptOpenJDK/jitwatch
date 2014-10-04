@@ -146,10 +146,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public JITWatchUI()
 	{
 		logParser = new HotSpotLogParser(this);
-
-		JITWatchConfig config = new JITWatchConfig();
-
-		logParser.setConfig(config);
 	}
 
 	public JITWatchUI(String[] args)
@@ -166,7 +162,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				try
 				{
-					logParser.readLogFile(hsLogFile);
+					logParser.processLogFile(hsLogFile);
 				}
 				catch (IOException ioe)
 				{
@@ -208,6 +204,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public void handleReadComplete()
 	{
 		log("Finished reading log file.");
+		
 		isReadingLogFile = false;
 
 		Platform.runLater(new Runnable()
@@ -1005,7 +1002,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-		logBuffer.append(S_NEWLINE);
+		logBuffer.append(S_NEWLINE);		
 	}
 
 	void refreshSelectedTreeNode(MetaClass metaClass)

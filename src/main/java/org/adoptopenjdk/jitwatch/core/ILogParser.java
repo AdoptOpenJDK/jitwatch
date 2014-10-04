@@ -9,12 +9,15 @@ import java.io.File;
 import java.io.IOException;
 
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.SplitLog;
 
 public interface ILogParser
 {
 	void setConfig(JITWatchConfig config);
 	
-	void readLogFile(File hotspotLog) throws IOException;
+	void processLogFile(File hotspotLog) throws IOException;
+	
+	SplitLog getSplitLog();
 	
 	void stopParsing();
 	

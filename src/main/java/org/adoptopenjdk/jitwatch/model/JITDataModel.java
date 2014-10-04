@@ -189,24 +189,28 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 			for (IMetaMember meta : metaList)
 			{
-				if (meta.matches(signature))
+				if (meta.matchesSignature(signature))
 				{
 					result = meta;
 					break;
 				}
 			}
 		}
+		else
+		{
+			logger.warn("No metaClass found for {}", className);
+		}
 
 		return result;
 	}
 
+	// clazz.getDeclaredMethods() or clazz.getDeclaredConstructors()
+	// can cause a NoClassDefFoundError / ClassNotFoundException
+	// for a parameter or return type.
+	// Maybe need to parse log to build [Loaded table before attempting to load
+	// any classes
 	public void buildMetaClass(String fqClassName, Class<?> clazz)
 	{
-		if (DEBUG_LOGGING)
-		{
-			logger.debug("buildMetaClass: {}", fqClassName);
-		}
-		
 		String packageName;
 		String className;
 
@@ -243,28 +247,31 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			metaClass.setInterface(true);
 		}
 
-		for (Method m : clazz.getDeclaredMethods())
+		try
 		{
-			MetaMethod metaMethod = new MetaMethod(m, metaClass);
-			metaClass.addMetaMethod(metaMethod);
-			stats.incCountMethod();
-
-			if (DEBUG_LOGGING)
+			for (Method m : clazz.getDeclaredMethods())
 			{
-				logger.debug("Added MetaMethod: {}", metaMethod);
+				MetaMethod metaMethod = new MetaMethod(m, metaClass);
+				metaClass.addMetaMethod(metaMethod);
+				stats.incCountMethod();
 			}
+
+			for (Constructor<?> c : clazz.getDeclaredConstructors())
+			{
+				MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
+				metaClass.addMetaConstructor(metaConstructor);
+				stats.incCountConstructor();
+			}
+
 		}
-
-		for (Constructor<?> c : clazz.getDeclaredConstructors())
+		catch (NoClassDefFoundError ncdfe)
 		{
-			MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
-			metaClass.addMetaConstructor(metaConstructor);
-			stats.incCountConstructor();
-
-			if (DEBUG_LOGGING)
-			{
-				logger.debug("Added MetaConstructor: {}", metaConstructor);
-			}
+			logger.warn("NoClassDefFoundError: '{}' while building class {}", ncdfe.getMessage(), fqClassName);
+			throw ncdfe;
+		}
+		catch (Throwable t)
+		{
+			logger.error("Something unexpected happened building meta class {}", fqClassName, t);
 		}
 	}
 

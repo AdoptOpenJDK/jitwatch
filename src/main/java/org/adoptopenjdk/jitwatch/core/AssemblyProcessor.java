@@ -33,37 +33,18 @@ public class AssemblyProcessor
 		this.memberFinder = memberFinder;
 	}
 
-	public String handleLine(final String inLine)
+	public void handleLine(final String inLine)
 	{
-		String remainder = null;
-
 		String line = inLine.trim();
 
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("handleLine: '{}'", line);
 		}
 
-		// need to cope with nmethod appearing on same line as last hlt
-		// 0x0000 hlt <nmethod compile_id= ....
-
-		int indexNMethod = line.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
-
-		if (indexNMethod != -1)
-		{
-			if (DEBUG_LOGGING)
-			{
-				logger.debug("detected nmethod tag mangled with assembly");
-			}
-
-			remainder = line.substring(indexNMethod);
-
-			line = line.substring(0, indexNMethod);
-		}
-
 		if (S_HASH.equals(previousLine) && line.startsWith("{method}"))
 		{
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("fixup mangled {method} line");
 			}
@@ -73,7 +54,7 @@ public class AssemblyProcessor
 
 		if (line.startsWith(NATIVE_CODE_START))
 		{
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("Assembly started");
 			}
@@ -93,7 +74,7 @@ public class AssemblyProcessor
 
 			if (couldBeNativeMethodMark)
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Assembly method started");
 				}
@@ -102,10 +83,11 @@ public class AssemblyProcessor
 
 				if (!line.endsWith(S_ENTITY_APOS))
 				{
-					if (DEBUG_LOGGING)
+					if (DEBUG_LOGGING_ASSEMBLY)
 					{
 						logger.debug("Method signature interrupted");
 					}
+					
 					methodInterrupted = true;
 				}
 			}
@@ -125,19 +107,12 @@ public class AssemblyProcessor
 			}
 		}
 
-		if (DEBUG_LOGGING && remainder != null)
-		{
-			logger.debug("remainder: '{}'", remainder);
-		}
-
 		previousLine = line;
-
-		return remainder;
 	}
 
 	public void complete()
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("completed assembly\n{}", builder.toString());
 		}
@@ -152,7 +127,7 @@ public class AssemblyProcessor
 
 			String sig = ParseUtil.convertNativeCodeMethodName(firstLine);
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("Parsed assembly sig {}\nfrom {}", sig, firstLine);
 			}
@@ -161,7 +136,7 @@ public class AssemblyProcessor
 
 			if (currentMember != null)
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Found member {}", currentMember);
 				}
@@ -172,7 +147,7 @@ public class AssemblyProcessor
 			}
 			else
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Didn't find member for {}", sig);
 				}

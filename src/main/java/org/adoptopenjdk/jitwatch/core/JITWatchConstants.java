@@ -20,7 +20,10 @@ public final class JITWatchConstants
 	{
 	}
 
+	// *verbose* debugging
 	public static final boolean DEBUG_LOGGING = false;
+	public static final boolean DEBUG_LOGGING_BYTECODE = false;
+	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
@@ -31,7 +34,7 @@ public final class JITWatchConstants
 	public static final String TAG_TTY_CLOSE = "</tty>";
 	public static final String TAG_COMPILATION_LOG = "<compilation_log";
 	public static final String TAG_COMPILATION_LOG_CLOSE = "</compilation_log>";
-	public static final String TAG_HOTSPOT_LOG = "<hotspot_log";
+	public static final String TAG_HOTSPOT_LOG = "<hotspot_log ";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
 
 	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG }));
@@ -158,7 +161,9 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
 	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
 	public static final String S_DEFAULT = "default";
+	public static final String S_FILE_COLON = "file:";
 
+	
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
 	public static final char C_CLOSE_ANGLE = '>';
