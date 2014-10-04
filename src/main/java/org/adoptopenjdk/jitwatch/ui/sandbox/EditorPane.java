@@ -278,15 +278,22 @@ public class EditorPane extends VBox
 
 	public void loadSource(File dir, String filename)
 	{
-		sourceFile = new File(dir, filename);
-
+		if (filename.startsWith(File.separator))
+		{
+			sourceFile = new File(filename);
+		}
+		else
+		{
+			sourceFile = new File(dir, filename);
+		}
+		
 		String source = ResourceLoader.readFile(sourceFile);
 
 		if (source != null)
 		{
 			source = source.replace("\t", "    ");
 
-			lblTitle.setText(filename);
+			lblTitle.setText(sourceFile.getName());
 			taSource.setText(source.trim());
 
 			setModified(false);

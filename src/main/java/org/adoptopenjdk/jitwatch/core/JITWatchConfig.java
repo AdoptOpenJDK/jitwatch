@@ -46,6 +46,7 @@ public class JITWatchConfig
 	private static final String KEY_SHOW_HIDE_INTERFACES = "HideInterfaces";
 	private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
 	private static final String KEY_LAST_LOG_DIR = "LastLogDir";
+	private static final String KEY_LAST_SANDBOX_EDITOR_PANES = "LastSandboxEditorPanes";
 
 	private static final String SANDBOX_PREFIX = "sandbox";
 	private static final String KEY_SANDBOX_INTEL_MODE = SANDBOX_PREFIX + ".intel.mode";
@@ -61,6 +62,7 @@ public class JITWatchConfig
 
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
+	private List<String> editorPanes = new ArrayList<>();
 
 	private boolean showOnlyCompiledMembers = true;
 	private boolean showOnlyCompiledClasses = false;
@@ -264,8 +266,9 @@ public class JITWatchConfig
 			logger.debug("unmarshalPropertiesToConfig({})", profileName);
 		}
 
-		classLocations = loadLocationsFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
-		sourceLocations = loadLocationsFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
+		classLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
+		sourceLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
+		editorPanes =  loadCommaSeparatedListFromProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES);
 
 		showOnlyCompiledMembers = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_MEMBERS, true);
 		showOnlyCompiledClasses = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_CLASSES, false);
@@ -327,7 +330,7 @@ public class JITWatchConfig
 		return Integer.parseInt(getProperty(props, propertyName, Integer.toString(defaultValue)));
 	}
 
-	private List<String> loadLocationsFromProperty(Properties props, String propertyName)
+	private List<String> loadCommaSeparatedListFromProperty(Properties props, String propertyName)
 	{
 		String propValue = getProperty(props, propertyName);
 
@@ -406,6 +409,8 @@ public class JITWatchConfig
 
 		putProperty(loadedProps, KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
 		putProperty(loadedProps, KEY_CLASS_LOCATIONS, StringUtil.listToText(classLocations, S_COMMA));
+		putProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES, StringUtil.listToText(editorPanes, S_COMMA));
+
 		putProperty(loadedProps, KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.toString(showOnlyCompiledMembers));
 		putProperty(loadedProps, KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
 		putProperty(loadedProps, KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
@@ -505,6 +510,11 @@ public class JITWatchConfig
 	{
 		return Collections.unmodifiableList(sourceLocations);
 	}
+	
+	public List<String> getLastEditorPaneList()
+	{
+		return Collections.unmodifiableList(editorPanes);
+	}
 
 	public void addSourceFolder(File sourceFolder)
 	{
@@ -526,6 +536,11 @@ public class JITWatchConfig
 		this.classLocations = classLocations;
 	}
 
+	public void setLastEditorPaneList(List<String> editorPanes)
+	{
+		this.editorPanes = editorPanes;
+	}
+	
 	public boolean isShowOnlyCompiledMembers()
 	{
 		return showOnlyCompiledMembers;

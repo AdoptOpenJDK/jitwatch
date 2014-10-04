@@ -186,6 +186,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void handle(WindowEvent arg0)
 			{
+				saveEditorPaneConfig();
+				
 				parser.getConfig().switchFromSandbox();
 
 				StageManager.closeAll();
@@ -193,7 +195,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		loadDefaultEditors();
+		loadLastEditorPanes();
 	}
 
 	public void runFile(final EditorPane pane)
@@ -217,6 +219,26 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
 	}
 
+	private void loadLastEditorPanes()
+	{
+		List<String> panes = config.getLastEditorPaneList();
+
+		if (panes.size() == 0)
+		{
+			loadDefaultEditors();
+		}
+		else
+		{
+			editorPanes.clear();
+			splitEditorPanes.getItems().clear();
+
+			for (String panePath : panes)
+			{
+				addEditor(panePath);
+			}
+		}
+	}
+
 	private void loadDefaultEditors()
 	{
 		editorPanes.clear();
@@ -224,12 +246,16 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		addEditor("SandboxTest.java");
 		addEditor("SandboxTestLoad.java");
+		
+		saveEditorPaneConfig();
 	}
 
 	private void addEditor(String filename)
 	{
 		EditorPane editor = new EditorPane(this);
 
+		logger.debug("Add editor: {}", filename);
+		
 		if (filename != null)
 		{
 			editor.loadSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), filename);
@@ -258,9 +284,31 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 					dividerPos += widthFraction;
 				}
 			}
-		});
+		});		
 	}
 
+	private void saveEditorPaneConfig()
+	{
+		List<String> editorPanePaths = new ArrayList<>();
+		
+		for (EditorPane pane : editorPanes)
+		{
+			logger.debug("maybe adding pane: {}", pane);
+			
+			if (pane.getSourceFile() != null)
+			{
+				String editorPanePath = pane.getSourceFile().getAbsolutePath();
+				editorPanePaths.add(editorPanePath);
+				
+				logger.debug("Added: {}", editorPanePath);
+			}
+		}
+		
+		config.setLastEditorPaneList(editorPanePaths);
+		
+		config.saveConfig();
+	}
+	
 	private void saveUnsavedEditors()
 	{
 		for (EditorPane editor : editorPanes)
@@ -384,7 +432,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	@Override
 	public void handleStageClosed(Stage stage)
-	{
+	{		
 		StageManager.remove(stage);
 
 		if (stage instanceof SandboxConfigStage)
