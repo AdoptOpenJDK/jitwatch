@@ -199,9 +199,12 @@ public class Sandbox
 			{
 				runJITWatch();
 
-				String fqClassNameForTriView = runtime.getClassForTriView(fileToRun);
+				if (!logParser.hasParseError())
+				{
+					String fqClassNameForTriView = runtime.getClassForTriView(fileToRun);
 
-				showTriView(language, fqClassNameForTriView);
+					showTriView(language, fqClassNameForTriView);
+				}
 			}
 			else
 			{
@@ -364,7 +367,7 @@ public class Sandbox
 
 		logParser.reset();
 
-		logParser.processLogFile(sandboxLogFile);
+		logParser.processLogFile(sandboxLogFile, sandboxStage);
 
 		logListener.log("Parsing complete");
 	}
@@ -378,7 +381,7 @@ public class Sandbox
 		if (triViewMember == null && VM_LANGUAGE_SCALA.equals(language) && openClassInTriView.endsWith(S_DOLLAR))
 		{
 			// Scala and nothing found for Foo$ so try Foo
-			triViewMember = getMemberForClass(openClassInTriView.substring(0, openClassInTriView.length()-1), model);
+			triViewMember = getMemberForClass(openClassInTriView.substring(0, openClassInTriView.length() - 1), model);
 		}
 
 		sandboxStage.openTriView(triViewMember);

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
@@ -48,7 +49,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ISandboxLogListener
+public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ISandboxLogListener, ILogParseErrorListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
@@ -467,5 +468,19 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		languageList.addAll(vmLanguageList);
 
 		comboBoxVMLanguage.getSelectionModel().select(VM_LANGUAGE_JAVA);
+	}
+	
+	@Override
+	public void handleError(final String title, final String body)
+	{
+		logger.error(title);
+
+		Platform.runLater(new Runnable()
+		{
+			public void run()
+			{
+				Dialogs.showOKDialog(SandboxStage.this, title, body);
+			}
+		});
 	}
 }

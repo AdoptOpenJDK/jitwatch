@@ -15,7 +15,7 @@ public interface ILogParser
 {
 	void setConfig(JITWatchConfig config);
 	
-	void processLogFile(File hotspotLog) throws IOException;
+	void processLogFile(File hotspotLog, ILogParseErrorListener listener) throws IOException;
 	
 	SplitLog getSplitLog();
 	
@@ -26,6 +26,6 @@ public interface ILogParser
 	JITWatchConfig getConfig();
 	
 	void reset();
-	
-	boolean hasTraceClassLoading();
+		
+	boolean hasParseError();
 }

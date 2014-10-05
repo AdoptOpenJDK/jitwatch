@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.launch;
 
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
-public class LaunchHeadless implements IJITListener
+public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 {
 	private boolean showErrors;
 	private static final Logger logger = LoggerFactory.getLogger(LaunchHeadless.class);
@@ -29,7 +30,7 @@ public class LaunchHeadless implements IJITListener
 		HotSpotLogParser parser = new HotSpotLogParser(this);
 		parser.setConfig(config);
 
-		parser.processLogFile(new File(filename));
+		parser.processLogFile(new File(filename), this);
 	}
 
 	@Override
@@ -86,5 +87,11 @@ public class LaunchHeadless implements IJITListener
 	public void handleReadStart()
 	{
 
+	}
+
+	@Override
+	public void handleError(String title, String body)
+	{
+		logger.info("Parse Error: {}.{}", title, body);
 	}
 }

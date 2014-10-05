@@ -49,7 +49,7 @@ public class TestLogSplitting
 		
 		ILogParser parser = new HotSpotLogParser(UnitTestUtil.getNoOpJITListener());
 		
-		parser.processLogFile(path.toFile());
+		parser.processLogFile(path.toFile(), UnitTestUtil.getNoOpParseErrorListener());
 		
 		SplitLog log = parser.getSplitLog();
 		

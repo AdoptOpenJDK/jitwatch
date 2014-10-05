@@ -34,11 +34,16 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private boolean reading = false;
 
-	private boolean hasTraceClassLoad = false;
+	boolean hasTraceClassLoad = false;
+
+	private boolean hasParseError = false;
+	private String errorDialogTitle;
+	private String errorDialogBody;
 
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
+	private ILogParseErrorListener errorListener = null;
 
 	private boolean inHeader = false;
 
@@ -162,6 +167,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		hasTraceClassLoad = false;
 
+		hasParseError = false;
+		errorDialogTitle = null;
+		errorDialogBody = null;
+
 		reading = false;
 
 		inHeader = false;
@@ -179,10 +188,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	@Override
-	public void processLogFile(File hotspotLog)
+	public void processLogFile(File hotspotLog, ILogParseErrorListener errorListener)
 	{
 		reset();
 
+		this.errorListener = errorListener;
+		
 		splitLogFile(hotspotLog);
 
 		logSplitStats();
@@ -204,7 +215,28 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		parseAssemblyLines();
 
+		checkIfErrorDialogNeeded();
+
 		logListener.handleReadComplete();
+	}
+
+	private void checkIfErrorDialogNeeded()
+	{
+		if (!hasParseError)
+		{
+			if (!hasTraceClassLoad)
+			{
+				hasParseError = true;
+
+				errorDialogTitle = "Missing VM Switch -XX:+TraceClassLoading";
+				errorDialogBody = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";			
+			}
+		}
+		
+		if (hasParseError)
+		{
+			errorListener.handleError(errorDialogTitle, errorDialogBody);
+		}
 	}
 
 	private void parseHeaderLines()
@@ -742,19 +774,26 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		{
 			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + "requires " + ncdf.getMessage() + C_QUOTE);
 		}
+		catch (UnsupportedClassVersionError ucve)
+		{
+			hasParseError = true;
+			errorDialogTitle = "UnsupportedClassVersionError for class " + fqClassName;
+			errorDialogBody = "Could not load " + fqClassName + " as the class file version is too recent for this JVM.";
+			
+			logError("UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
+			logger.error("Class file for {} created in a later JVM version", fqClassName, ucve);
+		}
 		catch (Throwable t)
 		{
 			// Possibly a VerifyError
-
 			logger.error("Could not addClassToModel {}", fqClassName, t);
-
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
 	}
 
 	@Override
-	public boolean hasTraceClassLoading()
+	public boolean hasParseError()
 	{
-		return hasTraceClassLoad;
+		return hasParseError;
 	}
 }

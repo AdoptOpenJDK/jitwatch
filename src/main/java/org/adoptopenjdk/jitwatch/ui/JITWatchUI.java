@@ -42,6 +42,7 @@ import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -60,7 +61,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
+public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageCloseListener, IStageAccessProxy
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
@@ -162,7 +163,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				try
 				{
-					logParser.processLogFile(hsLogFile);
+					logParser.processLogFile(hsLogFile, JITWatchUI.this);
 				}
 				catch (IOException ioe)
 				{
@@ -214,22 +215,20 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				updateButtons();
 			}
 		});
+	}
+	
+	@Override
+	public void handleError(final String title, final String body)
+	{
+		logger.error(title);
 
-		if (!logParser.hasTraceClassLoading())
+		Platform.runLater(new Runnable()
 		{
-			logger.error("Required VM switch -XX:+TraceClassLoading was not enabled");
-
-			Platform.runLater(new Runnable()
+			public void run()
 			{
-				public void run()
-				{
-					String title = "Missing VM Switch -XX:+TraceClassLoading";
-					String msg = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
-
-					Dialogs.showOKDialog(JITWatchUI.this.stage, title, msg);
-				}
-			});
-		}
+				Dialogs.showOKDialog(JITWatchUI.this.stage, title, body);
+			}
+		});
 	}
 
 	private void stopParsing()
@@ -253,7 +252,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public void start(final Stage stage)
 	{
 		this.stage = stage;
-
+		
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override

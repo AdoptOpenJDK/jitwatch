@@ -5,9 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
-public interface ISandboxStage
+public interface ISandboxStage extends ILogParseErrorListener
 {
 	void openTriView(IMetaMember member);
 	
