@@ -18,27 +18,27 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
-    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+	private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
 
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
-	
-	//TODO write own mini XPath?
-	
+
+	// TODO write own mini XPath?
+
 	public void setCompiler(CompilerName compiler)
 	{
 		currentCompiler = compiler;
 	}
-	
+
 	public CompilerName getCompiler()
 	{
 		return currentCompiler;
 	}
-	
+
 	public Tag processLine(String line)
-	{		
+	{
 		Tag result = null;
 
 		if (line != null)
@@ -53,7 +53,7 @@ public class TagProcessor
 			}
 			else
 			{
-                logger.error("Did not handle: {}", line);
+				logger.error("Did not handle: {}", line);
 			}
 		}
 
@@ -62,7 +62,7 @@ public class TagProcessor
 			currentTag = null;
 			topTag = null;
 		}
-		
+
 		return result;
 	}
 
@@ -89,23 +89,33 @@ public class TagProcessor
 		}
 		else
 		{
+			boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
+			
 			int indexEndName = line.indexOf(C_SPACE);
 
 			if (indexEndName == -1)
 			{
 				indexEndName = line.indexOf(C_CLOSE_ANGLE);
+				
+				if (indexEndName > 0)
+				{
+					if (selfClosing)
+					{
+						indexEndName = line.length() - 2;
+					}
+				}
 			}
 
 			if (indexEndName != -1)
 			{
-				result = processValidLine(line, indexEndName);
+				result = processValidLine(line, indexEndName, selfClosing);
 			}
 		}
 
 		return result;
 	}
 
-	private Tag processValidLine(String line, int indexEndName)
+	private Tag processValidLine(String line, int indexEndName, boolean selfClosing)
 	{
 		Tag result = null;
 
@@ -114,8 +124,6 @@ public class TagProcessor
 		String remainder = line.substring(indexEndName);
 
 		Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
-
-		boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
 
 		Tag t;
 
@@ -155,8 +163,8 @@ public class TagProcessor
 				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
 				break;
 
-            default:
-                break;
+			default:
+				break;
 			}
 		}
 

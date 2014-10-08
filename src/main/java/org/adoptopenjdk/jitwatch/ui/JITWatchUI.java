@@ -100,6 +100,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private File hsLogFile = null;
 
 	private boolean isReadingLogFile = false;
+	
+	private Label lblVmVersion;
+	private Label lblTweakLog;
 
 	private Button btnStart;
 	private Button btnStop;
@@ -184,7 +187,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		errorCount = 0;
 		errorLog.delete(0, errorLog.length());
-
+		
 		isReadingLogFile = true;
 
 		Platform.runLater(new Runnable()
@@ -453,16 +456,19 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		lblHeap = new Label();
 		
-		Label lblVmVersion = new Label();
+		lblVmVersion = new Label();
 		
 		StringBuilder vmBuilder = new StringBuilder();
+		
 		vmBuilder.append("VM is ");
 		vmBuilder.append(Runtime.class.getPackage().getImplementationVendor());
 		vmBuilder.append(C_SPACE);
 		vmBuilder.append(Runtime.class.getPackage().getImplementationVersion());
 
 		lblVmVersion.setText(vmBuilder.toString());
-
+		
+		lblTweakLog = new Label();
+		
 		int menuBarHeight = 40;
 		int textAreaHeight = 100;
 		int statusBarHeight = 25;
@@ -535,12 +541,14 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		HBox hboxBottom = new HBox();
 		
-		Region spring = new Region();
-		
+		Region springLeft = new Region();
+		Region springRight = new Region();
+
 		final String labelStyle = "-fx-padding: 3 0 0 0;";
 
-		HBox.setHgrow(spring, Priority.ALWAYS);
-		
+		HBox.setHgrow(springLeft, Priority.ALWAYS);
+		HBox.setHgrow(springRight, Priority.ALWAYS);
+
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
 		
@@ -549,7 +557,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxBottom.setSpacing(4);
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
-		hboxBottom.getChildren().add(spring);
+		hboxBottom.getChildren().add(springLeft);
+		hboxBottom.getChildren().add(lblTweakLog);
+		hboxBottom.getChildren().add(springRight);
 		hboxBottom.getChildren().add(lblVmVersion);
 
 		borderPane.setTop(hboxTop);
@@ -882,6 +892,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		lblHeap.setText(heapString);
 
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
+		
+		checkIfTweakLog();
 	}
 
 	private void clearTextArea()
@@ -1029,5 +1041,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public Stage getStageForDialog()
 	{
 		return stage;
+	}
+	
+	private void checkIfTweakLog()
+	{		
+		if (logParser != null && logParser.isTweakVMLog())
+		{
+			lblTweakLog.setText("TweakVM log detected! Enabling extra features.");
+		}
+		else
+		{
+			lblTweakLog.setText(S_EMPTY);
+		}
+					
 	}
 }

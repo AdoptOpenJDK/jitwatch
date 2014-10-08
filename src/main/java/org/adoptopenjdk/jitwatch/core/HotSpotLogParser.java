@@ -32,6 +32,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private JITDataModel model;
 
+	private boolean isTweakVMLog = false;
+	
 	private boolean reading = false;
 
 	boolean hasTraceClassLoad = false;
@@ -166,6 +168,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		splitLog.clear();
 
 		hasTraceClassLoad = false;
+		
+		isTweakVMLog = false;
 
 		hasParseError = false;
 		errorDialogTitle = null;
@@ -492,6 +496,14 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
 		model.setVmVersionRelease(release);
+		
+		List<Tag> tweakVMTags = tag.getNamedChildren(TAG_TWEAK_VM);
+		
+		if (tweakVMTags.size() == 1)
+		{
+			isTweakVMLog = true;
+			logger.info("TweakVM detected!");
+		}
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -795,5 +807,11 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	public boolean hasParseError()
 	{
 		return hasParseError;
+	}
+	
+	@Override
+	public boolean isTweakVMLog()
+	{
+		return isTweakVMLog;
 	}
 }

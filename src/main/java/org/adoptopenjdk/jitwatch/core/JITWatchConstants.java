@@ -51,6 +51,7 @@ public final class JITWatchConstants
 
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
+	public static final String TAG_TWEAK_VM = "TweakVM";
 
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";

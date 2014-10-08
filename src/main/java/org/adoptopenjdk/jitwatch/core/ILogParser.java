@@ -28,4 +28,6 @@ public interface ILogParser
 	void reset();
 		
 	boolean hasParseError();
+	
+	boolean isTweakVMLog();
 }

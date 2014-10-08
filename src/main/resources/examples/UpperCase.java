@@ -8,7 +8,7 @@ public class UpperCase
 	{
 		int iterations = 10_000_000;
 
-		String source = "Lorem ipsum dolor sit amet, sensibus partiendo eam at. Ea eius porro signiferumque ius, illud eligendi vim ea. Has ad euismod evertitur pertinacia, at labore omittam duo. Eam dicat eligendi pericula in. Vel cibo probatus in. Mei ea impetus persius, et facer laudem minimum mel.";
+		String source = "Lorem ipsum dolor sit amet, sensibus partiendo eam at.";
 
 		long start = System.currentTimeMillis();
 		convertString(source, iterations);
