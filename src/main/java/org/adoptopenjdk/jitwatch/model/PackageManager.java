@@ -61,7 +61,7 @@ public class PackageManager
 			logger.debug("Building package {}", packageName);
 		}
 
-		String[] parts = packageName.split("\\.");
+		String[] parts = packageName.split(S_ESCAPED_DOT);
 
 		StringBuilder builder = new StringBuilder();
 

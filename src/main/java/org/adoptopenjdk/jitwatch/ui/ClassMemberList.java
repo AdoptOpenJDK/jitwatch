@@ -16,10 +16,11 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
@@ -40,6 +41,8 @@ public class ClassMemberList extends VBox
 	private ListView<IMetaMember> memberList;
 	private MetaClass metaClass = null;
 	private JITWatchConfig config;
+
+	private static final Logger logger = LoggerFactory.getLogger(ClassMemberList.class);
 
 	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -70,17 +73,7 @@ public class ClassMemberList extends VBox
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
 			{
-				parent.showMemberInfo(newVal);
-			}
-		});
-
-		memberList.getItems().addListener(new ListChangeListener<IMetaMember>()
-		{
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IMetaMember> arg0)
-			{
-				setScrollBar();
+				parent.setSelectedMetaMember(newVal);
 			}
 		});
 
@@ -183,7 +176,7 @@ public class ClassMemberList extends VBox
 	private String processIntrinsicsUsing(Journal journal)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
 
 		if (intrinsics.size() > 0)
@@ -194,7 +187,7 @@ public class ClassMemberList extends VBox
 		{
 			builder.append("No intrinsics used in this method");
 		}
-		
+
 		return builder.toString();
 	}
 
@@ -209,6 +202,14 @@ public class ClassMemberList extends VBox
 	public void setMetaClass(MetaClass metaClass)
 	{
 		this.metaClass = metaClass;
+
+		List<IMetaMember> members = metaClass.getMetaMembers();
+
+		if (members.size() > 0)
+		{
+			selectMember(members.get(0));
+		}
+
 		refresh();
 	}
 
@@ -242,16 +243,21 @@ public class ClassMemberList extends VBox
 
 	public void selectMember(IMetaMember selected)
 	{
-		memberList.getSelectionModel().select(selected);
+		memberList.getSelectionModel().clearSelection();
 
-		setScrollBar();
-	}
+		for (int i = 0; i < memberList.getItems().size(); i++)
+		{
+			IMetaMember member = memberList.getItems().get(i);
 
-	private void setScrollBar()
-	{
-		int index = memberList.getSelectionModel().getSelectedIndex();
+			if (member.toString().equals(selected.toString()))
+			{
+				memberList.getSelectionModel().select(i);
 
-		memberList.scrollTo(index);
+				memberList.getFocusModel().focus(i);
+
+				memberList.scrollTo(i);
+			}
+		}
 	}
 
 	static class MetaMethodCell extends ListCell<IMetaMember>

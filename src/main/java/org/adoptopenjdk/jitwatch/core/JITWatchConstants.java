@@ -49,6 +49,9 @@ public final class JITWatchConstants
 	public static final String PARSE = "parse";
 	public static final String S_CODE_COLON = "Code:";
 
+	public static final String DEFAULT_PACKAGE_NAME = "(default package)";
+	public static final String TREE_PACKAGE_ROOT = "Packages";
+	
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
 	public static final String TAG_TWEAK_VM = "TweakVM";
@@ -71,6 +74,9 @@ public final class JITWatchConstants
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
 	public static final String TAG_BRANCH = "branch";
 	public static final String TAG_WRITER = "writer";
+	public static final String TAG_VM_ARGUMENTS = "vm_arguments";
+
+	public static final String TAG_COMMAND = "command";
 
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";
@@ -134,6 +140,7 @@ public final class JITWatchConstants
 	public static final String S_CLOSE_SQUARE = "]";
 	public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
 	public static final String S_ESCAPED_CLOSE_SQUARE = "\\]";
+	public static final String S_ESCAPED_DOT = "\\.";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE = "}";
 	public static final String S_AT = "@";

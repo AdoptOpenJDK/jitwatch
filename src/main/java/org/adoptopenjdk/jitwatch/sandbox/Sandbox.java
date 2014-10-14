@@ -365,8 +365,6 @@ public class Sandbox
 			config.saveConfig();
 		}
 
-		logParser.reset();
-
 		logParser.processLogFile(sandboxLogFile, sandboxStage);
 
 		logListener.log("Parsing complete");

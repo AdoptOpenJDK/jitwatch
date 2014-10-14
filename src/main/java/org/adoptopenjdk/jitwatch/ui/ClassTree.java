@@ -5,12 +5,16 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -23,247 +27,304 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TREE_PACKAGE_ROOT;
 
 public class ClassTree extends VBox
 {
-    private TreeView<Object> treeView;
-    private TreeItem<Object> rootItem;
+	private TreeView<Object> treeView;
+	private TreeItem<Object> rootItem;
 
-    private JITWatchUI parent;
-    private JITWatchConfig config;
+	private JITWatchUI parent;
+	private JITWatchConfig config;
 
-    public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
-    {
-        this.parent = parent;
-        this.config = config;
+	private boolean sameVmCommand;
+	private Set<String> openPackageNodes = new HashSet<>();
+	
+	private CheckBox cbHideInterfaces;
+	private CheckBox cbHideUncompiled;
+	
+	private static final Logger logger = LoggerFactory.getLogger(ClassTree.class);
 
-        CheckBox cbHideInterfaces = new CheckBox("Hide interfaces");
-        cbHideInterfaces.setMaxWidth(280);
-        cbHideInterfaces.setTooltip(new Tooltip("Hide interfaces from the class tree."));
-        cbHideInterfaces.setSelected(config.isHideInterfaces());
-        cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                config.setHideInterfaces(newVal);
-                config.saveConfig();
+	public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
+	{
+		this.parent = parent;
+		this.config = config;
+		
+		final String cbStyle = "-fx-background-color:#dddddd; -fx-padding:4px";
 
-                parent.clearAndRefresh();
-            }
-        });
+		cbHideInterfaces = new CheckBox("Hide interfaces");
+		cbHideInterfaces.setMaxWidth(280);
+		cbHideInterfaces.setTooltip(new Tooltip("Hide interfaces from the class tree."));
+		cbHideInterfaces.setSelected(config.isHideInterfaces());
+		cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				config.setHideInterfaces(newVal);
+				config.saveConfig();
 
-        cbHideInterfaces.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
-        cbHideInterfaces.prefWidthProperty().bind(widthProperty());
+				parent.clearAndRefreshTreeView();
+			}
+		});
 
-        CheckBox cbHideUncompiled = new CheckBox("Hide uncompiled classes");
-        cbHideUncompiled.setTooltip(new Tooltip("Hide classes with no JIT-compiled members from the class tree."));
-        cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
-        cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-            {
-                config.setShowOnlyCompiledClasses(newVal);
-                config.saveConfig();
+		cbHideInterfaces.setStyle(cbStyle);
+		cbHideInterfaces.prefWidthProperty().bind(widthProperty());
 
-                parent.clearAndRefresh();
-            }
-        });
+		cbHideUncompiled = new CheckBox("Hide uncompiled classes");
+		cbHideUncompiled.setTooltip(new Tooltip("Hide classes with no JIT-compiled members from the class tree."));
+		cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
+		cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				config.setShowOnlyCompiledClasses(newVal);
+				config.saveConfig();
 
-        cbHideUncompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
-        cbHideUncompiled.prefWidthProperty().bind(widthProperty());
+				parent.clearAndRefreshTreeView();
+			}
+		});
 
-        rootItem = new TreeItem<Object>("Packages");
+		cbHideUncompiled.setStyle(cbStyle);
+		cbHideUncompiled.prefWidthProperty().bind(widthProperty());
 
-        rootItem.setExpanded(true);
+		rootItem = new TreeItem<Object>(TREE_PACKAGE_ROOT);
 
-        treeView = new TreeView<Object>(rootItem);
+		rootItem.setExpanded(true);
 
-        treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		treeView = new TreeView<Object>(rootItem);
 
-        treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<Object>>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends TreeItem<Object>> observableValue, TreeItem<Object> oldItem,
-                    TreeItem<Object> newItem)
-            {
-                if (newItem != null)
-                {
-                    Object value = newItem.getValue();
+		treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-                    if (value instanceof MetaClass)
-                    {
-                        parent.refreshSelectedTreeNode((MetaClass) value);
-                    }
-                }
-            }
-        });
-        
-        HBox hboxOptions = new HBox();
-        
-        hboxOptions.getChildren().add(cbHideInterfaces);
-        hboxOptions.getChildren().add(cbHideUncompiled);
+		treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<Object>>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends TreeItem<Object>> observableValue, TreeItem<Object> oldItem,
+					TreeItem<Object> newItem)
+			{
+				if (newItem != null)
+				{
+					Object value = newItem.getValue();
 
-        getChildren().add(hboxOptions);
-        getChildren().add(treeView);
+					if (value instanceof MetaClass)
+					{
+						parent.metaClassSelectedFromClassTree((MetaClass) value);
+					}
+				}
+			}
+		});
 
-        treeView.prefHeightProperty().bind(heightProperty());
-    }
+		HBox hboxOptions = new HBox();
 
-    private TreeItem<Object> findOrCreateTreeItem(TreeItem<Object> parent, Object value)
-    {
-        ObservableList<TreeItem<Object>> children = parent.getChildren();
+		hboxOptions.getChildren().add(cbHideInterfaces);
+		hboxOptions.getChildren().add(cbHideUncompiled);
 
-        TreeItem<Object> found = null;
+		getChildren().add(hboxOptions);
+		getChildren().add(treeView);
 
-        int placeToInsert = 0;
-        boolean foundInsertPos = false;
+		treeView.prefHeightProperty().bind(heightProperty());
+	}
+	
+	public void handleConfigUpdate(JITWatchConfig config)
+	{
+		cbHideInterfaces.setSelected(config.isHideInterfaces());
+		cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
+	}
 
-        for (TreeItem<Object> child : children)
-        {
-            int stringCompare = child.getValue().toString().compareTo(value.toString());
+	private TreeItem<Object> findOrCreateTreeItem(final TreeItem<Object> parent, final Object value)
+	{
+		ObservableList<TreeItem<Object>> children = parent.getChildren();
 
-            if (stringCompare == 0)
-            {
-                found = child;
-                break;
-            }
-            else if (!foundInsertPos && stringCompare < 0)
-            {
-                // make sure sub packages listed before classes in this package
+		TreeItem<Object> found = null;
 
-                if (not(child.getValue() instanceof MetaPackage && value instanceof MetaClass))
-                {
-                    placeToInsert++;
-                }
-            }
-            else
-            {
-                if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
-                {
-                    placeToInsert++;
-                }
-                else
-                {
-                    foundInsertPos = true;
-                }
-            }
-        }
+		int placeToInsert = 0;
+		boolean foundInsertPos = false;
 
-        if (found == null)
-        {
-            found = new TreeItem<Object>(value);
-            children.add(placeToInsert, found);
-        }
+		for (TreeItem<Object> child : children)
+		{
+			int stringCompare = child.getValue().toString().compareTo(value.toString());
 
-        boolean hasCompiledChildren = false;
+			if (stringCompare == 0)
+			{
+				found = child;
+				break;
+			}
+			else if (!foundInsertPos && stringCompare < 0)
+			{
+				// make sure sub packages listed before classes in this package
 
-        if (value instanceof MetaPackage && ((MetaPackage) value).hasCompiledClasses())
-        {
-            hasCompiledChildren = true;
-        }
-        else if (value instanceof MetaClass && ((MetaClass) value).hasCompiledMethods())
-        {
-            hasCompiledChildren = true;
-        }
+				if (not(child.getValue() instanceof MetaPackage && value instanceof MetaClass))
+				{
+					placeToInsert++;
+				}
+			}
+			else
+			{
+				if (child.getValue() instanceof MetaPackage && value instanceof MetaClass)
+				{
+					placeToInsert++;
+				}
+				else
+				{
+					foundInsertPos = true;
+				}
+			}
+		}
 
-        if (UserInterfaceUtil.getTick() != null && hasCompiledChildren)
-        {
-            found.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
-        }
+		if (found == null)
+		{
+			found = new TreeItem<Object>(value);
+			children.add(placeToInsert, found);
 
-        return found;
-    }
+			if (value instanceof MetaPackage)
+			{
+				final String packageName = value.toString();
 
-    private boolean not(boolean someCondition) {
-        return !someCondition;
-    }
+				found.expandedProperty().addListener(new ChangeListener<Boolean>()
+				{
+					@Override
+					public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+					{
+						if (newValue != null)
+						{
+							if (newValue == true)
+							{
+								openPackageNodes.add(packageName);
+							}
+							else
+							{
+								openPackageNodes.remove(packageName);
+							}
+						}
+					}
+				});
+				
+				if (sameVmCommand && openPackageNodes.contains(packageName))
+				{
+					found.setExpanded(true);
+				}
+			}
+		}
 
-    public void showTree()
-    {
-        List<MetaPackage> roots = parent.getPackageManager().getRootPackages();
+		boolean hasCompiledChildren = false;
 
-        for (MetaPackage mp : roots)
-        {
-            boolean allowed = true;
+		if (value instanceof MetaPackage && ((MetaPackage) value).hasCompiledClasses())
+		{
+			hasCompiledChildren = true;
+		}
+		else if (value instanceof MetaClass && ((MetaClass) value).hasCompiledMethods())
+		{
+			hasCompiledChildren = true;
+		}
 
-            if (!mp.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
-            {
-                allowed = false;
-            }
+		if (UserInterfaceUtil.getTick() != null && hasCompiledChildren)
+		{
+			found.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+		}
 
-            if (allowed)
-            {
-                showTree(rootItem, mp);
-            }
-        }
-    }
+		return found;
+	}
+	
+	public void clearOpenPackageHistory()
+	{
+		openPackageNodes.clear();
+	}
 
-    private void showTree(TreeItem<Object> currentNode, MetaPackage mp)
-    {
-        TreeItem<Object> packageItem = findOrCreateTreeItem(currentNode, mp);
+	private boolean not(boolean someCondition)
+	{
+		return !someCondition;
+	}
 
-        List<MetaPackage> childPackages = mp.getChildPackages();
+	/*
+	 * @param boolean sameVmCommand. Same class file executed so maintain expanded nodes.
+	 */
+	public void showTree(boolean sameVmCommand)
+	{		
+		this.sameVmCommand = sameVmCommand;
+		
+		List<MetaPackage> roots = parent.getPackageManager().getRootPackages();
 
-        for (MetaPackage childPackage : childPackages)
-        {
-            boolean allowed = true;
+		for (MetaPackage mp : roots)
+		{
+			boolean allowed = true;
+			
+			if (!mp.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
+			{
+				allowed = false;
+			}
 
-            if (!childPackage.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
-            {
-                allowed = false;
-            }
+			if (allowed)
+			{
+				showTree(rootItem, mp);
+			}
+		}
+	}
 
-            if (allowed)
-            {
-                showTree(packageItem, childPackage);
-            }
-        }
+	private void showTree(TreeItem<Object> currentNode, MetaPackage mp)
+	{
+		TreeItem<Object> packageItem = findOrCreateTreeItem(currentNode, mp);
 
-        List<MetaClass> packageClasses = mp.getPackageClasses();
+		List<MetaPackage> childPackages = mp.getChildPackages();
 
-        for (MetaClass packageClass : packageClasses)
-        {
-            boolean allowed = true;
+		for (MetaPackage childPackage : childPackages)
+		{
+			boolean allowed = true;
 
-            if (packageClass.isInterface() && config.isHideInterfaces())
-            {
-                allowed = false;
-            }
+			if (!childPackage.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
+			{
+				allowed = false;
+			}
 
-            if (allowed)
-            {
-                if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
-                {
-                    allowed = false;
-                }
-            }
+			if (allowed)
+			{
+				showTree(packageItem, childPackage);
+			}
+		}
 
-            if (allowed)
-            {
-                findOrCreateTreeItem(packageItem, packageClass);
-            }
-        }
-    }
+		List<MetaClass> packageClasses = mp.getPackageClasses();
 
-    public void select(TreeItem<Object> node)
-    {
-        treeView.getSelectionModel().select(node);
-    }
+		for (MetaClass packageClass : packageClasses)
+		{
+			boolean allowed = true;
 
-    public void scrollTo(int rowsAbove)
-    {
-        treeView.scrollTo(rowsAbove);
-    }
+			if (packageClass.isInterface() && config.isHideInterfaces())
+			{
+				allowed = false;
+			}
 
-    public TreeItem<Object> getRootItem()
-    {
-        return rootItem;
-    }
+			if (allowed)
+			{
+				if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
+				{
+					allowed = false;
+				}
+			}
 
-    public void clear()
-    {
-        rootItem.getChildren().clear();
-    }
+			if (allowed)
+			{
+				findOrCreateTreeItem(packageItem, packageClass);
+			}
+		}
+	}
+
+	public void select(TreeItem<Object> node)
+	{
+		treeView.getSelectionModel().select(node);
+	}
+
+	public void scrollTo(int rowsAbove)
+	{
+		treeView.scrollTo(rowsAbove);
+	}
+
+	public TreeItem<Object> getRootItem()
+	{
+		return rootItem;
+	}
+
+	public void clear()
+	{
+		rootItem.getChildren().clear();
+	}
 }

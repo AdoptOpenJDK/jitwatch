@@ -13,6 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
@@ -290,6 +291,16 @@ public class MetaClass implements Comparable<MetaClass>
 		}
 
 		return match;
+	}
+	
+	public List<String> getTreePath()
+	{
+		MetaPackage metaPackage = getPackage();
+
+		List<String> path = metaPackage.getPackageComponents();
+		path.add(getName());
+
+		return path;
 	}
 
 	@Override

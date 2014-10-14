@@ -99,8 +99,12 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private File hsLogFile = null;
 
+	private String lastVmCommand = null;
+	private IMetaMember lastSelectedMember = null;
+	private MetaClass lastSelectedClass = null;
+
 	private boolean isReadingLogFile = false;
-	
+
 	private Label lblVmVersion;
 	private Label lblTweakLog;
 
@@ -180,14 +184,20 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	@Override
 	public void handleReadStart()
-	{
+	{	
 		startDelayedByConfig = false;
+
+		lastVmCommand = logParser.getVMCommand();
+		lastSelectedMember = selectedMember;
+		lastSelectedClass = selectedMetaClass;
+
+		classTree.handleConfigUpdate(getConfig());
 
 		selectedMember = null;
 
 		errorCount = 0;
 		errorLog.delete(0, errorLog.length());
-		
+
 		isReadingLogFile = true;
 
 		Platform.runLater(new Runnable()
@@ -197,7 +207,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				updateButtons();
 
 				classTree.clear();
-				refreshSelectedTreeNode(null);
+				metaClassSelectedFromClassTree(null);
 
 				textAreaLog.clear();
 			}
@@ -208,7 +218,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public void handleReadComplete()
 	{
 		log("Finished reading log file.");
-		
+
 		isReadingLogFile = false;
 
 		Platform.runLater(new Runnable()
@@ -219,7 +229,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 	}
-	
+
 	@Override
 	public void handleError(final String title, final String body)
 	{
@@ -255,7 +265,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public void start(final Stage stage)
 	{
 		this.stage = stage;
-		
+
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -455,20 +465,20 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnErrorLog.setStyle("-fx-padding: 2 6;");
 
 		lblHeap = new Label();
-		
+
 		lblVmVersion = new Label();
-		
+
 		StringBuilder vmBuilder = new StringBuilder();
-		
+
 		vmBuilder.append("VM is ");
 		vmBuilder.append(Runtime.class.getPackage().getImplementationVendor());
 		vmBuilder.append(C_SPACE);
 		vmBuilder.append(Runtime.class.getPackage().getImplementationVersion());
 
 		lblVmVersion.setText(vmBuilder.toString());
-		
+
 		lblTweakLog = new Label();
-		
+
 		int menuBarHeight = 40;
 		int textAreaHeight = 100;
 		int statusBarHeight = 25;
@@ -526,7 +536,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 
 		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
-		
+
 		if (hsLogFile == null)
 		{
 			log("Choose a HotSpot log file or open the Sandbox");
@@ -540,7 +550,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		spMain.setDividerPositions(0.68, 0.32);
 
 		HBox hboxBottom = new HBox();
-		
+
 		Region springLeft = new Region();
 		Region springRight = new Region();
 
@@ -551,7 +561,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
-		
+
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
@@ -570,9 +580,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		stage.setScene(scene);
 		stage.show();
 
-		int refresh = 1000; // ms
+		int refreshMillis = 1000;
 
-		final Duration oneFrameAmt = Duration.millis(refresh);
+		final Duration oneFrameAmt = Duration.millis(refreshMillis);
 
 		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
 		{
@@ -654,12 +664,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStop.setDisable(!isReadingLogFile);
 	}
 
-	public void openTreeAtMember(IMetaMember member)
+	public boolean focusTreeOnClass(MetaClass metaClass)
 	{
-		List<String> path = member.getTreePath();
-
-		// would be better to identify open nodes and close?
-		clearAndRefresh();
+		List<String> path = metaClass.getTreePath();
+		
+		clearAndRefreshTreeView();
 
 		TreeItem<Object> curNode = classTree.getRootItem();
 
@@ -689,15 +698,19 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				matching = builtPath.toString();
 			}
 
+			logger.debug("part '{}'", matching);
+			
 			for (TreeItem<Object> node : curNode.getChildren())
 			{
 				rowsAbove++;
 
 				String nodeText = node.getValue().toString();
+				
+				logger.debug("comparing '{}' with '{}'", matching, nodeText);
 
-				if (matching.equals(nodeText))
+				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
 				{
-					builtPath.append('.');
+					builtPath.append(C_DOT);
 					curNode = node;
 					curNode.setExpanded(true);
 					classTree.select(curNode);
@@ -706,11 +719,31 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				}
 			}
 		}
+		
+		logger.debug("found? {}", found);
 
 		if (found)
 		{
 			classTree.scrollTo(rowsAbove);
-			classMemberList.selectMember(member);
+			lastSelectedClass = null;
+		}
+
+		return found;
+	}
+
+	public void focusTreeOnMember(IMetaMember member)
+	{
+		if (member != null)
+		{
+			MetaClass metaClass = member.getMetaClass();
+
+			boolean found = focusTreeOnClass(metaClass);
+
+			if (found)
+			{
+				classMemberList.selectMember(member);
+				lastSelectedMember = null;
+			}
 		}
 	}
 
@@ -795,25 +828,51 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		if (result != null)
 		{
-			hsLogFile = result;
-
-			getConfig().setLastLogDir(hsLogFile.getParent());
-			getConfig().saveConfig();
-
-			clearTextArea();
-			log("Selected log file: " + hsLogFile.getAbsolutePath());
-
-			log("\nUsing Config: " + getConfig().getProfileName());
-
-			log("\nClick Start button to process the HotSpot log");
-			updateButtons();
-
-			refreshLog();
+			setHotSpotLogFile(result);
 		}
 	}
 
-	void showMemberInfo(IMetaMember member)
+	// Call from UI thread
+	private void setHotSpotLogFile(File logFile)
 	{
+		hsLogFile = logFile;
+
+		getConfig().setLastLogDir(hsLogFile.getParent());
+		getConfig().saveConfig();
+
+		clearTextArea();
+		log("Selected log file: " + hsLogFile.getAbsolutePath());
+
+		log("\nUsing Config: " + getConfig().getProfileName());
+
+		log("\nClick Start button to process the HotSpot log");
+		updateButtons();
+
+		refreshLog();
+	}
+
+	private boolean sameVmCommand()
+	{
+		boolean same = false;
+
+		if (lastVmCommand != null && logParser.getVMCommand() != null)
+		{
+			same = lastVmCommand.equals(logParser.getVMCommand());
+
+			if (!same)
+			{
+				// vm command known and not same so flush open node history
+				classTree.clearOpenPackageHistory();
+				lastVmCommand = null;
+			}
+		}
+
+		return same;
+	}
+
+	void setSelectedMetaMember(IMetaMember member)
+	{
+		logger.info("setSelectedMetaMember: {}", member);
 		memberAttrList.clear();
 
 		if (member == null)
@@ -844,11 +903,29 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	}
 
 	private void refresh()
-	{
+	{		
+		boolean sameVmCommandAsLastRun = sameVmCommand();
+
 		if (repaintTree)
 		{
 			repaintTree = false;
-			classTree.showTree();
+			classTree.showTree(sameVmCommandAsLastRun);
+		}
+
+		if (sameVmCommandAsLastRun)
+		{
+			if (lastSelectedMember != null)
+			{
+				logger.debug("focusTreeOnMember({})", lastSelectedMember);
+
+				focusTreeOnMember(lastSelectedMember);
+			}
+			else if (lastSelectedClass != null)
+			{
+				logger.debug("focusTreeOnClass({})", lastSelectedClass);
+
+				focusTreeOnClass(lastSelectedClass);
+			}
 		}
 
 		if (timeLineStage != null)
@@ -892,7 +969,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		lblHeap.setText(heapString);
 
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
-		
+
 		checkIfTweakLog();
 	}
 
@@ -912,11 +989,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return selectedMember;
 	}
 
-	void clearAndRefresh()
+	void clearAndRefreshTreeView()
 	{
 		selectedMember = null;
+		selectedMetaClass = null;
+		
 		classTree.clear();
-		classTree.showTree();
+		classTree.showTree(sameVmCommand());
 	}
 
 	@Override
@@ -1013,15 +1092,15 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-		logBuffer.append(S_NEWLINE);		
+		logBuffer.append(S_NEWLINE);
 	}
 
-	void refreshSelectedTreeNode(MetaClass metaClass)
+	void metaClassSelectedFromClassTree(MetaClass metaClass)
 	{
 		classMemberList.clearClassMembers();
 		selectedMetaClass = metaClass;
-
-		showMemberInfo(null);
+		
+		setSelectedMetaMember(null);
 
 		if (metaClass == null)
 		{
@@ -1042,9 +1121,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		return stage;
 	}
-	
+
 	private void checkIfTweakLog()
-	{		
+	{
 		if (logParser != null && logParser.isTweakVMLog())
 		{
 			lblTweakLog.setText("TweakVM log detected! Enabling extra features.");
@@ -1053,6 +1132,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			lblTweakLog.setText(S_EMPTY);
 		}
-					
+
 	}
 }

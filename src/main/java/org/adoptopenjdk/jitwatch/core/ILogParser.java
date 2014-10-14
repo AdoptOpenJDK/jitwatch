@@ -30,4 +30,6 @@ public interface ILogParser
 	boolean hasParseError();
 	
 	boolean isTweakVMLog();
+	
+	String getVMCommand();
 }

@@ -60,6 +60,4 @@ public interface IMetaMember
 	String getSignatureRegEx();
 
 	String getSignatureForBytecode();
-	
-	List<String> getTreePath();
 }

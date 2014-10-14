@@ -32,12 +32,14 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private JITDataModel model;
 
+	private String vmCommand = null;
+
 	private boolean isTweakVMLog = false;
-	
+
 	private boolean reading = false;
 
 	boolean hasTraceClassLoad = false;
-
+	
 	private boolean hasParseError = false;
 	private String errorDialogTitle;
 	private String errorDialogBody;
@@ -168,7 +170,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		splitLog.clear();
 
 		hasTraceClassLoad = false;
-		
+
 		isTweakVMLog = false;
 
 		hasParseError = false;
@@ -183,6 +185,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
+		
+		vmCommand = null;
 
 		currentLineNumber = 0;
 
@@ -197,7 +201,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		reset();
 
 		this.errorListener = errorListener;
-		
+
 		splitLogFile(hotspotLog);
 
 		logSplitStats();
@@ -233,10 +237,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				hasParseError = true;
 
 				errorDialogTitle = "Missing VM Switch -XX:+TraceClassLoading";
-				errorDialogBody = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";			
+				errorDialogBody = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
 			}
 		}
-		
+
 		if (hasParseError)
 		{
 			errorListener.handleError(errorDialogTitle, errorDialogBody);
@@ -272,7 +276,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		for (String line : splitLog.getLogCompilationLines())
-		{
+		{			
 			if (!skipLine(line, SKIP_BODY_TAGS))
 			{
 				Tag tag = tagProcessor.processLine(line);
@@ -395,65 +399,65 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
-		if (currentLine.startsWith(S_OPEN_ANGLE))
+		if (TAG_TTY.equals(currentLine))
 		{
-			if (TAG_TTY.equals(currentLine))
-			{
-				inHeader = false;
-			}
-			else if (currentLine.startsWith(TAG_XML))
-			{
-				inHeader = true;
-			}
-			else
-			{
-				if (inHeader)
-				{
-					// HotSpot log header XML can have text nodes
-					splitLog.addHeaderLine(currentLine);
-				}
-				else
-				{
-					// After the header, XML nodes do not have text nodes
-					splitLog.addLogCompilationLine(currentLine);
-				}
-			}
+			inHeader = false;
+			return;
 		}
-		else if (currentLine.startsWith(LOADED))
+		else if (currentLine.startsWith(TAG_XML))
 		{
-			splitLog.addClassLoaderLine(currentLine);
+			inHeader = true;
 		}
-		else if (currentLine.startsWith(S_AT))
+
+		if (inHeader)
 		{
-			// possible PrintCompilation was enabled as well as LogCompilation?
-			// jmh does this with perf annotations
-			// Ignore this line
+			// HotSpot log header XML can have text nodes so consume all lines
+			splitLog.addHeaderLine(currentLine);
 		}
 		else
 		{
-			// need to cope with nmethod appearing on same line as last hlt
-			// 0x0000 hlt <nmethod compile_id= ....
-
-			int indexNMethod = currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
-
-			if (indexNMethod != -1)
+			if (currentLine.startsWith(S_OPEN_ANGLE))
 			{
-				if (DEBUG_LOGGING)
-				{
-					logger.debug("detected nmethod tag mangled with assembly");
-				}
-
-				String assembly = currentLine.substring(0, indexNMethod);
-
-				String remainder = currentLine.substring(indexNMethod);
-
-				splitLog.addAssemblyLine(assembly);
-
-				handleLogLine(remainder);
+				// After the header, XML nodes do not have text nodes
+				splitLog.addLogCompilationLine(currentLine);
+			}
+			else if (currentLine.startsWith(LOADED))
+			{
+				splitLog.addClassLoaderLine(currentLine);
+			}
+			else if (currentLine.startsWith(S_AT))
+			{
+				// possible PrintCompilation was enabled as well as
+				// LogCompilation?
+				// jmh does this with perf annotations
+				// Ignore this line
 			}
 			else
 			{
-				splitLog.addAssemblyLine(currentLine);
+				// need to cope with nmethod appearing on same line as last hlt
+				// 0x0000 hlt <nmethod compile_id= ....
+
+				int indexNMethod = currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
+
+				if (indexNMethod != -1)
+				{
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("detected nmethod tag mangled with assembly");
+					}
+
+					String assembly = currentLine.substring(0, indexNMethod);
+
+					String remainder = currentLine.substring(indexNMethod);
+
+					splitLog.addAssemblyLine(assembly);
+
+					handleLogLine(remainder);
+				}
+				else
+				{
+					splitLog.addAssemblyLine(currentLine);
+				}
 			}
 		}
 
@@ -486,6 +490,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			handleStartCompileThread(tag);
 			break;
 
+		case TAG_VM_ARGUMENTS:
+			handleTagVmArguments(tag);
+			break;
+
 		default:
 			break;
 		}
@@ -496,14 +504,20 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
 		model.setVmVersionRelease(release);
-		
+
 		List<Tag> tweakVMTags = tag.getNamedChildren(TAG_TWEAK_VM);
-		
+
 		if (tweakVMTags.size() == 1)
 		{
 			isTweakVMLog = true;
 			logger.info("TweakVM detected!");
 		}
+	}
+
+	private void handleTagVmArguments(Tag tag)
+	{
+		vmCommand = tag.getNamedChildren(TAG_COMMAND).get(0).getTextContent();
+		logger.info("VM Command: {}", vmCommand);
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -791,7 +805,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			hasParseError = true;
 			errorDialogTitle = "UnsupportedClassVersionError for class " + fqClassName;
 			errorDialogBody = "Could not load " + fqClassName + " as the class file version is too recent for this JVM.";
-			
+
 			logError("UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
 			logger.error("Class file for {} created in a later JVM version", fqClassName, ucve);
 		}
@@ -808,10 +822,17 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return hasParseError;
 	}
-	
+
 	@Override
 	public boolean isTweakVMLog()
 	{
 		return isTweakVMLog;
 	}
+
+	@Override
+	public String getVMCommand()
+	{
+		return vmCommand;
+	}
+
 }

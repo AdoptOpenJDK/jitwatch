@@ -425,8 +425,31 @@ public class TestParser
 		assertEquals("public java.lang.Object()", member1.toString());
 		assertEquals("public java.lang.StringBuilder java.lang.StringBuilder.append(int)", member2.toString());
 		assertEquals("private long org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.chainA1(long)", member3.toString());
-
-
-
+    }
+    
+    @Test
+    public void testLambdaSignatureRegression()
+    {
+    	String sig = "uk.co.foo.bar.Anonymised$$Lambda$40 applyAsInt (Ljava.lang.Object;)I";
+    	
+    	String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+    	
+    	assertNotNull(parts);
+    	assertEquals("uk.co.foo.bar.Anonymised$$Lambda$40", parts[0]);
+    	assertEquals("applyAsInt", parts[1]);
+    	assertEquals("Ljava.lang.Object;", parts[2]);
+    	assertEquals("I", parts[3]); 
+    	
+    	JITDataModel model = new JITDataModel();
+    	
+    	try
+    	{
+    		ParseUtil.findMemberWithSignature(model, sig);
+    	}
+    	catch (Exception e)
+    	{
+    		e.printStackTrace();
+    		fail();
+    	}
     }
 }
