@@ -39,7 +39,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private boolean reading = false;
 
 	boolean hasTraceClassLoad = false;
-	
+
 	private boolean hasParseError = false;
 	private String errorDialogTitle;
 	private String errorDialogBody;
@@ -364,10 +364,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private void logSplitStats()
 	{
-		logger.info("Header lines        : {}", splitLog.getHeaderLines().size());
-		logger.info("ClassLoader lines   : {}", splitLog.getClassLoaderLines().size());
-		logger.info("LogCompilation lines: {}", splitLog.getLogCompilationLines().size());
-		logger.info("Assembly lines      : {}", splitLog.getAssemblyLines().size());
+		logger.debug("Header lines        : {}", splitLog.getHeaderLines().size());
+		logger.debug("ClassLoader lines   : {}", splitLog.getClassLoaderLines().size());
+		logger.debug("LogCompilation lines: {}", splitLog.getLogCompilationLines().size());
+		logger.debug("Assembly lines      : {}", splitLog.getAssemblyLines().size());
 	}
 
 	@Override
@@ -510,14 +510,14 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		if (tweakVMTags.size() == 1)
 		{
 			isTweakVMLog = true;
-			logger.info("TweakVM detected!");
+			logger.debug("TweakVM detected!");
 		}
 	}
 
 	private void handleTagVmArguments(Tag tag)
 	{
 		vmCommand = tag.getNamedChildren(TAG_COMMAND).get(0).getTextContent();
-		logger.info("VM Command: {}", vmCommand);
+		logger.debug("VM Command: {}", vmCommand);
 	}
 
 	private void handleStartCompileThread(Tag tag)

@@ -872,7 +872,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	void setSelectedMetaMember(IMetaMember member)
 	{
-		logger.info("setSelectedMetaMember: {}", member);
 		memberAttrList.clear();
 
 		if (member == null)

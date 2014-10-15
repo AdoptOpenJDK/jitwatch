@@ -601,7 +601,7 @@ public final class ParseUtil
 
 			if (metaClass == null)
 			{
-				logger.warn("metaClass not found: {}. Attempting classload", metaClassName);
+				logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
 
 				// Possible that TraceClassLoading did not log this class
 				// try to classload and add to model

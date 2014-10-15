@@ -51,7 +51,7 @@ public final class JITWatchConstants
 
 	public static final String DEFAULT_PACKAGE_NAME = "(default package)";
 	public static final String TREE_PACKAGE_ROOT = "Packages";
-	
+
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
 	public static final String TAG_TWEAK_VM = "TweakVM";
