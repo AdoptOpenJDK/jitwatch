@@ -75,6 +75,8 @@ public final class JITWatchConstants
 	public static final String TAG_BRANCH = "branch";
 	public static final String TAG_WRITER = "writer";
 	public static final String TAG_VM_ARGUMENTS = "vm_arguments";
+	public static final String TAG_ELIMINATE_ALLOCATION = "eliminate_allocation";
+	public static final String TAG_JVMS = "jvms";
 
 	public static final String TAG_COMMAND = "command";
 
@@ -123,6 +125,8 @@ public final class JITWatchConstants
 	
 	public static final String S_PROFILE_DEFAULT = "Default";
 	public static final String S_PROFILE_SANDBOX = "Sandbox";
+	
+	public static final String S_LAMBDAFORM_CLASS_PREFIX = "java.lang.invoke.LambdaForm$";
 
 	public static final String REGEX_GROUP_ANY = "(.*)";
 	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";

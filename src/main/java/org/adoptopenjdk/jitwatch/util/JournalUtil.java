@@ -247,6 +247,10 @@ public final class JournalUtil
 				}
 			}
 				break;
+				
+			case TAG_ELIMINATE_ALLOCATION:
+				System.out.println("ELIM");
+				break;
 
 			default:
 				break;
