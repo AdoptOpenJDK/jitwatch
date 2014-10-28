@@ -41,4 +41,9 @@ public final class ClassUtil
 	{
 		return Class.forName(fqClassName, false, disposableClassLoader);
 	}
+	
+	public static Class<?> loadClassWithoutInitialising(String fqClassName, ClassLoader classLoader) throws ClassNotFoundException
+	{
+		return Class.forName(fqClassName, false, classLoader);
+	}
 }

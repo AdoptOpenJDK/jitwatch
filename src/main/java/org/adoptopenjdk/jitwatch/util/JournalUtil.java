@@ -27,11 +27,6 @@ public final class JournalUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
-
 	private JournalUtil()
 	{
 	}

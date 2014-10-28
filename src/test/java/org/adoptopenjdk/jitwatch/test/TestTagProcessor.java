@@ -8,12 +8,8 @@ package org.adoptopenjdk.jitwatch.test;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.junit.Ignore;
 import org.junit.Test;
-
 import java.util.List;
-import java.util.Map;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -382,35 +378,6 @@ public class TestTagProcessor
         // Then
         assertThat("No tags should have been returned.",
                 actualTag,
-                is(equalTo(expectedParseResult)));
-    }
-
-    /*
-        Scenario: Parsing a line containing a tag of type 'Task'
-            Given a line containing a tag of type 'Task' is available
-            When the tag processor parses such a line
-            Then a task object is returned
-     */
-    @Test
-    @Ignore
-    public void givenLineContainingATypeTask_WhenTheTagProcessorParsesIt_ThenATaskTagIsReturned() {
-        // Given
-         String withTypeTask = "<task compile_id='1' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog " +
-         "addVariable (I)V' bytes='41' count='10000' backedge_count='5438' iicount='1' osr_bci='5' stamp='0.164'>";
-        //String withTypeTask = "</task>";
-        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTask);
-        boolean selfClosing = (withTypeTask.charAt(withTypeTask.length() - 2) == JITWatchConstants.C_SLASH);
-        int indexEndName = withTypeTask.indexOf(C_CLOSE_ANGLE);
-        String name = withTypeTask.substring(1, indexEndName);
-        Tag expectedParseResult = new Tag(name, attrs, selfClosing);
-
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        Tag actualParseResult = tagProcessor.processLine(withTypeTask);
-
-        // Then
-        assertThat("The line should have been parsed correctly, producing a tag..",
-                actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -566,9 +567,9 @@ public class TriView extends Stage implements ILineListener
 
 			if (entry != null)
 			{
-				String memberSig = entry.getMemberSignature();
+				MemberSignatureParts msp = entry.getMemberSignatureParts();
 
-				IMetaMember nextMember = metaClass.findMemberByBytecodeSignature(memberSig);
+				IMetaMember nextMember = metaClass.getMemberFromSignature(msp);
 
 				if (nextMember != null)
 				{
@@ -583,7 +584,7 @@ public class TriView extends Stage implements ILineListener
 				}
 				else
 				{
-					logger.warn("Could not find member for bc sig: {}", memberSig);
+					logger.warn("Could not find member for bc sig: {}", msp);
 				}
 			}
 

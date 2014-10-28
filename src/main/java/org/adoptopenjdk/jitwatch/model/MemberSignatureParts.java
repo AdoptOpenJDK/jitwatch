@@ -7,22 +7,30 @@ package org.adoptopenjdk.jitwatch.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MemberSignatureParts
 {
+	private String fullyQualifiedClassName;
 	private int modifier;
 	private List<String> modifierList;
 	private Map<String, String> genericsMap;
 	private String returnType;
 	private String memberName;
 	private List<String> paramTypeList;
+	
+	private static final Logger logger = LoggerFactory.getLogger(MemberSignatureParts.class);
 
 	// LinkedHashMap to ensure entry set iteration matches insertion order
 	private static final Map<String, Integer> modifierMap = new LinkedHashMap<String, Integer>();
@@ -45,12 +53,92 @@ public class MemberSignatureParts
 		modifierMap.put(Modifier.toString(modifier), modifier);
 	}
 
-	public MemberSignatureParts(String toParse)
+	private MemberSignatureParts()
 	{
 		modifierList = new ArrayList<>();
 		genericsMap = new LinkedHashMap<>();
 		paramTypeList = new ArrayList<>();
 		modifier = 0;
+	}
+
+	private static void completeSignature(MemberSignatureParts msp)
+	{
+		if (msp.memberName != null)
+		{
+			// Constructors will return void for returnType
+			if (ParseUtil.CONSTRUCTOR_INIT.equals(msp.memberName) || msp.memberName.equals(msp.fullyQualifiedClassName))
+			{
+				msp.memberName = msp.fullyQualifiedClassName;
+				msp.returnType = Void.TYPE.getName();
+			}
+		}
+		else
+		{
+			logger.warn("MemberSignatureParts.memberName was null: {}", msp);
+		}
+	}
+
+	public static MemberSignatureParts fromParts(String fullyQualifiedClassName, String memberName, String returnType,
+			String[] paramTypes)
+	{
+		MemberSignatureParts msp = new MemberSignatureParts();
+
+		msp.fullyQualifiedClassName = fullyQualifiedClassName;
+
+		msp.memberName = memberName;
+
+		msp.paramTypeList.addAll(Arrays.asList(paramTypes));
+
+		msp.returnType = returnType;
+
+		completeSignature(msp);
+
+		return msp;
+	}
+
+	public static MemberSignatureParts fromLogCompilationSignature(String toParse) throws LogParseException
+	{
+		MemberSignatureParts msp = new MemberSignatureParts();
+
+		String[] parts = ParseUtil.splitLogSignatureWithRegex(toParse);
+
+		msp.fullyQualifiedClassName = parts[0];
+		msp.memberName = parts[1];
+
+		String paramTypes = parts[2];
+		String returnType = parts[3];
+
+		Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
+		Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
+
+		Class<?> returnClass;
+
+		if (returnClasses.length == 1)
+		{
+			returnClass = returnClasses[0];
+		}
+		else
+		{
+			returnClass = Void.class;
+		}
+
+		for (Class<?> paramClass : paramClasses)
+		{
+			msp.paramTypeList.add(paramClass.getName());
+		}
+
+		msp.returnType = returnClass.getName();
+
+		completeSignature(msp);
+
+		return msp;
+	}
+
+	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
+	{
+		MemberSignatureParts msp = new MemberSignatureParts();
+
+		msp.fullyQualifiedClassName = fqClassName;
 
 		StringBuilder builder = new StringBuilder();
 
@@ -73,7 +161,7 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
-        final Pattern patternBytecodeSignature = Pattern.compile(builder.toString());
+		final Pattern patternBytecodeSignature = Pattern.compile(builder.toString());
 
 		Matcher matcher = patternBytecodeSignature.matcher(toParse);
 
@@ -94,17 +182,17 @@ public class MemberSignatureParts
 
 				if (group != null && i <= modifierCount)
 				{
-					modifierList.add(group);
+					msp.modifierList.add(group);
 
 					// add bitset value for this modifier
-					modifier += modifierMap.get(group);
+					msp.modifier += modifierMap.get(group);
 				}
 
 				if (i == modifierCount + 1)
 				{
 					if (group != null)
 					{
-						buildGenerics(group);
+						msp.buildGenerics(group);
 					}
 				}
 
@@ -112,7 +200,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						returnType = group;
+						msp.returnType = group;
 					}
 				}
 
@@ -120,7 +208,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						memberName = group;
+						msp.memberName = group;
 					}
 				}
 
@@ -128,11 +216,15 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						buildParamTypes(group);
+						msp.buildParamTypes(group);
 					}
 				}
 			}
 		}
+
+		completeSignature(msp);
+
+		return msp;
 	}
 
 	private void buildGenerics(String genericsString)
@@ -143,7 +235,7 @@ public class MemberSignatureParts
 		for (String sub : substitutions)
 		{
 			sub = sub.replace(S_SLASH, S_DOT); // in package names
-			
+
 			if (sub.contains(" extends "))
 			{
 				String[] pair = sub.split(" extends ");
@@ -184,12 +276,12 @@ public class MemberSignatureParts
 						paramBuilder.append(c);
 					}
 				}
-				else if (c == '<')
+				else if (c == C_OPEN_ANGLE)
 				{
 					angleBracketDepth++;
 					paramBuilder.append(c);
 				}
-				else if (c == '>')
+				else if (c == C_CLOSE_ANGLE)
 				{
 					angleBracketDepth--;
 					paramBuilder.append(c);
@@ -216,12 +308,12 @@ public class MemberSignatureParts
 		{
 			boolean first = true;
 			boolean validParamName = true;
-			
+
 			// check every character after space to see if valid Java identifier
 			for (int i = lastSpacePos + 1; i < param.length(); i++)
 			{
 				char c = param.charAt(i);
-				
+
 				if (first && !Character.isJavaIdentifierStart(c))
 				{
 					validParamName = false;
@@ -232,10 +324,10 @@ public class MemberSignatureParts
 					validParamName = false;
 					break;
 				}
-				
+
 				first = false;
 			}
-			
+
 			if (validParamName)
 			{
 				param = param.substring(0, lastSpacePos);
@@ -276,11 +368,18 @@ public class MemberSignatureParts
 		return paramTypeList;
 	}
 
+	public String getFullyQualifiedClassName()
+	{
+		return fullyQualifiedClassName;
+	}
+
 	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
 
+		sb.append(C_NEWLINE);
+		
 		sb.append("modifiers: ");
 
 		if (modifierList.size() > 0)
@@ -320,6 +419,8 @@ public class MemberSignatureParts
 		}
 
 		sb.append(C_NEWLINE);
+
+		sb.append("class: ").append(fullyQualifiedClassName).append(C_NEWLINE);
 
 		sb.append("returnType: ").append(returnType).append(C_NEWLINE);
 

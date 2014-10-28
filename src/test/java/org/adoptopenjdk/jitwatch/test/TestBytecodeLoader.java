@@ -6,9 +6,11 @@
 package org.adoptopenjdk.jitwatch.test;
 
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.*;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import org.junit.Test;
@@ -375,7 +377,7 @@ public class TestBytecodeLoader
 		builder.append("               0       4     2     b   I").append(S_NEWLINE);
 		builder.append("}").append(S_NEWLINE);
 
-		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.SandboxTest", builder.toString());
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public int add(int,int)");
 
@@ -394,7 +396,14 @@ public class TestBytecodeLoader
 		int offset = entry.getBytecodeOffset();
 
 		assertEquals(0, offset);
-		assertEquals("public int add(int,int)", entry.getMemberSignature());
+		
+		MemberSignatureParts msp = entry.getMemberSignatureParts();
+		
+		assertEquals("add", msp.getMemberName());
+		assertEquals("int", msp.getReturnType());
+		assertEquals(2, msp.getParamTypes().size());
+		assertEquals("int",  msp.getParamTypes().get(0));
+		assertEquals("int",  msp.getParamTypes().get(1));
 
 		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode("public org.adoptopenjdk.jitwatch.demo.SandboxTest()");
 
@@ -411,7 +420,12 @@ public class TestBytecodeLoader
 		int offset2 = entry2.getBytecodeOffset();
 
 		assertEquals(0, offset2);
-		assertEquals("public org.adoptopenjdk.jitwatch.demo.SandboxTest()", entry2.getMemberSignature());
+		
+		MemberSignatureParts msp2 = entry2.getMemberSignatureParts();
+		
+		assertEquals("org.adoptopenjdk.jitwatch.demo.SandboxTest", msp2.getMemberName());
+		assertEquals("void", msp2.getReturnType());
+		assertEquals(0, msp2.getParamTypes().size());
 
 	}
 
@@ -426,7 +440,7 @@ public class TestBytecodeLoader
 		builder.append("major version: 51").append(S_NEWLINE);
 		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
 
-		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", builder.toString());
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -447,7 +461,7 @@ public class TestBytecodeLoader
 		builder.append("major version: 51").append(S_NEWLINE);
 		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
 
-		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", builder.toString());
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -478,7 +492,7 @@ public class TestBytecodeLoader
 		builder.append("      0: #35()").append(S_NEWLINE);
 		builder.append("      0: #35()").append(S_NEWLINE);
 		
-		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("com.chrisnewland.Test", builder.toString());
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public void measureWrong()");
 
@@ -544,9 +558,12 @@ public class TestBytecodeLoader
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(8));
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(9));
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(100));
-
 		
-		assertEquals("public void measureWrong()", lineTable.getEntryForSourceLine(65).getMemberSignature());	
+		MemberSignatureParts msp = lineTable.getEntryForSourceLine(65).getMemberSignatureParts();
+		
+		assertEquals("measureWrong", msp.getMemberName());
+		assertEquals("void", msp.getReturnType());
+		assertEquals(0, msp.getParamTypes().size());
 	}
 	
 	@Test
@@ -618,7 +635,7 @@ public class TestBytecodeLoader
 			builder.append(line).append(C_NEWLINE);
 		}
 		
-		ClassBC classBytecode = BytecodeLoader.parse(builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("com.chrisnewland.Test", builder.toString());
 		
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 

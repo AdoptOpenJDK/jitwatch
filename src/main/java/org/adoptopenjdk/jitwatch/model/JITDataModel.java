@@ -177,9 +177,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 	}
 
-	public IMetaMember findMetaMember(String className, String signature)
+	public IMetaMember findMetaMember(MemberSignatureParts msp)
 	{
-		MetaClass metaClass = pm.getMetaClass(className);
+		MetaClass metaClass = pm.getMetaClass(msp.getFullyQualifiedClassName());
 
 		IMetaMember result = null;
 
@@ -188,8 +188,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			List<IMetaMember> metaList = metaClass.getMetaMembers();
 
 			for (IMetaMember meta : metaList)
-			{
-				if (meta.matchesSignature(signature))
+			{								
+				if (meta.matchesSignature(msp))
 				{
 					result = meta;
 					break;
@@ -198,19 +198,19 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 		else
 		{
-			logger.warn("No metaClass found for {}", className);
+			logger.warn("No metaClass found for MemberSignatureParts {}", msp.getMemberName());
 		}
 
 		return result;
 	}
 
-	// clazz.getDeclaredMethods() or clazz.getDeclaredConstructors()
-	// can cause a NoClassDefFoundError / ClassNotFoundException
-	// for a parameter or return type.
-	// Maybe need to parse log to build [Loaded table before attempting to load
-	// any classes
-	public void buildMetaClass(String fqClassName, Class<?> clazz)
+
+	public MetaClass buildAndGetMetaClass(Class<?> clazz)
 	{
+		MetaClass resultMetaClass = null;
+		
+		String fqClassName = clazz.getName();
+		
 		String packageName;
 		String className;
 
@@ -234,32 +234,35 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			mp = pm.buildPackage(packageName);
 		}
 
-		MetaClass metaClass = new MetaClass(mp, className);
+		resultMetaClass = new MetaClass(mp, className);
 
-		pm.addMetaClass(metaClass);
+		pm.addMetaClass(resultMetaClass);
 
-		mp.addClass(metaClass);
+		mp.addClass(resultMetaClass);
 
 		stats.incCountClass();
 
 		if (clazz.isInterface())
 		{
-			metaClass.setInterface(true);
+			resultMetaClass.setInterface(true);
 		}
 
+		// Class.getDeclaredMethods() or Class.getDeclaredConstructors()
+		// can cause a NoClassDefFoundError / ClassNotFoundException
+		// for a parameter or return type.
 		try
 		{
 			for (Method m : clazz.getDeclaredMethods())
 			{
-				MetaMethod metaMethod = new MetaMethod(m, metaClass);
-				metaClass.addMetaMethod(metaMethod);
+				MetaMethod metaMethod = new MetaMethod(m, resultMetaClass);
+				resultMetaClass.addMetaMethod(metaMethod);
 				stats.incCountMethod();
 			}
 
 			for (Constructor<?> c : clazz.getDeclaredConstructors())
 			{
-				MetaConstructor metaConstructor = new MetaConstructor(c, metaClass);
-				metaClass.addMetaConstructor(metaConstructor);
+				MetaConstructor metaConstructor = new MetaConstructor(c, resultMetaClass);
+				resultMetaClass.addMetaConstructor(metaConstructor);
 				stats.incCountConstructor();
 			}
 
@@ -273,6 +276,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		{
 			logger.error("Something unexpected happened building meta class {}", fqClassName, t);
 		}
+		
+		return resultMetaClass;
 	}
 
 	public void addCodeCacheTag(Tag ccTag)

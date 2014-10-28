@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaConstructor;
 import org.adoptopenjdk.jitwatch.model.MetaMethod;
@@ -73,7 +74,7 @@ public class TestMetaClass
     	String testRetType = "int";
     	String[] testParamTypes = new String[]{"int"};
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -99,7 +100,7 @@ public class TestMetaClass
     	String testRetType = "void";
     	String[] testParamTypes = new String[]{"int"};
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -125,7 +126,7 @@ public class TestMetaClass
     	String testRetType = "void";
     	String[] testParamTypes = new String[0];
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -151,7 +152,7 @@ public class TestMetaClass
     	String testRetType = "java.lang.String";
     	String[] testParamTypes = new String[]{"java.lang.String"};
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -174,10 +175,10 @@ public class TestMetaClass
     	
     	metaClass.addMetaMethod(testMethod);
     	
-    	String testRetType = "java.lang.String[]";
-    	String[] testParamTypes = new String[]{"int[]"};
+    	String testRetType = "[Ljava.lang.String;";
+    	String[] testParamTypes = new String[]{"[I"};
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -203,7 +204,7 @@ public class TestMetaClass
     	String testRetType = getClass().getName();
     	String[] testParamTypes = new String[0];
     	
-    	IMetaMember result = metaClass.getMemberFromSignature(testMethodName, testRetType, testParamTypes);
+    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, testParamTypes));
     
     	assertNotNull(result);
     	assertEquals(testConstructor.toString(), result.toString());

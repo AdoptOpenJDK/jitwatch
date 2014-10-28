@@ -191,8 +191,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		lastSelectedMember = selectedMember;
 		lastSelectedClass = selectedMetaClass;
 
-		classTree.handleConfigUpdate(getConfig());
-
 		selectedMember = null;
 
 		errorCount = 0;
@@ -204,6 +202,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			public void run()
 			{
+				classTree.handleConfigUpdate(getConfig());
+				
 				updateButtons();
 
 				classTree.clear();

@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,10 +38,24 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
 	private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
 
+	protected boolean isVarArgs = false;
+	protected boolean isPolymorphicSignature = false;
 	protected int modifier; // bitset
 	protected String memberName;
 	protected Class<?> returnType;
-	protected Class<?>[] paramTypes;
+	protected List<Class<?>> paramTypes;
+
+	protected void checkPolymorphicSignature(Method method)
+	{
+		for (Annotation anno : method.getAnnotations())
+		{
+			if (S_POLYMORPHIC_SIGNATURE.equals(anno.annotationType().getSimpleName()))
+			{
+				isPolymorphicSignature = true;
+				break;
+			}
+		}
+	}
 
 	@Override
 	public String getMemberName()
@@ -65,33 +81,94 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return Modifier.toString(modifier);
 	}
 
+	private boolean nameMatches(MemberSignatureParts msp)
+	{
+		// logger.debug("Name: '{}' v '{}'", memberName, msp.getMemberName());
+		return memberName.equals(msp.getMemberName());
+	}
+
+	private boolean returnTypeMatches(MemberSignatureParts msp) throws ClassNotFoundException
+	{
+		boolean matched = false;
+
+		if (msp.getReturnType() != null)
+		{
+			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(msp.getReturnType());
+			matched = returnType.equals(sigReturnType);
+
+			logger.debug("Return: '{}' === '{}' ? {}", returnType.getName(), sigReturnType.getName(), matched);
+		}
+		else
+		{
+			matched = (this instanceof MetaConstructor);
+
+			logger.debug("Constructor found");
+		}
+
+		return matched;
+	}
+
 	@Override
-	public boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes)
+	public boolean matchesSignature(MemberSignatureParts msp)
 	{
 		boolean result = false;
 
-		if (memberName.equals(inMemberName))
+		if (nameMatches(msp))
 		{
-			if (this.returnType.getName().equals(inReturnType.getName()))
+			if (DEBUG_LOGGING_SIG_MATCH)
 			{
-				if (this.paramTypes.length == inParamTypes.length)
+				logger.debug("Comparing: {} to {}", this, msp);
+			}
+
+			if (isPolymorphicSignature)
+			{
+				// assumption: method overloading not possible
+				// with polymorphic signatures so this is a match
+				if (DEBUG_LOGGING_SIG_MATCH)
 				{
-					boolean allMatch = true;
+					logger.debug("Member has PolymorphicSignature");
+				}
 
-					for (int i = 0; i < this.paramTypes.length; i++)
+				result = true;
+			}
+			else
+			{
+				try
+				{
+					if (returnTypeMatches(msp))
 					{
-						Class<?> c1 = this.paramTypes[i];
-						Class<?> c2 = inParamTypes[i];
+						List<Class<?>> mspClassTypes = getClassesForParamTypes(msp.getParamTypes());
 
-						if (!c1.getName().equals(c2.getName()))
+						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypes, mspClassTypes))
 						{
-							allMatch = false;
+							result = true;
 						}
 					}
-
-					result = allMatch;
+				}
+				catch (ClassNotFoundException cnfe)
+				{
+					logger.error("Class not found while matching signature: {}", msp, cnfe);
 				}
 			}
+
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.info("Match: {}", result);
+			}
+		}
+
+		return result;
+	}
+
+	private List<Class<?>> getClassesForParamTypes(List<String> paramTypes) throws ClassNotFoundException
+	{
+		List<Class<?>> result = new ArrayList<>();
+
+		for (String param : paramTypes)
+		{
+			Class<?> clazz = ParseUtil.findClassForLogCompilationParameter(param);
+
+			result.add(clazz);
 		}
 
 		return result;
@@ -212,7 +289,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		builder.append(memberName);
 		builder.append(C_OPEN_PARENTHESES);
 
-		if (paramTypes.length > 0)
+		if (paramTypes.size() > 0)
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
@@ -228,33 +305,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public boolean matchesSignature(String input)
-	{
-		// strip access mode and modifiers
-		String nameToMatch = this.toString();
-
-		for (String mod : MODIFIERS)
-		{
-			nameToMatch = nameToMatch.replace(mod + S_SPACE, S_EMPTY);
-		}
-
-		return nameToMatch.equals(input);
-	}
-
-	@Override
-	public boolean matchesBytecodeSignature(String signature)
-	{
-		// bytecode signatures have fully qualified object param types
-		// public static void main(java.lang.String[])
-		// constructor is fully qualified
-		// methods are not fully qualified
-
-		boolean match = toString().equals(signature) || toStringUnqualifiedMethodName(true).equals(signature);
-
-		return match;
-	}
-
-	@Override
 	public AssemblyMethod getAssembly()
 	{
 		return asmMethod;
@@ -267,7 +317,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
 		}
-		
+
 		this.asmMethod = asmMethod;
 	}
 
@@ -309,7 +359,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		builder.append(S_ESCAPED_OPEN_PARENTHESES);
 
-		if (paramTypes.length > 0)
+		if (paramTypes.size() > 0)
 		{
 			for (Class<?> paramClass : paramTypes)
 			{
