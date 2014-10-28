@@ -18,6 +18,7 @@ import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
@@ -27,8 +28,9 @@ import static org.junit.Assert.*;
 
 public class TestCompileChain
 {
-	//@Test test is correct but disabled to keep CI builds working for J7
-	public void testJava8TieredCompilation()
+
+	// test disabled until I remove the workaround for broken Tiered logs in J8
+	public void testJava8TieredCompilation() throws Exception
 	{
 		String[] lines = new String[]{
 				"<task osr_bci='8' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testCallChain3 ()V' compile_kind='osr' level='3' bytes='71' count='1' backedge_count='60494' stamp='13.088' compile_id='127' iicount='1'>",
@@ -153,23 +155,26 @@ public class TestCompileChain
 		};
 		
 		JITDataModel testModel = new JITDataModel();
-
-		String methodName = "testCallChain3";
 		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-		testModel.buildMetaClass(fqClassName, org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.class);
-
+		String methodName = "testCallChain3";
+		
 		try
 		{
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
+			
 			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildMetaClass(fqClassNameSB, ClassUtil.loadClassWithoutInitialising("java.lang.AbstractStringBuilder"));
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
 		}
 		catch (ClassNotFoundException cnfe)
-		{
+		{			
 			fail();
 		}
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(methodName, void.class, new Class<?>[0]);
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog " + methodName + " ()V");
+		
+		IMetaMember testMember = metaClass.getMemberFromSignature(msp);
 
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
 		
@@ -421,12 +426,13 @@ public class TestCompileChain
 
 		String methodName = "testCallChain";
 		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-		testModel.buildMetaClass(fqClassName, org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.class);
 
 		try
 		{
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
+
 			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildMetaClass(fqClassNameSB, ClassUtil.loadClassWithoutInitialising("java.lang.AbstractStringBuilder"));
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
 		}
 		catch (ClassNotFoundException cnfe)
 		{
@@ -434,8 +440,10 @@ public class TestCompileChain
 		}
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(methodName, void.class, new Class<?>[] { long.class });
+		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", new String[] { "long" }));
 
+		assertNotNull(testMember);
+		
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
 		
 		// root
@@ -640,12 +648,13 @@ public class TestCompileChain
 
 		String methodName = "testCallChain";
 		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-		testModel.buildMetaClass(fqClassName, org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.class);
 
 		try
 		{
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
+
 			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildMetaClass(fqClassNameSB, ClassUtil.loadClassWithoutInitialising("java.lang.AbstractStringBuilder"));
+			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
 		}
 		catch (ClassNotFoundException cnfe)
 		{
@@ -653,8 +662,10 @@ public class TestCompileChain
 		}
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(methodName, void.class, new Class<?>[] { long.class });
+		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", new String[] { "long" }));
 
+		assertNotNull(testMember);
+		
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
 		
 		// root

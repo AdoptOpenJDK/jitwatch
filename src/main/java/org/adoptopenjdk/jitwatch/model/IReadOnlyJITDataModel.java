@@ -19,9 +19,7 @@ public interface IReadOnlyJITDataModel
 
     String getVmVersionRelease();
     
-	IMetaMember findMetaMember(String className, String signature);
+	IMetaMember findMetaMember(MemberSignatureParts msp);
     
-    // AARRGGG mutator on a read only interface
-    // TODO: Fix the design!
-	void buildMetaClass(String fqClassName, Class<?> clazz);
+	MetaClass buildAndGetMetaClass(Class<?> clazz);
 }

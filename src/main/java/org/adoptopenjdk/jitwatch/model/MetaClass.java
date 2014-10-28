@@ -16,7 +16,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -187,32 +186,13 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember findMemberByBytecodeSignature(String bytecodeSignature)
+	public IMetaMember getMemberFromSignature(MemberSignatureParts msp)
 	{
 		IMetaMember result = null;
-
-		if (bytecodeSignature != null)
-		{
-			for (IMetaMember mm : getMetaMembers())
-			{
-				if (mm.matchesBytecodeSignature(bytecodeSignature))
-				{
-					result = mm;
-					break;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	public IMetaMember getMemberFromSignature(final String inMemberName, final Class<?> inReturnType, final Class<?>[] inParamTypes)
-	{
-		IMetaMember result = null;
-
+		
 		for (IMetaMember member : getMetaMembers())
 		{
-			if (member.signatureMatches(inMemberName, inReturnType, inParamTypes))
+			if (member.matchesSignature(msp))
 			{
 				result = member;
 				break;
@@ -221,77 +201,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 		return result;
 	}
-
-	public IMetaMember getMemberFromSignature(final String inName, final String inReturnType, final String[] paramTypes)
-	{
-		String returnType = inReturnType;
-		String name = inName;
-
-		IMetaMember result = null;
-
-		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))
-		{
-			name = getFullyQualifiedName();
-			returnType = name;
-		}
-
-		for (IMetaMember member : getMetaMembers())
-		{
-			if (memberMatches(member, name, returnType, paramTypes))
-			{
-				result = member;
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	private boolean memberMatches(IMetaMember member, String name, String returnType, String[] paramTypes)
-	{
-		boolean match = false;
-
-		boolean nameMatch = member.getMemberName().equals(name);
-
-		if (nameMatch)
-		{
-			boolean returnMatch = false;
-			boolean paramsMatch = false;
-
-			String memberReturnTypeName = member.getReturnTypeName();
-			String[] memberArgumentTypeNames = member.getParamTypeNames();
-
-			if (memberReturnTypeName == null && returnType == null)
-			{
-				returnMatch = true;
-			}
-			else if (memberReturnTypeName != null && returnType != null && memberReturnTypeName.equals(returnType))
-			{
-				returnMatch = true;
-			}
-
-			if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
-			{
-				paramsMatch = true;
-
-				for (int i = 0; i < memberArgumentTypeNames.length; i++)
-				{
-					String memberParam = memberArgumentTypeNames[i];
-					String checkParam = paramTypes[i];
-
-					if (!memberParam.equals(checkParam))
-					{
-						paramsMatch = false;
-						break;
-					}
-				}
-			}
-
-			match = returnMatch && paramsMatch;
-		}
-
-		return match;
-	}
+	
 	
 	public List<String> getTreePath()
 	{

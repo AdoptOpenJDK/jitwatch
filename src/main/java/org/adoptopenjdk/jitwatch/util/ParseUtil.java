@@ -41,6 +41,7 @@ public final class ParseUtil
 	public static final String NAME_BOOLEAN = "boolean";
 	public static final String NAME_INTEGER = "int";
 	public static final String NAME_FLOAT = "float";
+	public static final String NAME_VOID = "void";
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';
@@ -52,10 +53,6 @@ public final class ParseUtil
 	public static final char TYPE_INTEGER = 'I';
 	public static final char TYPE_FLOAT = 'F';
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private ParseUtil()
 	{
 	}
@@ -180,11 +177,9 @@ public final class ParseUtil
 		return builder.toString();
 	}
 
-	public static String[] splitLogSignatureWithRegex(String logSignature)
+	public static String[] splitLogSignatureWithRegex(String logSignature) throws LogParseException
 	{
 		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(logSignature);
-
-		String[] parts = null;
 
 		if (matcher.find())
 		{
@@ -193,144 +188,44 @@ public final class ParseUtil
 			String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
 			String returnType = matcher.group(4);
 
-			parts = new String[] { className, methodName, paramTypes, returnType };
+			return new String[] { className, methodName, paramTypes, returnType };
 		}
 
-		return parts;
+		throw new LogParseException("Could not split signature with regex: " + logSignature);
 	}
 
-	public static IMetaMember findMemberWithSignature(IReadOnlyJITDataModel model, String logSignature) throws Exception
+	public static IMetaMember findMemberWithSignature(IReadOnlyJITDataModel model, String logSignature) throws LogParseException
 	{
 		IMetaMember metaMember = null;
 
 		if (logSignature != null)
 		{
-			String[] parsedResult = null;
+			MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(logSignature);
 
-			parsedResult = ParseUtil.parseLogSignature(logSignature);
+			metaMember = model.findMetaMember(msp);
 
-			String className = parsedResult[0];
-			String parsedSignature = parsedResult[1];
-
-			if (parsedSignature != null)
+			if (metaMember == null)
 			{
-				metaMember = model.findMetaMember(className, parsedSignature);
+				throw new LogParseException("MetaMember not found for " + logSignature);
 			}
 		}
-		
+
 		return metaMember;
 	}
 
-	/*
-	 * Parses a log file signature into a class name and java declaration-style
-	 * method signature
-	 * 
-	 * @return String[] 0=className 1=methodSignature
-	 */
-	public static String[] parseLogSignature(String logSignature) throws Exception
-	{
-		String result[] = null;
-
-		String[] parts = splitLogSignatureWithRegex(logSignature);
-
-		if (parts != null)
-		{
-			String className = parts[0];
-			String methodName = parts[1];
-			String paramTypes = parts[2];
-			String returnType = parts[3];
-
-			Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
-			Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
-
-			Class<?> returnClass;
-
-			if (returnClasses.length == 0)
-			{
-				returnClass = Void.class;
-			}
-			else
-			{
-				returnClass = returnClasses[0];
-			}
-
-			String signature = ParseUtil.buildMethodSignature(className, methodName, paramClasses, returnClass);
-
-			result = new String[] { className, signature };
-		}
-
-		return result;
-	}
-
-	public static String buildMethodSignature(String className, String methodName, Class<?>[] paramTypes, Class<?> returnType)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		String rName = returnType.getName();
-		rName = ParseUtil.expandParameterType(rName);
-
-		if (CONSTRUCTOR_INIT.equals(methodName))
-		{
-			builder.append(className);
-		}
-		else
-		{
-			builder.append(rName).append(S_SPACE).append(className).append(C_DOT).append(methodName);
-		}
-
-		builder.append(S_OPEN_PARENTHESES);
-
-		for (Class<?> c : paramTypes)
-		{
-			String cName = c.getName();
-			cName = ParseUtil.expandParameterType(cName);
-
-			builder.append(cName).append(C_COMMA);
-		}
-
-		if (paramTypes.length > 0)
-		{
-			builder.deleteCharAt(builder.length() - 1);
-		}
-
-		builder.append(S_CLOSE_PARENTHESES);
-
-		String toMatch = builder.toString();
-
-		return toMatch;
-	}
-
-	public static Class<?>[] getClassTypes(String types) throws Exception
+	public static Class<?>[] getClassTypes(String typesString) throws LogParseException
 	{
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 
-		final int typeLen = types.length();
-
-		if (typeLen > 0)
+		if (typesString.length() > 0)
 		{
-			StringBuilder builder = new StringBuilder();
-
 			try
 			{
-				calculateTagPosition(types, classes, typeLen, builder);
+				findClassesForTypeString(typesString, classes);
 			}
-			catch (ClassNotFoundException cnf)
+			catch (Throwable t)
 			{
-				logger.warn("ClassNotFoundException: {}", builder.toString());
-			}
-			catch (NoClassDefFoundError ncdf)
-			{
-				logger.warn("NoClassDefFoundError: {}", builder.toString());
-			}
-			catch (Exception ex)
-			{
-				logger.error("Exception parsing: {}:", types, ex);
-				throw new Exception("Exception: " + ex.getMessage());
-			}
-			catch (Error err)
-			{
-				logger.error("Error parsing: {}", types, err);
-				throw new Exception("Error: " + err.getMessage());
+				throw new LogParseException("Could not parse types: " + typesString, t);
 			}
 
 		} // end if empty
@@ -338,15 +233,279 @@ public final class ParseUtil
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
 
-	private static void calculateTagPosition(String types, List<Class<?>> classes, int typeLen, StringBuilder builder)
-			throws ClassNotFoundException
+	public static Class<?> findClassForLogCompilationParameter(String param) throws ClassNotFoundException
+	{
+		StringBuilder builder = new StringBuilder();
+
+		if (isPrimitive(param))
+		{
+			return classForPrimitive(param);
+		}
+		else
+		{
+			int arrayBracketCount = getArrayBracketCount(param);
+
+			if (arrayBracketCount == 0)
+			{
+				if (param.endsWith(S_VARARGS_DOTS))
+				{
+					String partBeforeDots = param.substring(0, param.length() - S_VARARGS_DOTS.length());
+
+					if (isPrimitive(partBeforeDots))
+					{
+						builder.append(S_OPEN_ANGLE).append(classForPrimitive(partBeforeDots));
+					}
+					else
+					{
+						builder.append(S_OBJECT_ARRAY_DEF).append(partBeforeDots);
+						builder.append(C_SEMICOLON);
+					}
+				}
+				else
+				{
+					builder.append(param);
+				}
+			}
+			else
+			{
+				int arrayBracketChars = 2 * arrayBracketCount;
+
+				String partBeforeArrayBrackets = param.substring(0, param.length() - arrayBracketChars);
+
+				for (int i = 0; i < arrayBracketCount - 1; i++)
+				{
+					builder.append(C_OPEN_SQUARE_BRACKET);
+				}
+
+				if (isPrimitive(partBeforeArrayBrackets))
+				{
+					builder.append(C_OPEN_SQUARE_BRACKET);
+
+					builder.append(getClassTypeCharForPrimitiveTypeString(partBeforeArrayBrackets));
+				}
+				else
+				{
+					builder.append(S_OBJECT_ARRAY_DEF);
+
+					builder.append(param);
+
+					builder.delete(builder.length() - arrayBracketChars, builder.length());
+
+					builder.append(C_SEMICOLON);
+				}
+			}
+
+			return ClassUtil.loadClassWithoutInitialising(builder.toString());
+		}
+	}
+
+	public static boolean paramClassesMatch(boolean memberHasVarArgs, List<Class<?>> memberParamClasses,
+			List<Class<?>> signatureParamClasses)
+	{
+		boolean result = true;
+
+		final int memberParamCount = memberParamClasses.size();
+		final int signatureParamCount = signatureParamClasses.size();
+
+		if (DEBUG_LOGGING_SIG_MATCH)
+		{
+			logger.debug("M Count: {} S Count: {}", memberParamCount, signatureParamCount);
+		}
+
+		if (memberParamCount > 0 && signatureParamCount > 0)
+		{
+			int memPos = memberParamCount - 1;
+
+			for (int sigPos = signatureParamCount - 1; sigPos >= 0; sigPos--)
+			{
+				Class<?> sigParamClass = signatureParamClasses.get(sigPos);
+
+				Class<?> memParamClass = memberParamClasses.get(memPos);
+
+				boolean memberParamCouldBeVarArgs = false;
+
+				boolean isLastParameter = (memPos == memberParamCount - 1);
+
+				if (memberHasVarArgs && isLastParameter)
+				{
+					memberParamCouldBeVarArgs = true;
+				}
+
+				if (memParamClass.isAssignableFrom(sigParamClass))
+				{
+					if (DEBUG_LOGGING_SIG_MATCH)
+					{
+						logger.debug("{} isAssignableFrom {}", memParamClass, sigParamClass);
+					}
+
+					if (memPos > 0)
+					{
+						// move to previous member parameter
+						memPos--;
+					}
+					else if (sigPos > 0)
+					{
+						if (DEBUG_LOGGING_SIG_MATCH)
+						{
+							logger.debug("More signature params but no more member params to try");
+						}
+
+						result = false;
+						break;
+					}
+				}
+				else
+				{
+					if (memberParamCouldBeVarArgs)
+					{
+						// check assignable
+						Class<?> componentType = memParamClass.getComponentType();
+
+						if (!componentType.isAssignableFrom(sigParamClass))
+						{
+							result = false;
+							break;
+						}
+					}
+					else
+					{
+						result = false;
+						break;
+					}
+				}
+			}
+
+			boolean unusedMemberParams = (memPos > 0);
+
+			if (unusedMemberParams)
+			{
+				result = false;
+			}
+		}
+
+		return result;
+	}
+
+	public static boolean typeIsVarArgs(String type)
+	{
+		return type != null && type.endsWith(S_VARARGS_DOTS);
+	}
+
+	public static char getClassTypeCharForPrimitiveTypeString(String type)
+	{
+		switch (type)
+		{
+		case NAME_INTEGER:
+			return TYPE_INTEGER;
+		case NAME_BOOLEAN:
+			return TYPE_BOOLEAN;
+		case NAME_LONG:
+			return TYPE_LONG;
+		case NAME_DOUBLE:
+			return TYPE_DOUBLE;
+		case NAME_FLOAT:
+			return TYPE_FLOAT;
+		case NAME_SHORT:
+			return TYPE_SHORT;
+		case NAME_BYTE:
+			return TYPE_BYTE;
+		case NAME_CHARACTER:
+			return TYPE_CHARACTER;
+		case NAME_VOID:
+			return TYPE_VOID;
+		}
+
+		throw new RuntimeException(type + " is not a primitive type");
+	}
+
+	public static boolean isPrimitive(String type)
+	{
+		boolean result = false;
+
+		if (type != null)
+		{
+			switch (type)
+			{
+			case NAME_INTEGER:
+			case NAME_BOOLEAN:
+			case NAME_LONG:
+			case NAME_DOUBLE:
+			case NAME_FLOAT:
+			case NAME_SHORT:
+			case NAME_BYTE:
+			case NAME_CHARACTER:
+			case NAME_VOID:
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	public static Class<?> classForPrimitive(String primitiveType)
+	{
+		if (primitiveType != null)
+		{
+			switch (primitiveType)
+			{
+			case NAME_INTEGER:
+				return int.class;
+			case NAME_BOOLEAN:
+				return boolean.class;
+			case NAME_LONG:
+				return long.class;
+			case NAME_DOUBLE:
+				return double.class;
+			case NAME_FLOAT:
+				return float.class;
+			case NAME_SHORT:
+				return short.class;
+			case NAME_BYTE:
+				return byte.class;
+			case NAME_CHARACTER:
+				return char.class;
+			case NAME_VOID:
+				return void.class;
+			}
+		}
+
+		throw new RuntimeException(primitiveType + " is not a primitive type");
+	}
+
+	public static int getArrayBracketCount(String param)
+	{
+		int count = 0;
+
+		if (param != null)
+		{
+			int index = param.indexOf(S_ARRAY_BRACKET_PAIR, 0);
+
+			while (index != -1)
+			{
+				count++;
+
+				index = param.indexOf(S_ARRAY_BRACKET_PAIR, index + 2);
+			}
+		}
+
+		return count;
+	}
+
+	/*
+	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
+	 */
+	private static void findClassesForTypeString(String typesString, List<Class<?>> classes) throws ClassNotFoundException
 	{
 
 		int pos = 0;
 
-		while (pos < types.length())
+		StringBuilder builder = new StringBuilder();
+
+		final int stringLen = typesString.length();
+
+		while (pos < stringLen)
 		{
-			char c = types.charAt(pos);
+			char c = typesString.charAt(pos);
 
 			switch (c)
 			{
@@ -359,21 +518,21 @@ public final class ParseUtil
 				builder.delete(0, builder.length());
 				builder.append(c);
 				pos++;
-				c = types.charAt(pos);
+				c = typesString.charAt(pos);
 
 				while (c == C_OPEN_SQUARE_BRACKET)
 				{
 					builder.append(c);
 					pos++;
-					c = types.charAt(pos);
+					c = typesString.charAt(pos);
 				}
 
 				if (c == C_OBJECT_REF)
 				{
 					// array of ref type
-					while (pos < typeLen)
+					while (pos < stringLen)
 					{
-						c = types.charAt(pos++);
+						c = typesString.charAt(pos++);
 						builder.append(c);
 
 						if (c == C_SEMICOLON)
@@ -395,10 +554,10 @@ public final class ParseUtil
 				break;
 			case C_OBJECT_REF:
 				// ref type
-				while (pos < typeLen - 1)
+				while (pos < stringLen - 1)
 				{
 					pos++;
-					c = types.charAt(pos);
+					c = typesString.charAt(pos);
 
 					if (c == C_SEMICOLON)
 					{
@@ -461,7 +620,8 @@ public final class ParseUtil
 
 				if (line.contains(memberName))
 				{
-					MemberSignatureParts msp = new MemberSignatureParts(line);
+					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass()
+							.getFullyQualifiedName(), line);
 
 					if (!memberName.equals(msp.getMemberName()))
 					{
@@ -571,6 +731,7 @@ public final class ParseUtil
 			Tag klassTag = parseDictionary.getKlass(klassId);
 
 			String metaClassName = klassTag.getAttribute(ATTR_NAME);
+
 			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
 
 			String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
@@ -614,9 +775,7 @@ public final class ParseUtil
 
 					if (clazz != null)
 					{
-						model.buildMetaClass(metaClassName, clazz);
-
-						metaClass = pm.getMetaClass(metaClassName);
+						metaClass = model.buildAndGetMetaClass(clazz);
 					}
 				}
 				catch (ClassNotFoundException cnf)
@@ -631,7 +790,9 @@ public final class ParseUtil
 
 			if (metaClass != null)
 			{
-				result = metaClass.getMemberFromSignature(methodName, returnType, argumentTypes);
+				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName,
+						returnType, argumentTypes);
+				result = metaClass.getMemberFromSignature(msp);
 			}
 			else
 			{
@@ -743,7 +904,7 @@ public final class ParseUtil
 		return result;
 	}
 
-	public static IMetaMember getMemberFromComment(IReadOnlyJITDataModel model, final String comment) throws Exception
+	public static IMetaMember getMemberFromComment(IReadOnlyJITDataModel model, final String comment) throws LogParseException
 	{
 		// java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
 

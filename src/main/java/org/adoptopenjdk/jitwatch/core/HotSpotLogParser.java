@@ -51,7 +51,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private boolean inHeader = false;
 
-	private long currentLineNumber;
+	private long parseLineNumber;
+	private long processLineNumber;
 
 	private JITWatchConfig config = new JITWatchConfig();
 
@@ -185,10 +186,11 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
-		
+
 		vmCommand = null;
 
-		currentLineNumber = 0;
+		parseLineNumber = 0;
+		processLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
 
@@ -254,11 +256,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("parseHeaderLines()");
 		}
 
-		for (String line : splitLog.getHeaderLines())
+		for (NumberedLine numberedLine : splitLog.getHeaderLines())
 		{
-			if (!skipLine(line, SKIP_HEADER_TAGS))
+			if (!skipLine(numberedLine.getLine(), SKIP_HEADER_TAGS))
 			{
-				Tag tag = tagProcessor.processLine(line);
+				Tag tag = tagProcessor.processLine(numberedLine.getLine());
+
+				processLineNumber = numberedLine.getLineNumber();
 
 				if (tag != null)
 				{
@@ -275,11 +279,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("parseLogCompilationLines()");
 		}
 
-		for (String line : splitLog.getLogCompilationLines())
-		{			
-			if (!skipLine(line, SKIP_BODY_TAGS))
+		for (NumberedLine numberedLine : splitLog.getLogCompilationLines())
+		{
+			if (!skipLine(numberedLine.getLine(), SKIP_BODY_TAGS))
 			{
-				Tag tag = tagProcessor.processLine(line);
+				Tag tag = tagProcessor.processLine(numberedLine.getLine());
+
+				processLineNumber = numberedLine.getLineNumber();
 
 				if (tag != null)
 				{
@@ -296,9 +302,11 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("parseAssemblyLines()");
 		}
 
-		for (String line : splitLog.getAssemblyLines())
+		for (NumberedLine numberedLine : splitLog.getAssemblyLines())
 		{
-			asmProcessor.handleLine(line);
+			processLineNumber = numberedLine.getLineNumber();
+
+			asmProcessor.handleLine(numberedLine.getLine());
 		}
 
 		asmProcessor.complete();
@@ -399,6 +407,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
+		NumberedLine numberedLine = new NumberedLine(parseLineNumber++, currentLine);
+
 		if (TAG_TTY.equals(currentLine))
 		{
 			inHeader = false;
@@ -412,18 +422,18 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		if (inHeader)
 		{
 			// HotSpot log header XML can have text nodes so consume all lines
-			splitLog.addHeaderLine(currentLine);
+			splitLog.addHeaderLine(numberedLine);
 		}
 		else
 		{
 			if (currentLine.startsWith(S_OPEN_ANGLE))
 			{
 				// After the header, XML nodes do not have text nodes
-				splitLog.addLogCompilationLine(currentLine);
+				splitLog.addLogCompilationLine(numberedLine);
 			}
 			else if (currentLine.startsWith(LOADED))
 			{
-				splitLog.addClassLoaderLine(currentLine);
+				splitLog.addClassLoaderLine(numberedLine);
 			}
 			else if (currentLine.startsWith(S_AT))
 			{
@@ -450,18 +460,18 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 					String remainder = currentLine.substring(indexNMethod);
 
-					splitLog.addAssemblyLine(assembly);
+					numberedLine.setLine(assembly);
+
+					splitLog.addAssemblyLine(numberedLine);
 
 					handleLogLine(remainder);
 				}
 				else
 				{
-					splitLog.addAssemblyLine(currentLine);
+					splitLog.addAssemblyLine(numberedLine);
 				}
 			}
 		}
-
-		currentLineNumber++;
 	}
 
 	private void handleTag(Tag tag)
@@ -558,14 +568,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		{
 			result = ParseUtil.findMemberWithSignature(model, logSignature);
 		}
-		catch (Exception ex)
+		catch (LogParseException ex)
 		{
 			logger.warn("Exception parsing signature: {}", logSignature, ex);
-		}
-
-		if (result == null)
-		{
-			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
+			logError("Could not parse line " + processLineNumber + " : " + logSignature + " : " + ex.getMessage());
 		}
 
 		return result;
@@ -724,9 +730,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("buildParsedClasspath()");
 		}
 
-		for (String line : splitLog.getClassLoaderLines())
+		for (NumberedLine numberedLine : splitLog.getClassLoaderLines())
 		{
-			buildParsedClasspath(line);
+			buildParsedClasspath(numberedLine.getLine());
 		}
 	}
 
@@ -737,9 +743,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("buildClassModel()");
 		}
 
-		for (String line : splitLog.getClassLoaderLines())
+		for (NumberedLine numberedLine : splitLog.getClassLoaderLines())
 		{
-			buildClassModel(line);
+			buildClassModel(numberedLine.getLine());
 		}
 	}
 
@@ -789,12 +795,15 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 			if (clazz != null)
 			{
-				model.buildMetaClass(fqClassName, clazz);
+				model.buildAndGetMetaClass(clazz);
 			}
 		}
 		catch (ClassNotFoundException cnf)
 		{
-			logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
+			if (!possibleLambdaMethod(fqClassName))
+			{
+				logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
+			}
 		}
 		catch (NoClassDefFoundError ncdf)
 		{
@@ -815,6 +824,19 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.error("Could not addClassToModel {}", fqClassName, t);
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
+	}
+	
+	private boolean possibleLambdaMethod(String fqClassName)
+	{
+		for (String prefix : JITWatchConstants.getLambdaClassPrefixes())
+		{
+			if (fqClassName.startsWith(prefix))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	@Override

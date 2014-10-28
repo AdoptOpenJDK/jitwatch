@@ -38,9 +38,7 @@ public interface IMetaMember
 	boolean isCompiled();
 
 	String toStringUnqualifiedMethodName(boolean fqParamTypes);
-	
-	boolean matchesBytecodeSignature(String signature);
-	
+		
 	String getMemberName();
 	String getFullyQualifiedMemberName();
 
@@ -48,10 +46,8 @@ public interface IMetaMember
 	String getModifierString();
 	String getReturnTypeName();
 	String[] getParamTypeNames();
-
-	boolean signatureMatches(String inMemberName, Class<?> inReturnType, Class<?>[] inParamTypes);
 	
-	boolean matchesSignature(String input);
+	boolean matchesSignature(MemberSignatureParts msp);
 
 	AssemblyMethod getAssembly();
 

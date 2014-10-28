@@ -15,166 +15,178 @@ import static org.junit.Assert.*;
 
 public class TestMemberSignatureParts
 {
-	@Test
-	public void testPackageConstructorNoParams()
+	private void checkSame(MemberSignatureParts bc, MemberSignatureParts log)
 	{
-		String sig = "String()";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		assertEquals("return type", bc.getReturnType(), log.getReturnType());
+		assertEquals("member name", bc.getMemberName(), log.getMemberName());
+		assertEquals("param count", bc.getParamTypes().size(), log.getParamTypes().size());
 
-		List<String> modList = msp.getModifiers();
-
-		assertEquals(0, modList.size());
-		
-		assertEquals(0, msp.getGenerics().size());
-
-		assertEquals(null, msp.getReturnType());
-
-		assertEquals("String", msp.getMemberName());
-		
-		assertEquals(0, msp.getParamTypes().size());
+		for (int i = 0; i < bc.getParamTypes().size(); i++)
+		{
+			assertEquals("param " + i, bc.getParamTypes().get(i), log.getParamTypes().get(i));
+		}
 	}
-	
+
 	@Test
-	public void testPublicConstructorNoParams()
+	public void testPackageConstructorNoParams() throws Exception
 	{
-		String sig = "public String()";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		String sigBC = "java.lang.String();";
+		String sigLog = "java.lang.String <init> ()V";
 
-		List<String> modList = msp.getModifiers();
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
 
-		assertEquals(1, modList.size());
-		assertEquals("public", modList.get(0));
-		
-		assertEquals(0, msp.getGenerics().size());
+		List<String> modListBC = mspBC.getModifiers();
+		assertEquals(0, modListBC.size());
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("void", mspBC.getReturnType());
+		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals(0, mspBC.getParamTypes().size());
 
-		assertEquals(null, msp.getReturnType());
-
-		assertEquals("String", msp.getMemberName());
-		
-		assertEquals(0, msp.getParamTypes().size());
+		checkSame(mspBC, mspLog);
 	}
-	
+
 	@Test
-	public void testConstructorWithParams()
+	public void testPublicConstructorNoParams() throws Exception
 	{
-		String sig = "public String(String, int)";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		String sigBC = "public java.lang.String()";
+		String sigLog = "java.lang.String <init> ()V";
 
-		List<String> modList = msp.getModifiers();
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
 
-		assertEquals(1, modList.size());
-		assertEquals("public", modList.get(0));
-		
-		assertEquals(0, msp.getGenerics().size());
+		List<String> modListBC = mspBC.getModifiers();
 
-		assertEquals(null, msp.getReturnType());
+		assertEquals(1, modListBC.size());
+		assertEquals("public", modListBC.get(0));
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("void", mspBC.getReturnType());
+		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals(0, mspBC.getParamTypes().size());
 
-		assertEquals("String", msp.getMemberName());
-		
-		assertEquals(2, msp.getParamTypes().size());
-		
-		List<String> paramTypeList = msp.getParamTypes();
-		assertEquals("String", paramTypeList.get(0));
-		assertEquals("int", paramTypeList.get(1));
+		checkSame(mspBC, mspLog);
 	}
-	
+
 	@Test
-	public void testSimpleMethodNoParams()
+	public void testConstructorWithParams() throws Exception
 	{
-		String sig = "public void redraw()";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		String sigBC = "public java.lang.String(java.lang.String, int)";
+		String sigLog = "java.lang.String <init> (Ljava.lang.String;I)V";
 
-		List<String> modList = msp.getModifiers();
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
 
-		assertEquals(1, modList.size());
-		assertEquals("public", modList.get(0));
-		
-		assertEquals(0, msp.getGenerics().size());
+		List<String> modListBC = mspBC.getModifiers();
 
-		assertEquals("void", msp.getReturnType());
+		assertEquals(1, modListBC.size());
+		assertEquals("public", modListBC.get(0));
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("void", mspBC.getReturnType());
+		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals(2, mspBC.getParamTypes().size());
 
-		assertEquals("redraw", msp.getMemberName());
-		
-		assertEquals(0, msp.getParamTypes().size());
+		List<String> paramTypeListBC = mspBC.getParamTypes();
+		assertEquals("java.lang.String", paramTypeListBC.get(0));
+		assertEquals("int", paramTypeListBC.get(1));
+
+		checkSame(mspBC, mspLog);
 	}
-	
-	
+
 	@Test
-	public void testSimpleMethodWithParams()
+	public void testSimpleMethodNoParams() throws Exception
 	{
-		String sig = "public boolean isEven(int)";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		String sigBC = "public void gc()";
+		String sigLog = "java.lang.System gc ()V";
 
-		List<String> modList = msp.getModifiers();
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
 
-		assertEquals(1, modList.size());
-		assertEquals("public", modList.get(0));
+		List<String> modListBC = mspBC.getModifiers();
+
+		assertEquals(1, modListBC.size());
+		assertEquals("public", modListBC.get(0));
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("void", mspBC.getReturnType());
+		assertEquals("gc", mspBC.getMemberName());
+		assertEquals(0, mspBC.getParamTypes().size());
 		
-		assertEquals(0, msp.getGenerics().size());
-
-		assertEquals("boolean", msp.getReturnType());
-
-		assertEquals("isEven", msp.getMemberName());
-		
-		assertEquals(1, msp.getParamTypes().size());
-		
-		List<String> paramTypeList = msp.getParamTypes();
-		assertEquals("int", paramTypeList.get(0));
+		checkSame(mspBC, mspLog);
 	}
-	
+
 	@Test
-	public void testSimpleMethodWithParamsAndParamNames()
+	public void testSimpleMethodWithParams() throws Exception
 	{
-		String sig = "public boolean test(int foo, boolean bar)";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		String sigBC = "public boolean matches(java.lang.String)";
+		String sigLog = "java.lang.String matches (Ljava.lang.String;)Z";
 
-		List<String> modList = msp.getModifiers();
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
 
-		assertEquals(1, modList.size());
-		assertEquals("public", modList.get(0));
+		List<String> modListBC = mspBC.getModifiers();
+		assertEquals(1, modListBC.size());
+		assertEquals("public", modListBC.get(0));
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("boolean", mspBC.getReturnType());
+		assertEquals("matches", mspBC.getMemberName());
+		assertEquals(1, mspBC.getParamTypes().size());
+		List<String> paramTypeList = mspBC.getParamTypes();
+		assertEquals("java.lang.String", paramTypeList.get(0));
 		
-		assertEquals(0, msp.getGenerics().size());
-
-		assertEquals("boolean", msp.getReturnType());
-
-		assertEquals("test", msp.getMemberName());
-		
-		assertEquals(2, msp.getParamTypes().size());
-		
-		List<String> paramTypeList = msp.getParamTypes();
-		assertEquals("int", paramTypeList.get(0));
-		assertEquals("boolean", paramTypeList.get(1));
-
+		checkSame(mspBC, mspLog);
 	}
-	
+
+	@Test
+	public void testSimpleMethodWithParamsAndParamNames() throws Exception
+	{
+		String sigBC = "public boolean startsWith(java.lang.String foo, int bar)";
+		String sigLog = "java.lang.String startsWith (Ljava.lang.String;I)Z";
+
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+		MemberSignatureParts mspLog = MemberSignatureParts.fromLogCompilationSignature(sigLog);
+
+		List<String> modListBC = mspBC.getModifiers();
+
+		assertEquals(1, modListBC.size());
+		assertEquals("public", modListBC.get(0));
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("boolean", mspBC.getReturnType());
+		assertEquals("startsWith", mspBC.getMemberName());
+		assertEquals(2, mspBC.getParamTypes().size());
+		List<String> paramTypeListBC = mspBC.getParamTypes();
+		assertEquals("java.lang.String", paramTypeListBC.get(0));
+		assertEquals("int", paramTypeListBC.get(1));
+		
+		checkSame(mspBC, mspLog);
+	}
+
 	@Test
 	public void testSimpleGenericMethod()
 	{
 		String sig = "public Map<String,String> copy(Map<String,String>)";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("com.chrisnewland.Test", sig);
 
 		List<String> modList = msp.getModifiers();
 
 		assertEquals(1, modList.size());
 		assertEquals("public", modList.get(0));
-		
+
 		assertEquals(0, msp.getGenerics().size());
 
 		assertEquals("Map<String,String>", msp.getReturnType());
 
 		assertEquals("copy", msp.getMemberName());
-		
+
 		assertEquals(1, msp.getParamTypes().size());
-		
+
 		List<String> paramTypeList = msp.getParamTypes();
 		assertEquals("Map<String,String>", paramTypeList.get(0));
 	}
-	
+
 	@Test
 	public void testSignatureWithGenericExtends()
 	{
 		String sig = "public static <T extends java.lang.Object, U extends java.lang.Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>)";
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("java.util.Arrays", sig);
 
 		List<String> modList = msp.getModifiers();
 
@@ -206,8 +218,8 @@ public class TestMemberSignatureParts
 	public void testSignatureWithGenericNoExtends()
 	{
 		String sig = "public static <T,U> T[] copyOf(U[], int, java.lang.Class<? extends T[]>)";
-				
-		MemberSignatureParts msp = new MemberSignatureParts(sig);
+
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("java.util.Arrays", sig);
 
 		List<String> modList = msp.getModifiers();
 

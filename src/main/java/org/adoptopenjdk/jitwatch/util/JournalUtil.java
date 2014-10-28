@@ -27,11 +27,6 @@ public final class JournalUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
-
 	private JournalUtil()
 	{
 	}
@@ -246,6 +241,10 @@ public final class JournalUtil
 					result.put(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN));
 				}
 			}
+				break;
+				
+			case TAG_ELIMINATE_ALLOCATION:
+				System.out.println("ELIM");
 				break;
 
 			default:

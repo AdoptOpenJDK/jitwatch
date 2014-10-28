@@ -1,10 +1,12 @@
 package org.adoptopenjdk.jitwatch.test;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
@@ -14,18 +16,19 @@ import org.junit.Test;
 public class TestLogSplitting
 {
 	@Test
-	public void testCanParseAssemblyAndNMethodMangled() throws IOException
-	{
+	public void testCanParseAssemblyAndNMethodMangled() throws Exception
+	{    		
 		String nmethodTag = "<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288'/>";
 
 		String[] lines = new String[] {
+				"[Loaded java.lang.String from /home/chris/jdk1.9.0/jre/lib/rt.jar]",
 				"Decoding compiled method 0x00007f7d73364190:",
 				"Code:",
 				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
 				"[Entry Point]",
 				"[Verified Entry Point]",
 				"[Constants]",
-				"  # {method} &apos;main&apos; &apos;([Ljava/lang/String;)V&apos; in &apos;org/adoptopenjdk/jitwatch/demo/SandboxTestLoad&apos;",
+				"  # {method} &apos;length&apos; &apos;()I&apos; in &apos;java/lang/String&apos;",
 				"  0x00007f7d733642e0: callq  0x00007f7d77e276f0  ;   {runtime_call}",
 				"[Deopt Handler Code]",
 				"0x00007fb5ad0fe95c: movabs $0x7fb5ad0fe95c,%r10  ;   {section_word}",

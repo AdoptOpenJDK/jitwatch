@@ -11,10 +11,10 @@ import java.util.List;
 
 public class SplitLog
 {
-	private List<String> headerLines = new ArrayList<>();
-	private List<String> classLoaderLines = new ArrayList<>();
-	private List<String> logCompilationLines = new ArrayList<>();
-	private List<String> assemblyLines = new ArrayList<>();
+	private List<NumberedLine> headerLines = new ArrayList<>();
+	private List<NumberedLine> classLoaderLines = new ArrayList<>();
+	private List<NumberedLine> logCompilationLines = new ArrayList<>();
+	private List<NumberedLine> assemblyLines = new ArrayList<>();
 	
 	public void clear()
 	{
@@ -24,42 +24,42 @@ public class SplitLog
 		assemblyLines.clear();
 	}
 	
-	public void addHeaderLine(String line)
+	public void addHeaderLine(NumberedLine line)
 	{
 		headerLines.add(line);
 	}
 	
-	public void addClassLoaderLine(String line)
+	public void addClassLoaderLine(NumberedLine line)
 	{
 		classLoaderLines.add(line);
 	}
 	
-	public void addLogCompilationLine(String line)
+	public void addLogCompilationLine(NumberedLine line)
 	{
 		logCompilationLines.add(line);
 	}
 	
-	public void addAssemblyLine(String line)
+	public void addAssemblyLine(NumberedLine line)
 	{
 		assemblyLines.add(line);
 	}
 
-	public List<String> getHeaderLines()
+	public List<NumberedLine> getHeaderLines()
 	{
 		return Collections.unmodifiableList(headerLines);
 	}
 	
-	public List<String> getClassLoaderLines()
+	public List<NumberedLine> getClassLoaderLines()
 	{
 		return Collections.unmodifiableList(classLoaderLines);
 	}
 	
-	public List<String> getLogCompilationLines()
+	public List<NumberedLine> getLogCompilationLines()
 	{
 		return Collections.unmodifiableList(logCompilationLines);
 	}
 	
-	public List<String> getAssemblyLines()
+	public List<NumberedLine> getAssemblyLines()
 	{
 		return Collections.unmodifiableList(assemblyLines);
 	}
