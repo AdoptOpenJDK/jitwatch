@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
@@ -51,12 +52,15 @@ import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
 import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
+import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,6 +142,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private IMetaMember selectedMember;
 	private MetaClass selectedMetaClass;
+	
+	private List<Suggestion> suggestions = new ArrayList<>(); 
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -220,6 +226,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		log("Finished reading log file.");
 
 		isReadingLogFile = false;
+		
+		buildSuggestions();
 
 		Platform.runLater(new Runnable()
 		{
@@ -230,6 +238,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		});
 	}
 
+
+	private void buildSuggestions()
+	{
+		log("Building code suggestions.");
+
+		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(logParser.getModel());
+
+		suggestions = walker.getSuggestionList();
+		
+		log("Finished building code suggestions.");
+	}
+	
 	@Override
 	public void handleError(final String title, final String body)
 	{
@@ -434,7 +454,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(ActionEvent e)
 			{
-				suggestStage = new SuggestStage(JITWatchUI.this);
+				suggestStage = new SuggestStage(JITWatchUI.this, suggestions);
 
 				StageManager.addAndShow(suggestStage);
 
@@ -611,7 +631,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	}
 
 	@Override
-	public void openTriView(IMetaMember member, boolean force)
+	public ITriView openTriView(IMetaMember member, boolean force)
 	{
 		if (triViewStage == null)
 		{
@@ -626,6 +646,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			triViewStage.setMember(member, force);
 		}
+		
+		return triViewStage;
 	}
 
 	public void openSandbox()
@@ -662,6 +684,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
+		
+		btnSuggest.setText("Suggestions (" + suggestions.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass)

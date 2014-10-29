@@ -84,7 +84,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				// TODO fix for JDK8
 				if (parsePhase != null)
 				{
 					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -198,8 +197,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					if (score > 0)
 					{
-						Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.INLINING,
-								(int) Math.ceil(score));
+						Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(),
+								SuggestionType.INLINING, (int) Math.ceil(score));
 
 						if (!suggestionList.contains(suggestion))
 						{
@@ -278,9 +277,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append(" times and is taken with probability ");
 			reasonBuilder.append(probability);
 			reasonBuilder
-					.append(". It may be possbile to modify the branch (for example by sorting a collection before iterating) to make it more predictable.");
+					.append(". It may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
-			Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.BRANCH, (int) Math.ceil(score));
+			Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
+					(int) Math.ceil(score));
 
 			if (!suggestionList.contains(suggestion))
 			{

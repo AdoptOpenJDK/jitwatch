@@ -63,7 +63,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private SplitLog splitLog = new SplitLog();
 
 	private ParsedClasspath parsedClasspath = new ParsedClasspath();
-
+	
 	public HotSpotLogParser(IJITListener logListener)
 	{
 		model = new JITDataModel();

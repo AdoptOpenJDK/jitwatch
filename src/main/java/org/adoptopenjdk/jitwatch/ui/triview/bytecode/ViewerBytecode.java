@@ -19,6 +19,8 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.TriViewNavigationStack;
@@ -27,6 +29,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.util.JVMSUtil;
 import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.application.Platform;
@@ -44,13 +47,54 @@ public class ViewerBytecode extends Viewer
 	private boolean offsetMismatchDetected = false;
 	private IReadOnlyJITDataModel model;
 	private TriViewNavigationStack navigationStack;
-
+	private Suggestion lastSuggestion = null;
+	
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model, ILineListener lineListener,
 			LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
 		this.model = model;
 		this.navigationStack = navigationStack;
+	}
+	
+	public void highlightBytecodeForSuggestion(Suggestion suggestion)
+	{	
+		lastSuggestion = suggestion;
+		
+		int bytecodeOffset = suggestion.getBytecodeOffset();
+		
+		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
+
+		BytecodeLabel labelAtIndex = (BytecodeLabel)getLabelAtIndex(index);
+		
+		if (labelAtIndex != null)
+		{
+			labelAtIndex.setUnhighlightedStyle(STYLE_UNHIGHLIGHTED_SUGGESTION);
+		}
+		
+		StringBuilder ttBuilder = new StringBuilder();
+		
+		Tooltip tooltip = labelAtIndex.getTooltip();
+		
+		if (tooltip != null)
+		{
+			ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
+			Tooltip.uninstall(labelAtIndex, tooltip);
+		}
+		
+		ttBuilder.append("Suggestion:\n");
+		
+		String text = suggestion.getText();
+		
+		if (suggestion.getType() == SuggestionType.BRANCH)
+		{
+			text = StringUtil.wordWrap(text, 50);
+		}
+		
+		ttBuilder.append(text);
+		
+		tooltip = new Tooltip(ttBuilder.toString());
+		labelAtIndex.setTooltip(tooltip);
 	}
 
 	public void setContent(final IMetaMember member, final ClassBC metaClassBytecode, final List<String> classLocations)
@@ -112,6 +156,16 @@ public class ViewerBytecode extends Viewer
 		}
 
 		setContent(labels);
+		
+		checkIfExistingSuggestionForMember(member);
+	}
+	
+	private void checkIfExistingSuggestionForMember(IMetaMember member)
+	{
+		if (lastSuggestion != null && lastSuggestion.getCaller().equals(member))
+		{
+			highlightBytecodeForSuggestion(lastSuggestion);
+		}
 	}
 	
 	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line, final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
@@ -232,7 +286,7 @@ public class ViewerBytecode extends Viewer
 		return offsetMismatchDetected;
 	}
 
-	public int getLineIndexForBytecodeOffset(int offset)
+	public int getLineIndexForBytecodeOffset(int bci)
 	{
 		int result = -1;
 
@@ -240,7 +294,7 @@ public class ViewerBytecode extends Viewer
 
 		for (BytecodeInstruction instruction : instructions)
 		{
-			if (instruction.getOffset() == offset)
+			if (instruction.getOffset() == bci)
 			{
 				result = pos;
 				break;

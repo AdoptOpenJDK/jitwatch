@@ -59,9 +59,12 @@ public class Viewer extends VBox
 
 	private boolean keyboardMode = false;
 
-	protected static final String STYLE_UNHIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
-	protected static final String STYLE_HIGHLIGHTED = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:red;";
-
+	private static final String FONT_STYLE = "-fx-font-family:monospace; -fx-font-size:12px;";
+	
+	protected static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
+	protected static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
+	protected static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
+	
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
 	protected static final Logger logger = LoggerFactory.getLogger(Viewer.class);

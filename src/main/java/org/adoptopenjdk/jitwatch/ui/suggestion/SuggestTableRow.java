@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 
 public class SuggestTableRow
@@ -17,14 +16,19 @@ public class SuggestTableRow
 		this.suggestion = suggestion;
 	}
 
-	public IMetaMember getCaller()
+	public int getBytecodeOffset()
 	{
-		return suggestion.getCaller();
+		return suggestion.getBytecodeOffset();
+	}
+	
+	public Suggestion getSuggestion()
+	{
+		return suggestion;
 	}
 
-	public String getSuggestion()
+	public String getText()
 	{
-		return suggestion.getSuggestion();
+		return suggestion.getText();
 	}
 
 	public int getScore()

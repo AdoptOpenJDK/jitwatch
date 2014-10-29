@@ -18,6 +18,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
@@ -54,7 +55,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage implements ILineListener
+public class TriView extends Stage implements ITriView, ILineListener
 {
 	private IMetaMember currentMember;
 	private JITWatchConfig config;
@@ -808,9 +809,17 @@ public class TriView extends Stage implements ILineListener
 		paneSource.unFocus();
 		paneBytecode.unFocus();
 		paneAssembly.focus();
-		;
 
 		focussedViewer = LineType.ASSEMBLY;
 		viewerAssembly.requestFocus();
 	}
+	
+	public void highlightBytecodeForSuggestion(Suggestion suggestion)
+	{
+		if (viewerBytecode != null)
+		{			
+			viewerBytecode.highlightBytecodeForSuggestion(suggestion);
+		}
+	}
+
 }

@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 
@@ -38,13 +36,11 @@ public class SuggestStage extends Stage
 
 	private Set<String> filterPackageSet = new HashSet<>();
 
-	private JITWatchUI parent;
-
-	private List<Suggestion> suggestions = new ArrayList<>();
+	private List<Suggestion> suggestions;
 	
-	public SuggestStage(final JITWatchUI parent)
+	public SuggestStage(final JITWatchUI parent, List<Suggestion> suggestions)
 	{
-		this.parent = parent;
+		this.suggestions = suggestions;
 
 		MemberTableCell.setTriViewAccessor(parent);
 
@@ -82,19 +78,10 @@ public class SuggestStage extends Stage
 				parent.handleStageClosed(SuggestStage.this);
 			}
 		});
-
-		build();
-	}
-
-	private void build()
-	{
-		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(parent.getJITDataModel());
-
-		suggestions = walker.getSuggestionList();
 		
 		display();
 	}
-	
+
 	private void display()
 	{
 		obList.clear();

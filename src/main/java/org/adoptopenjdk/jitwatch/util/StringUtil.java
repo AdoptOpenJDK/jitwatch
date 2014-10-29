@@ -112,7 +112,7 @@ public final class StringUtil
 	public static String pad(String str, int width, char padding, boolean left)
 	{
 		StringBuilder sb = new StringBuilder();
-		
+
 		int len = str.length();
 
 		if (!left)
@@ -389,6 +389,20 @@ public final class StringUtil
 		if (builder.length() > 0)
 		{
 			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		return builder.toString();
+	}
+
+	public static String wordWrap(String text, int width)
+	{
+		StringBuilder builder = new StringBuilder(text);
+
+		int i = 0;
+		
+		while (i + width < builder.length() && (i = builder.lastIndexOf(S_SPACE, i + width)) != -1)
+		{
+			builder.replace(i, i + 1, S_NEWLINE);
 		}
 
 		return builder.toString();
