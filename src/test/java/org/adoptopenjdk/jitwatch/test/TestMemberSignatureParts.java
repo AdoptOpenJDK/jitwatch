@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -245,5 +246,20 @@ public class TestMemberSignatureParts
 		assertEquals("U[]", paramTypes.get(0));
 		assertEquals("int", paramTypes.get(1));
 		assertEquals("java.lang.Class<? extends T[]>", paramTypes.get(2));
+	}
+	
+	@Test
+	public void testStaticInitialiserBytecode() throws Exception
+	{
+		String sigBC = "static {}";
+
+		MemberSignatureParts mspBC = MemberSignatureParts.fromBytecodeSignature("java.lang.String", sigBC);
+
+		List<String> modListBC = mspBC.getModifiers();
+		assertEquals(0, modListBC.size());
+		assertEquals(0, mspBC.getGenerics().size());
+		assertEquals("void", mspBC.getReturnType());
+		assertEquals(ParseUtil.STATIC_INIT, mspBC.getMemberName());
+		assertEquals(0, mspBC.getParamTypes().size());
 	}
 }

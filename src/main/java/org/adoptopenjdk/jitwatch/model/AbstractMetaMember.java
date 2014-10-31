@@ -83,7 +83,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	private boolean nameMatches(MemberSignatureParts msp)
 	{
-		// logger.debug("Name: '{}' v '{}'", memberName, msp.getMemberName());
+		if (DEBUG_LOGGING_SIG_MATCH)
+		{
+			logger.debug("Name: '{}' v '{}'", memberName, msp.getMemberName());
+		}
+
 		return memberName.equals(msp.getMemberName());
 	}
 
@@ -96,13 +100,19 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(msp.getReturnType());
 			matched = returnType.equals(sigReturnType);
 
-			logger.debug("Return: '{}' === '{}' ? {}", returnType.getName(), sigReturnType.getName(), matched);
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.debug("Return: '{}' === '{}' ? {}", returnType.getName(), sigReturnType.getName(), matched);
+			}
 		}
 		else
 		{
 			matched = (this instanceof MetaConstructor);
 
-			logger.debug("Constructor found");
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.debug("Constructor found");
+			}
 		}
 
 		return matched;
@@ -153,7 +163,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 			if (DEBUG_LOGGING_SIG_MATCH)
 			{
-				logger.info("Match: {}", result);
+				logger.debug("Match: {}", result);
 			}
 		}
 

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.SplitLog;
 
 public interface ILogParser
@@ -20,6 +21,8 @@ public interface ILogParser
 	SplitLog getSplitLog();
 	
 	void stopParsing();
+	
+	ParsedClasspath getParsedClasspath();
 	
 	JITDataModel getModel();
 	

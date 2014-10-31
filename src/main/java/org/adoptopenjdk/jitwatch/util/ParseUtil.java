@@ -32,6 +32,8 @@ public final class ParseUtil
 
 	public static final String SQUARE_BRACKET_PAIR = "[]";
 	public static final String CONSTRUCTOR_INIT = "<init>";
+	public static final String STATIC_INIT = "<clinit>";
+	public static final String STATIC_BYTECODE_SIGNATURE = "static {}";
 
 	public static final String NAME_SHORT = "short";
 	public static final String NAME_CHARACTER = "char";

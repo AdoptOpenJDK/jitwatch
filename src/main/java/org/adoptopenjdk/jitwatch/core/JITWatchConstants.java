@@ -13,15 +13,12 @@ import java.util.regex.Pattern;
 
 public final class JITWatchConstants
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private JITWatchConstants()
 	{
 	}
 
 	// *verbose* debugging
+	// DEBUG level logging requires editing src/main/resources/logback.xml
 	public static final boolean DEBUG_LOGGING = false;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;

@@ -61,8 +61,6 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private AssemblyProcessor asmProcessor;
 
 	private SplitLog splitLog = new SplitLog();
-
-	private ParsedClasspath parsedClasspath = new ParsedClasspath();
 	
 	public HotSpotLogParser(IJITListener logListener)
 	{
@@ -87,7 +85,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return splitLog;
 	}
-
+	
+	public ParsedClasspath getParsedClasspath()
+	{
+		return config.getParsedClasspath();
+	}
+	
 	private void configureDisposableClassLoader()
 	{
 		if (DEBUG_LOGGING)
@@ -96,7 +99,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		List<String> configuredClassLocations = config.getClassLocations();
-		List<String> parsedClassLocations = parsedClasspath.getClassLocations();
+		List<String> parsedClassLocations = getParsedClasspath().getClassLocations();
 
 		int configuredClasspathCount = configuredClassLocations.size();
 		int parsedClasspathCount = parsedClassLocations.size();
@@ -119,7 +122,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			}
 		}
 
-		for (String filename : parsedClasspath.getClassLocations())
+		for (String filename : getParsedClasspath().getClassLocations())
 		{
 			if (!configuredClassLocations.contains(filename))
 			{
@@ -771,7 +774,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		{
 			originalLocation = originalLocation.substring(S_FILE_COLON.length());
 
-			parsedClasspath.addClassLocation(originalLocation);
+			getParsedClasspath().addClassLocation(originalLocation);
 		}
 	}
 

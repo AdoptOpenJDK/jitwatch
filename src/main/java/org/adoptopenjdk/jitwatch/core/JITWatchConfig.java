@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,9 @@ public class JITWatchConfig
 	private Properties loadedProps;
 
 	private String preSandboxProfile = S_PROFILE_DEFAULT;
-
+	
+	private ParsedClasspath parsedClasspath = new ParsedClasspath();
+	
 	public JITWatchConfig()
 	{
 		initialise();
@@ -131,6 +134,11 @@ public class JITWatchConfig
 		setProfileName(preSandboxProfile);
 	}
 
+	public ParsedClasspath getParsedClasspath()
+	{
+		return parsedClasspath;
+	}
+	
 	public JITWatchConfig clone()
 	{
 		if (DEBUG_LOGGING)

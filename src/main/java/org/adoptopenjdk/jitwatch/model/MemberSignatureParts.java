@@ -61,7 +61,7 @@ public class MemberSignatureParts
 		modifier = 0;
 	}
 
-	private static void completeSignature(MemberSignatureParts msp)
+	private static void completeSignature(String origSig, MemberSignatureParts msp)
 	{
 		if (msp.memberName != null)
 		{
@@ -74,7 +74,7 @@ public class MemberSignatureParts
 		}
 		else
 		{
-			logger.warn("MemberSignatureParts.memberName was null: {}", msp);
+			logger.warn("MemberSignatureParts.memberName was null for signature: '{}'\n{}", origSig, msp);
 		}
 	}
 
@@ -91,7 +91,7 @@ public class MemberSignatureParts
 
 		msp.returnType = returnType;
 
-		completeSignature(msp);
+		completeSignature(fullyQualifiedClassName+S_COMMA+memberName+S_COMMA+returnType, msp);
 
 		return msp;
 	}
@@ -129,16 +129,29 @@ public class MemberSignatureParts
 
 		msp.returnType = returnClass.getName();
 
-		completeSignature(msp);
+		completeSignature(toParse, msp);
 
 		return msp;
 	}
+	
+	private static boolean isStaticInitialiser(String bytecodeSignature)
+	{
+		return ParseUtil.STATIC_BYTECODE_SIGNATURE.equals(bytecodeSignature);
+	}
 
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
-	{
+	{		
 		MemberSignatureParts msp = new MemberSignatureParts();
 
 		msp.fullyQualifiedClassName = fqClassName;
+		
+		if (isStaticInitialiser(toParse))
+		{
+			msp.memberName = ParseUtil.STATIC_INIT;
+			msp.returnType = Void.TYPE.getName();
+			
+			return msp;
+		}
 
 		StringBuilder builder = new StringBuilder();
 
@@ -222,7 +235,7 @@ public class MemberSignatureParts
 			}
 		}
 
-		completeSignature(msp);
+		completeSignature(toParse, msp);
 
 		return msp;
 	}
@@ -375,7 +388,7 @@ public class MemberSignatureParts
 
 	@Override
 	public String toString()
-	{
+	{		
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(C_NEWLINE);

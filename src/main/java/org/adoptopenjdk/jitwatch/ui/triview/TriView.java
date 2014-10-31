@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
@@ -12,6 +13,7 @@ import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
@@ -92,7 +94,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private LineType focussedViewer = LineType.SOURCE;
 
 	private TriViewNavigationStack navigationStack;
-
+	
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.config = config;
@@ -403,7 +405,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		List<String> classLocations = config.getClassLocations();
 
-		ClassBC classBytecode = processStatusBarIfClassBytecodeIsValid(statusBarBuilder, classLocations);
+		ClassBC classBytecode = loadBytecodeForCurrentMember(classLocations);
+
+		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
 
 		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
 
@@ -483,10 +487,28 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private ClassBC processStatusBarIfClassBytecodeIsValid(StringBuilder statusBarBuilder, List<String> classLocations)
+	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
+		// add discovered classpath
+		ParsedClasspath parsedClasspath = config.getParsedClasspath();
+		
+		List<String> mergedClassLocations = new ArrayList<>(classLocations);
+		
+		for (String parsedLocation : parsedClasspath.getClassLocations())
+		{
+			if (!mergedClassLocations.contains(parsedLocation))
+			{
+				mergedClassLocations.add(parsedLocation);
+			}
+		}
+		
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(mergedClassLocations);
 
+		return classBytecode;
+	}
+
+	private void updateStatusBarWithClassInformation(ClassBC classBytecode, StringBuilder statusBarBuilder)
+	{
 		if (classBytecode != null)
 		{
 			int majorVersion = classBytecode.getMajorVersion();
@@ -498,7 +520,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 			statusBarBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES);
 			statusBarBuilder.append(javaVersion).append(C_CLOSE_PARENTHESES);
 		}
-		return classBytecode;
 	}
 
 	private void processIfNotSameClass(boolean sameClass, MetaClass memberClass)
@@ -813,11 +834,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 		focussedViewer = LineType.ASSEMBLY;
 		viewerAssembly.requestFocus();
 	}
-	
+
 	public void highlightBytecodeForSuggestion(Suggestion suggestion)
 	{
 		if (viewerBytecode != null)
-		{			
+		{
 			viewerBytecode.highlightBytecodeForSuggestion(suggestion);
 		}
 	}

@@ -51,11 +51,6 @@ public final class BytecodeLoader
 		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
 	}
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
-
 	private BytecodeLoader()
 	{
 	}
@@ -66,9 +61,17 @@ public final class BytecodeLoader
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
 		}
-
+		
 		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);
-
+		
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			for (String arg : args)
+			{
+				logger.debug("arg: {}", arg);
+			}
+		}
+		
 		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
 
 		return parsedByteCodeFrom(fqClassName, byteCodeString);
