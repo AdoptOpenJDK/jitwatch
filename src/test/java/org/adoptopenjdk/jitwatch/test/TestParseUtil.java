@@ -277,6 +277,12 @@ public class TestParseUtil
 		// DO NOT REMOVE, NEEDED BY UNIT TEST
 	}
 	
+	// test varargs method
+	public void method_with_underscores()
+	{	
+		// DO NOT REMOVE, NEEDED BY UNIT TEST
+	}
+	
 	@Test
 	public void testVarArgsInBytecodeSignatureMatches()
 	{
@@ -299,6 +305,62 @@ public class TestParseUtil
 		String bytecodeSig = "public void doSomethingWithVarArgs(java.lang.String...)";
 		
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("org.adoptopenjdk.jitwatch.test.TestParseUtil", bytecodeSig);
+		
+		IMetaMember foundVarArgsMethod = metaClass.getMemberFromSignature(msp);
+		
+		assertNotNull(foundVarArgsMethod);
+	}
+	
+	@Test
+	public void testMethodWithUnderscores()
+	{
+		String thisClass = getClass().getName();
+				
+		JITDataModel model = new JITDataModel();
+		
+		MetaClass metaClass = null;
+		
+		try
+		{
+			metaClass = model.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(thisClass));
+		}
+		catch (ClassNotFoundException cnfe)
+		{
+			cnfe.printStackTrace();
+			fail();
+		}
+
+		String bytecodeSig = "public void method_with_underscores()";
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("org.adoptopenjdk.jitwatch.test.TestParseUtil", bytecodeSig);
+		
+		IMetaMember foundVarArgsMethod = metaClass.getMemberFromSignature(msp);
+		
+		assertNotNull(foundVarArgsMethod);
+	}
+	
+	@Test
+	public void testMethodWithInnerClassDollarSign()
+	{
+		String awtWindowClass = "java.awt.Window";
+				
+		JITDataModel model = new JITDataModel();
+		
+		MetaClass metaClass = null;
+		
+		try
+		{
+			metaClass = model.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(awtWindowClass));
+		}
+		catch (ClassNotFoundException cnfe)
+		{
+			cnfe.printStackTrace();
+			fail();
+		}
+
+		String bytecodeSig = "static int access$600(java.awt.Window)";
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(awtWindowClass, bytecodeSig);
 		
 		IMetaMember foundVarArgsMethod = metaClass.getMemberFromSignature(msp);
 		

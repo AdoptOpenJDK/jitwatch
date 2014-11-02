@@ -164,7 +164,7 @@ public class MemberSignatureParts
 
 		String regexGenerics = "(<.*> )?";
 		String regexReturnType = "(.* )?"; // optional could be constructor
-		String regexMethodName = "([\\p{L}0-9\\.]+)";
+		String regexMethodName = "([\\p{L}0-9_\\.\\$]+)";
 		String regexParams = "(\\(.*\\))";
 		String regexRest = "(.*)";
 

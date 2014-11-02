@@ -188,7 +188,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			public void handle(WindowEvent arg0)
 			{
 				saveEditorPaneConfig();
-				
+
 				parser.getConfig().switchFromSandbox();
 
 				StageManager.closeAll();
@@ -247,7 +247,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		addEditor("SandboxTest.java");
 		addEditor("SandboxTestLoad.java");
-		
+
 		saveEditorPaneConfig();
 	}
 
@@ -256,7 +256,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		EditorPane editor = new EditorPane(this);
 
 		logger.debug("Add editor: {}", filename);
-		
+
 		if (filename != null)
 		{
 			editor.loadSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), filename);
@@ -285,31 +285,31 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 					dividerPos += widthFraction;
 				}
 			}
-		});		
+		});
 	}
 
 	private void saveEditorPaneConfig()
 	{
 		List<String> editorPanePaths = new ArrayList<>();
-		
+
 		for (EditorPane pane : editorPanes)
 		{
 			logger.debug("maybe adding pane: {}", pane);
-			
+
 			if (pane.getSourceFile() != null)
 			{
 				String editorPanePath = pane.getSourceFile().getAbsolutePath();
 				editorPanePaths.add(editorPanePath);
-				
+
 				logger.debug("Added: {}", editorPanePath);
 			}
 		}
-		
+
 		config.setLastEditorPaneList(editorPanePaths);
-		
+
 		config.saveConfig();
 	}
-	
+
 	private void saveUnsavedEditors()
 	{
 		for (EditorPane editor : editorPanes)
@@ -331,30 +331,33 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				}
 			});
 
-			List<File> compileList = new ArrayList<>();
+			String language = comboBoxVMLanguage.getValue();
 
-			for (EditorPane editor : editorPanes)
+			if (language != null)
 			{
-				File sourceFile = editor.getSourceFile();
+				List<File> compileList = new ArrayList<>();
 
-				if (sourceFile != null)
+				for (EditorPane editor : editorPanes)
 				{
-					compileList.add(sourceFile);
+					File sourceFile = editor.getSourceFile();
+
+					if (sourceFile != null)
+					{
+						if (sourceFile.getName().toLowerCase().endsWith(language.toLowerCase()))
+						{
+							compileList.add(sourceFile);
+						}
+					}
 				}
-			}
 
-			if (compileList.size() > 0)
-			{
-				String language = comboBoxVMLanguage.getValue();
-
-				if (language != null)
+				if (compileList.size() > 0)
 				{
 					sandbox.runSandbox(language, compileList, fileToRun);
 				}
-			}
-			else
-			{
-				log("All editors are empty");
+				else
+				{
+					log("All editors are empty");
+				}
 			}
 		}
 		catch (Exception e)
@@ -433,7 +436,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	@Override
 	public void handleStageClosed(Stage stage)
-	{		
+	{
 		StageManager.remove(stage);
 
 		if (stage instanceof SandboxConfigStage)
@@ -469,7 +472,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		comboBoxVMLanguage.getSelectionModel().select(VM_LANGUAGE_JAVA);
 	}
-	
+
 	@Override
 	public void handleError(final String title, final String body)
 	{
