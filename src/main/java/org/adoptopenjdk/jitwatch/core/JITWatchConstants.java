@@ -145,8 +145,6 @@ public final class JITWatchConstants
 		return Collections.unmodifiableSet(SET_LAMBDA_PREFIXES);
 	}
 	
-
-
 	public static final String REGEX_GROUP_ANY = "(.*)";
 	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";
 	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
@@ -196,6 +194,7 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
 	public static final String S_DEFAULT = "default";
 	public static final String S_FILE_COLON = "file:";
+	public static final String S_DOT_CLASS = ".class";
 	
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';

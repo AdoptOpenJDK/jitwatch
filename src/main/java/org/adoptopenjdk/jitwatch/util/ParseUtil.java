@@ -25,8 +25,11 @@ public final class ParseUtil
 	private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
+	
+	public static String METHOD_NAME_REGEX_GROUP = "([\\p{L}0-9_<>\\.\\$]+)";
+	
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
-			.compile("^([0-9\\p{L}\\.\\$_]+) ([0-9\\p{L}<>_\\$]+) (\\(.*\\))(.*)");
+			.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP + " (\\(.*\\))(.*)");
 
 	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(.*)'\\sin\\s'(.*)'");
 
