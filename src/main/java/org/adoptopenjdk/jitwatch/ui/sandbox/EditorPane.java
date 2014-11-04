@@ -49,13 +49,13 @@ public class EditorPane extends VBox
 
 	private Button btnSave;
 
-	private SandboxStage sandboxStage;
+	private ISandboxStage sandboxStage;
 
 	private boolean isModified = false;
 
 	private File sourceFile = null;
 
-	public EditorPane(SandboxStage stage)
+	public EditorPane(ISandboxStage stage)
 	{
 		this.sandboxStage = stage;
 
@@ -143,8 +143,20 @@ public class EditorPane extends VBox
 			}
 		});
 
+		taSource.focusedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue)
+			{
+				if (Boolean.TRUE.equals(newValue))
+				{
+					setVMLanguage();
+				}
+			}
+		});
+
 		setTextAreaSaveCombo(taSource);
-		
+
 		taLineNumbers = new TextArea();
 		String styleLineNumber = "-fx-padding:0; -fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:#eeeeee;";
 		taLineNumbers.setStyle(styleLineNumber);
@@ -286,7 +298,7 @@ public class EditorPane extends VBox
 		{
 			sourceFile = new File(dir, filename);
 		}
-		
+
 		String source = ResourceLoader.readFile(sourceFile);
 
 		if (source != null)
@@ -301,11 +313,19 @@ public class EditorPane extends VBox
 			// add parent folder so source can be loaded in TriView
 			sandboxStage.addSourceFolder(dir);
 
-			int lastDotPos = filename.lastIndexOf(C_DOT);
+			setVMLanguage();
+		}
+	}
+
+	private void setVMLanguage()
+	{
+		if (sourceFile != null)
+		{
+			int lastDotPos = sourceFile.getName().lastIndexOf(C_DOT);
 
 			if (lastDotPos != -1)
 			{
-				String fileExtension = filename.substring(lastDotPos + 1);
+				String fileExtension = sourceFile.getName().substring(lastDotPos + 1);
 
 				sandboxStage.setVMLanguageFromFileExtension(fileExtension);
 			}
@@ -319,7 +339,7 @@ public class EditorPane extends VBox
 
 		fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
-		File result = fc.showOpenDialog(sandboxStage);
+		File result = fc.showOpenDialog(sandboxStage.getStageForChooser());
 
 		if (result != null)
 		{
@@ -331,7 +351,7 @@ public class EditorPane extends VBox
 	{
 		if (isModified)
 		{
-			Response resp = Dialogs.showYesNoDialog(sandboxStage, "Save modified file?", "Save changes?");
+			Response resp = Dialogs.showYesNoDialog(sandboxStage.getStageForChooser(), "Save modified file?", "Save changes?");
 
 			if (resp == Response.YES)
 			{
@@ -349,7 +369,7 @@ public class EditorPane extends VBox
 
 			fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
-			sourceFile = fc.showSaveDialog(sandboxStage);
+			sourceFile = fc.showSaveDialog(sandboxStage.getStageForChooser());
 		}
 
 		if (sourceFile != null)

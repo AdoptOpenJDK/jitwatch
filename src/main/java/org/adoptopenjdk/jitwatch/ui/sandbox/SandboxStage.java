@@ -366,19 +366,24 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 	}
 
-	void editorClosed(EditorPane editor)
+	public void editorClosed(EditorPane editor)
 	{
 		editorPanes.remove(editor);
 		splitEditorPanes.getItems().remove(editor);
 		setEditorDividers();
 	}
+	
+	public void editorGotFocus(EditorPane editor)
+	{
+		
+	}
 
-	void addSourceFolder(File sourceFolder)
+	public void addSourceFolder(File sourceFolder)
 	{
 		config.addSourceFolder(sourceFolder);
 	}
 
-	void setVMLanguageFromFileExtension(String vmLanguage)
+	public void setVMLanguageFromFileExtension(String vmLanguage)
 	{
 		if (vmLanguage != null)
 		{
@@ -485,5 +490,10 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				Dialogs.showOKDialog(SandboxStage.this, title, body);
 			}
 		});
+	}
+	
+	public Stage getStageForChooser()
+	{
+		return this;
 	}
 }
