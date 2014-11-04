@@ -114,6 +114,13 @@ public class EditorPane extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
+				if (isModified)
+				{
+					promptSave();
+				}
+				
+				setVMLanguage();
+				
 				sandboxStage.runFile(EditorPane.this);
 			}
 		});
