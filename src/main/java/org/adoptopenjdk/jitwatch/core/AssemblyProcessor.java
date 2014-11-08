@@ -142,7 +142,7 @@ public class AssemblyProcessor
 				}
 
 				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
-
+				
 				currentMember.setAssembly(asmMethod);
 			}
 			else

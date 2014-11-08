@@ -142,11 +142,14 @@ public class ClassMemberList extends VBox
 		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
 		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
+		MenuItem menuItemOptimizedVCalls = new MenuItem("Show optimized virtual calls");
 
 		menu.getItems().add(menuItemTriView);
 		menu.getItems().add(menuItemJournal);
 		menu.getItems().add(menuItemIntrinsics);
 		menu.getItems().add(menuItemCallChain);
+		menu.getItems().add(menuItemOptimizedVCalls);
+
 
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
 
@@ -155,6 +158,9 @@ public class ClassMemberList extends VBox
 		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
 
 		menuItemCallChain.setOnAction(getEventHandlerMenuItemCallChain(parent));
+		
+		menuItemOptimizedVCalls.setOnAction(getEventHandlerMenuItemOptimizedVCall(parent));
+
 
 		return menu;
 	}
@@ -230,6 +236,18 @@ public class ClassMemberList extends VBox
 			public void handle(ActionEvent e)
 			{
 				parent.openCompileChain(memberList.getSelectionModel().getSelectedItem());
+			}
+		};
+	}
+	
+	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openOptmizedVCallReport(memberList.getSelectionModel().getSelectedItem());
 			}
 		};
 	}

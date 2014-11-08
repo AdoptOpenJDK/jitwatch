@@ -10,4 +10,5 @@ import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 public interface ITriView
 {
 	void highlightBytecodeForSuggestion(Suggestion suggestion);
+	void highlightSourceLine(int line);
 }

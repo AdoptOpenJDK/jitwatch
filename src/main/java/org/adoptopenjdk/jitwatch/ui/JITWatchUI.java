@@ -5,12 +5,19 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_PACKAGE_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
@@ -52,11 +59,14 @@ import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
+import org.adoptopenjdk.jitwatch.ui.optimizedvcall.OptimizedVirtualCallStage;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
 import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
@@ -142,8 +152,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private IMetaMember selectedMember;
 	private MetaClass selectedMetaClass;
-	
-	private List<Suggestion> suggestions = new ArrayList<>(); 
+
+	private List<Suggestion> suggestions = new ArrayList<>();
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -190,7 +200,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	@Override
 	public void handleReadStart()
-	{	
+	{
 		startDelayedByConfig = false;
 
 		lastVmCommand = logParser.getVMCommand();
@@ -206,10 +216,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				classTree.handleConfigUpdate(getConfig());
-				
+
 				updateButtons();
 
 				classTree.clear();
@@ -226,18 +237,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		log("Finished reading log file.");
 
 		isReadingLogFile = false;
-		
+
 		buildSuggestions();
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				updateButtons();
 			}
 		});
 	}
-
 
 	private void buildSuggestions()
 	{
@@ -246,10 +257,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(logParser.getModel());
 
 		suggestions = walker.getSuggestionList();
-		
+
 		log("Finished building code suggestions.");
 	}
-	
+
 	@Override
 	public void handleError(final String title, final String body)
 	{
@@ -257,6 +268,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				Dialogs.showOKDialog(JITWatchUI.this.stage, title, body);
@@ -272,7 +284,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			isReadingLogFile = false;
 			updateButtons();
 
-			log("Stopped parsing " + hsLogFile.getAbsolutePath());
+			if (hsLogFile != null)
+			{
+				log("Stopped parsing " + hsLogFile.getAbsolutePath());
+			}
 		}
 	}
 
@@ -646,7 +661,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			triViewStage.setMember(member, force);
 		}
-		
+
 		return triViewStage;
 	}
 
@@ -677,21 +692,21 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	public IReadOnlyJITDataModel getJITDataModel()
 	{
-		return (IReadOnlyJITDataModel) logParser.getModel();
+		return logParser.getModel();
 	}
 
 	private void updateButtons()
 	{
 		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
-		
+
 		btnSuggest.setText("Suggestions (" + suggestions.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass)
 	{
 		List<String> path = metaClass.getTreePath();
-		
+
 		clearAndRefreshTreeView();
 
 		TreeItem<Object> curNode = classTree.getRootItem();
@@ -723,13 +738,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 
 			logger.debug("part '{}'", matching);
-			
+
 			for (TreeItem<Object> node : curNode.getChildren())
 			{
 				rowsAbove++;
 
 				String nodeText = node.getValue().toString();
-				
+
 				logger.debug("comparing '{}' with '{}'", matching, nodeText);
 
 				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
@@ -743,7 +758,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				}
 			}
 		}
-		
+
 		logger.debug("found? {}", found);
 
 		if (found)
@@ -808,6 +823,27 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 					stage,
 					"Root method is not compiled",
 					"Can only display compile chain where the root method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+		}
+	}
+
+	public void openOptmizedVCallReport(IMetaMember member)
+	{
+		if (member.isCompiled())
+		{
+			List<OptimizedVirtualCall> optimizedVirtualCalls = OptimizedVirtualCallFinder.findOptimizedCalls(member);
+
+			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
+
+			StageManager.addAndShow(ovcs);
+
+		}
+		else
+		{
+			Dialogs.showOKDialog(
+					stage,
+					"Root method is not compiled",
+					"Can only display optimized virtual calls where the root method has been JIT-compiled.\n"
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
 	}
@@ -926,7 +962,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	}
 
 	private void refresh()
-	{		
+	{
 		boolean sameVmCommandAsLastRun = sameVmCommand();
 
 		if (repaintTree)
@@ -1016,7 +1052,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		selectedMember = null;
 		selectedMetaClass = null;
-		
+
 		classTree.clear();
 		classTree.showTree(sameVmCommand());
 	}
@@ -1122,7 +1158,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		classMemberList.clearClassMembers();
 		selectedMetaClass = metaClass;
-		
+
 		setSelectedMetaMember(null);
 
 		if (metaClass == null)

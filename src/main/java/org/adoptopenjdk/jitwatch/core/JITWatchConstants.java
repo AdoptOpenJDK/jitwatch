@@ -196,6 +196,8 @@ public final class JITWatchConstants
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";
 	
+	public static final String S_OPTIMIZED_VIRTUAL_CALL = "{optimized virtual_call}";
+
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
 	public static final char C_CLOSE_ANGLE = '>';

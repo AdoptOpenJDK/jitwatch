@@ -9,14 +9,11 @@ import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 
 public final class LaunchUI
 {
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private LaunchUI() {
-    }
+	private LaunchUI()
+	{
+	}
 
-    public static void main(String[] args)
+	public static void main(String[] args)
 	{
 		new JITWatchUI(args);
 	}

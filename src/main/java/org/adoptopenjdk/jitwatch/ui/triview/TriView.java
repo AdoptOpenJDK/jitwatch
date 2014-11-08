@@ -5,8 +5,44 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
@@ -30,32 +66,6 @@ import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
 
 public class TriView extends Stage implements ITriView, ILineListener
 {
@@ -94,7 +104,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private LineType focussedViewer = LineType.SOURCE;
 
 	private TriViewNavigationStack navigationStack;
-	
+
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.config = config;
@@ -491,9 +501,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		// add discovered classpath
 		ParsedClasspath parsedClasspath = config.getParsedClasspath();
-		
+
 		List<String> mergedClassLocations = new ArrayList<>(classLocations);
-		
+
 		for (String parsedLocation : parsedClasspath.getClassLocations())
 		{
 			if (!mergedClassLocations.contains(parsedLocation))
@@ -501,7 +511,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				mergedClassLocations.add(parsedLocation);
 			}
 		}
-		
+
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(mergedClassLocations);
 
 		return classBytecode;
@@ -835,6 +845,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		viewerAssembly.requestFocus();
 	}
 
+	@Override
 	public void highlightBytecodeForSuggestion(Suggestion suggestion)
 	{
 		if (viewerBytecode != null)
@@ -843,4 +854,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
+	@Override
+	public void highlightSourceLine(int line)
+	{
+		highlightFromSource(line);
+	}
 }

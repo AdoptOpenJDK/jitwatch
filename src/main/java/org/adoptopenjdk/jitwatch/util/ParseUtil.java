@@ -5,9 +5,36 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import org.adoptopenjdk.jitwatch.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OBJECT_REF;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ARRAY_BRACKET_PAIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PACKAGE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -18,18 +45,27 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ParseUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(ParseUtil.class);
 
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
-	
+
 	public static String METHOD_NAME_REGEX_GROUP = "([\\p{L}0-9_<>\\.\\$]+)";
-	
-	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
-			.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP + " (\\(.*\\))(.*)");
+
+	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP
+			+ " (\\(.*\\))(.*)");
 
 	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(.*)'\\sin\\s'(.*)'");
 
@@ -64,9 +100,20 @@ public final class ParseUtil
 
 	public static long parseStamp(String stamp)
 	{
-		double number = parseLocaleSafeDouble(stamp);
+		long result = 0;
 
-		return (long) (number * 1000);
+		if (stamp != null)
+		{
+			double number = parseLocaleSafeDouble(stamp);
+
+			result = (long) (number * 1000);
+		}
+		else
+		{
+			logger.warn("Could not parse null stamp");
+		}
+
+		return result;
 	}
 
 	public static double parseLocaleSafeDouble(String str)

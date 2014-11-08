@@ -5,22 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.ui.toplist;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
-import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.MemberScore;
-import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -36,6 +34,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
+import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.MemberScore;
+import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 
 public class TopListStage extends Stage
 {
@@ -180,8 +187,6 @@ public class TopListStage extends Stage
 
 		setScene(scene);
 		show();
-
-		redraw();
 	}
 
 	private boolean itIsNull(ITopListScore newVal)
