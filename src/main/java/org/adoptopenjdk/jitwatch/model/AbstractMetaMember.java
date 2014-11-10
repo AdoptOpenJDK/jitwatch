@@ -27,7 +27,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
 
-	protected MetaClass methodClass;
+	protected MetaClass metaClass;
 	private AssemblyMethod asmMethod = null;
 
 	private boolean isQueued = false;
@@ -66,7 +66,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getFullyQualifiedMemberName()
 	{
-		return methodClass.getFullyQualifiedName() + C_DOT + memberName;
+		return metaClass.getFullyQualifiedName() + C_DOT + memberName;
+	}
+	
+	@Override
+	public String getAbbreviatedFullyQualifiedMemberName()
+	{
+		return metaClass.getAbbreviatedFullyQualifiedName() + C_DOT + memberName;
 	}
 
 	@Override
@@ -215,7 +221,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public MetaClass getMetaClass()
 	{
-		return methodClass;
+		return metaClass;
 	}
 
 	@Override

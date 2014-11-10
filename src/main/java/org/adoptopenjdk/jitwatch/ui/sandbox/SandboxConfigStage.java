@@ -66,7 +66,7 @@ public class SandboxConfigStage extends Stage
 		vbox.setPadding(new Insets(15));
 		vbox.setSpacing(15);
 
-		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getClassLocations());
+		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getConfiguredClassLocations());
 		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
 
 		vmLanguageList = new VMLanguageList("VM Languages", config);

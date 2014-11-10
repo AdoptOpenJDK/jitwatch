@@ -14,8 +14,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //import org.slf4j.LoggerFactory;
 
 
+
+
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -37,8 +41,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private ClassBC classBytecode = null;
 
-	// private static final Logger logger =
-	// LoggerFactory.getLogger(MetaClass.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
@@ -94,6 +97,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public ClassBC getClassBytecode(List<String> classLocations)
 	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getClassBytecode for {} existing? {}", getName(), classBytecode != null);
+		}
+		
 		if (classBytecode == null)
 		{
 			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());

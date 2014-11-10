@@ -53,7 +53,7 @@ public class MainConfigStage extends Stage
 		vbox.setSpacing(10);
 
 		chooserSource = new FileChooserListSrcZip(this, "Source locations", config.getSourceLocations());
-		chooserClasses = new FileChooserList(this, "Class locations", config.getClassLocations());
+		chooserClasses = new FileChooserList(this, "Class locations", config.getConfiguredClassLocations());
 
 		final ComboBox<String> comboBox = new ComboBox<>(profileList);
 
@@ -75,7 +75,7 @@ public class MainConfigStage extends Stage
 					config.setProfileName(newVal);
 
 					chooserSource.setItems(config.getSourceLocations());
-					chooserClasses.setItems(config.getClassLocations());
+					chooserClasses.setItems(config.getConfiguredClassLocations());
 				}
 			}
 		});
@@ -103,7 +103,7 @@ public class MainConfigStage extends Stage
 						config.setProfileName(name);
 
 						chooserSource.setItems(config.getSourceLocations());
-						chooserClasses.setItems(config.getClassLocations());
+						chooserClasses.setItems(config.getConfiguredClassLocations());
 
 						createComboOptions(config);
 
@@ -142,7 +142,7 @@ public class MainConfigStage extends Stage
 						config.setProfileName(S_PROFILE_DEFAULT);
 
 						chooserSource.setItems(config.getSourceLocations());
-						chooserClasses.setItems(config.getClassLocations());
+						chooserClasses.setItems(config.getConfiguredClassLocations());
 
 						createComboOptions(config);
 

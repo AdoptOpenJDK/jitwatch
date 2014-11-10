@@ -189,8 +189,6 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				saveEditorPaneConfig();
 
-				parser.getConfig().switchFromSandbox();
-
 				StageManager.closeAll();
 				closeListener.handleStageClosed(SandboxStage.this);
 			}

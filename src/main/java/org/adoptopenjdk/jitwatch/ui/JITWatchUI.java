@@ -53,14 +53,17 @@ import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
 import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
@@ -133,6 +136,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private Button btnCodeCache;
 	private Button btnTriView;
 	private Button btnSuggest;
+	private Button btnOptimizedVirtualCalls;
 	private Button btnSandbox;
 
 	private Label lblHeap;
@@ -146,6 +150,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
+	private OptimizedVirtualCallStage ovcStage;
 	private SandboxStage sandBoxStage;
 
 	private NothingMountedStage nothingMountedStage;
@@ -335,7 +340,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				if (nothingMountedStage == null)
 				{
-					int classCount = getConfig().getClassLocations().size();
+					int classCount = getConfig().getConfiguredClassLocations().size();
 					int sourceCount = getConfig().getSourceLocations().size();
 
 					if (classCount == 0 && sourceCount == 0)
@@ -476,6 +481,26 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				btnSuggest.setDisable(true);
 			}
 		});
+		
+		btnOptimizedVirtualCalls = new Button("OVCs");
+		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
+				
+				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
+				
+				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(logParser.getModel());
+
+				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
+
+				StageManager.addAndShow(ovcStage);
+				
+				btnOptimizedVirtualCalls.setDisable(true);
+			}
+		});
 
 		btnSandbox = new Button("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
@@ -535,6 +560,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnSuggest);
+		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -831,6 +857,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		if (member.isCompiled())
 		{
+			OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
+			
 			List<OptimizedVirtualCall> optimizedVirtualCalls = OptimizedVirtualCallFinder.findOptimizedCalls(member);
 
 			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
@@ -889,6 +917,15 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (result != null)
 		{
 			setHotSpotLogFile(result);
+			
+			JITWatchConfig config = getConfig();
+			
+			if (JITWatchConstants.S_PROFILE_SANDBOX.equals(config.getProfileName()))
+			{
+				logger.debug("Reverting to non-sandbox config for loaded log file");
+				logParser.getConfig().switchFromSandbox();
+			}
+			
 		}
 	}
 
@@ -1116,6 +1153,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			btnSuggest.setDisable(false);
 			suggestStage = null;
+		}
+		else if (stage instanceof OptimizedVirtualCallStage)
+		{
+			btnOptimizedVirtualCalls.setDisable(false);
+			ovcStage = null;
 		}
 		else if (stage instanceof BrowserStage)
 		{

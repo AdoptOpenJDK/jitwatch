@@ -509,9 +509,26 @@ public class JITWatchConfig
 		return result;
 	}
 
-	public List<String> getClassLocations()
+	public List<String> getConfiguredClassLocations()
 	{
 		return Collections.unmodifiableList(classLocations);
+	}
+	
+	public List<String> getAllClassLocations()
+	{
+		ParsedClasspath parsedClasspath = getParsedClasspath();
+
+		List<String> mergedClassLocations = new ArrayList<>(classLocations);
+
+		for (String parsedLocation : parsedClasspath.getClassLocations())
+		{
+			if (!mergedClassLocations.contains(parsedLocation))
+			{
+				mergedClassLocations.add(parsedLocation);
+			}
+		}
+		
+		return mergedClassLocations;
 	}
 
 	public List<String> getSourceLocations()

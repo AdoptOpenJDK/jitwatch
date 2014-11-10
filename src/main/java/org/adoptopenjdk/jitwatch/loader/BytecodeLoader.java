@@ -10,6 +10,7 @@ import com.sun.tools.javap.JavapTask.BadArgs;
 
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.bytecode.*;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,11 +56,13 @@ public final class BytecodeLoader
 	{
 	}
 
-	public static ClassBC fetchBytecodeForClass(Collection<String> classLocations, String fqClassName)
+	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
+			
+			logger.info("Class locations: {}", StringUtil.listToString(classLocations));
 		}
 		
 		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);

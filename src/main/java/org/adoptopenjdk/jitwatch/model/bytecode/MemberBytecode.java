@@ -28,6 +28,22 @@ public class MemberBytecode
 		return bytecodeInstructions;
 	}
 	
+	public BytecodeInstruction getBytecodeAtOffset(int bci)
+	{
+		BytecodeInstruction result = null;
+		
+		for (BytecodeInstruction instruction: bytecodeInstructions)
+		{
+			if (instruction.getOffset() == bci)
+			{
+				result = instruction;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
 	public void setLineTable(LineTable table)
 	{
 		this.lineTable = table;

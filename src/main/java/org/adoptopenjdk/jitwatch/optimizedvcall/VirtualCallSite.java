@@ -1,4 +1,11 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
+
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class VirtualCallSite
 {
@@ -9,7 +16,7 @@ public class VirtualCallSite
 
 	public String getClassName()
 	{
-		return className;
+		return StringUtil.getAbbreviatedFQName(className);
 	}
 
 	public String getMemberName()

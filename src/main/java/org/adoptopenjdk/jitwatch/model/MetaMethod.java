@@ -16,7 +16,7 @@ public class MetaMethod extends AbstractMetaMember
     public MetaMethod(Method method, MetaClass methodClass)
     {
         this.methodToString = method.toString();
-        this.methodClass = methodClass;
+        this.metaClass = methodClass;
 
         memberName = method.getName();
         returnType = method.getReturnType();

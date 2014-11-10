@@ -182,7 +182,7 @@ public class Sandbox
 
 		logListener.log("Compiling: " + StringUtil.listToString(compileList));
 
-		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getClassLocations(), SANDBOX_CLASS_DIR.toFile(),
+		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getConfiguredClassLocations(), SANDBOX_CLASS_DIR.toFile(),
 				logListener);
 
 		logListener.log("Compilation success: " + compiledOK);
@@ -217,41 +217,13 @@ public class Sandbox
 		}
 	}
 
-	/*
-	 * private File writeSourceFile(String source) throws IOException { String
-	 * sourcePackage = ParseUtil.getPackageFromSource(source);
-	 * 
-	 * String sourceClass = ParseUtil.getClassFromSource(source);
-	 * 
-	 * StringBuilder fqNameSourceBuilder = new StringBuilder();
-	 * 
-	 * if (sourcePackage.length() > 0) {
-	 * fqNameSourceBuilder.append(sourcePackage).append(S_DOT); }
-	 * 
-	 * fqNameSourceBuilder.append(sourceClass);
-	 * 
-	 * String fqNameSource = fqNameSourceBuilder.toString();
-	 * 
-	 * if (source.contains("public static void main(") ||
-	 * source.contains("public static void main (")) { classContainingMain =
-	 * fqNameSource; logListener.log("Found main method in " +
-	 * classContainingMain); }
-	 * 
-	 * if (firstClassName == null) { firstClassName = fqNameSource; }
-	 * 
-	 * logListener.log("Writing source file: " + fqNameSource + ".java");
-	 * 
-	 * return FileUtil.writeSource(SANDBOX_SOURCE_DIR.toFile(), fqNameSource,
-	 * source); }
-	 */
-
 	private boolean executeClass(String fqClassName, IRuntime runtime, boolean intelMode) throws Exception
 	{
 		List<String> classpath = new ArrayList<>();
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
 
-		classpath.addAll(logParser.getConfig().getClassLocations());
+		classpath.addAll(logParser.getConfig().getConfiguredClassLocations());
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
@@ -325,7 +297,7 @@ public class Sandbox
 		JITWatchConfig config = logParser.getConfig();
 
 		List<String> sourceLocations = new ArrayList<>(config.getSourceLocations());
-		List<String> classLocations = new ArrayList<>(config.getClassLocations());
+		List<String> classLocations = new ArrayList<>(config.getConfiguredClassLocations());
 
 		String sandboxSourceDirString = SANDBOX_SOURCE_DIR.toString();
 		String sandboxClassDirString = SANDBOX_CLASS_DIR.toString();

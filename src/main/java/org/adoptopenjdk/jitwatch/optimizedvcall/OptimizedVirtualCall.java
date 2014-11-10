@@ -1,17 +1,25 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 
 public class OptimizedVirtualCall
 {
 	private IMetaMember callingMember;
 	private VirtualCallSite caller;
 	private VirtualCallSite callee;
+	private BytecodeInstruction bytecodeInstruction;
 
-	public OptimizedVirtualCall(IMetaMember callingMember, VirtualCallSite caller, VirtualCallSite callee)
+	public OptimizedVirtualCall(IMetaMember callingMember, BytecodeInstruction bytecodeInstruction, VirtualCallSite caller, VirtualCallSite callee)
 	{
 		super();
 		this.callingMember = callingMember;
+		this.bytecodeInstruction = bytecodeInstruction;
 		this.caller = caller;
 		this.callee = callee;
 	}
@@ -21,6 +29,11 @@ public class OptimizedVirtualCall
 		return callingMember;
 	}
 
+	public BytecodeInstruction getBytecodeInstruction()
+	{
+		return bytecodeInstruction;
+	}
+	
 	public VirtualCallSite getCaller()
 	{
 		return caller;

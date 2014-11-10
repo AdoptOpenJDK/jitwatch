@@ -1,14 +1,19 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.ui.optimizedvcall;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
@@ -30,13 +35,17 @@ public class VCallTableBuilder
 		TableColumn<VCallRow, Integer> colCallerLine = new TableColumn<VCallRow, Integer>("Source Line");
 		colCallerLine.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("callerSourceLine"));
 
-		TableColumn<VCallRow, Integer> colCallerBytecode = new TableColumn<VCallRow, Integer>("Bytecode offset");
+		TableColumn<VCallRow, Integer> colCallerBytecode = new TableColumn<VCallRow, Integer>("BCI");
 		colCallerBytecode.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("callerBCI"));
+
+		TableColumn<VCallRow, String> colInvokeType = new TableColumn<VCallRow, String>("Invoke");
+		colInvokeType.setCellValueFactory(new PropertyValueFactory<VCallRow, String>("invokeType"));
 
 		tableView.getColumns().add(colCallerClass);
 		tableView.getColumns().add(colCallerMember);
 		tableView.getColumns().add(colCallerLine);
 		tableView.getColumns().add(colCallerBytecode);
+		tableView.getColumns().add(colInvokeType);
 
 		TableColumn<VCallRow, String> colCalleeClass = new TableColumn<VCallRow, String>("Callee Class");
 		colCalleeClass.setCellValueFactory(new PropertyValueFactory<VCallRow, String>("calleeClass"));
@@ -47,7 +56,7 @@ public class VCallTableBuilder
 		TableColumn<VCallRow, Integer> colCalleeLine = new TableColumn<VCallRow, Integer>("Source Line");
 		colCalleeLine.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("calleeSourceLine"));
 
-		TableColumn<VCallRow, Integer> colCalleeBytecode = new TableColumn<VCallRow, Integer>("Bytecode offset");
+		TableColumn<VCallRow, Integer> colCalleeBytecode = new TableColumn<VCallRow, Integer>("BCI");
 		colCalleeBytecode.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("calleeBCI"));
 
 		tableView.getColumns().add(colCalleeClass);
@@ -55,18 +64,20 @@ public class VCallTableBuilder
 		tableView.getColumns().add(colCalleeLine);
 		tableView.getColumns().add(colCalleeBytecode);
 
-		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<VCallRow>()
+		tableView.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends VCallRow> arg0, VCallRow oldRow, VCallRow newRow)
+			public void handle(MouseEvent event)
 			{
-				if (newRow != null)
+				VCallRow selected = tableView.getSelectionModel().getSelectedItem();
+
+				if (selected != null)
 				{
-					IMetaMember callingMember = newRow.getCallingMember();
+					IMetaMember callingMember = selected.getCallingMember();
 
 					ITriView triView = proxy.openTriView(callingMember, true);
 
-					triView.highlightSourceLine(newRow.getCallerSourceLine());
+					triView.highlightSourceLine(selected.getCallerSourceLine());
 				}
 			}
 		});
@@ -75,7 +86,7 @@ public class VCallTableBuilder
 
 		for (OptimizedVirtualCall vCall : vCalls)
 		{
-			VCallRow row = new VCallRow(vCall.getCallingMember(), vCall.getCaller(), vCall.getCallee());
+			VCallRow row = new VCallRow(vCall);
 			rowList.add(row);
 		}
 

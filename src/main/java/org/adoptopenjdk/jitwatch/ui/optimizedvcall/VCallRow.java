@@ -1,19 +1,44 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.ui.optimizedvcall;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
 
 public class VCallRow
 {
 	private IMetaMember callingMember;
+	private BytecodeInstruction bytecodeInstruction;
 	private VirtualCallSite caller;
 	private VirtualCallSite callee;
 
-	public VCallRow(IMetaMember callingMember, VirtualCallSite caller, VirtualCallSite callee)
+	public VCallRow(OptimizedVirtualCall vCall)
 	{
-		this.callingMember = callingMember;
-		this.caller = caller;
-		this.callee = callee;
+		this.callingMember = vCall.getCallingMember();
+		this.bytecodeInstruction = vCall.getBytecodeInstruction();
+		this.caller = vCall.getCaller();
+		this.callee = vCall.getCallee();
+	}
+
+	public String getInvokeType()
+	{
+		String invokeType = null;
+		
+		if (bytecodeInstruction == null)
+		{
+			invokeType = "Unknown";
+		}
+		else
+		{
+			invokeType = bytecodeInstruction.getOpcode().getMnemonic();
+		}
+		
+		return invokeType;
 	}
 
 	public String getCallerClass()

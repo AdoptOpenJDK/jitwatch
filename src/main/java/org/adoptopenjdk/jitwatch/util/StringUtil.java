@@ -17,10 +17,6 @@ public final class StringUtil
 {
 	private static final DecimalFormat DF_THOUSANDS = new DecimalFormat("#,###");
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private StringUtil()
 	{
 	}
@@ -403,6 +399,27 @@ public final class StringUtil
 		while (i + width < builder.length() && (i = builder.lastIndexOf(S_SPACE, i + width)) != -1)
 		{
 			builder.replace(i, i + 1, S_NEWLINE);
+		}
+
+		return builder.toString();
+	}
+	
+	public static String getAbbreviatedFQName(String fqClassName)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		if (fqClassName != null && fqClassName.length() > 0)
+		{
+			String[] parts = fqClassName.split(S_ESCAPED_DOT);
+
+			for (int i = 0; i < parts.length - 1; i++)
+			{
+				String part = parts[i];
+				
+				builder.append(part.charAt(0)).append(C_DOT);
+			}
+			
+			builder.append(parts[parts.length - 1]);
 		}
 
 		return builder.toString();

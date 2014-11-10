@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
 import java.util.ArrayList;
@@ -5,11 +10,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +32,13 @@ public class OptimizedVirtualCallFinder
 
 	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
 
+	public static List<String> classLocations = new ArrayList<>();
+
+	public static void setClassLocations(List<String> classLocations)
+	{
+		OptimizedVirtualCallFinder.classLocations = classLocations;
+	}
+
 	public static OptimizedVirtualCall findOptimizedCall(IMetaMember callingMember, AssemblyInstruction instruction)
 	{
 		OptimizedVirtualCall result = null;
@@ -32,7 +49,7 @@ public class OptimizedVirtualCallFinder
 
 		for (String line : commentLines)
 		{
-			if (line.contains(JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL))
+			if (line.contains(S_OPTIMIZED_VIRTUAL_CALL))
 			{
 				if (pos >= 2)
 				{
@@ -59,7 +76,34 @@ public class OptimizedVirtualCallFinder
 
 		if (caller != null && callee != null)
 		{
-			result = new OptimizedVirtualCall(callingMember, caller, callee);
+			BytecodeInstruction bytecodeInstruction = null;
+
+			if (callingMember != null)
+			{
+				MetaClass metaClass = callingMember.getMetaClass();
+
+				if (metaClass != null)
+				{
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("OVCF Class locations: {}", StringUtil.listToString(classLocations));
+					}
+					
+					ClassBC classBytecode = metaClass.getClassBytecode(classLocations);
+
+					if (classBytecode != null)
+					{
+						MemberBytecode memberBytecode = classBytecode.getMemberBytecode(callingMember);
+
+						if (memberBytecode != null)
+						{
+							bytecodeInstruction = memberBytecode.getBytecodeAtOffset(caller.getBytecodeOffset());
+						}
+					}
+				}
+			}
+
+			result = new OptimizedVirtualCall(callingMember, bytecodeInstruction, caller, callee);
 		}
 
 		return result;

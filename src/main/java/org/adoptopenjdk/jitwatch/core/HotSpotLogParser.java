@@ -61,7 +61,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private AssemblyProcessor asmProcessor;
 
 	private SplitLog splitLog = new SplitLog();
-	
+
 	public HotSpotLogParser(IJITListener logListener)
 	{
 		model = new JITDataModel();
@@ -85,12 +85,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		return splitLog;
 	}
-	
+
 	public ParsedClasspath getParsedClasspath()
 	{
 		return config.getParsedClasspath();
 	}
-	
+
 	private void configureDisposableClassLoader()
 	{
 		if (DEBUG_LOGGING)
@@ -98,7 +98,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logger.debug("configureDisposableClassLoader()");
 		}
 
-		List<String> configuredClassLocations = config.getClassLocations();
+		List<String> configuredClassLocations = config.getConfiguredClassLocations();
 		List<String> parsedClassLocations = getParsedClasspath().getClassLocations();
 
 		int configuredClasspathCount = configuredClassLocations.size();
@@ -529,8 +529,13 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private void handleTagVmArguments(Tag tag)
 	{
-		vmCommand = tag.getNamedChildren(TAG_COMMAND).get(0).getTextContent();
-		logger.debug("VM Command: {}", vmCommand);
+		List<Tag> tagCommandChildren = tag.getNamedChildren(TAG_COMMAND);
+		
+		if (tagCommandChildren.size() > 0)
+		{
+			vmCommand = tagCommandChildren.get(0).getTextContent();
+			logger.debug("VM Command: {}", vmCommand);
+		}
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -828,7 +833,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
 	}
-	
+
 	private boolean possibleLambdaMethod(String fqClassName)
 	{
 		for (String prefix : JITWatchConstants.getLambdaClassPrefixes())
@@ -838,7 +843,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

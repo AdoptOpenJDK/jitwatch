@@ -16,7 +16,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Platform;
@@ -49,7 +48,6 @@ import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
@@ -63,6 +61,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,13 +412,13 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		StringBuilder statusBarBuilder = new StringBuilder();
 
-		List<String> classLocations = config.getClassLocations();
-
-		ClassBC classBytecode = loadBytecodeForCurrentMember(classLocations);
+		List<String> allClassLocations = config.getAllClassLocations();
+		
+		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
 
 		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
 
-		viewerBytecode.setContent(currentMember, classBytecode, classLocations);
+		viewerBytecode.setContent(currentMember, classBytecode, allClassLocations);
 
 		processIfCurrentMemberIsCompiled(statusBarBuilder);
 
@@ -499,20 +498,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
-		// add discovered classpath
-		ParsedClasspath parsedClasspath = config.getParsedClasspath();
-
-		List<String> mergedClassLocations = new ArrayList<>(classLocations);
-
-		for (String parsedLocation : parsedClasspath.getClassLocations())
-		{
-			if (!mergedClassLocations.contains(parsedLocation))
-			{
-				mergedClassLocations.add(parsedLocation);
-			}
-		}
-
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(mergedClassLocations);
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
 
 		return classBytecode;
 	}
@@ -631,7 +617,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		LineTableEntry result = null;
 
-		ClassBC classBytecode = metaClass.getClassBytecode(config.getClassLocations());
+		ClassBC classBytecode = metaClass.getClassBytecode(config.getConfiguredClassLocations());
 
 		if (classBytecode != null)
 		{
@@ -657,7 +643,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (metaClass != null)
 		{
-			ClassBC classBytecode = metaClass.getClassBytecode(config.getClassLocations());
+			ClassBC classBytecode = metaClass.getClassBytecode(config.getConfiguredClassLocations());
 
 			BytecodeLabel bcLabel = (BytecodeLabel) viewerBytecode.getLabelAtIndex(index);
 
@@ -857,6 +843,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	@Override
 	public void highlightSourceLine(int line)
 	{
-		highlightFromSource(line);
+		highlightFromSource(line-1);
+		viewerSource.highlightLine(line-1);
 	}
 }

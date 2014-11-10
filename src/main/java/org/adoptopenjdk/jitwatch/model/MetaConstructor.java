@@ -17,7 +17,7 @@ public class MetaConstructor extends AbstractMetaMember
 	public MetaConstructor(Constructor<?> constructor, MetaClass methodClass)
 	{
 		this.constructorToString = constructor.toString();
-		this.methodClass = methodClass;	
+		this.metaClass = methodClass;	
 		
 		returnType = Void.TYPE;
 		memberName = constructor.getName();
