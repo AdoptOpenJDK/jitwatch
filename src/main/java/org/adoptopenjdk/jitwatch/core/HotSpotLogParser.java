@@ -169,6 +169,8 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	@Override
 	public void reset()
 	{
+		logger.info("HotSpotLogParser.reset()");
+		
 		getModel().reset();
 
 		splitLog.clear();
@@ -283,7 +285,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		for (NumberedLine numberedLine : splitLog.getLogCompilationLines())
-		{
+		{			
 			if (!skipLine(numberedLine.getLine(), SKIP_BODY_TAGS))
 			{
 				Tag tag = tagProcessor.processLine(numberedLine.getLine());
@@ -407,9 +409,6 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	{
 		String currentLine = inCurrentLine;
 
-		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
-		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
-
 		NumberedLine numberedLine = new NumberedLine(parseLineNumber++, currentLine);
 
 		if (TAG_TTY.equals(currentLine))
@@ -480,7 +479,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private void handleTag(Tag tag)
 	{
 		String tagName = tag.getName();
-
+		
 		switch (tagName)
 		{
 		case TAG_VM_VERSION:
@@ -578,7 +577,9 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		catch (LogParseException ex)
 		{
-			logger.warn("Exception parsing signature: {}", logSignature, ex);
+			logger.warn("Could not parse signature: {}", logSignature);
+			logger.warn("Exception was {}", ex.getMessage());
+			
 			logError("Could not parse line " + processLineNumber + " : " + logSignature + " : " + ex.getMessage());
 		}
 
@@ -625,7 +626,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleTagTask(Tag tag)
-	{
+	{		
 		handleMethodLine(tag, EventType.TASK);
 
 		Tag tagCodeCache = tag.getFirstNamedChild(TAG_CODE_CACHE);

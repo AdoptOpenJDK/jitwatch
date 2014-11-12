@@ -36,6 +36,18 @@ public class TagProcessor
 	{
 		return currentCompiler;
 	}
+	
+	public String getTopTagName()
+	{
+		String result = null;
+		
+		if (topTag != null)
+		{
+			result = topTag.getName();
+		}
+		
+		return result;
+	}
 
 	public Tag processLine(String line)
 	{

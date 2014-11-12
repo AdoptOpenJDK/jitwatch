@@ -37,6 +37,9 @@ public class AssemblyProcessor
 	{
 		String line = inLine.trim();
 
+		line = line.replace(S_ENTITY_LT, S_OPEN_ANGLE);
+		line = line.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("handleLine: '{}'", line);
@@ -87,7 +90,7 @@ public class AssemblyProcessor
 					{
 						logger.debug("Method signature interrupted");
 					}
-					
+
 					methodInterrupted = true;
 				}
 			}
@@ -142,7 +145,7 @@ public class AssemblyProcessor
 				}
 
 				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
-				
+
 				currentMember.setAssembly(asmMethod);
 			}
 			else

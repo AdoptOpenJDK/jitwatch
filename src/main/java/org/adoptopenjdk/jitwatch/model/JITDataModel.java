@@ -56,6 +56,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	public void reset()
 	{
+		logger.info("JITDataModel.reset()");
+		
 		pm.clear();
 
 		stats.reset();
@@ -280,11 +282,13 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		return resultMetaClass;
 	}
 
-	public void addCodeCacheTag(Tag ccTag)
+	public void addCodeCacheTag(Tag tag)
 	{
 		synchronized (codeCacheTagList)
 		{
-			codeCacheTagList.add(ccTag);
+			logger.info("addCodeCacheTag: {}", tag);
+			
+			codeCacheTagList.add(tag);
 		}
 	}
 
