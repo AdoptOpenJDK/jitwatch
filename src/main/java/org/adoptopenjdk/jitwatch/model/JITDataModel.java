@@ -285,9 +285,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	public void addCodeCacheTag(Tag tag)
 	{
 		synchronized (codeCacheTagList)
-		{
-			logger.info("addCodeCacheTag: {}", tag);
-			
+		{			
 			codeCacheTagList.add(tag);
 		}
 	}

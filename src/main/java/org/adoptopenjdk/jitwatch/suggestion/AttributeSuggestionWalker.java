@@ -36,8 +36,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_NEVER_EXECUTED = "never executed";
 	private static final String REASON_EXEC_LESS_MIN_INLINING_THRESHOLD = "executed < MinInliningThreshold times";
 	private static final String REASON_CALL_SITE_NOT_REACHED = "call site not reached";
-
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
+	private static final String REASON_NATIVE_METHOD = "native method";
+
 
 	static
 	{
@@ -49,6 +50,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
 
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
+		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
+
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
 
 		explanationMap

@@ -20,11 +20,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ARRAY_BRACKET_PAIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
@@ -229,9 +232,14 @@ public final class ParseUtil
 		return builder.toString();
 	}
 
-	public static String[] splitLogSignatureWithRegex(String logSignature) throws LogParseException
+	public static String[] splitLogSignatureWithRegex(final String logSignature) throws LogParseException
 	{
-		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(logSignature);
+		String sig = logSignature;
+		
+		sig = sig.replace(S_ENTITY_LT, S_OPEN_ANGLE);
+		sig = sig.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+		
+		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(sig);
 
 		if (matcher.find())
 		{

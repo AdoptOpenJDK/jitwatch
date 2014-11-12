@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -28,7 +29,7 @@ import java.util.Random;
 
 public class MakeHotSpotLog
 {
-    private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
+	private static final Logger logger = LoggerFactory.getLogger(MakeHotSpotLog.class);
 
 	public MakeHotSpotLog(int iterations)
 	{
@@ -41,12 +42,13 @@ public class MakeHotSpotLog
 		tooBigToInline(iterations);
 		testSort();
 		testCallChain(iterations);
-		
+		testOptimizedVCall(iterations);
+
 		long result = testCallChainReturn(iterations);
-		
+
 		// ensure code not eliminated by using result
 		System.out.println("testCallChainReturn: " + result);
-		
+
 		testCallChain3();
 		testLeaf(iterations);
 		testToUpperCase(iterations);
@@ -144,8 +146,8 @@ public class MakeHotSpotLog
 
 		System.out.println("intrinsicTest: " + dstSum);
 	}
-	
-	//http://openjdk.5641.n7.nabble.com/Intrinsics-for-Math-min-and-max-td183747.html
+
+	// http://openjdk.5641.n7.nabble.com/Intrinsics-for-Math-min-and-max-td183747.html
 	private void intrinsicTestMin(int iterations)
 	{
 		long sum = 0;
@@ -153,13 +155,12 @@ public class MakeHotSpotLog
 		for (int i = 0; i < iterations; i++)
 		{
 			// x86 has intrinsic for Math.min
-			
-			sum = Math.min(i, i+1);
+
+			sum = Math.min(i, i + 1);
 		}
 
 		System.out.println("intrinsicTest: " + sum);
 	}
-
 
 	private long add(long a, long b)
 	{
@@ -289,6 +290,35 @@ public class MakeHotSpotLog
 		}
 
 		System.out.println("testCallChain: " + count);
+	}
+
+	/*
+	 * Test bimorphic dispatch is inlined
+	 */
+	private void testOptimizedVCall(long iterations)
+	{
+		List<Integer> list1 = new ArrayList<>();
+		List<Integer> list2 = new LinkedList<>();
+
+		List<Integer> ref;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			if (i % 2 == 0)
+			{
+				ref = list1;
+			}
+			else
+			{
+				ref = list2;
+			}
+
+			ref.add(i);
+			// list2.add(i);
+		}
+
+		System.out.println("list sizes: " + list1.size() + "/" + list2.size());
+
 	}
 
 	private long chainA1(long count)
@@ -451,12 +481,12 @@ public class MakeHotSpotLog
 		{
 			result += timesTen(toAdd);
 		}
-		
+
 		for (long l = 0; l < iterations; l++)
 		{
 			result += timesHundred(toAdd);
 		}
-		
+
 		System.out.println("testLoopUnrolling: " + result);
 	}
 
@@ -471,7 +501,7 @@ public class MakeHotSpotLog
 
 		return result;
 	}
-	
+
 	private int timesHundred(int number)
 	{
 		int result = 0;
@@ -483,7 +513,7 @@ public class MakeHotSpotLog
 
 		return result;
 	}
-	
+
 	// sacrificial dummy method
 	// in case hotspot truncates the LogCompilation output
 	// as it exits and produces a <fragment>
@@ -496,7 +526,7 @@ public class MakeHotSpotLog
 		}
 		catch (InterruptedException ie)
 		{
-            logger.error("", ie);
+			logger.error("", ie);
 		}
 	}
 
