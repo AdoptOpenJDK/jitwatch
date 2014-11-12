@@ -24,7 +24,7 @@ public class VCallTableBuilder
 {
 	public static TableView<VCallRow> buildTable(final IStageAccessProxy proxy, List<OptimizedVirtualCall> vCalls)
 	{
-		TableView<VCallRow> tableView = new TableView<>();
+		final TableView<VCallRow> tableView = new TableView<>();
 
 		TableColumn<VCallRow, String> colCallerClass = new TableColumn<VCallRow, String>("Caller Class");
 		colCallerClass.setCellValueFactory(new PropertyValueFactory<VCallRow, String>("callerClass"));
