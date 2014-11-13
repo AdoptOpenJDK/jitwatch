@@ -27,181 +27,270 @@ import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-    private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
+	//TODO show compilation order markers
+	
+	private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
 
-    private ScrollPane scrollPane;
-    private Pane pane;
+	private ScrollPane scrollPane;
+	private Pane pane;
 
-    private CompileNode rootNode;
+	private CompileNode rootNode;
 
-    private static final double X_OFFSET = 16;
-    private static final double Y_OFFSET = 16;
+	private static final double X_OFFSET = 16;
+	private static final double Y_OFFSET = 16;
 
-    private double y = Y_OFFSET;
+	private double y = Y_OFFSET;
 
-    private static final double X_GAP = 25;
+	private static final double X_GAP = 25;
 
-    private static final int STROKE_WIDTH = 3;
-    private static final double RECT_HEIGHT = 25;
-    private static final double RECT_Y_GAP = 16;
+	private static final int STROKE_WIDTH = 3;
+	private static final double RECT_HEIGHT = 25;
+	private static final double RECT_Y_GAP = 16;
 
-    public CompileChainStage(final JITWatchUI parent, CompileNode root)
-    {
-        initStyle(StageStyle.DECORATED);
+	class PlotNode
+	{
+		public Rectangle rect;
+		public Text text;
+	}
 
-        this.rootNode = root;
+	public CompileChainStage(final JITWatchUI parent, CompileNode root)
+	{
+		initStyle(StageStyle.DECORATED);
 
-        scrollPane = new ScrollPane();
-        pane = new Pane();
+		this.rootNode = root;
 
-        scrollPane.setContent(pane);
+		scrollPane = new ScrollPane();
+		pane = new Pane();
 
-        Scene scene = new Scene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		scrollPane.setContent(pane);
 
-        setTitle("Compile Chain: " + root.getMember().toString());
+		Scene scene = new Scene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
-        setScene(scene);
+		setTitle("Compile Chain: " + root.getMember().toString());
 
-        redraw();
+		setScene(scene);
 
-        setOnCloseRequest(new EventHandler<WindowEvent>()
-        {
-            @Override
-            public void handle(WindowEvent arg0)
-            {
-                parent.handleStageClosed(CompileChainStage.this);
-            }
-        });
-    }
+		redraw();
 
-    public void redraw()
-    {  	
-        show(rootNode, X_OFFSET, Y_OFFSET, 0);
-        
-        if (rootNode.getChildren().size() == 0)
-        {
-            Text text = new Text(rootNode.getMember().toStringUnqualifiedMethodName(false) + " makes no calls");
-            text.setX(X_OFFSET);
-            text.setY(y);
-            
-            pane.getChildren().add(text);
-        }
-    }
+		setOnCloseRequest(new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent arg0)
+			{
+				parent.handleStageClosed(CompileChainStage.this);
+			}
+		});
+	}
 
-    private void show(CompileNode node, double x, double parentY, int depth)
-    {
-        double lastX = x;
+	public void redraw()
+	{
+		showKey();
 
-        lastX = plotNode(node, x, parentY, depth);
+		show(rootNode, X_OFFSET, Y_OFFSET, 0);
 
-        y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
+		if (rootNode.getChildren().size() == 0)
+		{
+			Text text = new Text("No method calls made by " + rootNode.getMember().toStringUnqualifiedMethodName(false) + " were inlined or JIT compiled");
+			text.setX(X_OFFSET);
+			text.setY(y);
 
-        parentY = y - RECT_Y_GAP;
+			pane.getChildren().add(text);
+		}
+	}
 
-        for (CompileNode child : node.getChildren())
-        {
-            show(child, lastX, parentY, depth + 1);
-        }
-    }
+	private void showKey()
+	{
+		double keyX = scrollPane.getWidth() - 220;
+		double keyY = 10;
 
-    private String getLabelText(CompileNode node)
-    {
-        IMetaMember member = node.getMember();
+		Rectangle roundedRect = new Rectangle(keyX - 20, keyY, 210, 180);
 
-        return member == null ? "Unknown" : member.getMemberName();
-    }
+		roundedRect.setArcHeight(30);
+		roundedRect.setArcWidth(30);
 
-    private double plotNode(final CompileNode node, double x, double parentY, int depth)
-    {
-        String labelText = getLabelText(node);
+		roundedRect.setStroke(Color.BLACK);
+		roundedRect.setFill(Color.TRANSPARENT);
 
-        StringBuilder tipBuilder = new StringBuilder();
-        tipBuilder.append(node.getMember().toString()).append(C_NEWLINE);
+		pane.getChildren().add(roundedRect);
 
-        Text text = new Text(labelText);
+		keyY += 20;
 
-        text.snapshot(null, null);
-        double textWidth = text.getLayoutBounds().getWidth();
-        double textHeight = text.getLayoutBounds().getHeight();
+		Text text = new Text("Key");
+		text.setX(keyX + 75);
+		text.setY(keyY);
 
-        double rectWidth = textWidth + 20;
+		pane.getChildren().add(text);
 
-        Rectangle rect = new Rectangle(x, y, rectWidth, RECT_HEIGHT);
-        rect.setArcWidth(16);
-        rect.setArcHeight(16);
+		keyY += 15;
 
-        text.setX(x + (rectWidth / 2 - textWidth / 2));
+		buildNode("Not Compiled or Inlined", keyX, keyY, false, false);
+		keyY += 35;
 
-        // text plot from bottom left
-        text.setY(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2);
+		buildNode("Compiled Only", keyX, keyY, false, true);
+		keyY += 35;
 
-        rect.setStroke(Color.BLACK);
-        rect.setStrokeWidth(STROKE_WIDTH);
+		buildNode("Inlined Only", keyX, keyY, true, false);
+		keyY += 35;
 
-        tipBuilder.append("JIT Compiled: ");
+		buildNode("Compiled and Inlined", keyX, keyY, true, true);
+	}
 
-        if (node.getMember().isCompiled())
-        {
-            tipBuilder.append("Yes\n");
-            rect.setFill(Color.GREEN);
-        }
-        else
-        {
-            tipBuilder.append("No\n");
-            rect.setFill(Color.RED);
-        }
+	private void show(CompileNode node, double x, double parentY, int depth)
+	{
+		double lastX = x;
 
-        if (node.isInlined())
-        {
-            text.setFill(Color.YELLOW);
-        }
+		lastX = plotNode(node, x, parentY, depth);
 
-        String inlineReason = node.getInlineReason();
+		y += RECT_HEIGHT + STROKE_WIDTH + RECT_Y_GAP;
 
-        if (inlineReason != null)
-        {
-            tipBuilder.append(inlineReason);
-        }
+		parentY = y - RECT_Y_GAP;
 
-        tipBuilder.append(C_NEWLINE);
+		for (CompileNode child : node.getChildren())
+		{
+			show(child, lastX, parentY, depth + 1);
+		}
+	}
 
-        if (depth > 0)
-        {
-            double connectX = x - X_GAP;
-            double connectY = y + RECT_HEIGHT / 2;
-            double upLineY = y + RECT_HEIGHT / 2;
+	private String getLabelText(CompileNode node)
+	{
+		IMetaMember member = node.getMember();
 
-            Line lineUp = new Line(connectX, upLineY, connectX, parentY);
-            lineUp.setStrokeWidth(STROKE_WIDTH);
-            pane.getChildren().add(lineUp);
+		return member == null ? "Unknown" : member.getMemberName();
+	}
 
-            Line lineLeft = new Line(connectX, connectY, x, connectY);
-            lineLeft.setStrokeWidth(STROKE_WIDTH);
-            pane.getChildren().add(lineLeft);
-        }
+	private double plotNode(final CompileNode node, final double x, final double parentY, final int depth)
+	{
+		String labelText = getLabelText(node);
 
-        x += rectWidth / 2;
+		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.getMember().isCompiled());
 
-        x += X_GAP;
+		if (depth > 0)
+		{
+			double connectX = x - X_GAP;
+			double connectY = y + RECT_HEIGHT / 2;
+			double upLineY = y + RECT_HEIGHT / 2;
 
-        rect.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent arg0)
-            {
-                logger.info("{}", node.getMember());
-                // TODO use for navigation in TriView?
-            }
-        });
+			Line lineUp = new Line(connectX, upLineY, connectX, parentY);
+			lineUp.setStrokeWidth(STROKE_WIDTH);
+			pane.getChildren().add(lineUp);
 
-        Tooltip tip = new Tooltip(tipBuilder.toString());
-        Tooltip.install(rect, tip);
-        Tooltip.install(text, tip);
+			Line lineLeft = new Line(connectX, connectY, x, connectY);
+			lineLeft.setStrokeWidth(STROKE_WIDTH);
+			pane.getChildren().add(lineLeft);
+		}
 
-        pane.getChildren().add(rect);
-        pane.getChildren().add(text);
+		double nextX = x + plotNode.rect.getWidth() / 2;
 
-        return x;
-    }
+		nextX += X_GAP;
+
+		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.rect);
+
+		Tooltip tip = new Tooltip(getToolTipText(node));
+		Tooltip.install(plotNode.rect, tip);
+		Tooltip.install(plotNode.text, tip);
+
+		return nextX;
+	}
+
+	private PlotNode buildNode(String labelText, double x, double y, boolean inlined, boolean compiled)
+	{
+		Text text = new Text(labelText);
+
+		text.snapshot(null, null);
+
+		double textWidth = text.getLayoutBounds().getWidth();
+		double textHeight = text.getLayoutBounds().getHeight();
+
+		double rectWidth = textWidth + 20;
+
+		Rectangle rect = new Rectangle(x, y, rectWidth, RECT_HEIGHT);
+		rect.setArcWidth(16);
+		rect.setArcHeight(16);
+
+		text.setX(x + (rectWidth / 2 - textWidth / 2));
+
+		// text plot from bottom left
+		text.setY(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2);
+
+		text.setFill(getColorForInlining(inlined));
+
+		rect.setStroke(Color.BLACK);
+		rect.setStrokeWidth(STROKE_WIDTH);
+		rect.setFill(getColourForCompilation(compiled));
+
+		pane.getChildren().add(rect);
+		pane.getChildren().add(text);
+
+		PlotNode result = new PlotNode();
+		result.rect = rect;
+		result.text = text;
+
+		return result;
+	}
+
+	private String getToolTipText(CompileNode node)
+	{
+		StringBuilder tipBuilder = new StringBuilder();
+		tipBuilder.append(node.getMember().toString()).append(C_NEWLINE);
+
+		tipBuilder.append("JIT Compiled: ");
+
+		if (node.getMember().isCompiled())
+		{
+			tipBuilder.append("Yes\n");
+		}
+		else
+		{
+			tipBuilder.append("No\n");
+		}
+
+		String inlineReason = node.getInlineReason();
+
+		if (inlineReason != null)
+		{
+			tipBuilder.append(inlineReason);
+		}
+
+		tipBuilder.append(C_NEWLINE);
+
+		return tipBuilder.toString();
+	}
+
+	private Color getColourForCompilation(boolean isCompiled)
+	{
+		if (isCompiled)
+		{
+			return Color.GREEN;
+		}
+		else
+		{
+			return Color.RED;
+		}
+	}
+
+	private Color getColorForInlining(boolean isInlined)
+	{
+		if (isInlined)
+		{
+			return Color.YELLOW;
+		}
+		else
+		{
+			return Color.BLACK;
+		}
+	}
+
+	private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Rectangle rect)
+	{
+		rect.setOnMouseClicked(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent arg0)
+			{
+				logger.info("{}", node.getMember());
+				// TODO use for navigation in TriView?
+			}
+		});
+	}
 
 }

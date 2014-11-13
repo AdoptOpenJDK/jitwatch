@@ -50,6 +50,7 @@
 			</fileset>
 			<fileset dir="${resources}">
 				<include name="images/**" />
+				<include name="*.xml" />
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.adoptopenjdk.jitwatch.launch.LaunchUI" />

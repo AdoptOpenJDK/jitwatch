@@ -52,7 +52,7 @@ public class TextViewerStage extends AbstractTextViewerStage
 
 			if (showLineNumbers)
 			{
-				lines[i] = StringUtil.padLeft(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
+				lines[i] = StringUtil.alignRight(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
 
 			int rowLen = row.length();

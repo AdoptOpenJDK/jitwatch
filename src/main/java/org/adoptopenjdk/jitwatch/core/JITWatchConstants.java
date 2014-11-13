@@ -6,21 +6,23 @@
 package org.adoptopenjdk.jitwatch.core;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public final class JITWatchConstants
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private JITWatchConstants()
 	{
 	}
 
+	// *verbose* debugging
+	// DEBUG level logging requires editing src/main/resources/logback.xml
 	public static final boolean DEBUG_LOGGING = false;
+	public static final boolean DEBUG_LOGGING_BYTECODE = false;
+	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
+	public static final boolean DEBUG_LOGGING_SIG_MATCH = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
@@ -31,7 +33,7 @@ public final class JITWatchConstants
 	public static final String TAG_TTY_CLOSE = "</tty>";
 	public static final String TAG_COMPILATION_LOG = "<compilation_log";
 	public static final String TAG_COMPILATION_LOG_CLOSE = "</compilation_log>";
-	public static final String TAG_HOTSPOT_LOG = "<hotspot_log";
+	public static final String TAG_HOTSPOT_LOG = "<hotspot_log ";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
 
 	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG }));
@@ -46,8 +48,12 @@ public final class JITWatchConstants
 	public static final String PARSE = "parse";
 	public static final String S_CODE_COLON = "Code:";
 
+	public static final String DEFAULT_PACKAGE_NAME = "(default package)";
+	public static final String TREE_PACKAGE_ROOT = "Packages";
+
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
+	public static final String TAG_TWEAK_VM = "TweakVM";
 
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
@@ -67,6 +73,11 @@ public final class JITWatchConstants
 	public static final String TAG_INLINE_SUCCESS = "inline_success";
 	public static final String TAG_BRANCH = "branch";
 	public static final String TAG_WRITER = "writer";
+	public static final String TAG_VM_ARGUMENTS = "vm_arguments";
+	public static final String TAG_ELIMINATE_ALLOCATION = "eliminate_allocation";
+	public static final String TAG_JVMS = "jvms";
+
+	public static final String TAG_COMMAND = "command";
 
 	public static final String OSR = "osr";
 	public static final String C2N = "c2n";
@@ -110,7 +121,30 @@ public final class JITWatchConstants
 
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
-
+	
+	public static final String S_PROFILE_DEFAULT = "Default";
+	public static final String S_PROFILE_SANDBOX = "Sandbox";
+	
+	public static final String S_CLASS_PREFIX_INVOKE = "java.lang.invoke.";
+	public static final String S_CLASS_PREFIX_LAMBDAFORM = "java.lang.invoke.LambdaForm";
+	public static final String S_CLASS_PREFIX_STREAM_COLLECTORS = "java.util.stream.Collectors$";
+	public static final String S_CLASS_PREFIX_LAMBDA_LAMBDA= "Lambda$$Lambda";
+	
+	private static final Set<String> SET_LAMBDA_PREFIXES = new HashSet<>();
+	
+	static
+	{
+		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_INVOKE);
+		//SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_LAMBDAFORM);
+		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_STREAM_COLLECTORS);
+		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_LAMBDA_LAMBDA);
+	}
+	
+	public static final Set<String> getLambdaClassPrefixes()
+	{
+		return Collections.unmodifiableSet(SET_LAMBDA_PREFIXES);
+	}
+	
 	public static final String REGEX_GROUP_ANY = "(.*)";
 	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";
 	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
@@ -125,8 +159,10 @@ public final class JITWatchConstants
 	public static final String S_CLOSE_ANGLE = ">";
 	public static final String S_OPEN_SQUARE = "[";
 	public static final String S_CLOSE_SQUARE = "]";
+	public static final String S_ARRAY_BRACKET_PAIR = "[]";
 	public static final String S_ESCAPED_OPEN_SQUARE = "\\[";
 	public static final String S_ESCAPED_CLOSE_SQUARE = "\\]";
+	public static final String S_ESCAPED_DOT = "\\.";
 	public static final String S_OPEN_BRACE = "{";
 	public static final String S_CLOSE_BRACE = "}";
 	public static final String S_AT = "@";
@@ -140,6 +176,8 @@ public final class JITWatchConstants
 	public static final String S_EMPTY = "";
 	public static final String S_COLON = ":";
 	public static final String S_SEMICOLON = ";";
+	public static final String S_VARARGS_DOTS = "...";
+	public static final String S_OBJECT_ARRAY_DEF = "[L";
 	public static final String S_DOT = ".";
 	public static final String S_COMMA = ",";
 	public static final String S_SLASH = "/";
@@ -152,15 +190,25 @@ public final class JITWatchConstants
 	public static final String S_XML_COMMENT_END = "-->";
 	public static final String S_XML_DOC_START = "<?xml";
 	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
+	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
+	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
+	public static final String S_DEFAULT = "default";
+	public static final String S_FILE_COLON = "file:";
+	public static final String S_DOT_CLASS = ".class";
+	
+	public static final String S_OPTIMIZED_VIRTUAL_CALL = "{optimized virtual_call}";
 
 	public static final char C_SLASH = '/';
 	public static final char C_OPEN_ANGLE = '<';
 	public static final char C_CLOSE_ANGLE = '>';
 	public static final char C_OPEN_PARENTHESES = '(';
 	public static final char C_CLOSE_PARENTHESES = ')';
+	public static final char C_OPEN_BRACE = '{';
+	public static final char C_CLOSE_BRACE = '}';
 	public static final char C_SPACE = ' ';
 	public static final char C_HASH = '#';
 	public static final char C_COMMA = ',';
+	public static final char C_AT = '@';
 	public static final char C_COLON = ':';
 	public static final char C_EQUALS = '=';
 	public static final char C_QUOTE = '\'';
@@ -179,6 +227,8 @@ public final class JITWatchConstants
 
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+	
+	public static final String S_POLYMORPHIC_SIGNATURE = "PolymorphicSignature";
 
 	public static final String S_BYTECODE_CONSTANT_POOL = "Constant pool:";
 	public static final String S_BYTECODE_CODE = "Code:";
@@ -186,6 +236,9 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
+	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
+	
+	public static final String S_BYTECODE_STATIC_INITIALISER_SIGNATURE = "static {}";
 
 	public static final String PUBLIC = "public";
 	public static final String PRIVATE = "private";
@@ -203,4 +256,6 @@ public final class JITWatchConstants
 	public static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
+	public static final String VM_LANGUAGE_JAVA = "Java";
+	public static final String VM_LANGUAGE_SCALA = "Scala";
 }

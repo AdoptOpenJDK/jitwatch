@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
 import java.util.ArrayList;
@@ -18,12 +23,41 @@ public class ClassBC
 	private int majorVersion;
 	private int minorVersion;
 	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
-
-	private LineTable lineTable = new LineTable();
+	
+	private LineTable compositeLineTable = null;
 
 	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
+		if (memberName == null)
+		{
+			throw new RuntimeException("tried to add null");
+		}
+		
 		memberBytecodeMap.put(memberName, memberBytecode);
+	}
+	
+	public LineTableEntry findLineTableEntryForSourceLine(int sourceLine)
+	{		
+		if (compositeLineTable == null)
+		{
+			buildCompositeLineTable();
+		}
+
+		return compositeLineTable.getEntryForSourceLine(sourceLine);
+	}
+	
+	private void buildCompositeLineTable()
+	{
+		compositeLineTable = new LineTable();
+		
+		for (MemberBytecode memberBC : memberBytecodeMap.values())
+		{
+			LineTable lineTable = memberBC.getLineTable();
+			
+			compositeLineTable.add(lineTable);
+		}		
+		
+		compositeLineTable.sort();
 	}
 
 	public MemberBytecode getMemberBytecode(IMetaMember member)
@@ -133,16 +167,6 @@ public class ClassBC
 	public void setMinorVersion(int minorVersion)
 	{
 		this.minorVersion = minorVersion;
-	}
-
-	public void setLineTable(LineTable table)
-	{
-		this.lineTable = table;
-	}
-
-	public LineTable getLineTable()
-	{
-		return lineTable;
 	}
 
 	@Override

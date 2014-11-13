@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.model;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 public class MetaMethod extends AbstractMetaMember
 {
@@ -15,15 +16,19 @@ public class MetaMethod extends AbstractMetaMember
     public MetaMethod(Method method, MetaClass methodClass)
     {
         this.methodToString = method.toString();
-        this.methodClass = methodClass;
+        this.metaClass = methodClass;
 
         memberName = method.getName();
         returnType = method.getReturnType();
-        paramTypes = method.getParameterTypes();
+        paramTypes = Arrays.asList(method.getParameterTypes());
 
         // Can include non-method modifiers such as volatile so AND with
         // acceptable values
         modifier = method.getModifiers() & Modifier.methodModifiers();
+        
+        isVarArgs = method.isVarArgs();
+
+        checkPolymorphicSignature(method);        
     }
 
     @Override

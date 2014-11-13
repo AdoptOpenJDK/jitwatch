@@ -17,10 +17,6 @@ public final class StringUtil
 {
 	private static final DecimalFormat DF_THOUSANDS = new DecimalFormat("#,###");
 
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private StringUtil()
 	{
 	}
@@ -84,22 +80,22 @@ public final class StringUtil
 		return string.replaceAll("\\s+$", "");
 	}
 
-	public static String padLeft(long num, int width)
+	public static String alignRight(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, true);
 	}
 
-	public static String padLeft(String str, int width)
+	public static String alignRight(String str, int width)
 	{
 		return pad(str, width, C_SPACE, true);
 	}
 
-	public static String padRight(long num, int width)
+	public static String alignLeft(long num, int width)
 	{
 		return pad(Long.toString(num), width, C_SPACE, false);
 	}
 
-	public static String padRight(String str, int width)
+	public static String alignLeft(String str, int width)
 	{
 		return pad(str, width, C_SPACE, false);
 	}
@@ -112,7 +108,7 @@ public final class StringUtil
 	public static String pad(String str, int width, char padding, boolean left)
 	{
 		StringBuilder sb = new StringBuilder();
-		
+
 		int len = str.length();
 
 		if (!left)
@@ -222,7 +218,7 @@ public final class StringUtil
 
 	public static String padLineNumber(int number, int maxWidth)
 	{
-		return padLeft(Integer.toString(number), maxWidth);
+		return alignRight(Integer.toString(number), maxWidth);
 	}
 
 	public static Map<String, String> getLineAttributes(String line)
@@ -389,6 +385,41 @@ public final class StringUtil
 		if (builder.length() > 0)
 		{
 			builder.deleteCharAt(builder.length() - 1);
+		}
+
+		return builder.toString();
+	}
+
+	public static String wordWrap(String text, int width)
+	{
+		StringBuilder builder = new StringBuilder(text);
+
+		int i = 0;
+		
+		while (i + width < builder.length() && (i = builder.lastIndexOf(S_SPACE, i + width)) != -1)
+		{
+			builder.replace(i, i + 1, S_NEWLINE);
+		}
+
+		return builder.toString();
+	}
+	
+	public static String getAbbreviatedFQName(String fqClassName)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		if (fqClassName != null && fqClassName.length() > 0)
+		{
+			String[] parts = fqClassName.split(S_ESCAPED_DOT);
+
+			for (int i = 0; i < parts.length - 1; i++)
+			{
+				String part = parts[i];
+				
+				builder.append(part.charAt(0)).append(C_DOT);
+			}
+			
+			builder.append(parts[parts.length - 1]);
 		}
 
 		return builder.toString();

@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
-public class AssemblyUtil
+public final class AssemblyUtil
 {
 	// http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
@@ -41,7 +43,7 @@ public class AssemblyUtil
 
 		for (String line : lines)
 		{
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("line: '{}'", line);
 			}
@@ -50,7 +52,7 @@ public class AssemblyUtil
 
 			if (trimmedLine.startsWith(S_HASH))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Assembly header: {}", trimmedLine);
 				}
@@ -59,7 +61,7 @@ public class AssemblyUtil
 			}
 			else if (trimmedLine.startsWith(S_OPEN_SQUARE))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("new AssemblyBlock: {}", trimmedLine);
 				}
@@ -70,9 +72,9 @@ public class AssemblyUtil
 			}
 			else if (trimmedLine.startsWith(S_SEMICOLON))
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Extended comment? : {}", trimmedLine);
+					logger.debug("Extended comment? '{}'", trimmedLine);
 				}
 
 				if (lastInstruction != null)
@@ -90,7 +92,7 @@ public class AssemblyUtil
 				if (instr != null)
 				{
 					currentBlock.addInstruction(instr);
-
+					
 					lastInstruction = instr;
 				}
 			}
@@ -105,7 +107,7 @@ public class AssemblyUtil
 
 	public static AssemblyInstruction createInstruction(final String inLine)
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("Trying to parse instruction : {}", inLine);
 		}
@@ -132,12 +134,12 @@ public class AssemblyUtil
 			String instructionString = matcher.group(2);
 			String comment = matcher.group(3);
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_ASSEMBLY)
 			{
-				logger.debug(" Annotation: '{}'", annotation);
-				logger.debug(" Address: '{}'", address);
+				logger.debug("Annotation : '{}'", annotation);
+				logger.debug("Address    : '{}'", address);
 				logger.debug("Instruction: '{}'", instructionString);
-				logger.debug(" Comment: '{}'", comment);
+				logger.debug("Comment    : '{}'", comment);
 			}
 
 			long addressValue = getValueFromAddress(address);
@@ -190,20 +192,20 @@ public class AssemblyUtil
 		return instr;
 	}
 
-	private static long getValueFromAddress(String address)
+	private static long getValueFromAddress(final String address)
 	{
 		long addressValue = 0;
 
 		if (address != null)
 		{
-			address = address.trim();
+			String trimmedAddress = address.trim();
 
-			if (address.startsWith(S_ASSEMBLY_ADDRESS))
+			if (trimmedAddress.startsWith(S_ASSEMBLY_ADDRESS))
 			{
-				address = address.substring(S_ASSEMBLY_ADDRESS.length());
+				trimmedAddress = trimmedAddress.substring(S_ASSEMBLY_ADDRESS.length());
 			}
 
-			addressValue = Long.parseLong(address, 16);
+			addressValue = Long.parseLong(trimmedAddress, 16);
 		}
 		return addressValue;
 	}

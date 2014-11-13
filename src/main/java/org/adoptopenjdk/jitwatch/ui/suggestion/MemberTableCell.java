@@ -6,7 +6,9 @@
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,7 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
 
-public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
+public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 {
 	private VBox vb;
 	private Label lblMetaClass;
@@ -48,16 +50,19 @@ public class MemberTableCell extends TableCell<SuggestTableRow, IMetaMember>
 	}
 
 	@Override
-	protected void updateItem(final IMetaMember member, boolean empty)
+	protected void updateItem(final Suggestion suggestion, boolean empty)
 	{
-		if (member != null)
+		if (suggestion != null)
 		{
+			final IMetaMember member = suggestion.getCaller();
+			
 			btnTriView.setOnAction(new EventHandler<ActionEvent>()
 			{
 				@Override
 				public void handle(ActionEvent e)
 				{
-					triViewAccessor.openTriView(member, false);
+					ITriView triViewAccesor = triViewAccessor.openTriView(member, false);
+					triViewAccesor.highlightBytecodeForSuggestion(suggestion);
 				}
 			});
 

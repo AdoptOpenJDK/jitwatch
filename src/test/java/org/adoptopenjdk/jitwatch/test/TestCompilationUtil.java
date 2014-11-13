@@ -8,11 +8,13 @@ package org.adoptopenjdk.jitwatch.test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.sandbox.ClassCompiler;
+import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -69,9 +71,19 @@ public class TestCompilationUtil
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
 
-			ClassCompiler compiler = new ClassCompiler();
+			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toString();
+						
+			CompilerJava compiler = new CompilerJava(javaCompiler);
 			
-			boolean success = compiler.compile(sources, Sandbox.SANDBOX_CLASS_DIR.toFile());
+			List<String> compileClasspath = new ArrayList<>();
+			
+			boolean success = compiler.compile(sources, compileClasspath, Sandbox.SANDBOX_CLASS_DIR.toFile(), new ISandboxLogListener()
+			{				
+				@Override
+				public void log(String msg)
+				{		
+				}
+			});
 
 			assertTrue(success);
 

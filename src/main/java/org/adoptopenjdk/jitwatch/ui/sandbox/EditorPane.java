@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
 import java.io.File;
@@ -20,6 +25,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -40,13 +49,13 @@ public class EditorPane extends VBox
 
 	private Button btnSave;
 
-	private SandboxStage sandboxStage;
+	private ISandboxStage sandboxStage;
 
 	private boolean isModified = false;
 
 	private File sourceFile = null;
 
-	public EditorPane(SandboxStage stage)
+	public EditorPane(ISandboxStage stage)
 	{
 		this.sandboxStage = stage;
 
@@ -99,6 +108,23 @@ public class EditorPane extends VBox
 			}
 		});
 
+		Button btnRun = new Button("Run");
+		btnRun.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (isModified)
+				{
+					promptSave();
+				}
+				
+				setVMLanguage();
+				
+				sandboxStage.runFile(EditorPane.this);
+			}
+		});
+
 		hBoxTitle = new HBox();
 		hBoxTitle.setSpacing(10);
 		hBoxTitle.setPadding(new Insets(0, 10, 0, 10));
@@ -107,6 +133,7 @@ public class EditorPane extends VBox
 		hBoxTitle.getChildren().add(btnSave);
 		hBoxTitle.getChildren().add(btnClear);
 		hBoxTitle.getChildren().add(btnClose);
+		hBoxTitle.getChildren().add(btnRun);
 
 		hBoxTitle.setStyle("-fx-background-color:#dddddd; -fx-padding:4px;");
 
@@ -122,6 +149,20 @@ public class EditorPane extends VBox
 				setModified(true);
 			}
 		});
+
+		taSource.focusedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue)
+			{
+				if (Boolean.TRUE.equals(newValue))
+				{
+					setVMLanguage();
+				}
+			}
+		});
+
+		setTextAreaSaveCombo(taSource);
 
 		taLineNumbers = new TextArea();
 		String styleLineNumber = "-fx-padding:0; -fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:#eeeeee;";
@@ -146,9 +187,29 @@ public class EditorPane extends VBox
 		hBoxTextAreas.prefHeightProperty().bind(heightProperty().multiply(0.9));
 	}
 
+	private void setTextAreaSaveCombo(TextArea textArea)
+	{
+		textArea.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
+		{
+			final KeyCombination combo = new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN);
+
+			@Override
+			public void handle(KeyEvent event)
+			{
+				// check for only tab key
+				if (combo.match(event))
+				{
+					saveFile();
+					event.consume();
+				}
+			}
+		});
+	}
+
 	private void setModified(final boolean modified)
 	{
 		this.isModified = modified;
+
 		Platform.runLater(new Runnable()
 		{
 			@Override
@@ -229,9 +290,21 @@ public class EditorPane extends VBox
 		return taSource.getText().trim();
 	}
 
+	public File getSourceFile()
+	{
+		return sourceFile;
+	}
+
 	public void loadSource(File dir, String filename)
 	{
-		sourceFile = new File(dir, filename);
+		if (filename.startsWith(File.separator))
+		{
+			sourceFile = new File(filename);
+		}
+		else
+		{
+			sourceFile = new File(dir, filename);
+		}
 
 		String source = ResourceLoader.readFile(sourceFile);
 
@@ -239,10 +312,30 @@ public class EditorPane extends VBox
 		{
 			source = source.replace("\t", "    ");
 
-			lblTitle.setText(filename);
+			lblTitle.setText(sourceFile.getName());
 			taSource.setText(source.trim());
 
 			setModified(false);
+
+			// add parent folder so source can be loaded in TriView
+			sandboxStage.addSourceFolder(dir);
+
+			setVMLanguage();
+		}
+	}
+
+	private void setVMLanguage()
+	{
+		if (sourceFile != null)
+		{
+			int lastDotPos = sourceFile.getName().lastIndexOf(C_DOT);
+
+			if (lastDotPos != -1)
+			{
+				String fileExtension = sourceFile.getName().substring(lastDotPos + 1);
+
+				sandboxStage.setVMLanguageFromFileExtension(fileExtension);
+			}
 		}
 	}
 
@@ -253,7 +346,7 @@ public class EditorPane extends VBox
 
 		fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
-		File result = fc.showOpenDialog(sandboxStage);
+		File result = fc.showOpenDialog(sandboxStage.getStageForChooser());
 
 		if (result != null)
 		{
@@ -265,7 +358,7 @@ public class EditorPane extends VBox
 	{
 		if (isModified)
 		{
-			Response resp = Dialogs.showYesNoDialog(sandboxStage, "Save modified file?", "Save changes?");
+			Response resp = Dialogs.showYesNoDialog(sandboxStage.getStageForChooser(), "Save modified file?", "Save changes?");
 
 			if (resp == Response.YES)
 			{
@@ -283,7 +376,7 @@ public class EditorPane extends VBox
 
 			fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
-			sourceFile = fc.showSaveDialog(sandboxStage);
+			sourceFile = fc.showSaveDialog(sandboxStage.getStageForChooser());
 		}
 
 		if (sourceFile != null)

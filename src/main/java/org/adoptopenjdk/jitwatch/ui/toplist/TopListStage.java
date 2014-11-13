@@ -5,22 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.ui.toplist;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
-import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.MemberScore;
-import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -37,10 +35,19 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
+import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.MemberScore;
+import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+
 public class TopListStage extends Stage
 {
-    private static final String MEMBER = "Member";
-    private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
+	private static final String MEMBER = "Member";
+	private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
 
 	private TableView<ITopListScore> tableView;
 
@@ -63,7 +70,7 @@ public class TopListStage extends Stage
 		int height = 480;
 
 		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", MEMBER});
+				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", MEMBER });
 		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(
 				parent.getJITDataModel(), true), new String[] { "Count", "Reason" });
 		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(
@@ -72,7 +79,8 @@ public class TopListStage extends Stage
 				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
 		TopListWrapper tlSlowestCompilation = new TopListWrapper("Slowest Compilation Times",
 				new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_COMPILE_MILLIS, true), new String[] {
-						"Milliseconds", MEMBER });
+						"Milliseconds",
+						MEMBER });
 		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods", new CompiledAttributeTopListVisitable(
 				parent.getJITDataModel(), ATTR_DECOMPILES, true), new String[] { "Decompiles", MEMBER });
 		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(
@@ -165,7 +173,7 @@ public class TopListStage extends Stage
 			{
 				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
 				{
-					parent.openTreeAtMember((IMetaMember) newVal.getKey());
+					parent.focusTreeOnMember((IMetaMember) newVal.getKey());
 				}
 			}
 		});
@@ -179,19 +187,19 @@ public class TopListStage extends Stage
 
 		setScene(scene);
 		show();
-
-		redraw();
 	}
 
-    private boolean itIsNull(ITopListScore newVal) {
-        return newVal != null;
-    }
+	private boolean itIsNull(ITopListScore newVal)
+	{
+		return newVal != null;
+	}
 
-    private boolean isInstanceOfMemberScore(ITopListScore newVal) {
-        return newVal instanceof MemberScore;
-    }
+	private boolean isInstanceOfMemberScore(ITopListScore newVal)
+	{
+		return newVal instanceof MemberScore;
+	}
 
-    private void buildTableView(TopListWrapper topListWrapper)
+	private void buildTableView(TopListWrapper topListWrapper)
 	{
 		topList.clear();
 		topList.addAll(topListWrapper.getVisitable().buildTopList());

@@ -14,16 +14,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //import org.slf4j.LoggerFactory;
 
 
+
+
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
-    //private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
-	
+	// private static final Logger logger =
+	// LoggerFactory.getLogger(MetaClass.class);
+
 	private String className;
 	private MetaPackage classPackage;
 
@@ -37,12 +41,28 @@ public class MetaClass implements Comparable<MetaClass>
 
 	private ClassBC classBytecode = null;
 
-	//private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaClass.class);
 
 	public MetaClass(MetaPackage classPackage, String className)
 	{
 		this.classPackage = classPackage;
 		this.className = className;
+	}
+
+	public IMetaMember getFirstConstructor()
+	{
+		IMetaMember result = null;
+
+		for (IMetaMember member : getMetaMembers())
+		{
+			if (member instanceof MetaConstructor)
+			{
+				result = member;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	public boolean isInterface()
@@ -77,6 +97,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public ClassBC getClassBytecode(List<String> classLocations)
 	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getClassBytecode for {} existing? {}", getName(), classBytecode != null);
+		}
+		
 		if (classBytecode == null)
 		{
 			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
@@ -169,110 +194,31 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember findMemberByBytecodeSignature(String bytecodeSignature)
+	public IMetaMember getMemberFromSignature(MemberSignatureParts msp)
 	{
 		IMetaMember result = null;
-
-		if (bytecodeSignature != null)
+		
+		for (IMetaMember member : getMetaMembers())
 		{
-			for (IMetaMember mm : getMetaMembers())
+			if (member.matchesSignature(msp))
 			{
-				if (mm.matchesBytecodeSignature(bytecodeSignature))
-				{
-					result = mm;
-					break;
-				}
+				result = member;
+				break;
 			}
 		}
 
 		return result;
 	}
 	
-	public IMetaMember getMemberFromSignature(final String inMemberName, final Class<?> inReturnType, final Class<?>[] inParamTypes)
-	{		
-		IMetaMember result = null;
-
-		for (IMetaMember member : getMetaMembers())
-		{
-			if(member.signatureMatches(inMemberName, inReturnType, inParamTypes))
-			{
-				result = member;
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	public IMetaMember getMemberFromSignature(final String inName, final String inReturnType, final String[] paramTypes)
-	{		
-		String returnType = inReturnType;
-		String name = inName;
-		
-		IMetaMember result = null;
-
-		if (ParseUtil.CONSTRUCTOR_INIT.equals(name))
-		{
-			name = getFullyQualifiedName();
-			returnType = name;
-		}
-
-		for (IMetaMember member : getMetaMembers())
-		{
-			if (memberMatches(member, name, returnType, paramTypes))
-			{
-				result = member;
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	private boolean memberMatches(IMetaMember member, String name, String returnType, String[] paramTypes)
+	
+	public List<String> getTreePath()
 	{
-		boolean match = false;
+		MetaPackage metaPackage = getPackage();
 
-		boolean nameMatch = member.getMemberName().equals(name);
+		List<String> path = metaPackage.getPackageComponents();
+		path.add(getName());
 
-		if (nameMatch)
-		{
-			boolean returnMatch = false;
-			boolean paramsMatch = false;
-
-			String memberReturnTypeName = member.getReturnTypeName();
-			String[] memberArgumentTypeNames = member.getParamTypeNames();
-
-			if (memberReturnTypeName == null && returnType == null)
-			{
-				returnMatch = true;
-			}
-			else if (memberReturnTypeName != null && returnType != null && memberReturnTypeName.equals(returnType))
-			{
-				returnMatch = true;
-			}
-
-			if (memberArgumentTypeNames != null && paramTypes != null && memberArgumentTypeNames.length == paramTypes.length)
-			{
-				paramsMatch = true;
-
-				for (int i = 0; i < memberArgumentTypeNames.length; i++)
-				{
-					String memberParam = memberArgumentTypeNames[i];
-					String checkParam = paramTypes[i];
-
-					if (!memberParam.equals(checkParam))
-					{
-						paramsMatch = false;
-						break;
-					}
-				}
-			}
-
-			match = returnMatch && paramsMatch;
-		}
-
-		return match;
+		return path;
 	}
 
 	@Override

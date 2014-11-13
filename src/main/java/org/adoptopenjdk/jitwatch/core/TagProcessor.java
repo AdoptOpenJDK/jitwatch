@@ -18,25 +18,37 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
-    private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
+	private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
 
 	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
-	
-	//TODO write own mini XPath?
-	
+
+	// TODO write own mini XPath?
+
 	public void setCompiler(CompilerName compiler)
 	{
 		currentCompiler = compiler;
 	}
-	
+
 	public CompilerName getCompiler()
 	{
 		return currentCompiler;
 	}
 	
+	public String getTopTagName()
+	{
+		String result = null;
+		
+		if (topTag != null)
+		{
+			result = topTag.getName();
+		}
+		
+		return result;
+	}
+
 	public Tag processLine(String line)
 	{
 		Tag result = null;
@@ -53,7 +65,7 @@ public class TagProcessor
 			}
 			else
 			{
-                logger.error("Did not handle: {}", line);
+				logger.error("Did not handle: {}", line);
 			}
 		}
 
@@ -63,7 +75,6 @@ public class TagProcessor
 			topTag = null;
 		}
 
-		
 		return result;
 	}
 
@@ -73,11 +84,11 @@ public class TagProcessor
 
 		// closing tag
 		if (line.charAt(1) == C_SLASH)
-		{
+		{			
 			String closeName = line.substring(2, line.length() - 1);
 
 			if (closeName.equals(currentTag.getName()))
-			{
+			{				
 				if (currentTag.getParent() == null)
 				{
 					result = currentTag;
@@ -90,23 +101,33 @@ public class TagProcessor
 		}
 		else
 		{
+			boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
+			
 			int indexEndName = line.indexOf(C_SPACE);
 
 			if (indexEndName == -1)
 			{
 				indexEndName = line.indexOf(C_CLOSE_ANGLE);
+				
+				if (indexEndName > 0)
+				{
+					if (selfClosing)
+					{
+						indexEndName = line.length() - 2;
+					}
+				}
 			}
 
 			if (indexEndName != -1)
 			{
-				result = processValidLine(line, indexEndName);
+				result = processValidLine(line, indexEndName, selfClosing);
 			}
 		}
 
 		return result;
 	}
 
-	private Tag processValidLine(String line, int indexEndName)
+	private Tag processValidLine(String line, int indexEndName, boolean selfClosing)
 	{
 		Tag result = null;
 
@@ -115,8 +136,6 @@ public class TagProcessor
 		String remainder = line.substring(indexEndName);
 
 		Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
-
-		boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
 
 		Tag t;
 
@@ -156,8 +175,8 @@ public class TagProcessor
 				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
 				break;
 
-            default:
-                break;
+			default:
+				break;
 			}
 		}
 
@@ -179,5 +198,4 @@ public class TagProcessor
 
 		return result;
 	}
-
 }

@@ -5,11 +5,19 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_PACKAGE_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.TimelineBuilder;
@@ -30,6 +38,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -40,42 +50,54 @@ import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
+import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
+import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
+import org.adoptopenjdk.jitwatch.ui.optimizedvcall.OptimizedVirtualCallStage;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
 import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
+import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JITWatchUI extends Application implements IJITListener, IStageCloseListener, IStageAccessProxy
+public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageCloseListener, IStageAccessProxy
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
 	public static final int WINDOW_HEIGHT;
 
+	private static final String JAVA_VERSION_7 = "1.7";
+
 	static
 	{
-		String version = System.getProperty("java.version", "1.7");
+		String version = System.getProperty("java.version", JAVA_VERSION_7);
 
-		if (version.contains("1.7"))
+		if (version.contains(JAVA_VERSION_7))
 		{
 			WINDOW_HEIGHT = 592;
 		}
 		else
 		{
-			// JavaFX 8 has more padding.
+			// JavaFX 8 buttons have more padding.
 			WINDOW_HEIGHT = 550;
 		}
 	}
@@ -90,13 +112,18 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TableView<AttributeTableRow> attributeTableView;
 	private ObservableList<AttributeTableRow> memberAttrList;
 
-	private StageManager stageManager = new StageManager();
-
 	private TextArea textAreaLog;
 
 	private File hsLogFile = null;
 
+	private String lastVmCommand = null;
+	private IMetaMember lastSelectedMember = null;
+	private MetaClass lastSelectedClass = null;
+
 	private boolean isReadingLogFile = false;
+
+	private Label lblVmVersion;
+	private Label lblTweakLog;
 
 	private Button btnStart;
 	private Button btnStop;
@@ -109,6 +136,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private Button btnCodeCache;
 	private Button btnTriView;
 	private Button btnSuggest;
+	private Button btnOptimizedVirtualCalls;
 	private Button btnSandbox;
 
 	private Label lblHeap;
@@ -122,11 +150,15 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private SuggestStage suggestStage;
+	private OptimizedVirtualCallStage ovcStage;
 	private SandboxStage sandBoxStage;
 
 	private NothingMountedStage nothingMountedStage;
 
 	private IMetaMember selectedMember;
+	private MetaClass selectedMetaClass;
+
+	private List<Suggestion> suggestions = new ArrayList<>();
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -143,8 +175,6 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public JITWatchUI()
 	{
 		logParser = new HotSpotLogParser(this);
-
-		loadConfigFromFile();
 	}
 
 	public JITWatchUI(String[] args)
@@ -161,7 +191,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				try
 				{
-					logParser.readLogFile(hsLogFile);
+					logParser.processLogFile(hsLogFile, JITWatchUI.this);
 				}
 				catch (IOException ioe)
 				{
@@ -178,6 +208,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	{
 		startDelayedByConfig = false;
 
+		lastVmCommand = logParser.getVMCommand();
+		lastSelectedMember = selectedMember;
+		lastSelectedClass = selectedMetaClass;
+
 		selectedMember = null;
 
 		errorCount = 0;
@@ -187,12 +221,15 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
+				classTree.handleConfigUpdate(getConfig());
+
 				updateButtons();
 
 				classTree.clear();
-				refreshSelectedTreeNode(null);
+				metaClassSelectedFromClassTree(null);
 
 				textAreaLog.clear();
 			}
@@ -203,31 +240,45 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public void handleReadComplete()
 	{
 		log("Finished reading log file.");
+
 		isReadingLogFile = false;
+
+		buildSuggestions();
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				updateButtons();
 			}
 		});
+	}
 
-		if (!logParser.hasTraceClassLoading())
+	private void buildSuggestions()
+	{
+		log("Building code suggestions.");
+
+		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(logParser.getModel());
+
+		suggestions = walker.getSuggestionList();
+
+		log("Finished building code suggestions.");
+	}
+
+	@Override
+	public void handleError(final String title, final String body)
+	{
+		logger.error(title);
+
+		Platform.runLater(new Runnable()
 		{
-			logger.error("Required VM switch -XX:+TraceClassLoading was not enabled");
-
-			Platform.runLater(new Runnable()
+			@Override
+			public void run()
 			{
-				public void run()
-				{
-					String title = "Missing VM Switch -XX:+TraceClassLoading";
-					String msg = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
-
-					Dialogs.showOKDialog(JITWatchUI.this.stage, title, msg);
-				}
-			});
-		}
+				Dialogs.showOKDialog(JITWatchUI.this.stage, title, body);
+			}
+		});
 	}
 
 	private void stopParsing()
@@ -238,7 +289,10 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			isReadingLogFile = false;
 			updateButtons();
 
-			log("Stopped parsing " + hsLogFile.getAbsolutePath());
+			if (hsLogFile != null)
+			{
+				log("Stopped parsing " + hsLogFile.getAbsolutePath());
+			}
 		}
 	}
 
@@ -257,7 +311,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				stageManager.closeAll();
+				StageManager.closeAll();
 
 				stopParsing();
 			}
@@ -286,7 +340,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				if (nothingMountedStage == null)
 				{
-					int classCount = getConfig().getClassLocations().size();
+					int classCount = getConfig().getConfiguredClassLocations().size();
 					int sourceCount = getConfig().getSourceLocations().size();
 
 					if (classCount == 0 && sourceCount == 0)
@@ -294,9 +348,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 						if (getConfig().isShowNothingMounted())
 						{
 							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
-							nothingMountedStage.show();
 
-							stageManager.add(nothingMountedStage);
+							StageManager.addAndShow(nothingMountedStage);
 
 							startDelayedByConfig = true;
 						}
@@ -337,9 +390,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
-				timeLineStage.show();
 
-				stageManager.add(timeLineStage);
+				StageManager.addAndShow(timeLineStage);
 
 				btnTimeLine.setDisable(true);
 			}
@@ -352,9 +404,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
-				statsStage.show();
 
-				stageManager.add(statsStage);
+				StageManager.addAndShow(statsStage);
 
 				btnStats.setDisable(true);
 			}
@@ -367,9 +418,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
-				histoStage.show();
 
-				stageManager.add(histoStage);
+				StageManager.addAndShow(histoStage);
 
 				btnHisto.setDisable(true);
 			}
@@ -382,9 +432,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				topListStage = new TopListStage(JITWatchUI.this);
-				topListStage.show();
 
-				stageManager.add(topListStage);
+				StageManager.addAndShow(topListStage);
 
 				btnTopList.setDisable(true);
 			}
@@ -397,9 +446,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			public void handle(ActionEvent e)
 			{
 				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
-				codeCacheStage.show();
 
-				stageManager.add(codeCacheStage);
+				StageManager.addAndShow(codeCacheStage);
 
 				btnCodeCache.setDisable(true);
 			}
@@ -411,6 +459,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(ActionEvent e)
 			{
+				if (selectedMember == null && selectedMetaClass != null)
+				{
+					selectedMember = selectedMetaClass.getFirstConstructor();
+				}
+
 				openTriView(selectedMember, false);
 			}
 		});
@@ -421,13 +474,31 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			@Override
 			public void handle(ActionEvent e)
 			{
-				suggestStage = new SuggestStage(JITWatchUI.this);
+				suggestStage = new SuggestStage(JITWatchUI.this, suggestions);
 
-				suggestStage.show();
-
-				stageManager.add(suggestStage);
+				StageManager.addAndShow(suggestStage);
 
 				btnSuggest.setDisable(true);
+			}
+		});
+		
+		btnOptimizedVirtualCalls = new Button("OVCs");
+		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
+				
+				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
+				
+				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(logParser.getModel());
+
+				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
+
+				StageManager.addAndShow(ovcStage);
+				
+				btnOptimizedVirtualCalls.setDisable(true);
 			}
 		});
 
@@ -455,6 +526,19 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		lblHeap = new Label();
 
+		lblVmVersion = new Label();
+
+		StringBuilder vmBuilder = new StringBuilder();
+
+		vmBuilder.append("VM is ");
+		vmBuilder.append(Runtime.class.getPackage().getImplementationVendor());
+		vmBuilder.append(C_SPACE);
+		vmBuilder.append(Runtime.class.getPackage().getImplementationVersion());
+
+		lblVmVersion.setText(vmBuilder.toString());
+
+		lblTweakLog = new Label();
+
 		int menuBarHeight = 40;
 		int textAreaHeight = 100;
 		int statusBarHeight = 25;
@@ -476,6 +560,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnSuggest);
+		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		memberAttrList = FXCollections.observableArrayList();
 		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
@@ -507,11 +592,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		textAreaLog.setStyle("-fx-font-family:monospace;-fx-font-size:12px");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland and the AdoptOpenJDK project.\n");
-		
-		log("Please send feedback to the project lead chris@chrisnewland.com (@chriswhocodes on Twitter)\nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
-		
-		log("Includes assembly reference from http://ref.x86asm.net by Karel Lejska. Licenced under http://ref.x86asm.net/index.html#License\n");
+		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
+
+		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
+
+		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
 
 		if (hsLogFile == null)
 		{
@@ -527,11 +612,26 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		HBox hboxBottom = new HBox();
 
+		Region springLeft = new Region();
+		Region springRight = new Region();
+
+		final String labelStyle = "-fx-padding: 3 0 0 0;";
+
+		HBox.setHgrow(springLeft, Priority.ALWAYS);
+		HBox.setHgrow(springRight, Priority.ALWAYS);
+
+		lblHeap.setStyle(labelStyle);
+		lblVmVersion.setStyle(labelStyle);
+
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
+		hboxBottom.getChildren().add(springLeft);
+		hboxBottom.getChildren().add(lblTweakLog);
+		hboxBottom.getChildren().add(springRight);
+		hboxBottom.getChildren().add(lblVmVersion);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
@@ -541,9 +641,9 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		stage.setScene(scene);
 		stage.show();
 
-		int refresh = 1000; // ms
+		int refreshMillis = 1000;
 
-		final Duration oneFrameAmt = Duration.millis(refresh);
+		final Duration oneFrameAmt = Duration.millis(refreshMillis);
 
 		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
 		{
@@ -559,38 +659,26 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		updateButtons();
 	}
 
-	private void loadConfigFromFile()
-	{
-		JITWatchConfig config = new JITWatchConfig();
-		config.loadFromProperties();
-		logParser.setConfig(config);
-	}
-
 	void openConfigStage()
 	{
 		if (configStage == null)
 		{
-			loadConfigFromFile();
+			configStage = new MainConfigStage(this, this, getConfig());
 
-			configStage = new MainConfigStage(JITWatchUI.this, getConfig());
-			configStage.show();
-
-			stageManager.add(configStage);
+			StageManager.addAndShow(configStage);
 
 			btnConfigure.setDisable(true);
 		}
 	}
 
 	@Override
-	public void openTriView(IMetaMember member, boolean force)
+	public ITriView openTriView(IMetaMember member, boolean force)
 	{
 		if (triViewStage == null)
 		{
 			triViewStage = new TriView(JITWatchUI.this, getConfig());
 
-			triViewStage.show();
-
-			stageManager.add(triViewStage);
+			StageManager.addAndShow(triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -599,6 +687,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			triViewStage.setMember(member, force);
 		}
+
+		return triViewStage;
 	}
 
 	public void openSandbox()
@@ -607,9 +697,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			sandBoxStage = new SandboxStage(this, this, logParser);
 
-			sandBoxStage.show();
-
-			stageManager.add(sandBoxStage);
+			StageManager.addAndShow(sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
@@ -622,9 +710,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		{
 			browserStage = new BrowserStage(JITWatchUI.this);
 
-			browserStage.show();
-
-			stageManager.add(browserStage);
+			StageManager.addAndShow(browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -632,21 +718,22 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	public IReadOnlyJITDataModel getJITDataModel()
 	{
-		return (IReadOnlyJITDataModel) logParser.getModel();
+		return logParser.getModel();
 	}
 
 	private void updateButtons()
 	{
 		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
+
+		btnSuggest.setText("Suggestions (" + suggestions.size() + S_CLOSE_PARENTHESES);
 	}
 
-	public void openTreeAtMember(IMetaMember member)
+	public boolean focusTreeOnClass(MetaClass metaClass)
 	{
-		List<String> path = member.getTreePath();
+		List<String> path = metaClass.getTreePath();
 
-		// would be better to identify open nodes and close?
-		clearAndRefresh();
+		clearAndRefreshTreeView();
 
 		TreeItem<Object> curNode = classTree.getRootItem();
 
@@ -676,15 +763,19 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 				matching = builtPath.toString();
 			}
 
+			logger.debug("part '{}'", matching);
+
 			for (TreeItem<Object> node : curNode.getChildren())
 			{
 				rowsAbove++;
 
 				String nodeText = node.getValue().toString();
 
-				if (matching.equals(nodeText))
+				logger.debug("comparing '{}' with '{}'", matching, nodeText);
+
+				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
 				{
-					builtPath.append('.');
+					builtPath.append(C_DOT);
 					curNode = node;
 					curNode.setExpanded(true);
 					classTree.select(curNode);
@@ -694,10 +785,30 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			}
 		}
 
+		logger.debug("found? {}", found);
+
 		if (found)
 		{
 			classTree.scrollTo(rowsAbove);
-			classMemberList.selectMember(member);
+			lastSelectedClass = null;
+		}
+
+		return found;
+	}
+
+	public void focusTreeOnMember(IMetaMember member)
+	{
+		if (member != null)
+		{
+			MetaClass metaClass = member.getMetaClass();
+
+			boolean found = focusTreeOnClass(metaClass);
+
+			if (found)
+			{
+				classMemberList.selectMember(member);
+				lastSelectedMember = null;
+			}
 		}
 	}
 
@@ -705,8 +816,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
-		tvs.show();
-		stageManager.add(tvs);
+		StageManager.addAndShow(tvs);
 	}
 
 	public void openTextViewer(String title, String content)
@@ -726,9 +836,7 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			{
 				CompileChainStage ccs = new CompileChainStage(this, root);
 
-				ccs.show();
-
-				stageManager.add(ccs);
+				StageManager.addAndShow(ccs);
 			}
 			else
 			{
@@ -745,17 +853,37 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		}
 	}
 
+	public void openOptmizedVCallReport(IMetaMember member)
+	{
+		if (member.isCompiled())
+		{
+			OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
+			
+			List<OptimizedVirtualCall> optimizedVirtualCalls = OptimizedVirtualCallFinder.findOptimizedCalls(member);
+
+			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
+
+			StageManager.addAndShow(ovcs);
+
+		}
+		else
+		{
+			Dialogs.showOKDialog(
+					stage,
+					"Root method is not compiled",
+					"Can only display optimized virtual calls where the root method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+		}
+	}
+
 	void openJournalViewer(String title, Journal journal)
 	{
 		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
-		jvs.show();
-		stageManager.add(jvs);
+		StageManager.addAndShow(jvs);
 	}
 
 	private void chooseHotSpotFile()
 	{
-		loadConfigFromFile();
-
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose HotSpot log file");
 
@@ -788,21 +916,58 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 		if (result != null)
 		{
-			hsLogFile = result;
-
-			getConfig().setLastLogDir(hsLogFile.getParent());
-			getConfig().saveConfig();
-
-			clearTextArea();
-			log("Selected file: " + hsLogFile.getAbsolutePath());
-			log("\nClick Start button to process the HotSpot log");
-			updateButtons();
-
-			refreshLog();
+			setHotSpotLogFile(result);
+			
+			JITWatchConfig config = getConfig();
+			
+			if (JITWatchConstants.S_PROFILE_SANDBOX.equals(config.getProfileName()))
+			{
+				logger.debug("Reverting to non-sandbox config for loaded log file");
+				logParser.getConfig().switchFromSandbox();
+			}
+			
 		}
 	}
 
-	void showMemberInfo(IMetaMember member)
+	// Call from UI thread
+	private void setHotSpotLogFile(File logFile)
+	{
+		hsLogFile = logFile;
+
+		getConfig().setLastLogDir(hsLogFile.getParent());
+		getConfig().saveConfig();
+
+		clearTextArea();
+		log("Selected log file: " + hsLogFile.getAbsolutePath());
+
+		log("\nUsing Config: " + getConfig().getProfileName());
+
+		log("\nClick Start button to process the HotSpot log");
+		updateButtons();
+
+		refreshLog();
+	}
+
+	private boolean sameVmCommand()
+	{
+		boolean same = false;
+
+		if (lastVmCommand != null && logParser.getVMCommand() != null)
+		{
+			same = lastVmCommand.equals(logParser.getVMCommand());
+
+			if (!same)
+			{
+				// vm command known and not same so flush open node history
+				classTree.clearOpenPackageHistory();
+				lastVmCommand = null;
+			}
+		}
+
+		return same;
+	}
+
+	void setSelectedMetaMember(IMetaMember member)
 	{
 		memberAttrList.clear();
 
@@ -835,15 +1000,38 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 
 	private void refresh()
 	{
+		boolean sameVmCommandAsLastRun = sameVmCommand();
+
 		if (repaintTree)
 		{
 			repaintTree = false;
-			classTree.showTree();
+			classTree.showTree(sameVmCommandAsLastRun);
+		}
+
+		if (sameVmCommandAsLastRun)
+		{
+			if (lastSelectedMember != null)
+			{
+				logger.debug("focusTreeOnMember({})", lastSelectedMember);
+
+				focusTreeOnMember(lastSelectedMember);
+			}
+			else if (lastSelectedClass != null)
+			{
+				logger.debug("focusTreeOnClass({})", lastSelectedClass);
+
+				focusTreeOnClass(lastSelectedClass);
+			}
 		}
 
 		if (timeLineStage != null)
 		{
 			timeLineStage.redraw();
+		}
+
+		if (codeCacheStage != null)
+		{
+			codeCacheStage.redraw();
 		}
 
 		if (statsStage != null)
@@ -877,6 +1065,8 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		lblHeap.setText(heapString);
 
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
+
+		checkIfTweakLog();
 	}
 
 	private void clearTextArea()
@@ -895,17 +1085,19 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 		return selectedMember;
 	}
 
-	void clearAndRefresh()
+	void clearAndRefreshTreeView()
 	{
 		selectedMember = null;
+		selectedMetaClass = null;
+
 		classTree.clear();
-		classTree.showTree();
+		classTree.showTree(sameVmCommand());
 	}
 
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		stageManager.remove(stage);
+		StageManager.remove(stage);
 
 		// map?
 		if (stage instanceof TimeLineStage)
@@ -962,6 +1154,11 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 			btnSuggest.setDisable(false);
 			suggestStage = null;
 		}
+		else if (stage instanceof OptimizedVirtualCallStage)
+		{
+			btnOptimizedVirtualCalls.setDisable(false);
+			ovcStage = null;
+		}
 		else if (stage instanceof BrowserStage)
 		{
 			browserStage = null;
@@ -989,21 +1186,22 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	@Override
 	public void handleErrorEntry(String entry)
 	{
-		errorLog.append(entry).append("\n");
+		errorLog.append(entry).append(S_NEWLINE);
 		errorCount++;
 	}
 
 	private void log(final String entry)
 	{
 		logBuffer.append(entry);
-		logBuffer.append("\n");
+		logBuffer.append(S_NEWLINE);
 	}
 
-	void refreshSelectedTreeNode(MetaClass metaClass)
+	void metaClassSelectedFromClassTree(MetaClass metaClass)
 	{
 		classMemberList.clearClassMembers();
+		selectedMetaClass = metaClass;
 
-		showMemberInfo(null);
+		setSelectedMetaMember(null);
 
 		if (metaClass == null)
 		{
@@ -1023,5 +1221,18 @@ public class JITWatchUI extends Application implements IJITListener, IStageClose
 	public Stage getStageForDialog()
 	{
 		return stage;
+	}
+
+	private void checkIfTweakLog()
+	{
+		if (logParser != null && logParser.isTweakVMLog())
+		{
+			lblTweakLog.setText("TweakVM log detected! Enabling extra features.");
+		}
+		else
+		{
+			lblTweakLog.setText(S_EMPTY);
+		}
+
 	}
 }

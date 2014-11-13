@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.ui.triview.bytecode;
 
 import java.util.ArrayList;
@@ -7,19 +12,26 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
+import org.adoptopenjdk.jitwatch.ui.triview.TriViewNavigationStack;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.util.JVMSUtil;
 import org.adoptopenjdk.jitwatch.util.JournalUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
@@ -33,13 +45,59 @@ public class ViewerBytecode extends Viewer
 	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
 	private boolean offsetMismatchDetected = false;
-
-	public ViewerBytecode(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+	private IReadOnlyJITDataModel model;
+	private TriViewNavigationStack navigationStack;
+	private Suggestion lastSuggestion = null;
+	
+	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model, ILineListener lineListener,
+			LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
+		this.model = model;
+		this.navigationStack = navigationStack;
+	}
+	
+	public void highlightBytecodeForSuggestion(Suggestion suggestion)
+	{	
+		lastSuggestion = suggestion;
+		
+		int bytecodeOffset = suggestion.getBytecodeOffset();
+		
+		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
+
+		BytecodeLabel labelAtIndex = (BytecodeLabel)getLabelAtIndex(index);
+		
+		if (labelAtIndex != null)
+		{
+			labelAtIndex.setUnhighlightedStyle(STYLE_UNHIGHLIGHTED_SUGGESTION);
+		}
+		
+		StringBuilder ttBuilder = new StringBuilder();
+		
+		Tooltip tooltip = labelAtIndex.getTooltip();
+		
+		if (tooltip != null)
+		{
+			ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
+			Tooltip.uninstall(labelAtIndex, tooltip);
+		}
+		
+		ttBuilder.append("Suggestion:\n");
+		
+		String text = suggestion.getText();
+		
+		if (suggestion.getType() == SuggestionType.BRANCH)
+		{
+			text = StringUtil.wordWrap(text, 50);
+		}
+		
+		ttBuilder.append(text);
+		
+		tooltip = new Tooltip(ttBuilder.toString());
+		labelAtIndex.setTooltip(tooltip);
 	}
 
-	public void setContent(IMetaMember member, ClassBC metaClassBytecode, List<String> classLocations)
+	public void setContent(final IMetaMember member, final ClassBC metaClassBytecode, final List<String> classLocations)
 	{
 		offsetMismatchDetected = false;
 
@@ -70,70 +128,165 @@ public class ViewerBytecode extends Viewer
 			}
 			catch (AnnotationException annoEx)
 			{
-				logger.error("class bytcode mismatch: {}", annoEx.getMessage());
-
+				logger.error("class bytecode mismatch: {}", annoEx.getMessage());
+				logger.error("Member was {}", member);
 				offsetMismatchDetected = true;
 			}
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
-
+			
 			for (final BytecodeInstruction instruction : instructions)
-			{
-				BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset);
-
-				labels.add(lblLine);
-
-				int offset = instruction.getOffset();
-
-				String annotationText = null;
-
-				if (annotations != null)
+			{				
+				int labelLines = instruction.getLabelLines();
+				
+				if (labelLines == 0)
 				{
-					LineAnnotation annotation = annotations.get(offset);
-
-					String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
-
-					if (annotation != null)
-					{
-						annotationText = annotation.getAnnotation();
-						Color colour = annotation.getColour();
-
-						unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + ";";
-
-						lblLine.setTooltip(new Tooltip(annotationText));
-					}
-
-					lblLine.setUnhighlightedStyle(unhighlightedStyle);
+					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member);
+					labels.add(lblLine);
 				}
-
-				lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
+				else
 				{
-					@Override
-					public void handle(MouseEvent mouseEvent)
+					for (int i = 0; i < labelLines; i++)
 					{
-						if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-						{
-							if (mouseEvent.getClickCount() == 2)
-							{
-								Opcode opcode = instruction.getOpcode();
-
-								browseMnemonic(opcode);
-							}
-						}
+						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, annotations, member);
+						labels.add(lblLine);
 					}
-				});
+				}
 			}
 		}
 
 		setContent(labels);
+		
+		checkIfExistingSuggestionForMember(member);
+	}
+	
+	private void checkIfExistingSuggestionForMember(IMetaMember member)
+	{
+		if (lastSuggestion != null && lastSuggestion.getCaller().equals(member))
+		{
+			highlightBytecodeForSuggestion(lastSuggestion);
+		}
+	}
+	
+	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line, final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
+	{
+		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
+		
+		int offset = instruction.getOffset();
+
+		StringBuilder instructionToolTipBuilder = new StringBuilder();
+		
+		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+		
+		if (annotations != null)
+		{
+			LineAnnotation annotation = annotations.get(offset);
+
+			if (annotation != null)
+			{						
+				Color colour = annotation.getColour();
+
+				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
+
+				instructionToolTipBuilder = new StringBuilder();
+				instructionToolTipBuilder.append(annotation.getAnnotation());
+			}
+		}
+		
+		lblLine.setUnhighlightedStyle(unhighlightedStyle);
+		
+		if (instruction.isInvoke())
+		{
+			if (instructionToolTipBuilder.length() > 0)
+			{
+				instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
+			}
+			
+			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
+		}
+		
+		if (instructionToolTipBuilder.length() > 0)
+		{
+			lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
+		}
+
+		lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent mouseEvent)
+			{
+				if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+				{
+					if (mouseEvent.getClickCount() == 2)
+					{
+						Opcode opcode = instruction.getOpcode();
+
+						browseMnemonic(opcode);
+					}
+					else if (mouseEvent.getClickCount() == 1)
+					{
+						handleNavigate(member, instruction);
+					}
+				}
+			}
+		});
+	
+		return lblLine;
 	}
 
+	private void handleNavigate(IMetaMember currentMember, BytecodeInstruction instruction)
+	{
+		if (navigationStack.isCtrlPressed())
+		{
+			if (instruction != null && instruction.isInvoke())
+			{
+				String comment = instruction.getCommentWithMethodPrefixStripped();
+
+				if (comment != null)
+				{
+					if (commentMethodHasNoClassPrefix(comment))
+					{
+						comment = prependCurrentMember(comment, currentMember);
+					}
+
+					try
+					{
+						IMetaMember member = ParseUtil.getMemberFromComment(model, comment);
+
+						if (member != null)
+						{
+							navigationStack.navigateTo(member);
+						}
+					}
+					catch (Exception ex)
+					{
+						logger.error("Could not calculate member for comment: {}", comment, ex);
+					}
+				}
+			}
+		}
+	}
+	
+	private boolean commentMethodHasNoClassPrefix(String comment)
+	{
+		return (comment.indexOf(C_DOT) == -1);
+	}
+
+	private String prependCurrentMember(String comment, IMetaMember member)
+	{
+		String currentClass = member.getMetaClass().getFullyQualifiedName();
+		
+		currentClass = currentClass.replace(C_DOT, C_SLASH);
+
+		return currentClass + C_DOT + comment;
+	}
+	
 	public boolean isOffsetMismatchDetected()
 	{
 		return offsetMismatchDetected;
 	}
 
-	public int getLineIndexForBytecodeOffset(int offset)
+	public int getLineIndexForBytecodeOffset(int bci)
 	{
 		int result = -1;
 
@@ -141,7 +294,7 @@ public class ViewerBytecode extends Viewer
 
 		for (BytecodeInstruction instruction : instructions)
 		{
-			if (instruction.getOffset() == offset)
+			if (instruction.getOffset() == bci)
 			{
 				result = pos;
 				break;

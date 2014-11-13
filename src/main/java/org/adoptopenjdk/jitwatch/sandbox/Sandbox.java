@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.sandbox;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,13 +22,23 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerScala;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeScala;
 import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Sandbox
 {
+	private static final Logger logger = LoggerFactory.getLogger(Sandbox.class);
+
+	private ISandboxLogListener logListener;
 	private ISandboxStage sandboxStage;
 
 	public static final Path SANDBOX_DIR;
@@ -40,10 +50,6 @@ public class Sandbox
 	private File sandboxLogFile = new File(SANDBOX_DIR.toFile(), SANDBOX_LOGFILE);
 
 	private ILogParser logParser;
-
-	private String firstClassName;
-
-	private String classContainingMain;
 
 	static
 	{
@@ -62,6 +68,8 @@ public class Sandbox
 
 		if (!sandboxSources.exists())
 		{
+			logger.debug("Creating Sandbox source directory {}", sandboxSources);
+
 			sandboxSources.mkdirs();
 
 			if (sandboxSources.exists())
@@ -80,114 +88,142 @@ public class Sandbox
 
 	public void reset()
 	{
+		logger.debug("Resetting Sandbox to default settings");
 		FileUtil.emptyDir(SANDBOX_DIR.toFile());
 		initialise();
 	}
 
 	private static void copyExamples()
 	{
-		FileUtil.copyFilesToDir(new File("src/main/resources/examples"), SANDBOX_SOURCE_DIR.toFile());
+
+		File srcDir = new File("src/main/resources/examples");
+		File dstDir = SANDBOX_SOURCE_DIR.toFile();
+
+		logger.debug("Copying Sandbox examples from {} to {}", srcDir, dstDir);
+
+		FileUtil.copyFilesToDir(srcDir, dstDir);
 	}
 
-	public Sandbox(ILogParser parser, ISandboxStage logger)
+	public Sandbox(ILogParser parser, ISandboxLogListener logger, ISandboxStage sandboxStage)
 	{
 		this.logParser = parser;
-		this.sandboxStage = logger;
+		this.logListener = logger;
+		this.sandboxStage = sandboxStage;
 	}
 
-	public void runSandbox(List<String> sourceFiles) throws Exception
+	private ICompiler getCompiler(String language, ISandboxLogListener logger)
 	{
-		firstClassName = null;
-		classContainingMain = null;
+		ICompiler compiler = null;
 
-		List<File> compileList = new ArrayList<>();
+		String compilerPath = logParser.getConfig().getVMLanguageCompilerPath(language);
 
-		for (String source : sourceFiles)
+		if (compilerPath != null && !S_EMPTY.equals(compilerPath))
 		{
-			File sourceFile = writeSourceFile(source);
-			compileList.add(sourceFile);
+			logListener.log("Compiler path: " + compilerPath);
+
+			switch (language)
+			{
+			case VM_LANGUAGE_JAVA:
+				compiler = new CompilerJava(compilerPath);
+				break;
+			case VM_LANGUAGE_SCALA:
+				compiler = new CompilerScala(compilerPath);
+				break;
+			}
 		}
 
-		sandboxStage.log("Compiling: " + StringUtil.listToString(compileList));
+		return compiler;
+	}
 
-		ClassCompiler compiler = new ClassCompiler();
+	private IRuntime getRuntime(String language, ISandboxLogListener logger)
+	{
+		IRuntime runtime = null;
 
-		boolean compiledOK = compiler.compile(compileList, SANDBOX_CLASS_DIR.toFile());
+		String runtimePath = logParser.getConfig().getVMLanguageRuntimePath(language);
 
-		sandboxStage.log("Compilation success: " + compiledOK);
+		if (runtimePath != null && !S_EMPTY.equals(runtimePath))
+		{
+			logListener.log("Runtime path: " + runtimePath);
+
+			switch (language)
+			{
+			case VM_LANGUAGE_JAVA:
+				runtime = new RuntimeJava(runtimePath);
+				break;
+			case VM_LANGUAGE_SCALA:
+				runtime = new RuntimeScala(runtimePath);
+				break;
+			}
+		}
+
+		return runtime;
+	}
+
+	public void runSandbox(String language, List<File> compileList, File fileToRun) throws Exception
+	{
+		logListener.log("Running Sandbox");
+		logListener.log("Language is " + language);
+
+		ICompiler compiler = getCompiler(language, logListener);
+
+		if (compiler == null)
+		{
+			logListener.log(language + " compiler path not set. Please click Configure Sandbox and set up the path.");
+			return;
+		}
+
+		IRuntime runtime = getRuntime(language, logListener);
+
+		if (runtime == null)
+		{
+			logListener.log(language + " runtime path not set. Please click Configure Sandbox and set up the path.");
+			return;
+		}
+
+		logListener.log("Compiling: " + StringUtil.listToString(compileList));
+
+		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getConfiguredClassLocations(), SANDBOX_CLASS_DIR.toFile(),
+				logListener);
+
+		logListener.log("Compilation success: " + compiledOK);
 
 		if (compiledOK)
 		{
-			if (classContainingMain != null)
+			String fqClassNameToRun = runtime.getClassToExecute(fileToRun);
+
+			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
+
+			logListener.log("Execution success: " + executionSuccess);
+
+			if (executionSuccess)
 			{
-				ClassExecutor classExecutor = new ClassExecutor();
+				runJITWatch();
 
-				boolean executionSuccess = executeTestLoad(classExecutor, logParser.getConfig().isSandboxIntelMode());
-
-				sandboxStage.log("Execution success: " + executionSuccess);
-
-				if (executionSuccess)
+				if (!logParser.hasParseError())
 				{
-					runJITWatch();
-					showTriView();
-				}
-				else
-				{
-					sandboxStage.showError(classExecutor.getErrorStream());
+					String fqClassNameForTriView = runtime.getClassForTriView(fileToRun);
+
+					showTriView(language, fqClassNameForTriView);
 				}
 			}
 			else
 			{
-				sandboxStage.log("No main method found");
+				sandboxStage.showError(runtime.getErrorStream());
 			}
 		}
 		else
 		{
-			String compilationMessages = compiler.getCompilationMessages();
-			sandboxStage.showError(compilationMessages);
+			sandboxStage.showError(compiler.getErrorStream());
 		}
 	}
 
-	private File writeSourceFile(String source) throws IOException
-	{
-		String sourcePackage = ParseUtil.getPackageFromSource(source);
-
-		String sourceClass = ParseUtil.getClassFromSource(source);
-
-		StringBuilder fqNameSourceBuilder = new StringBuilder();
-
-		if (sourcePackage.length() > 0)
-		{
-			fqNameSourceBuilder.append(sourcePackage).append(S_DOT);
-		}
-
-		fqNameSourceBuilder.append(sourceClass);
-
-		String fqNameSource = fqNameSourceBuilder.toString();
-
-		if (source.contains("public static void main(") || source.contains("public static void main ("))
-		{
-			classContainingMain = fqNameSource;
-			sandboxStage.log("Found main method in " + classContainingMain);
-		}
-
-		if (firstClassName == null)
-		{
-			firstClassName = fqNameSource;
-		}
-
-		sandboxStage.log("Writing source file: " + fqNameSource + ".java");
-
-		return FileUtil.writeSource(SANDBOX_SOURCE_DIR.toFile(), fqNameSource, source);
-	}
-
-	private boolean executeTestLoad(ClassExecutor classExecutor, boolean intelMode) throws Exception
+	private boolean executeClass(String fqClassName, IRuntime runtime, boolean intelMode) throws Exception
 	{
 		List<String> classpath = new ArrayList<>();
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
 
-		classpath.addAll(logParser.getConfig().getSandboxClassLocations());
+		classpath.addAll(logParser.getConfig().getConfiguredClassLocations());
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
@@ -205,6 +241,13 @@ public class Sandbox
 			}
 		}
 
+		boolean isDisableInlining = logParser.getConfig().isDisableInlining();
+
+		if (isDisableInlining)
+		{
+			options.add("-XX:-Inline");
+		}
+
 		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
 
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
@@ -220,19 +263,19 @@ public class Sandbox
 
 		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
 		{
-			options.add("-XX:+TieredCompilation");
+			options.add("-XX:+UseCompressedOops");
 		}
 		else if (oopsMode == CompressedOops.FORCE_NO_COMPRESSED)
 		{
-			options.add("-XX:-TieredCompilation");
+			options.add("-XX:-UseCompressedOops");
 		}
 
-		if (logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
 			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());
 		}
 
-		if (logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
 		{
 			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
 		}
@@ -242,70 +285,112 @@ public class Sandbox
 			options.add("-XX:CompilerThreshold=" + logParser.getConfig().getCompilerThreshold());
 		}
 
-		sandboxStage.log("Executing: " + classContainingMain);
-		sandboxStage.log("Classpath: " + StringUtil.listToString(classpath, File.pathSeparatorChar));
-		sandboxStage.log("VM options: " + StringUtil.listToString(options));
+		logListener.log("Executing: " + fqClassName);
+		logListener.log("Classpath: " + StringUtil.listToString(classpath, File.pathSeparatorChar));
+		logListener.log("VM options: " + StringUtil.listToString(options));
 
-		return classExecutor.execute(classContainingMain, classpath, options);
+		return runtime.execute(fqClassName, classpath, options, logListener);
 	}
 
 	private void runJITWatch() throws IOException
 	{
-		List<String> sourceLocations = new ArrayList<>();
-		List<String> classLocations = new ArrayList<>();
+		JITWatchConfig config = logParser.getConfig();
 
-		sourceLocations.add(SANDBOX_SOURCE_DIR.toString());
-		classLocations.add(SANDBOX_CLASS_DIR.toString());
+		List<String> sourceLocations = new ArrayList<>(config.getSourceLocations());
+		List<String> classLocations = new ArrayList<>(config.getConfiguredClassLocations());
+
+		String sandboxSourceDirString = SANDBOX_SOURCE_DIR.toString();
+		String sandboxClassDirString = SANDBOX_CLASS_DIR.toString();
+
+		boolean configChanged = false;
+
+		if (!sourceLocations.contains(sandboxSourceDirString))
+		{
+			configChanged = true;
+			sourceLocations.add(sandboxSourceDirString);
+		}
+
+		if (!classLocations.contains(sandboxClassDirString))
+		{
+			configChanged = true;
+			classLocations.add(sandboxClassDirString);
+		}
 
 		File jdkSrcZip = JITWatchConfig.getJDKSourceZip();
 
 		if (jdkSrcZip != null)
 		{
-			sourceLocations.add(jdkSrcZip.toPath().toString());
+			String jdkSourceZipString = jdkSrcZip.toPath().toString();
+
+			if (!sourceLocations.contains(jdkSourceZipString))
+			{
+				configChanged = true;
+				sourceLocations.add(jdkSourceZipString);
+			}
 		}
 
-		JITWatchConfig config = logParser.getConfig().clone();
 		config.setSourceLocations(sourceLocations);
 		config.setClassLocations(classLocations);
 
-		logParser.reset();
+		if (configChanged)
+		{
+			config.saveConfig();
+		}
 
-		logParser.setConfig(config);
+		logParser.processLogFile(sandboxLogFile, sandboxStage);
 
-		logParser.readLogFile(sandboxLogFile);
-
-		sandboxStage.log("Parsing complete");
+		logListener.log("Parsing complete");
 	}
 
-	private void showTriView()
+	private void showTriView(String language, String openClassInTriView)
 	{
 		IReadOnlyJITDataModel model = logParser.getModel();
 
-		sandboxStage.log("Looking up class: " + firstClassName);
+		IMetaMember triViewMember = getMemberForClass(openClassInTriView, model);
 
-		MetaClass metaClass = model.getPackageManager().getMetaClass(firstClassName);
+		if (triViewMember == null && VM_LANGUAGE_SCALA.equals(language) && openClassInTriView.endsWith(S_DOLLAR))
+		{
+			// Scala and nothing found for Foo$ so try Foo
+			triViewMember = getMemberForClass(openClassInTriView.substring(0, openClassInTriView.length() - 1), model);
+		}
 
-		IMetaMember firstCompiled = null;
+		sandboxStage.openTriView(triViewMember);
+	}
+
+	private IMetaMember getMemberForClass(String openClassInTriView, IReadOnlyJITDataModel model)
+	{
+		IMetaMember triViewMember = null;
+
+		logListener.log("Looking up class: " + openClassInTriView);
+
+		MetaClass metaClass = model.getPackageManager().getMetaClass(openClassInTriView);
 
 		if (metaClass != null)
 		{
-			sandboxStage.log("Found: " + metaClass.getFullyQualifiedName());
-
-			sandboxStage.log("looking for compiled members");
+			logListener.log("looking for compiled members of " + metaClass.getFullyQualifiedName());
 
 			// select first compiled member if any
 			List<IMetaMember> memberList = metaClass.getMetaMembers();
 
 			for (IMetaMember mm : memberList)
 			{
+				logListener.log("Checking JIT compilation status of " + mm.toString());
+
+				if (triViewMember == null)
+				{
+					// take the first member encountered
+					triViewMember = mm;
+				}
+
 				if (mm.isCompiled())
 				{
-					firstCompiled = mm;
+					// override with the first JIT-compiled member
+					triViewMember = mm;
 					break;
 				}
 			}
 		}
 
-		sandboxStage.openTriView(firstCompiled);
+		return triViewMember;
 	}
 }

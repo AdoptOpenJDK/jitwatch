@@ -9,10 +9,12 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.sandbox.ClassExecutor;
+import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.junit.Test;
 
 public class TestExecutionUtil
@@ -22,8 +24,8 @@ public class TestExecutionUtil
 	public void testExecuteDemo()
 	{
 		List<String> cp = new ArrayList<>();
-
-		cp.add("target/classes");
+		
+		cp.add("target"+File.separatorChar+"classes");
 
 		File libDir = new File("lib");
 
@@ -41,19 +43,23 @@ public class TestExecutionUtil
 
 		for (String jar : jarNames)
 		{
-			cp.add("lib/" + jar);
+			cp.add("lib" + File.separatorChar + jar);
 		}
 
 		List<String> options = new ArrayList<>();
-
-		ClassExecutor executor = new ClassExecutor();
 		
-		boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options);
+		String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java").toString();
 
-		System.out.println(executor.getErrorStream());
-		//System.out.println(executor.getOutputStream());
-
+		RuntimeJava executor = new RuntimeJava(javaRuntime);
 		
+		boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options, new ISandboxLogListener()
+		{
+			@Override
+			public void log(String msg)
+			{			
+			}
+		});
+
 		assertTrue(success);
 	}
 }

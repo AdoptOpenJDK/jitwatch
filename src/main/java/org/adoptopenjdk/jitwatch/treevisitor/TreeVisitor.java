@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.treevisitor;
 
 import java.util.List;
@@ -9,17 +14,14 @@ import org.adoptopenjdk.jitwatch.model.MetaPackage;
 
 public final class TreeVisitor
 {
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private TreeVisitor() {
-    }
+	private TreeVisitor()
+	{
+	}
 
-    public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
+	public static void walkTree(IReadOnlyJITDataModel model, ITreeVisitable visitable)
 	{
 		visitable.reset();
-		
+
 		List<MetaPackage> roots = model.getPackageManager().getRootPackages();
 
 		for (MetaPackage mp : roots)

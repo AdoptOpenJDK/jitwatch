@@ -47,7 +47,7 @@ public class JITEvent
 
         sb.append(stampString).append(C_SPACE);
 
-        sb.append(StringUtil.padLeft(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
+        sb.append(StringUtil.alignRight(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
      
         sb.append(methodSignature);
 

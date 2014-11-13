@@ -17,7 +17,7 @@ public class AssemblyMethod
 	private String header;
 
 	private List<AssemblyBlock> blocks = new ArrayList<>();
-
+	
 	public AssemblyMethod()
 	{
 	}
@@ -58,7 +58,7 @@ public class AssemblyMethod
 
 		return width;
 	}
-
+	
 	@Override
 	public String toString()
 	{

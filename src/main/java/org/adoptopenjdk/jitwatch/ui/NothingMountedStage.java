@@ -20,6 +20,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -34,13 +35,13 @@ public class NothingMountedStage extends Stage
 		vbox.setSpacing(20);
 		vbox.setPadding(new Insets(10));
 		
-		Scene scene = new Scene(vbox, 360, 160);
+		Scene scene = new Scene(vbox, 530, 200);
 	
 		setTitle("No classes or sources mounted");
 		
-        Label lblMsg1 = new Label("You have not mounted any source or class files.");
-        Label lblMsg2 = new Label("JITWatch is much more useful if you do :)");
-
+        Label lblMsg1 = new Label("I see you've not configured any source or class locations?");
+        Text lblMsg2 = new Text("JITWatch will try and work out the classpath from the HotSpot log but if I miss\nanything then you might need to configure the paths manually!");
+        
         CheckBox cbShowWarning = new CheckBox("Don't show this warning again.");
         cbShowWarning.setTooltip(new Tooltip("Don't show warning about no source or class files added."));
         cbShowWarning.setSelected(false);
@@ -88,7 +89,8 @@ public class NothingMountedStage extends Stage
         hboxButtons.getChildren().add(btnOpenConfig);
 
         vbox.getChildren().add(lblMsg1);       
-        vbox.getChildren().add(lblMsg2);       
+        vbox.getChildren().add(lblMsg2);      
+        //vbox.getChildren().add(lblMsg3);       
         vbox.getChildren().add(cbShowWarning);
         vbox.getChildren().add(hboxButtons);       
 		

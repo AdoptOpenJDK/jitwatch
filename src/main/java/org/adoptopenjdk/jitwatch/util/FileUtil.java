@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
@@ -8,27 +13,37 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileUtil
+public final class FileUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-	
+
+	private FileUtil()
+	{
+	}
+
 	public static void copyFilesToDir(File sourceDir, File targetDir)
 	{
-		File exampleDir = new File("src/main/resources/examples");
-
-		if (exampleDir.exists() && exampleDir.isDirectory())
+		if (sourceDir.exists() && sourceDir.isDirectory())
 		{
-			File[] exampleFiles = exampleDir.listFiles();
+			File[] sourceFiles = sourceDir.listFiles();
+			
+			logger.debug("Copying {} files", sourceFiles.length);
 
-			for (File exampleFile : exampleFiles)
+			for (File exampleFile : sourceFiles)
 			{
 				try
 				{
-					Files.copy(exampleFile.toPath(), targetDir.toPath().resolve(exampleFile.getName()));
+					Path srcPath = exampleFile.toPath();
+					Path dstPath = targetDir.toPath().resolve(exampleFile.getName());
+
+					logger.debug("Copying file {} -> {}", srcPath, dstPath);
+					
+					Files.copy(srcPath, dstPath);
 				}
 				catch (IOException ioe)
 				{
@@ -36,8 +51,11 @@ public class FileUtil
 				}
 			}
 		}
+		else
+		{
+			logger.error("Could not find source directory {}", sourceDir);
+		}
 	}
-	
 
 	public static File writeSource(File sourceDir, String fqClassName, String sourceCode) throws IOException
 	{
@@ -96,13 +114,13 @@ public class FileUtil
 
 		return sourceFile;
 	}
-	
+
 	public static void emptyDir(File directory)
 	{
 		if (directory.exists() && directory.isDirectory())
 		{
 			File[] contents = directory.listFiles();
-			
+
 			for (File file : contents)
 			{
 				if (file.isDirectory())
@@ -114,7 +132,7 @@ public class FileUtil
 				{
 					file.delete();
 				}
-			}			
+			}
 		}
 	}
 }

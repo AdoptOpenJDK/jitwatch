@@ -12,6 +12,8 @@ public class MemberBytecode
 {	
 	private List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 	
+	private LineTable lineTable = new LineTable();
+	
 	public MemberBytecode()
 	{
 	}
@@ -24,5 +26,31 @@ public class MemberBytecode
 	public List<BytecodeInstruction> getInstructions()
 	{
 		return bytecodeInstructions;
+	}
+	
+	public BytecodeInstruction getBytecodeAtOffset(int bci)
+	{
+		BytecodeInstruction result = null;
+		
+		for (BytecodeInstruction instruction: bytecodeInstructions)
+		{
+			if (instruction.getOffset() == bci)
+			{
+				result = instruction;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	public void setLineTable(LineTable table)
+	{
+		this.lineTable = table;
+	}
+
+	public LineTable getLineTable()
+	{
+		return lineTable;
 	}
 }

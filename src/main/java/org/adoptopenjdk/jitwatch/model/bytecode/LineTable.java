@@ -5,48 +5,96 @@
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class LineTable
 {
-	private Map<Integer, LineTableEntry> lineMap = new HashMap<>();
+	private List<LineTableEntry> lineTableEntries = new ArrayList<>();
 
-	public void put(int sourceLine, LineTableEntry entry)
+	public void add(LineTableEntry entry)
 	{
-		lineMap.put(sourceLine, entry);
+		lineTableEntries.add(entry);
 	}
 
-	public LineTableEntry get(int sourceLine)
+	public void add(LineTable lineTable)
+	{
+		if (lineTable != null)
+		{
+			lineTableEntries.addAll(lineTable.lineTableEntries);
+		}
+	}
+
+	public void sort()
+	{
+		Collections.sort(lineTableEntries, new Comparator<LineTableEntry>()
+		{
+			@Override
+			public int compare(LineTableEntry o1, LineTableEntry o2)
+			{
+				return Integer.compare(o1.getSourceOffset(), o2.getSourceOffset());
+			}
+		});
+	}
+
+	public LineTableEntry getEntryForSourceLine(int sourceLine)
 	{
 		LineTableEntry result = null;
 
-		if (lineMap.containsKey(sourceLine))
+		for (LineTableEntry entry : lineTableEntries)
 		{
-			result = lineMap.get(sourceLine);
+			if (entry.getSourceOffset() == sourceLine)
+			{
+				result = entry;
+				break;
+			}
 		}
 
 		return result;
 	}
 
-	public int findSourceLine(IMetaMember member, int offset)
+	public int findSourceLineForBytecodeOffset(int offset)
 	{
 		int result = -1;
 
-		for (Map.Entry<Integer, LineTableEntry> entry : lineMap.entrySet())
-		{
-			LineTableEntry lineEntry = entry.getValue();
+		// LineNumberTable:
+		// line 7: 0
+		// line 8: 8
+		// line 9: 32
 
-			if (lineEntry.getBytecodeOffset() == offset)
+		LineTableEntry previousEntry = null;
+
+		for (LineTableEntry entry : lineTableEntries)
+		{
+			int currentBytecodeOffset = entry.getBytecodeOffset();
+
+			if (offset == currentBytecodeOffset)
 			{
-				if (member.matchesBytecodeSignature(lineEntry.getMemberSignature()))
+				result = entry.getSourceOffset();
+				break;
+			}
+			else if (offset < currentBytecodeOffset)
+			{
+				if (previousEntry != null)
 				{
-					result = entry.getKey();
+					result = previousEntry.getSourceOffset();
 				}
+				break;
+			}
+
+			previousEntry = entry;
+		}
+
+		// unmatched so return last offset
+		if (result == -1)
+		{
+			if (previousEntry != null)
+			{
+				result = previousEntry.getSourceOffset();
 			}
 		}
 
@@ -55,21 +103,19 @@ public class LineTable
 
 	public int size()
 	{
-		return lineMap.size();
+		return lineTableEntries.size();
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-		
-		for (Map.Entry<Integer, LineTableEntry> entry : lineMap.entrySet())
-		{
-			LineTableEntry lineEntry = entry.getValue();
 
-			builder.append(entry.getKey()).append(C_SPACE).append(lineEntry.getBytecodeOffset()).append(C_NEWLINE);
+		for (LineTableEntry entry : lineTableEntries)
+		{
+			builder.append(entry).append(C_NEWLINE);
 		}
-		
+
 		return builder.toString();
 	}
 }

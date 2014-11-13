@@ -8,14 +8,17 @@ package org.adoptopenjdk.jitwatch.core;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class JITWatchConfig
 {
@@ -23,7 +26,7 @@ public class JITWatchConfig
 	{
 		VM_DEFAULT, FORCE_TIERED, FORCE_NO_TIERED;
 	}
-	
+
 	public enum CompressedOops
 	{
 		VM_DEFAULT, FORCE_COMPRESSED, FORCE_NO_COMPRESSED;
@@ -36,26 +39,31 @@ public class JITWatchConfig
 	private static final String KEY_SOURCE_LOCATIONS = "Sources";
 	private static final String KEY_CLASS_LOCATIONS = "Classes";
 
-	private static final String KEY_SANDBOX_CLASSPATH = "sandbox.classpath";
+	private static final String KEY_VM_LANGUAGE_COMPILER = "vm.language.compiler";
+	private static final String KEY_VM_LANGUAGE_RUNTIME = "vm.language.runtime";
 
 	private static final String KEY_SHOW_JIT_ONLY_MEMBERS = "JitOnly";
 	private static final String KEY_SHOW_JIT_ONLY_CLASSES = "JitOnlyClasses";
 	private static final String KEY_SHOW_HIDE_INTERFACES = "HideInterfaces";
 	private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
 	private static final String KEY_LAST_LOG_DIR = "LastLogDir";
+	private static final String KEY_LAST_SANDBOX_EDITOR_PANES = "LastSandboxEditorPanes";
 
-	private static final String KEY_SANDBOX_INTEL_MODE = "sandbox.intel.mode";
-	private static final String KEY_SANDBOX_TIERED_MODE = "sandbox.tiered.mode";
-	private static final String KEY_SANDBOX_COMPRESSED_OOPS_MODE = "sandbox.compressed.oops.mode";
+	private static final String SANDBOX_PREFIX = "sandbox";
+	private static final String KEY_SANDBOX_INTEL_MODE = SANDBOX_PREFIX + ".intel.mode";
+	private static final String KEY_SANDBOX_TIERED_MODE = SANDBOX_PREFIX + ".tiered.mode";
+	private static final String KEY_SANDBOX_COMPRESSED_OOPS_MODE = SANDBOX_PREFIX + ".compressed.oops.mode";
+	private static final String KEY_SANDBOX_FREQ_INLINE_SIZE = SANDBOX_PREFIX + ".freq.inline.size";
+	private static final String KEY_SANDBOX_MAX_INLINE_SIZE = SANDBOX_PREFIX + ".max.inline.size";
+	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = SANDBOX_PREFIX + ".print.assembly";
+	private static final String KEY_SANDBOX_DISABLE_INLINING = SANDBOX_PREFIX + ".disable.inlining";
+	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
 
-	private static final String KEY_SANDBOX_FREQ_INLINE_SIZE = "sandbox.freq.inline.size";
-	private static final String KEY_SANDBOX_MAX_INLINE_SIZE = "sandbox.max.inline.size";
-	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = "sandbox.print.assembly";
-	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = "sandbox.compiler.threshold";
+	private static final String KEY_LAST_PROFILE = "last.profile";
 
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
-	private List<String> sandboxClassLocations = new ArrayList<>();
+	private List<String> editorPanes = new ArrayList<>();
 
 	private boolean showOnlyCompiledMembers = true;
 	private boolean showOnlyCompiledClasses = false;
@@ -69,60 +77,217 @@ public class JITWatchConfig
 	private int freqInlineSize;
 	private int maxInlineSize;
 	private boolean printAssembly;
+	private boolean disableInlining = false;
+
 	private int compilerThreshold;
 
+	private String profileName = S_PROFILE_DEFAULT;
+
+	private File propertiesFile = new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
+
+	private Properties loadedProps;
+
+	private String preSandboxProfile = S_PROFILE_DEFAULT;
+	
+	private ParsedClasspath parsedClasspath = new ParsedClasspath();
+	
 	public JITWatchConfig()
 	{
+		initialise();
 	}
 
+	public JITWatchConfig(File propertiesFile)
+	{
+		this.propertiesFile = propertiesFile;
+		initialise();
+	}
+
+	private void initialise()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("initialise: {}", propertiesFile);
+		}
+
+		loadedProps = new Properties();
+		loadPropertiesFromFile();
+	}
+
+	public void switchToSandbox()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("switchToSandbox()");
+		}
+
+		preSandboxProfile = profileName;
+		setProfileName(S_PROFILE_SANDBOX);
+	}
+
+	public void switchFromSandbox()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("switchFromSandbox()");
+		}
+
+		setProfileName(preSandboxProfile);
+	}
+
+	public ParsedClasspath getParsedClasspath()
+	{
+		return parsedClasspath;
+	}
+	
 	public JITWatchConfig clone()
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("clone()");
+		}
+
 		JITWatchConfig copy = new JITWatchConfig();
 
-		Properties saveProperties = getSaveProperties();
+		marshalConfigToProperties();
 
-		copy.loadFromProperties(saveProperties);
+		savePropertiesToFile();
+
+		copy.loadPropertiesFromFile();
 
 		return copy;
 	}
 
-	public void loadFromProperties()
+	public void setProfileName(String name)
 	{
-		Properties loadProps = new Properties();
+		this.profileName = name;
 
-		try (FileReader fr = new FileReader(getConfigFile()))
+		if (DEBUG_LOGGING)
 		{
-			loadProps.load(fr);
+			logger.debug("setProfileName: {}", name);
+		}
+
+		unmarshalPropertiesToConfig();
+
+		marshalConfigToProperties();
+
+		savePropertiesToFile();
+	}
+
+	public String getProfileName()
+	{
+		return profileName;
+	}
+
+	public void deleteProfile(String name)
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("deleteProfile: {}", name);
+		}
+
+		if (name != null && !isBuiltInProfile(name))
+		{
+			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS, KEY_SHOW_JIT_ONLY_MEMBERS,
+					KEY_SHOW_JIT_ONLY_CLASSES, KEY_SHOW_HIDE_INTERFACES };
+
+			for (String key : keys)
+			{
+				String deletePropertyKey = key + S_DOT + name;
+
+				loadedProps.remove(deletePropertyKey);
+			}
+
+			setProfileName(S_PROFILE_DEFAULT);
+		}
+	}
+
+	public boolean isBuiltInProfile(String profileName)
+	{
+		return S_PROFILE_DEFAULT.equals(profileName) || S_PROFILE_SANDBOX.equals(profileName);
+	}
+
+	public Set<String> getProfileNames()
+	{
+		Set<String> result = new HashSet<>();
+
+		result.add(S_PROFILE_DEFAULT);
+		result.add(S_PROFILE_SANDBOX);
+
+		if (profileName != null)
+		{
+			result.add(profileName);
+		}
+
+		for (Object key : loadedProps.keySet())
+		{
+			String keyString = key.toString();
+
+			if (keyString.startsWith(KEY_SOURCE_LOCATIONS))
+			{
+				if (keyString.length() > KEY_SOURCE_LOCATIONS.length())
+				{
+					String profileName = keyString.substring(1 + KEY_SOURCE_LOCATIONS.length());
+
+					result.add(profileName);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private void loadPropertiesFromFile()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("loadPropertiesFromFile({})", propertiesFile);
+		}
+
+		try (FileReader fr = new FileReader(propertiesFile))
+		{
+			loadedProps.load(fr);
 		}
 		catch (FileNotFoundException fnf)
 		{
-			logger.error("Could not find config file", fnf);
+			logger.warn("Could not find config file {}", propertiesFile.getName());
 		}
 		catch (IOException ioe)
 		{
 			logger.error("Could not load config file", ioe);
 		}
 
-		loadFromProperties(loadProps);
+		profileName = loadedProps.getProperty(KEY_LAST_PROFILE, S_PROFILE_DEFAULT);
+
+		if (S_PROFILE_SANDBOX.equals(profileName))
+		{
+			logger.debug("Resetting last used profile to Default from Sandbox");
+			profileName = S_PROFILE_DEFAULT;
+		}
+
+		unmarshalPropertiesToConfig();
 	}
 
-	private void loadFromProperties(Properties loadProps)
+	public void unmarshalPropertiesToConfig()
 	{
-		classLocations = loadLocationsFromProperty(loadProps, KEY_CLASS_LOCATIONS);
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("unmarshalPropertiesToConfig({})", profileName);
+		}
 
-		sandboxClassLocations = loadLocationsFromProperty(loadProps, KEY_SANDBOX_CLASSPATH);
+		classLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
+		sourceLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
+		editorPanes =  loadCommaSeparatedListFromProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES);
 
-		sourceLocations = loadLocationsFromProperty(loadProps, KEY_SOURCE_LOCATIONS);
+		showOnlyCompiledMembers = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_MEMBERS, true);
+		showOnlyCompiledClasses = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_CLASSES, false);
+		hideInterfaces = loadBooleanFromProperty(loadedProps, KEY_SHOW_HIDE_INTERFACES, true);
+		showNothingMounted = loadBooleanFromProperty(loadedProps, KEY_SHOW_NOTHING_MOUNTED, true);
 
-		showOnlyCompiledMembers = loadBooleanFromProperty(loadProps, KEY_SHOW_JIT_ONLY_MEMBERS, true);
-		showOnlyCompiledClasses = loadBooleanFromProperty(loadProps, KEY_SHOW_JIT_ONLY_CLASSES, false);
-		hideInterfaces = loadBooleanFromProperty(loadProps, KEY_SHOW_HIDE_INTERFACES, true);
-		showNothingMounted = loadBooleanFromProperty(loadProps, KEY_SHOW_NOTHING_MOUNTED, true);
-		intelMode = loadBooleanFromProperty(loadProps, KEY_SANDBOX_INTEL_MODE, false);
+		lastLogDir = getProperty(loadedProps, KEY_LAST_LOG_DIR);
 
-		lastLogDir = loadProps.getProperty(KEY_LAST_LOG_DIR);
+		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		int tieredMode = Integer.parseInt(loadProps.getProperty(KEY_SANDBOX_TIERED_MODE, "0"));
+		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0"));
 
 		switch (tieredMode)
 		{
@@ -136,8 +301,8 @@ public class JITWatchConfig
 			tieredCompilationMode = TieredCompilation.FORCE_NO_TIERED;
 			break;
 		}
-		
-		int oopsMode = Integer.parseInt(loadProps.getProperty(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
+
+		int oopsMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
 
 		switch (oopsMode)
 		{
@@ -151,29 +316,31 @@ public class JITWatchConfig
 			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
 			break;
 		}
-		
-		freqInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
-		
-		maxInlineSize = loadIntFromProperty(loadProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
-	
-		printAssembly = loadBooleanFromProperty(loadProps, KEY_SANDBOX_PRINT_ASSEMBLY, true);
 
-		compilerThreshold = loadIntFromProperty(loadProps, KEY_SANDBOX_COMPILER_THRESHOLD,  JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
+		freqInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
+
+		maxInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
+
+		printAssembly = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, true);
+		disableInlining = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, false);
+
+		compilerThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
+				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 	}
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
 	{
-		return Boolean.parseBoolean(props.getProperty(propertyName, new Boolean(defaultValue).toString()));
-	}
-	
-	private int loadIntFromProperty(Properties props, String propertyName, int defaultValue)
-	{
-		return Integer.parseInt(props.getProperty(propertyName, new Integer(defaultValue).toString()));
+		return Boolean.parseBoolean(getProperty(props, propertyName, Boolean.toString(defaultValue)));
 	}
 
-	private List<String> loadLocationsFromProperty(Properties props, String propertyName)
+	private int loadIntFromProperty(Properties props, String propertyName, int defaultValue)
 	{
-		String propValue = props.getProperty(propertyName);
+		return Integer.parseInt(getProperty(props, propertyName, Integer.toString(defaultValue)));
+	}
+
+	private List<String> loadCommaSeparatedListFromProperty(Properties props, String propertyName)
+	{
+		String propValue = getProperty(props, propertyName);
 
 		List<String> result;
 
@@ -187,82 +354,134 @@ public class JITWatchConfig
 		}
 
 		return result;
-
 	}
 
-	private Properties getSaveProperties()
+	private String getProperty(Properties props, String propertyName)
 	{
-		Properties saveProps = new Properties();
+		return getProperty(props, propertyName, S_EMPTY);
+	}
 
-		saveProps.put(KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
-		saveProps.put(KEY_CLASS_LOCATIONS, StringUtil.listToText(classLocations, S_COMMA));
-		saveProps.put(KEY_SANDBOX_CLASSPATH, StringUtil.listToText(sandboxClassLocations, S_COMMA));
-		saveProps.put(KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.toString(showOnlyCompiledMembers));
-		saveProps.put(KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
-		saveProps.put(KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
-		saveProps.put(KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
-		saveProps.put(KEY_SANDBOX_INTEL_MODE, Boolean.toString(intelMode));
+	private String getProperty(Properties props, String propertyName, String defaultValue)
+	{
+		String searchName = getProfilePropertyName(propertyName);
+
+		return props.getProperty(searchName, defaultValue);
+	}
+
+	private void putProperty(Properties props, String propertyName, String value)
+	{
+		String putName = getProfilePropertyName(propertyName);
+
+		props.put(putName, value);
+	}
+
+	private String getProfilePropertyName(final String propertyName)
+	{
+		String result = propertyName;
+
+		if (!isSandboxProperty(result))
+		{
+			if (profileName != null && !profileName.equals(S_PROFILE_DEFAULT) && profileName.length() > 0)
+			{
+				result = propertyName + S_DOT + profileName;
+			}
+		}
+
+		return result;
+	}
+
+	private boolean isSandboxProperty(String propertyName)
+	{
+		return propertyName.startsWith(SANDBOX_PREFIX);
+	}
+
+	public void saveConfig()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("saveConfig()");
+		}
+
+		marshalConfigToProperties();
+		savePropertiesToFile();
+	}
+
+	public void marshalConfigToProperties()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("marshalConfigToProperties({})", profileName);
+		}
+
+		loadedProps.put(KEY_LAST_PROFILE, profileName);
+
+		putProperty(loadedProps, KEY_SOURCE_LOCATIONS, StringUtil.listToText(sourceLocations, S_COMMA));
+		putProperty(loadedProps, KEY_CLASS_LOCATIONS, StringUtil.listToText(classLocations, S_COMMA));
+		putProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES, StringUtil.listToText(editorPanes, S_COMMA));
+
+		putProperty(loadedProps, KEY_SHOW_JIT_ONLY_MEMBERS, Boolean.toString(showOnlyCompiledMembers));
+		putProperty(loadedProps, KEY_SHOW_JIT_ONLY_CLASSES, Boolean.toString(showOnlyCompiledClasses));
+		putProperty(loadedProps, KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
+		putProperty(loadedProps, KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
+		putProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, Boolean.toString(intelMode));
 
 		switch (tieredCompilationMode)
 		{
 		case VM_DEFAULT:
-			saveProps.put(KEY_SANDBOX_TIERED_MODE, "0");
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0");
 			break;
 		case FORCE_TIERED:
-			saveProps.put(KEY_SANDBOX_TIERED_MODE, "1");
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "1");
 			break;
 		case FORCE_NO_TIERED:
-			saveProps.put(KEY_SANDBOX_TIERED_MODE, "2");
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2");
 			break;
 		}
-		
+
 		switch (compressedOopsMode)
 		{
 		case VM_DEFAULT:
-			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0");
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0");
 			break;
 		case FORCE_COMPRESSED:
-			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "1");
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "1");
 			break;
 		case FORCE_NO_COMPRESSED:
-			saveProps.put(KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
 		}
 
 		if (lastLogDir != null)
 		{
-			saveProps.put(KEY_LAST_LOG_DIR, lastLogDir);
+			putProperty(loadedProps, KEY_LAST_LOG_DIR, lastLogDir);
 		}
-		
-		saveProps.put(KEY_SANDBOX_FREQ_INLINE_SIZE, Integer.toString(freqInlineSize));
-	
-		saveProps.put(KEY_SANDBOX_MAX_INLINE_SIZE, Integer.toString(maxInlineSize));
 
-		saveProps.put(KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
+		putProperty(loadedProps, KEY_SANDBOX_FREQ_INLINE_SIZE, Integer.toString(freqInlineSize));
 
-		saveProps.put(KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
+		putProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, Integer.toString(maxInlineSize));
 
-		
-		return saveProps;
+		putProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
+
+		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
+
+		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
 	}
 
-	public void saveConfig()
+	public void savePropertiesToFile()
 	{
-		Properties saveProps = getSaveProperties();
-
-		try (FileWriter fw = new FileWriter(getConfigFile()))
+		if (DEBUG_LOGGING)
 		{
-			saveProps.store(fw, null);
+			logger.debug("savePropertiesToFile({})", propertiesFile);
+		}
+
+		try (FileWriter fw = new FileWriter(propertiesFile))
+		{
+			loadedProps.store(fw, null);
 		}
 		catch (IOException ioe)
 		{
 			logger.error("Could not save config file", ioe);
 		}
-	}
-
-	private File getConfigFile()
-	{
-		return new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 	}
 
 	public static File getJDKSourceZip()
@@ -290,21 +509,48 @@ public class JITWatchConfig
 		return result;
 	}
 
-	public List<String> getClassLocations()
+	public List<String> getConfiguredClassLocations()
 	{
 		return Collections.unmodifiableList(classLocations);
 	}
-
-	public List<String> getSandboxClassLocations()
+	
+	public List<String> getAllClassLocations()
 	{
-		return Collections.unmodifiableList(sandboxClassLocations);
+		ParsedClasspath parsedClasspath = getParsedClasspath();
+
+		List<String> mergedClassLocations = new ArrayList<>(classLocations);
+
+		for (String parsedLocation : parsedClasspath.getClassLocations())
+		{
+			if (!mergedClassLocations.contains(parsedLocation))
+			{
+				mergedClassLocations.add(parsedLocation);
+			}
+		}
+		
+		return mergedClassLocations;
 	}
 
 	public List<String> getSourceLocations()
 	{
 		return Collections.unmodifiableList(sourceLocations);
 	}
+	
+	public List<String> getLastEditorPaneList()
+	{
+		return Collections.unmodifiableList(editorPanes);
+	}
 
+	public void addSourceFolder(File sourceFolder)
+	{
+		String absPath = sourceFolder.getAbsolutePath();
+		
+		if (!sourceLocations.contains(absPath))
+		{
+			sourceLocations.add(absPath);
+		}
+	}
+	
 	public void setSourceLocations(List<String> sourceLocations)
 	{
 		this.sourceLocations = sourceLocations;
@@ -315,11 +561,11 @@ public class JITWatchConfig
 		this.classLocations = classLocations;
 	}
 
-	public void setSandboxClassLocations(List<String> sandboxClassLocations)
+	public void setLastEditorPaneList(List<String> editorPanes)
 	{
-		this.sandboxClassLocations = sandboxClassLocations;
+		this.editorPanes = editorPanes;
 	}
-
+	
 	public boolean isShowOnlyCompiledMembers()
 	{
 		return showOnlyCompiledMembers;
@@ -419,7 +665,17 @@ public class JITWatchConfig
 	{
 		this.printAssembly = printAssembly;
 	}
-	
+
+	public boolean isDisableInlining()
+	{
+		return disableInlining;
+	}
+
+	public void setDisableInlining(boolean disableInlining)
+	{
+		this.disableInlining = disableInlining;
+	}
+
 	public int getCompilerThreshold()
 	{
 		return compilerThreshold;
@@ -429,7 +685,7 @@ public class JITWatchConfig
 	{
 		this.compilerThreshold = compilationThreshold;
 	}
-	
+
 	public CompressedOops getCompressedOopsMode()
 	{
 		return compressedOopsMode;
@@ -438,5 +694,73 @@ public class JITWatchConfig
 	public void setCompressedOopsMode(CompressedOops compressedOopsMode)
 	{
 		this.compressedOopsMode = compressedOopsMode;
+	}
+
+	public void addOrUpdateVMLanguage(String language, String compilerPath, String runtimePath)
+	{
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+		
+		loadedProps.setProperty(compilerKey, compilerPath);
+		loadedProps.setProperty(runtimeKey, runtimePath);
+	}
+
+	public String getVMLanguageCompilerPath(String language)
+	{
+		String result = S_EMPTY;
+		
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+
+		if (loadedProps.containsKey(compilerKey))
+		{
+			result = loadedProps.getProperty(compilerKey);
+		}
+		
+		return result;
+	}
+
+	public String getVMLanguageRuntimePath(String language)
+	{
+		String result = S_EMPTY;
+		
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+
+		if (loadedProps.containsKey(runtimeKey))
+		{
+			result = loadedProps.getProperty(runtimeKey);
+		}
+		
+		return result;
+	}
+
+	public void removeVMLanguage(String language)
+	{
+		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+
+		loadedProps.remove(compilerKey);
+		loadedProps.remove(runtimeKey);
+	}
+
+	public List<String> getVMLanguageList()
+	{
+		List<String> languageList = new ArrayList<>();
+
+		for (Object key : loadedProps.keySet())
+		{
+			String keyString = key.toString();
+
+			if (keyString.startsWith(KEY_VM_LANGUAGE_COMPILER))
+			{
+				if (keyString.length() > KEY_VM_LANGUAGE_COMPILER.length())
+				{
+					String language = keyString.substring(1 + KEY_VM_LANGUAGE_COMPILER.length());
+
+					languageList.add(language);
+				}
+			}
+		}
+
+		return languageList;
 	}
 }

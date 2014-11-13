@@ -99,7 +99,7 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(StringUtil.padRight(annotation, annoWidth));
+		builder.append(StringUtil.alignLeft(annotation, annoWidth));
 		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 
@@ -157,7 +157,7 @@ public class AssemblyInstruction
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(StringUtil.padRight(annotation, annoWidth));
+		builder.append(StringUtil.alignLeft(annotation, annoWidth));
 		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
 
@@ -187,10 +187,12 @@ public class AssemblyInstruction
 		{
 			if (line == 0)
 			{
+				// first comment on same line as instruction
 				builder.append(S_DOUBLE_SPACE).append(commentLines.get(0)).append(S_NEWLINE);
 			}
 			else
 			{
+				// later comments on own line
 				builder.delete(0, builder.length());
 				builder.append(StringUtil.repeat(C_SPACE, lineLength + 2));
 				builder.append(commentLines.get(line)).append(S_NEWLINE);

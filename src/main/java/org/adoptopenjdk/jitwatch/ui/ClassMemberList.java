@@ -16,10 +16,11 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
@@ -40,6 +41,8 @@ public class ClassMemberList extends VBox
 	private ListView<IMetaMember> memberList;
 	private MetaClass metaClass = null;
 	private JITWatchConfig config;
+
+	private static final Logger logger = LoggerFactory.getLogger(ClassMemberList.class);
 
 	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -70,17 +73,7 @@ public class ClassMemberList extends VBox
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
 			{
-				parent.showMemberInfo(newVal);
-			}
-		});
-
-		memberList.getItems().addListener(new ListChangeListener<IMetaMember>()
-		{
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IMetaMember> arg0)
-			{
-				setScrollBar();
+				parent.setSelectedMetaMember(newVal);
 			}
 		});
 
@@ -92,31 +85,43 @@ public class ClassMemberList extends VBox
 				return new MetaMethodCell();
 			}
 		});
+		
+		final ContextMenu menuCompiled = buildContextMenuCompiledMember(parent);
+		final ContextMenu menuUncompiled = buildContextMenuUncompiledMember(parent);
+		
+		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, getEventHandlerContextMenu(menuCompiled, menuUncompiled));
 
-		final ContextMenu contextMenuCompiled = new ContextMenu();
-		final ContextMenu contextMenuNotCompiled = new ContextMenu();
 
-		MenuItem menuItemTriView = new MenuItem("Show TriView");
-		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
-		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
-		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
+		memberList.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent e)
+			{
+				menuCompiled.hide();
+				menuUncompiled.hide();
+			}
+		});
+		
+		
+		getChildren().add(cbOnlyCompiled);
+		getChildren().add(memberList);
 
-		contextMenuCompiled.getItems().add(menuItemTriView);
-		contextMenuCompiled.getItems().add(menuItemJournal);
-		contextMenuCompiled.getItems().add(menuItemIntrinsics);
-		contextMenuCompiled.getItems().add(menuItemCallChain);
+		memberList.prefHeightProperty().bind(heightProperty());
+	}
 
-		contextMenuNotCompiled.getItems().add(menuItemTriView);
-		contextMenuNotCompiled.getItems().add(menuItemJournal);
-
-		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
+	private EventHandler<MouseEvent> getEventHandlerContextMenu(final ContextMenu contextMenuCompiled,
+			final ContextMenu contextMenuNotCompiled)
+	{
+		return new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent e)
 			{
 				if (e.getButton() == MouseButton.SECONDARY)
 				{
-					if (memberList.getSelectionModel().getSelectedItem().isCompiled())
+					IMetaMember selectedMember = memberList.getSelectionModel().getSelectedItem();
+
+					if (selectedMember.isCompiled())
 					{
 						contextMenuCompiled.show(memberList, e.getScreenX(), e.getScreenY());
 					}
@@ -126,18 +131,72 @@ public class ClassMemberList extends VBox
 					}
 				}
 			}
-		});
+		};
+	}
 
-		menuItemTriView.setOnAction(new EventHandler<ActionEvent>()
+	private ContextMenu buildContextMenuCompiledMember(JITWatchUI parent)
+	{
+		final ContextMenu menu = new ContextMenu();
+
+		MenuItem menuItemTriView = new MenuItem("Show TriView");
+		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
+		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
+		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
+		MenuItem menuItemOptimizedVCalls = new MenuItem("Show optimized virtual calls");
+
+		menu.getItems().add(menuItemTriView);
+		menu.getItems().add(menuItemJournal);
+		menu.getItems().add(menuItemIntrinsics);
+		menu.getItems().add(menuItemCallChain);
+		menu.getItems().add(menuItemOptimizedVCalls);
+
+
+		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
+
+		menuItemJournal.setOnAction(getEventHandlerMenuItemJournal(parent));
+
+		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
+
+		menuItemCallChain.setOnAction(getEventHandlerMenuItemCallChain(parent));
+		
+		menuItemOptimizedVCalls.setOnAction(getEventHandlerMenuItemOptimizedVCall(parent));
+
+
+		return menu;
+	}
+
+	private ContextMenu buildContextMenuUncompiledMember(JITWatchUI parent)
+	{
+		ContextMenu menu = new ContextMenu();
+
+		MenuItem menuItemTriView = new MenuItem("Show TriView");
+		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
+
+		menu.getItems().add(menuItemTriView);
+		menu.getItems().add(menuItemJournal);
+
+		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
+
+		menuItemJournal.setOnAction(getEventHandlerMenuItemJournal(parent));
+		
+		return menu;
+	}
+
+	private EventHandler<ActionEvent> getEventHandlerMenuItemTriView(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				parent.openTriView(memberList.getSelectionModel().getSelectedItem(), false);
 			}
-		});
+		};
+	}
 
-		menuItemJournal.setOnAction(new EventHandler<ActionEvent>()
+	private EventHandler<ActionEvent> getEventHandlerMenuItemJournal(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
@@ -148,9 +207,12 @@ public class ClassMemberList extends VBox
 
 				parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
 			}
-		});
+		};
+	}
 
-		menuItemIntrinsics.setOnAction(new EventHandler<ActionEvent>()
+	private EventHandler<ActionEvent> getEventHandlerMenuItemIntrinsics(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
@@ -163,27 +225,37 @@ public class ClassMemberList extends VBox
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed);
 			}
-		});
+		};
+	}
 
-		menuItemCallChain.setOnAction(new EventHandler<ActionEvent>()
+	private EventHandler<ActionEvent> getEventHandlerMenuItemCallChain(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				parent.openCompileChain(memberList.getSelectionModel().getSelectedItem());
 			}
-		});
-
-		getChildren().add(cbOnlyCompiled);
-		getChildren().add(memberList);
-
-		memberList.prefHeightProperty().bind(heightProperty());
+		};
+	}
+	
+	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final JITWatchUI parent)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openOptmizedVCallReport(memberList.getSelectionModel().getSelectedItem());
+			}
+		};
 	}
 
 	private String processIntrinsicsUsing(Journal journal)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
 
 		if (intrinsics.size() > 0)
@@ -194,7 +266,7 @@ public class ClassMemberList extends VBox
 		{
 			builder.append("No intrinsics used in this method");
 		}
-		
+
 		return builder.toString();
 	}
 
@@ -209,6 +281,14 @@ public class ClassMemberList extends VBox
 	public void setMetaClass(MetaClass metaClass)
 	{
 		this.metaClass = metaClass;
+
+		List<IMetaMember> members = metaClass.getMetaMembers();
+
+		if (members.size() > 0)
+		{
+			selectMember(members.get(0));
+		}
+
 		refresh();
 	}
 
@@ -242,16 +322,21 @@ public class ClassMemberList extends VBox
 
 	public void selectMember(IMetaMember selected)
 	{
-		memberList.getSelectionModel().select(selected);
+		memberList.getSelectionModel().clearSelection();
 
-		setScrollBar();
-	}
+		for (int i = 0; i < memberList.getItems().size(); i++)
+		{
+			IMetaMember member = memberList.getItems().get(i);
 
-	private void setScrollBar()
-	{
-		int index = memberList.getSelectionModel().getSelectedIndex();
+			if (member.toString().equals(selected.toString()))
+			{
+				memberList.getSelectionModel().select(i);
 
-		memberList.scrollTo(index);
+				memberList.getFocusModel().focus(i);
+
+				memberList.scrollTo(i);
+			}
+		}
 	}
 
 	static class MetaMethodCell extends ListCell<IMetaMember>

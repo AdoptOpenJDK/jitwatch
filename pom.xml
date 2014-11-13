@@ -92,6 +92,19 @@
                 <javafx.version>8</javafx.version>
             </properties>
         </profile>
+        <profile>    
+            <id>jdk9</id>
+            <activation>
+                <jdk>1.9</jdk>
+            </activation>
+            <properties>
+                <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
+                <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
+                <jdk.version>1.9</jdk.version>
+                <!-- Generic version number as Oracle doesn't release separate jars -->
+                <javafx.version>9</javafx.version>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencyManagement>
@@ -317,6 +330,7 @@
                         <includeProjectDependencies>true</includeProjectDependencies>
                         <includePluginDependencies>true</includePluginDependencies>
                         <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
+	                <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         <additionalClasspathElements>
                             <additionalClasspathElement>src/main/resources</additionalClasspathElement>
                         </additionalClasspathElements>

@@ -33,8 +33,11 @@ public class CompileChainWalker
 
 	public CompileNode buildCallTree(IMetaMember mm)
 	{
-		logger.info("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
-
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+		}
+		
 		CompileNode root = null;
 
 		Journal journal = mm.getJournal();

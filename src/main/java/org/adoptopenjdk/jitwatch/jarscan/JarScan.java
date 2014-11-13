@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.demo;
+package org.adoptopenjdk.jitwatch.jarscan;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,17 +18,15 @@ import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class JarScan
 {
-    /*
-        Hide Utility Class Constructor
-        Utility classes should not have a public or default constructor.
-    */
-    private JarScan() {
-    }
+	private JarScan()
+	{
+	}
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException
 	{
 		List<String> classLocations = new ArrayList<>();
@@ -45,9 +43,9 @@ public final class JarScan
 
 				String name = entry.getName();
 
-				if (name.endsWith(".class"))
+				if (name.endsWith(S_DOT_CLASS))
 				{
-					String fqName = name.replace("/", ".").substring(0, name.length() - 6);
+					String fqName = name.replace(S_SLASH, S_DOT).substring(0, name.length() - 6);
 
 					process(classLocations, fqName, maxMethodBytes, writer);
 				}
@@ -59,35 +57,45 @@ public final class JarScan
 	{
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, className);
 
-		boolean shownClass = false;
-
-		for (String memberName : classBytecode.getBytecodeMethodSignatures())
-		{			
-			MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
-			
-			List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
-
-			if (instructions != null && instructions.size() > 0)
+		if (classBytecode != null)
+		{
+			for (String memberName : classBytecode.getBytecodeMethodSignatures())
 			{
-				BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
+				MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
 
-				// assume final instruction is a return of some kind for 1 byte
-				int bcSize = 1 + lastInstruction.getOffset();
+				List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
-				if (bcSize >= maxMethodBytes && !memberName.equals("static {}"))
+				if (instructions != null && instructions.size() > 0)
 				{
-					if (!shownClass)
-					{
-						writer.println(className);
-						shownClass = true;
-					}
+					BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
 
-					writer.print(bcSize);
-					writer.print(" -> ");
-					writer.println(memberName);
-					writer.flush();
+					// final instruction is a return for 1 byte
+					int bcSize = 1 + lastInstruction.getOffset();
+
+					if (bcSize >= maxMethodBytes && !memberName.equals(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
+					{
+						writer.print(C_DOUBLE_QUOTE);
+						writer.print(className);
+						writer.print(C_DOUBLE_QUOTE);
+						writer.print(C_COMMA);
+
+						writer.print(C_DOUBLE_QUOTE);
+						writer.print(memberName);
+						writer.print(C_DOUBLE_QUOTE);
+						writer.print(C_COMMA);
+						
+						writer.print(bcSize);
+						writer.println();
+
+						writer.flush();
+					}
 				}
 			}
+		}
+		else
+		{
+			System.err.println("An error occurred while parsing " + className + ". Please see jitwatch.out for details");
+			System.exit(-1);
 		}
 	}
 
@@ -103,7 +111,7 @@ public final class JarScan
 
 			writer.print(jarFile.getAbsolutePath());
 
-			writer.println(':');
+			writer.println(C_COLON);
 
 			iterateJar(jarFile, maxMethodBytes, writer);
 

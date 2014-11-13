@@ -9,20 +9,30 @@ import java.io.File;
 import java.io.IOException;
 
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
+import org.adoptopenjdk.jitwatch.model.SplitLog;
 
 public interface ILogParser
 {
 	void setConfig(JITWatchConfig config);
 	
-	void readLogFile(File hotspotLog) throws IOException;
+	void processLogFile(File hotspotLog, ILogParseErrorListener listener) throws IOException;
+	
+	SplitLog getSplitLog();
 	
 	void stopParsing();
+	
+	ParsedClasspath getParsedClasspath();
 	
 	JITDataModel getModel();
 	
 	JITWatchConfig getConfig();
 	
 	void reset();
+		
+	boolean hasParseError();
 	
-	boolean hasTraceClassLoading();
+	boolean isTweakVMLog();
+	
+	String getVMCommand();
 }

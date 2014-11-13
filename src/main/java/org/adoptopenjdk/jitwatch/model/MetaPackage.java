@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MetaPackage implements Comparable<MetaPackage>
 {
@@ -95,7 +95,7 @@ public class MetaPackage implements Comparable<MetaPackage>
     	
     	if (S_EMPTY.equals(packageName))
     	{
-    		str = "(default package)";
+    		str = DEFAULT_PACKAGE_NAME;
     	}
     	else
     	{

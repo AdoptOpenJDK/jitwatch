@@ -24,11 +24,11 @@ public abstract class AbstractGraphStage extends Stage
 	protected GraphicsContext gc;
 	protected JITWatchUI parent;
 
-	protected static double GRAPH_GAP_LEFT = 20.5;
-	protected static final double GRAPH_GAP_RIGHT = 20.5;
-	protected static final double GRAPH_GAP_Y = 20.5;
+	protected static double graphGapLeft = 20.5;
+	protected static final double graphGapRight = 20.5;
+	protected static final double graphGapTop = 20.5;
 
-	static final int[] Y_SCALE = new int[21];
+	protected static final int[] Y_SCALE = new int[21];
 
 	protected double width;
 	protected double height;
@@ -103,15 +103,15 @@ public abstract class AbstractGraphStage extends Stage
 	{
 		width = canvas.getWidth();
 		height = canvas.getHeight();
-		chartWidth = width - GRAPH_GAP_LEFT - GRAPH_GAP_RIGHT;
-		chartHeight = height - GRAPH_GAP_Y * 2;
+		chartWidth = width - graphGapLeft - graphGapRight;
+		chartHeight = height - graphGapTop * 2;
 
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, width, height);
 		gc.setFill(Color.rgb(210, 255, 255));
-		gc.fillRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+		gc.fillRect(graphGapLeft, graphGapTop, chartWidth, chartHeight);
 		gc.setStroke(Color.BLACK);
-		gc.strokeRect(GRAPH_GAP_LEFT, GRAPH_GAP_Y, chartWidth, chartHeight);
+		gc.strokeRect(graphGapLeft, graphGapTop, chartWidth, chartHeight);
 	}
 
 	protected void drawAxes()
@@ -140,12 +140,12 @@ public abstract class AbstractGraphStage extends Stage
 
 		while (gridX <= maxX)
 		{
-			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
+			double x = graphGapLeft + normaliseX(gridX);
+			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
 
 			boolean showMillis = maxX  < 5000;
 			
-			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(graphGapTop + chartHeight + 12));
 
 			gridX += xInc;
 		}
@@ -163,9 +163,9 @@ public abstract class AbstractGraphStage extends Stage
 
 		while (gridX <= maxX)
 		{
-			double x = GRAPH_GAP_LEFT + normaliseX(gridX);
-			gc.strokeLine(fix(x), fix(GRAPH_GAP_Y), fix(x), fix(GRAPH_GAP_Y + chartHeight));
-			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(GRAPH_GAP_Y + chartHeight + 12));
+			double x = graphGapLeft + normaliseX(gridX);
+			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
+			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(graphGapTop + chartHeight + 12));
 
 			gridX += xInc;
 		}
@@ -183,16 +183,16 @@ public abstract class AbstractGraphStage extends Stage
 
 		int maxYLabelWidth = StringUtil.formatThousands(Long.toString(maxYQ)).length();
 
-		GRAPH_GAP_LEFT = Math.max(40.5, maxYLabelWidth*7);
+		graphGapLeft = Math.max(40.5, maxYLabelWidth*7);
 		
-		double yLabelX = GRAPH_GAP_LEFT - (1 + maxYLabelWidth) * 6;
+		double yLabelX = graphGapLeft - (1 + maxYLabelWidth) * 6;
 
 		while (gridY <= maxYQ)
 		{
 			if (gridY >= minYQ)
 			{
-				double y = GRAPH_GAP_Y + normaliseY(gridY);
-				gc.strokeLine(fix(GRAPH_GAP_LEFT), fix(y), fix(GRAPH_GAP_LEFT + chartWidth), fix(y));
+				double y = graphGapTop + normaliseY(gridY);
+				gc.strokeLine(fix(graphGapLeft), fix(y), fix(graphGapLeft + chartWidth), fix(y));
 				gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(yLabelX), fix(y + 2));
 			}
 
@@ -202,9 +202,9 @@ public abstract class AbstractGraphStage extends Stage
 
 	private long getXStepTime()
 	{
-		long rangeMillis = maxXQ - minXQ;
-
-		int requiredLines = 6;
+		long rangeMillis = maxX - minX;
+		
+		int requiredLines = 5;
 
 		long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
 				2 * 24 * 60 * 60000, 24 * 60 * 60000, 16 * 60 * 60000, 12 * 60 * 60000, 8 * 60 * 60000, 6 * 60 * 60000,

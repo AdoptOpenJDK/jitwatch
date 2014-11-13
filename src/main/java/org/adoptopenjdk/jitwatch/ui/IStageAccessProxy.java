@@ -6,12 +6,13 @@
 package org.adoptopenjdk.jitwatch.ui;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
 import javafx.stage.Stage;
 
 public interface IStageAccessProxy
 {
-	void openTriView(IMetaMember member, boolean force);
+	ITriView openTriView(IMetaMember member, boolean force);
 	
 	void openBrowser(String title, String html, String stylesheet);
 	

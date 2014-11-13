@@ -36,8 +36,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_NEVER_EXECUTED = "never executed";
 	private static final String REASON_EXEC_LESS_MIN_INLINING_THRESHOLD = "executed < MinInliningThreshold times";
 	private static final String REASON_CALL_SITE_NOT_REACHED = "call site not reached";
-
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
+	private static final String REASON_NATIVE_METHOD = "native method";
+
 
 	static
 	{
@@ -49,6 +50,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
 
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
+		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
+
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
 
 		explanationMap
@@ -84,7 +87,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 				Tag parsePhase = JournalUtil.getParsePhase(journal);
 
-				// TODO fix for JDK8
 				if (parsePhase != null)
 				{
 					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -198,8 +200,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					if (score > 0)
 					{
-						Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.INLINING,
-								(int) Math.ceil(score));
+						Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(),
+								SuggestionType.INLINING, (int) Math.ceil(score));
 
 						if (!suggestionList.contains(suggestion))
 						{
@@ -278,9 +280,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append(" times and is taken with probability ");
 			reasonBuilder.append(probability);
 			reasonBuilder
-					.append(". It may be possbile to modify the branch (for example by sorting a collection before iterating) to make it more predictable.");
+					.append(". It may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
-			Suggestion suggestion = new Suggestion(caller, reasonBuilder.toString(), SuggestionType.BRANCH, (int) Math.ceil(score));
+			Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
+					(int) Math.ceil(score));
 
 			if (!suggestionList.contains(suggestion))
 			{

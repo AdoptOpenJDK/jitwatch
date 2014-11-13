@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,23 +32,35 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	private JITDataModel model;
 
+	private String vmCommand = null;
+
+	private boolean isTweakVMLog = false;
+
 	private boolean reading = false;
 
-	private boolean hasTraceClassLoad = false;
+	boolean hasTraceClassLoad = false;
+
+	private boolean hasParseError = false;
+	private String errorDialogTitle;
+	private String errorDialogBody;
 
 	private IMetaMember currentMember = null;
 
 	private IJITListener logListener = null;
+	private ILogParseErrorListener errorListener = null;
 
-	private boolean inHeader = true;
+	private boolean inHeader = false;
 
-	private long currentLineNumber;
+	private long parseLineNumber;
+	private long processLineNumber;
 
-	private JITWatchConfig config;
+	private JITWatchConfig config = new JITWatchConfig();
 
 	private TagProcessor tagProcessor;
 
 	private AssemblyProcessor asmProcessor;
+
+	private SplitLog splitLog = new SplitLog();
 
 	public HotSpotLogParser(IJITListener logListener)
 	{
@@ -66,21 +80,41 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		return config;
 	}
 
-	private void mountAdditionalClasses()
+	@Override
+	public SplitLog getSplitLog()
 	{
-		URL[] classURLs = new URL[config.getClassLocations().size()];
+		return splitLog;
+	}
 
-		int pos = 0;
+	public ParsedClasspath getParsedClasspath()
+	{
+		return config.getParsedClasspath();
+	}
 
-		for (String filename : config.getClassLocations())
+	private void configureDisposableClassLoader()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("configureDisposableClassLoader()");
+		}
+
+		List<String> configuredClassLocations = config.getConfiguredClassLocations();
+		List<String> parsedClassLocations = getParsedClasspath().getClassLocations();
+
+		int configuredClasspathCount = configuredClassLocations.size();
+		int parsedClasspathCount = parsedClassLocations.size();
+
+		List<URL> classpathURLList = new ArrayList<URL>(configuredClasspathCount + parsedClasspathCount);
+
+		for (String filename : configuredClassLocations)
 		{
 			URI uri = new File(filename).toURI();
 
-			logListener.handleLogEntry("Adding classpath: " + uri.toString());
+			logListener.handleLogEntry("Adding configured classpath: " + uri.toString());
 
 			try
 			{
-				classURLs[pos++] = uri.toURL();
+				classpathURLList.add(uri.toURL());
 			}
 			catch (MalformedURLException e)
 			{
@@ -88,7 +122,26 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			}
 		}
 
-		ClassUtil.initialise(classURLs);
+		for (String filename : getParsedClasspath().getClassLocations())
+		{
+			if (!configuredClassLocations.contains(filename))
+			{
+				URI uri = new File(filename).toURI();
+
+				logListener.handleLogEntry("Adding parsed classpath: " + uri.toString());
+
+				try
+				{
+					classpathURLList.add(uri.toURL());
+				}
+				catch (MalformedURLException e)
+				{
+					logger.error("Could not create URL: {} ", uri, e);
+				}
+			}
+		}
+
+		ClassUtil.initialise(classpathURLList);
 	}
 
 	private void logEvent(JITEvent event)
@@ -116,20 +169,33 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	@Override
 	public void reset()
 	{
+		logger.info("HotSpotLogParser.reset()");
+		
 		getModel().reset();
+
+		splitLog.clear();
 
 		hasTraceClassLoad = false;
 
+		isTweakVMLog = false;
+
+		hasParseError = false;
+		errorDialogTitle = null;
+		errorDialogBody = null;
+
 		reading = false;
+
+		inHeader = false;
 
 		currentMember = null;
 
 		// tell listener to reset any data
 		logListener.handleReadStart();
 
-		mountAdditionalClasses();
+		vmCommand = null;
 
-		currentLineNumber = 0;
+		parseLineNumber = 0;
+		processLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
 
@@ -137,56 +203,184 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	@Override
-	public void readLogFile(File hotspotLog) throws IOException
+	public void processLogFile(File hotspotLog, ILogParseErrorListener errorListener)
 	{
 		reset();
 
-		reading = true;
+		this.errorListener = errorListener;
 
-		BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536);
+		splitLogFile(hotspotLog);
 
-		String currentLine = reader.readLine();
+		logSplitStats();
 
-		inHeader = true;
+		parseLogFile();
+	}
 
-		while (reading && currentLine != null)
+	private void parseLogFile()
+	{
+		parseHeaderLines();
+
+		buildParsedClasspath();
+
+		configureDisposableClassLoader();
+
+		buildClassModel();
+
+		parseLogCompilationLines();
+
+		parseAssemblyLines();
+
+		checkIfErrorDialogNeeded();
+
+		logListener.handleReadComplete();
+	}
+
+	private void checkIfErrorDialogNeeded()
+	{
+		if (!hasParseError)
 		{
-			try
+			if (!hasTraceClassLoad)
 			{
-				String trimmedLine = currentLine.trim();
+				hasParseError = true;
 
-				if (trimmedLine.length() > 0)
-				{
-					char firstChar = trimmedLine.charAt(0);
+				errorDialogTitle = "Missing VM Switch -XX:+TraceClassLoading";
+				errorDialogBody = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
+			}
+		}
 
-					if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET)
-					{
-						currentLine = trimmedLine;
-					}
-				}
+		if (hasParseError)
+		{
+			errorListener.handleError(errorDialogTitle, errorDialogBody);
+		}
+	}
 
-				if (inHeader)
+	private void parseHeaderLines()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("parseHeaderLines()");
+		}
+
+		for (NumberedLine numberedLine : splitLog.getHeaderLines())
+		{
+			if (!skipLine(numberedLine.getLine(), SKIP_HEADER_TAGS))
+			{
+				Tag tag = tagProcessor.processLine(numberedLine.getLine());
+
+				processLineNumber = numberedLine.getLineNumber();
+
+				if (tag != null)
 				{
-					handleLogHeader(currentLine);
-				}
-				else
-				{
-					handleLogLine(currentLine);
+					handleTag(tag);
 				}
 			}
-			catch (Exception ex)
-			{
-				logger.error("Exception handling: '{}'", currentLine, ex);
-			}
+		}
+	}
 
-			currentLine = reader.readLine();
+	private void parseLogCompilationLines()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("parseLogCompilationLines()");
+		}
+
+		for (NumberedLine numberedLine : splitLog.getLogCompilationLines())
+		{			
+			if (!skipLine(numberedLine.getLine(), SKIP_BODY_TAGS))
+			{
+				Tag tag = tagProcessor.processLine(numberedLine.getLine());
+
+				processLineNumber = numberedLine.getLineNumber();
+
+				if (tag != null)
+				{
+					handleTag(tag);
+				}
+			}
+		}
+	}
+
+	private void parseAssemblyLines()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("parseAssemblyLines()");
+		}
+
+		for (NumberedLine numberedLine : splitLog.getAssemblyLines())
+		{
+			processLineNumber = numberedLine.getLineNumber();
+
+			asmProcessor.handleLine(numberedLine.getLine());
 		}
 
 		asmProcessor.complete();
+	}
 
-		reader.close();
+	private void splitLogFile(File hotspotLog)
+	{
+		reading = true;
 
-		logListener.handleReadComplete();
+		BufferedReader reader = null;
+
+		try
+		{
+			reader = new BufferedReader(new FileReader(hotspotLog), 65536);
+
+			String currentLine = reader.readLine();
+
+			while (reading && currentLine != null)
+			{
+				try
+				{
+					String trimmedLine = currentLine.trim();
+
+					if (trimmedLine.length() > 0)
+					{
+						char firstChar = trimmedLine.charAt(0);
+
+						if (firstChar == C_OPEN_ANGLE || firstChar == C_OPEN_SQUARE_BRACKET || firstChar == C_AT)
+						{
+							currentLine = trimmedLine;
+						}
+
+						handleLogLine(currentLine);
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.error("Exception handling: '{}'", currentLine, ex);
+				}
+
+				currentLine = reader.readLine();
+			}
+		}
+		catch (IOException ioe)
+		{
+			logger.error("Exception while splitting log file", ioe);
+		}
+		finally
+		{
+			if (reader != null)
+			{
+				try
+				{
+					reader.close();
+				}
+				catch (Exception e)
+				{
+					logger.error("Could not close reader");
+				}
+			}
+		}
+	}
+
+	private void logSplitStats()
+	{
+		logger.debug("Header lines        : {}", splitLog.getHeaderLines().size());
+		logger.debug("ClassLoader lines   : {}", splitLog.getClassLoaderLines().size());
+		logger.debug("LogCompilation lines: {}", splitLog.getLogCompilationLines().size());
+		logger.debug("Assembly lines      : {}", splitLog.getAssemblyLines().size());
 	}
 
 	@Override
@@ -211,63 +405,81 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		return isSkip;
 	}
 
-	// HotSpot log header XML can have text nodes
-	private void handleLogHeader(final String inCurrentLine)
-	{
-		if (TAG_TTY.equals(inCurrentLine))
-		{
-			inHeader = false;
-		}
-		else
-		{
-			if (!skipLine(inCurrentLine, SKIP_HEADER_TAGS))
-			{
-				Tag tag = tagProcessor.processLine(inCurrentLine);
-
-				if (tag != null)
-				{
-					handleTag(tag);
-				}
-			}
-		}
-	}
-
-	// After the header, XML nodes do not have text nodes
 	private void handleLogLine(final String inCurrentLine)
 	{
 		String currentLine = inCurrentLine;
 
-		currentLine = currentLine.replace(S_ENTITY_LT, S_OPEN_ANGLE);
-		currentLine = currentLine.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+		NumberedLine numberedLine = new NumberedLine(parseLineNumber++, currentLine);
 
-		if (currentLine.startsWith(S_OPEN_ANGLE))
+		if (TAG_TTY.equals(currentLine))
 		{
-			if (!skipLine(inCurrentLine, SKIP_BODY_TAGS))
-			{
-				Tag tag = tagProcessor.processLine(currentLine);
-
-				if (tag != null)
-				{
-					handleTag(tag);
-				}
-			}
+			inHeader = false;
+			return;
 		}
-		else if (currentLine.startsWith(LOADED))
+		else if (currentLine.startsWith(TAG_XML))
 		{
-			handleLoaded(currentLine);
+			inHeader = true;
+		}
+
+		if (inHeader)
+		{
+			// HotSpot log header XML can have text nodes so consume all lines
+			splitLog.addHeaderLine(numberedLine);
 		}
 		else
 		{
-			asmProcessor.handleLine(currentLine);
-		}
+			if (currentLine.startsWith(S_OPEN_ANGLE))
+			{
+				// After the header, XML nodes do not have text nodes
+				splitLog.addLogCompilationLine(numberedLine);
+			}
+			else if (currentLine.startsWith(LOADED))
+			{
+				splitLog.addClassLoaderLine(numberedLine);
+			}
+			else if (currentLine.startsWith(S_AT))
+			{
+				// possible PrintCompilation was enabled as well as
+				// LogCompilation?
+				// jmh does this with perf annotations
+				// Ignore this line
+			}
+			else
+			{
+				// need to cope with nmethod appearing on same line as last hlt
+				// 0x0000 hlt <nmethod compile_id= ....
 
-		currentLineNumber++;
+				int indexNMethod = currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
+
+				if (indexNMethod != -1)
+				{
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("detected nmethod tag mangled with assembly");
+					}
+
+					String assembly = currentLine.substring(0, indexNMethod);
+
+					String remainder = currentLine.substring(indexNMethod);
+
+					numberedLine.setLine(assembly);
+
+					splitLog.addAssemblyLine(numberedLine);
+
+					handleLogLine(remainder);
+				}
+				else
+				{
+					splitLog.addAssemblyLine(numberedLine);
+				}
+			}
+		}
 	}
 
 	private void handleTag(Tag tag)
 	{
 		String tagName = tag.getName();
-
+		
 		switch (tagName)
 		{
 		case TAG_VM_VERSION:
@@ -290,6 +502,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 			handleStartCompileThread(tag);
 			break;
 
+		case TAG_VM_ARGUMENTS:
+			handleTagVmArguments(tag);
+			break;
+
 		default:
 			break;
 		}
@@ -300,6 +516,25 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
 
 		model.setVmVersionRelease(release);
+
+		List<Tag> tweakVMTags = tag.getNamedChildren(TAG_TWEAK_VM);
+
+		if (tweakVMTags.size() == 1)
+		{
+			isTweakVMLog = true;
+			logger.debug("TweakVM detected!");
+		}
+	}
+
+	private void handleTagVmArguments(Tag tag)
+	{
+		List<Tag> tagCommandChildren = tag.getNamedChildren(TAG_COMMAND);
+		
+		if (tagCommandChildren.size() > 0)
+		{
+			vmCommand = tagCommandChildren.get(0).getTextContent();
+			logger.debug("VM Command: {}", vmCommand);
+		}
 	}
 
 	private void handleStartCompileThread(Tag tag)
@@ -334,35 +569,21 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 	public IMetaMember findMemberWithSignature(String logSignature)
 	{
-		IMetaMember metaMember = null;
-
-		String[] parsedResult = null;
+		IMetaMember result = null;
 
 		try
 		{
-			parsedResult = ParseUtil.parseLogSignature(logSignature);
+			result = ParseUtil.findMemberWithSignature(model, logSignature);
 		}
-		catch (Exception e)
+		catch (LogParseException ex)
 		{
-			logError(e.getMessage());
+			logger.warn("Could not parse signature: {}", logSignature);
+			logger.warn("Exception was {}", ex.getMessage());
+			
+			logError("Could not parse line " + processLineNumber + " : " + logSignature + " : " + ex.getMessage());
 		}
 
-		if (parsedResult != null)
-		{
-			String className = parsedResult[0];
-			String parsedSignature = parsedResult[1];
-
-			if (parsedSignature != null)
-			{
-				metaMember = model.findMetaMember(className, parsedSignature);
-			}
-		}
-		else
-		{
-			logError("Could not parse line " + currentLineNumber + " : " + logSignature);
-		}
-
-		return metaMember;
+		return result;
 	}
 
 	private void handleTagQueued(Tag tag)
@@ -405,7 +626,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleTagTask(Tag tag)
-	{
+	{		
 		handleMethodLine(tag, EventType.TASK);
 
 		Tag tagCodeCache = tag.getFirstNamedChild(TAG_CODE_CACHE);
@@ -511,17 +732,60 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 	}
 
-	/*
-	 * JITWatch needs classloader information so it can show classes which have
-	 * no JIT-compiled methods in the class tree
-	 */
-	private void handleLoaded(String inCurrentLine)
+	private void buildParsedClasspath()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildParsedClasspath()");
+		}
+
+		for (NumberedLine numberedLine : splitLog.getClassLoaderLines())
+		{
+			buildParsedClasspath(numberedLine.getLine());
+		}
+	}
+
+	private void buildClassModel()
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildClassModel()");
+		}
+
+		for (NumberedLine numberedLine : splitLog.getClassLoaderLines())
+		{
+			buildClassModel(numberedLine.getLine());
+		}
+	}
+
+	private void buildParsedClasspath(String inCurrentLine)
 	{
 		if (!hasTraceClassLoad)
 		{
 			hasTraceClassLoad = true;
 		}
 
+		final String FROM_SPACE = "from ";
+
+		String originalLocation = null;
+
+		int fromSpacePos = inCurrentLine.indexOf(FROM_SPACE);
+
+		if (fromSpacePos != -1)
+		{
+			originalLocation = inCurrentLine.substring(fromSpacePos + FROM_SPACE.length(), inCurrentLine.length() - 1);
+		}
+
+		if (originalLocation != null && originalLocation.startsWith(S_FILE_COLON))
+		{
+			originalLocation = originalLocation.substring(S_FILE_COLON.length());
+
+			getParsedClasspath().addClassLocation(originalLocation);
+		}
+	}
+
+	private void buildClassModel(String inCurrentLine)
+	{
 		String fqClassName = StringUtil.getSubstringBetween(inCurrentLine, LOADED, S_SPACE);
 
 		if (fqClassName != null)
@@ -540,29 +804,66 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 			if (clazz != null)
 			{
-				model.buildMetaClass(fqClassName, clazz);
+				model.buildAndGetMetaClass(clazz);
 			}
 		}
 		catch (ClassNotFoundException cnf)
 		{
-			logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
+			if (!possibleLambdaMethod(fqClassName))
+			{
+				logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
+			}
 		}
 		catch (NoClassDefFoundError ncdf)
 		{
-			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
+			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + "requires " + ncdf.getMessage() + C_QUOTE);
+		}
+		catch (UnsupportedClassVersionError ucve)
+		{
+			hasParseError = true;
+			errorDialogTitle = "UnsupportedClassVersionError for class " + fqClassName;
+			errorDialogBody = "Could not load " + fqClassName + " as the class file version is too recent for this JVM.";
+
+			logError("UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
+			logger.error("Class file for {} created in a later JVM version", fqClassName, ucve);
 		}
 		catch (Throwable t)
 		{
-			// Throwable because of possible VerifyError
-
+			// Possibly a VerifyError
 			logger.error("Could not addClassToModel {}", fqClassName, t);
 			logError("Exception: '" + fqClassName + C_QUOTE);
 		}
 	}
 
-	@Override
-	public boolean hasTraceClassLoading()
+	private boolean possibleLambdaMethod(String fqClassName)
 	{
-		return hasTraceClassLoad;
+		for (String prefix : JITWatchConstants.getLambdaClassPrefixes())
+		{
+			if (fqClassName.startsWith(prefix))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
+
+	@Override
+	public boolean hasParseError()
+	{
+		return hasParseError;
+	}
+
+	@Override
+	public boolean isTweakVMLog()
+	{
+		return isTweakVMLog;
+	}
+
+	@Override
+	public String getVMCommand()
+	{
+		return vmCommand;
+	}
+
 }

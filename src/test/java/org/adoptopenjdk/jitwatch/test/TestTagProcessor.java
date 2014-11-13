@@ -8,12 +8,8 @@ package org.adoptopenjdk.jitwatch.test;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.junit.Ignore;
 import org.junit.Test;
-
 import java.util.List;
-import java.util.Map;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -235,6 +231,60 @@ public class TestTagProcessor
 		assertEquals(TAG_RELEASE, tagRelease.getName());	
 		assertEquals(line5, tagRelease.getTextContent());
 	}
+	
+	@Test
+	public void testTweakSelfClosingTag()
+	{
+		String line0 = "<vm_version>";
+		String line1 = "<TweakVM/>";
+		String line2 = "<name>";
+		String line3 = "Java HotSpot(TM) 64-Bit Server VM";
+		String line4 = "</name>";
+		String line5 = "<release>";
+		String line6 = "25.0-b70";
+		String line7 = "</release>";
+		String line8 = "<info>";
+		String line9 = "Java HotSpot(TM) 64-Bit Server VM (25.0-b70) for linux-amd64 JRE (1.8.0-b132), built on Mar  4 2014 03:07:25 by &quot;java_re&quot; with gcc 4.3.0 20080428 (RedHat 4.3.0-8)";
+		String line10 = "</info>";
+		String line11 = "</vm_version>";
+
+		String[] lines = new String[] { line0, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11 };
+
+		TagProcessor tp = new TagProcessor();
+
+		int count = 0;
+
+		Tag tag = null;
+
+		for (String line : lines)
+		{
+			tag = tp.processLine(line);
+
+			if (count++ < lines.length - 1)
+			{
+				assertNull(tag);
+			}
+		}
+
+		assertNotNull(tag);
+
+		assertEquals(TAG_VM_VERSION, tag.getName());
+		
+		List<Tag> children = tag.getChildren();
+		
+		assertEquals(4, children.size());
+		
+		Tag tagTweakVM = children.get(0);
+		
+		assertEquals(TAG_TWEAK_VM, tagTweakVM.getName());	
+		assertEquals(null, tagTweakVM.getTextContent());
+
+		Tag tagRelease = children.get(2);
+		
+		assertEquals(TAG_RELEASE, tagRelease.getName());	
+		assertEquals(line6, tagRelease.getTextContent());
+	}
+
 
     /*
         Scenario: Parsing an undefined line
@@ -328,35 +378,6 @@ public class TestTagProcessor
         // Then
         assertThat("No tags should have been returned.",
                 actualTag,
-                is(equalTo(expectedParseResult)));
-    }
-
-    /*
-        Scenario: Parsing a line containing a tag of type 'Task'
-            Given a line containing a tag of type 'Task' is available
-            When the tag processor parses such a line
-            Then a task object is returned
-     */
-    @Test
-    @Ignore
-    public void givenLineContainingATypeTask_WhenTheTagProcessorParsesIt_ThenATaskTagIsReturned() {
-        // Given
-         String withTypeTask = "<task compile_id='1' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog " +
-         "addVariable (I)V' bytes='41' count='10000' backedge_count='5438' iicount='1' osr_bci='5' stamp='0.164'>";
-        //String withTypeTask = "</task>";
-        Map<String, String> attrs = StringUtil.getLineAttributes(withTypeTask);
-        boolean selfClosing = (withTypeTask.charAt(withTypeTask.length() - 2) == JITWatchConstants.C_SLASH);
-        int indexEndName = withTypeTask.indexOf(C_CLOSE_ANGLE);
-        String name = withTypeTask.substring(1, indexEndName);
-        Tag expectedParseResult = new Tag(name, attrs, selfClosing);
-
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        Tag actualParseResult = tagProcessor.processLine(withTypeTask);
-
-        // Then
-        assertThat("The line should have been parsed correctly, producing a tag..",
-                actualParseResult,
                 is(equalTo(expectedParseResult)));
     }
 }
