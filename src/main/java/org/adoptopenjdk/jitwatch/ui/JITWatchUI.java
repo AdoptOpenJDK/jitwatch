@@ -56,7 +56,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
@@ -83,9 +82,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
 	public static final int WINDOW_WIDTH = 1024;
-	public static final int WINDOW_HEIGHT;
+	public static final int WINDOW_HEIGHT = 550;
 
 	private static final String JAVA_VERSION_7 = "1.7";
+	public static final boolean IS_JAVA_FX2;
 
 	static
 	{
@@ -93,12 +93,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		if (version.contains(JAVA_VERSION_7))
 		{
-			WINDOW_HEIGHT = 592;
+			IS_JAVA_FX2 = true;
 		}
 		else
 		{
-			// JavaFX 8 buttons have more padding.
-			WINDOW_HEIGHT = 550;
+			IS_JAVA_FX2 = false;
 		}
 	}
 
@@ -321,7 +320,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		Button btnChooseWatchFile = new Button("Open Log");
+		Button btnChooseWatchFile = buildButton("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -332,7 +331,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStart = new Button("Start");
+		btnStart = buildButton("Start");
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -363,7 +362,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStop = new Button("Stop");
+		btnStop = buildButton("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -373,7 +372,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnConfigure = new Button("Config");
+		btnConfigure = buildButton("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -383,7 +382,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTimeLine = new Button("Chart");
+		btnTimeLine = buildButton("Chart");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -397,7 +396,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStats = new Button("Stats");
+		btnStats = buildButton("Stats");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -411,7 +410,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnHisto = new Button("Histo");
+		btnHisto = buildButton("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -425,7 +424,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTopList = new Button("TopList");
+		btnTopList = buildButton("TopList");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -439,7 +438,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnCodeCache = new Button("Code Cache");
+		btnCodeCache = buildButton("Code Cache");
 		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -453,7 +452,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTriView = new Button("TriView");
+		btnTriView = buildButton("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -468,7 +467,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSuggest = new Button("Suggest");
+		btnSuggest = buildButton("Suggest");
 		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -481,28 +480,28 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				btnSuggest.setDisable(true);
 			}
 		});
-		
-		btnOptimizedVirtualCalls = new Button("OVCs");
+
+		btnOptimizedVirtualCalls = buildButton("OVCs");
 		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
-				
+
 				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
-				
+
 				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(logParser.getModel());
 
 				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
 
 				StageManager.addAndShow(ovcStage);
-				
+
 				btnOptimizedVirtualCalls.setDisable(true);
 			}
 		});
 
-		btnSandbox = new Button("Sandbox");
+		btnSandbox = buildButton("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -657,6 +656,14 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
 
 		updateButtons();
+	}
+
+	private Button buildButton(String title)
+	{
+		Button button = new Button(title);
+		button.setStyle("-fx-font: 13 arial; -fx-base: #ccccff; -fx-padding: 3 9 4 9");
+
+		return button;
 	}
 
 	void openConfigStage()
@@ -858,7 +865,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (member.isCompiled())
 		{
 			OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
-			
+
 			List<OptimizedVirtualCall> optimizedVirtualCalls = OptimizedVirtualCallFinder.findOptimizedCalls(member);
 
 			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
@@ -917,15 +924,15 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (result != null)
 		{
 			setHotSpotLogFile(result);
-			
+
 			JITWatchConfig config = getConfig();
-			
+
 			if (JITWatchConstants.S_PROFILE_SANDBOX.equals(config.getProfileName()))
 			{
 				logger.debug("Reverting to non-sandbox config for loaded log file");
 				logParser.getConfig().switchFromSandbox();
 			}
-			
+
 		}
 	}
 
