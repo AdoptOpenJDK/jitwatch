@@ -5,19 +5,22 @@
  */
 package org.adoptopenjdk.jitwatch.toplist;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
+public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable implements ILastTaskParseTagVisitable
 {
 	private final Map<String, Integer> reasonCountMap;
 
@@ -28,22 +31,17 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 	}
 
 	@Override
-	public void visit(IMetaMember mm)
+	public void visit(IMetaMember metaMember)
 	{
-		if (mm.isCompiled())
+		if (metaMember.isCompiled())
 		{
-			Journal journal = mm.getJournal();
-
-			Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-			if (parsePhase != null)
+			try
 			{
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-				for (Tag parseTag : parseTags)
-				{
-					processParseTag(parseTag);
-				}
+				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+			}
+			catch (LogParseException e)
+			{
+				logger.error("Error building inlining stats", e);
 			}
 		}
 	}
@@ -70,16 +68,16 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				{
 					reasonCountMap.put(reason, 1);
 				}
-                break;
+				break;
 			}
 			case TAG_PARSE:
 			{
 				processParseTag(child);
-                break;
+				break;
 			}
-            default:
-                break;
-            }
+			default:
+				break;
+			}
 		}
 	}
 
@@ -90,5 +88,11 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		{
 			topList.add(new StringTopListScore(entry.getKey(), entry.getValue().longValue()));
 		}
+	}
+
+	@Override
+	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+		processParseTag(parseTag);
 	}
 }

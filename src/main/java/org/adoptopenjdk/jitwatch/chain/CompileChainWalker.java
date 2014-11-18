@@ -5,76 +5,70 @@
  */
 package org.adoptopenjdk.jitwatch.chain;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.model.*;
+import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.InlineUtil;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-public class CompileChainWalker
+public class CompileChainWalker implements ILastTaskParseTagVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
 
-	private IParseDictionary parseDictionary;
-
 	private IReadOnlyJITDataModel model;
+
+	private CompileNode root = null;
+
+	private IMetaMember metaMember = null;
 
 	public CompileChainWalker(IReadOnlyJITDataModel model)
 	{
 		this.model = model;
 	}
 
-	public CompileNode buildCallTree(IMetaMember mm)
+	public CompileNode buildCallTree(IMetaMember metaMember)
 	{
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("buildCallTree: {}", mm.toStringUnqualifiedMethodName(false));
+			logger.debug("buildCallTree: {}", metaMember.toStringUnqualifiedMethodName(false));
 		}
-		
-		CompileNode root = null;
 
-		Journal journal = mm.getJournal();
+		this.root = null;
+		this.metaMember = metaMember;
 
-		Task lastTaskTag = JournalUtil.getLastTask(journal);
-
-		if (lastTaskTag != null)
+		try
 		{
-			parseDictionary = lastTaskTag.getParseDictionary();
-
-			Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-			if (parsePhase != null)
-			{
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-				for (Tag parseTag : parseTags)
-				{
-					String id = parseTag.getAttribute(ATTR_METHOD);
-
-					// only initialise on first parse tag.
-					// there may be multiple if late_inline
-					// is detected
-					if (root == null)
-					{
-						root = new CompileNode(mm, id);
-					}
-
-					processParseTag(parseTag, root);
-				}
-			}
+			JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+		}
+		catch (LogParseException lpe)
+		{
+			logger.error("Could not build compile tree", lpe);
 		}
 
 		return root;
 	}
 
-	private void processParseTag(Tag parseTag, CompileNode parentNode)
+	private void processParseTag(Tag parseTag, CompileNode parentNode, IParseDictionary parseDictionary)
 	{
 		String methodID = null;
 		boolean inlined = false;
@@ -164,7 +158,7 @@ public class CompileChainWalker
 						childNode.setInlined(inlined, inlineReason);
 					}
 
-					processParseTag(child, childNode);
+					processParseTag(child, childNode, parseDictionary);
 				}
 				else
 				{
@@ -177,5 +171,21 @@ public class CompileChainWalker
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+		String id = parseTag.getAttribute(ATTR_METHOD);
+
+		// only initialise on first parse tag.
+		// there may be multiple if late_inline
+		// is detected
+		if (root == null)
+		{
+			root = new CompileNode(metaMember, id);
+		}
+
+		processParseTag(parseTag, root, parseDictionary);
 	}
 }

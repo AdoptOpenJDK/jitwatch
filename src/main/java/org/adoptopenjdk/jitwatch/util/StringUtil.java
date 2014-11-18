@@ -5,13 +5,23 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_EQUALS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class StringUtil
 {
@@ -206,7 +216,7 @@ public final class StringUtil
 	{
 		int lastDot = fqClassName.lastIndexOf('.');
 
-		String result = fqClassName;
+		String result = S_EMPTY;
 
 		if (lastDot != -1)
 		{
@@ -395,7 +405,7 @@ public final class StringUtil
 		StringBuilder builder = new StringBuilder(text);
 
 		int i = 0;
-		
+
 		while (i + width < builder.length() && (i = builder.lastIndexOf(S_SPACE, i + width)) != -1)
 		{
 			builder.replace(i, i + 1, S_NEWLINE);
@@ -403,7 +413,7 @@ public final class StringUtil
 
 		return builder.toString();
 	}
-	
+
 	public static String getAbbreviatedFQName(String fqClassName)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -415,10 +425,10 @@ public final class StringUtil
 			for (int i = 0; i < parts.length - 1; i++)
 			{
 				String part = parts[i];
-				
+
 				builder.append(part.charAt(0)).append(C_DOT);
 			}
-			
+
 			builder.append(parts[parts.length - 1]);
 		}
 

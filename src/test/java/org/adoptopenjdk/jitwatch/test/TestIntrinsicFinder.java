@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.junit.Test;
 
@@ -68,10 +68,12 @@ public class TestIntrinsicFinder
 
 		assertNotNull(tag);
 
-		Journal journal = new Journal();
-		journal.addEntry(tag);
+		IMetaMember member = UnitTestUtil.createTestMetaMember();
+		member.addJournalEntry(tag);
 
-		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+		IntrinsicFinder finder = new IntrinsicFinder();
+
+		Map<String, String> intrinsics = finder.findIntrinsics(member);
 
 		assertEquals(1, intrinsics.size());
 
@@ -364,10 +366,12 @@ public class TestIntrinsicFinder
 
 		assertNotNull(tag);
 
-		Journal journal = new Journal();
-		journal.addEntry(tag);
+		IMetaMember member = UnitTestUtil.createTestMetaMember();
+		member.addJournalEntry(tag);
 
-		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+		IntrinsicFinder finder = new IntrinsicFinder();
+
+		Map<String, String> intrinsics = finder.findIntrinsics(member);
 
 		assertEquals(1, intrinsics.size());
 

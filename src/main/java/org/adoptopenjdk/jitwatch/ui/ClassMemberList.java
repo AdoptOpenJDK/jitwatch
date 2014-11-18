@@ -5,19 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 import java.util.List;
 import java.util.Map;
-
-import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.Journal;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -34,6 +26,15 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+
+import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClassMemberList extends VBox
 {
@@ -85,10 +86,10 @@ public class ClassMemberList extends VBox
 				return new MetaMethodCell();
 			}
 		});
-		
+
 		final ContextMenu menuCompiled = buildContextMenuCompiledMember(parent);
 		final ContextMenu menuUncompiled = buildContextMenuUncompiledMember(parent);
-		
+
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, getEventHandlerContextMenu(menuCompiled, menuUncompiled));
 
 
@@ -101,8 +102,8 @@ public class ClassMemberList extends VBox
 				menuUncompiled.hide();
 			}
 		});
-		
-		
+
+
 		getChildren().add(cbOnlyCompiled);
 		getChildren().add(memberList);
 
@@ -158,7 +159,7 @@ public class ClassMemberList extends VBox
 		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
 
 		menuItemCallChain.setOnAction(getEventHandlerMenuItemCallChain(parent));
-		
+
 		menuItemOptimizedVCalls.setOnAction(getEventHandlerMenuItemOptimizedVCall(parent));
 
 
@@ -178,7 +179,7 @@ public class ClassMemberList extends VBox
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
 
 		menuItemJournal.setOnAction(getEventHandlerMenuItemJournal(parent));
-		
+
 		return menu;
 	}
 
@@ -219,9 +220,7 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				Journal journal = member.getJournal();
-
-				String intrinsicsUsed = processIntrinsicsUsing(journal);
+				String intrinsicsUsed = findIntrinsicsUsedByMember(member);
 
 				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed);
 			}
@@ -239,7 +238,7 @@ public class ClassMemberList extends VBox
 			}
 		};
 	}
-	
+
 	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final JITWatchUI parent)
 	{
 		return new EventHandler<ActionEvent>()
@@ -252,11 +251,13 @@ public class ClassMemberList extends VBox
 		};
 	}
 
-	private String processIntrinsicsUsing(Journal journal)
+	private String findIntrinsicsUsedByMember(IMetaMember member)
 	{
 		StringBuilder builder = new StringBuilder();
 
-		Map<String, String> intrinsics = IntrinsicFinder.findIntrinsics(journal);
+		IntrinsicFinder finder = new IntrinsicFinder();
+
+		Map<String, String> intrinsics = finder.findIntrinsics(member);
 
 		if (intrinsics.size() > 0)
 		{

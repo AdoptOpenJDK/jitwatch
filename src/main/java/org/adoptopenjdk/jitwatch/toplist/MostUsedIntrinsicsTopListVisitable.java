@@ -11,26 +11,25 @@ import java.util.Map;
 import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 
 public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 {
-	private final Map<String, Integer> intrinsicountMap;
+	private final Map<String, Integer> intrinsicCountMap;
 
 	public MostUsedIntrinsicsTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
 	{
 		super(model, sortHighToLow);
-		intrinsicountMap = new HashMap<>();
+		intrinsicCountMap = new HashMap<>();
 	}
 
 	@Override
-	public void visit(IMetaMember mm)
+	public void visit(IMetaMember metaMember)
 	{
-		if (mm.isCompiled())
+		if (metaMember.isCompiled())
 		{
-			Journal journal = mm.getJournal();
+			IntrinsicFinder finder = new IntrinsicFinder();
 
-			Map<String, String> intrinsicMap = IntrinsicFinder.findIntrinsics(journal);
+			Map<String, String> intrinsicMap = finder.findIntrinsics(metaMember);
 
 			for (Map.Entry<String, String> entry : intrinsicMap.entrySet())
 			{
@@ -38,12 +37,12 @@ public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 
 				int count = 0;
 
-				if (intrinsicountMap.containsKey(iMapping))
+				if (intrinsicCountMap.containsKey(iMapping))
 				{
-					count = intrinsicountMap.get(iMapping);
+					count = intrinsicCountMap.get(iMapping);
 				}
 
-				intrinsicountMap.put(iMapping, count + 1);
+				intrinsicCountMap.put(iMapping, count + 1);
 			}
 		}
 	}
@@ -51,7 +50,7 @@ public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 	@Override
 	public void postProcess()
 	{
-		for (Map.Entry<String, Integer> entry : intrinsicountMap.entrySet())
+		for (Map.Entry<String, Integer> entry : intrinsicCountMap.entrySet())
 		{
 			topList.add(new StringTopListScore(entry.getKey(), entry.getValue().longValue()));
 		}

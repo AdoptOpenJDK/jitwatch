@@ -5,15 +5,28 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
@@ -23,22 +36,12 @@ import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
+import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.TriViewNavigationStack;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
-import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.util.JVMSUtil;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 public class ViewerBytecode extends Viewer
 {
@@ -48,7 +51,7 @@ public class ViewerBytecode extends Viewer
 	private IReadOnlyJITDataModel model;
 	private TriViewNavigationStack navigationStack;
 	private Suggestion lastSuggestion = null;
-	
+
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model, ILineListener lineListener,
 			LineType lineType)
 	{
@@ -56,43 +59,43 @@ public class ViewerBytecode extends Viewer
 		this.model = model;
 		this.navigationStack = navigationStack;
 	}
-	
+
 	public void highlightBytecodeForSuggestion(Suggestion suggestion)
-	{	
+	{
 		lastSuggestion = suggestion;
-		
+
 		int bytecodeOffset = suggestion.getBytecodeOffset();
-		
+
 		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
 
 		BytecodeLabel labelAtIndex = (BytecodeLabel)getLabelAtIndex(index);
-		
+
 		if (labelAtIndex != null)
 		{
 			labelAtIndex.setUnhighlightedStyle(STYLE_UNHIGHLIGHTED_SUGGESTION);
 		}
-		
+
 		StringBuilder ttBuilder = new StringBuilder();
-		
+
 		Tooltip tooltip = labelAtIndex.getTooltip();
-		
+
 		if (tooltip != null)
 		{
 			ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
 			Tooltip.uninstall(labelAtIndex, tooltip);
 		}
-		
+
 		ttBuilder.append("Suggestion:\n");
-		
+
 		String text = suggestion.getText();
-		
+
 		if (suggestion.getType() == SuggestionType.BRANCH)
 		{
 			text = StringUtil.wordWrap(text, 50);
 		}
-		
+
 		ttBuilder.append(text);
-		
+
 		tooltip = new Tooltip(ttBuilder.toString());
 		labelAtIndex.setTooltip(tooltip);
 	}
@@ -120,11 +123,9 @@ public class ViewerBytecode extends Viewer
 
 		if (instructions != null && instructions.size() > 0)
 		{
-			Journal journal = member.getJournal();
-
 			try
 			{
-				annotations = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+				annotations = JournalUtil.buildBytecodeAnnotations(member, instructions);
 			}
 			catch (AnnotationException annoEx)
 			{
@@ -134,11 +135,11 @@ public class ViewerBytecode extends Viewer
 			}
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
-			
+
 			for (final BytecodeInstruction instruction : instructions)
-			{				
+			{
 				int labelLines = instruction.getLabelLines();
-				
+
 				if (labelLines == 0)
 				{
 					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member);
@@ -156,10 +157,10 @@ public class ViewerBytecode extends Viewer
 		}
 
 		setContent(labels);
-		
+
 		checkIfExistingSuggestionForMember(member);
 	}
-	
+
 	private void checkIfExistingSuggestionForMember(IMetaMember member)
 	{
 		if (lastSuggestion != null && lastSuggestion.getCaller().equals(member))
@@ -167,23 +168,23 @@ public class ViewerBytecode extends Viewer
 			highlightBytecodeForSuggestion(lastSuggestion);
 		}
 	}
-	
+
 	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line, final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
 	{
 		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
-		
+
 		int offset = instruction.getOffset();
 
 		StringBuilder instructionToolTipBuilder = new StringBuilder();
-		
+
 		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
-		
+
 		if (annotations != null)
 		{
 			LineAnnotation annotation = annotations.get(offset);
 
 			if (annotation != null)
-			{						
+			{
 				Color colour = annotation.getColour();
 
 				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
@@ -192,19 +193,19 @@ public class ViewerBytecode extends Viewer
 				instructionToolTipBuilder.append(annotation.getAnnotation());
 			}
 		}
-		
+
 		lblLine.setUnhighlightedStyle(unhighlightedStyle);
-		
+
 		if (instruction.isInvoke())
 		{
 			if (instructionToolTipBuilder.length() > 0)
 			{
 				instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
 			}
-			
+
 			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
 		}
-		
+
 		if (instructionToolTipBuilder.length() > 0)
 		{
 			lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
@@ -230,7 +231,7 @@ public class ViewerBytecode extends Viewer
 				}
 			}
 		});
-	
+
 		return lblLine;
 	}
 
@@ -266,7 +267,7 @@ public class ViewerBytecode extends Viewer
 			}
 		}
 	}
-	
+
 	private boolean commentMethodHasNoClassPrefix(String comment)
 	{
 		return (comment.indexOf(C_DOT) == -1);
@@ -275,12 +276,12 @@ public class ViewerBytecode extends Viewer
 	private String prependCurrentMember(String comment, IMetaMember member)
 	{
 		String currentClass = member.getMetaClass().getFullyQualifiedName();
-		
+
 		currentClass = currentClass.replace(C_DOT, C_SLASH);
 
 		return currentClass + C_DOT + comment;
 	}
-	
+
 	public boolean isOffsetMismatchDetected()
 	{
 		return offsetMismatchDetected;

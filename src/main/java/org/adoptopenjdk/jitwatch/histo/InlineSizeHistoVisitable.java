@@ -5,20 +5,34 @@
  */
 package org.adoptopenjdk.jitwatch.histo;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.model.*;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
+import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-public class InlineSizeHistoVisitable extends AbstractHistoVisitable
+public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements ILastTaskParseTagVisitable
 {
+	private static final Logger logger = LoggerFactory.getLogger(InlineSizeHistoVisitable.class);
+
 	private Set<String> inlinedCounted = new HashSet<>();
-	private IParseDictionary parseDictionary;
 
 	public InlineSizeHistoVisitable(IReadOnlyJITDataModel model, long resolution)
 	{
@@ -29,39 +43,25 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	public void reset()
 	{
 		inlinedCounted.clear();
-		parseDictionary = null;
 	}
 
 	@Override
-	public void visit(IMetaMember mm)
+	public void visit(IMetaMember metaMember)
 	{
-		if (mm.isCompiled())
+		if (metaMember.isCompiled())
 		{
-			Journal journal = mm.getJournal();
-
-			Task lastTaskTag = JournalUtil.getLastTask(journal);
-
-			if (lastTaskTag != null)
+			try
 			{
-				parseDictionary = lastTaskTag.getParseDictionary();
+				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
 			}
-
-			Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-			// TODO fix for JDK8
-			if (parsePhase != null)
+			catch (LogParseException e)
 			{
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-				for (Tag parseTag : parseTags)
-				{
-					processParseTag(parseTag);
-				}
+				logger.error("Could not build histo", e);
 			}
 		}
 	}
 
-	private void processParseTag(Tag parseTag)
+	private void processParseTag(Tag parseTag, IParseDictionary parseDictionary)
 	{
 		String currentMethod = null;
 		String holder = null;
@@ -115,13 +115,19 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 				break;
 			case TAG_PARSE:
 			{
-				processParseTag(child);
+				processParseTag(child, parseDictionary);
 			}
 				break;
 
-            default:
-                break;
+			default:
+				break;
 			}
 		}
+	}
+
+	@Override
+	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+		processParseTag(parseTag, parseDictionary);
 	}
 }

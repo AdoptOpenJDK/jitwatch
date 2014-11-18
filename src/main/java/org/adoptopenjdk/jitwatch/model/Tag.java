@@ -5,12 +5,18 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_EQUALS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class Tag
 {
@@ -57,7 +63,7 @@ public class Tag
 	{
 		return children;
 	}
-	
+
 	public boolean isSelfClosing()
 	{
 		return selfClosing;
@@ -129,7 +135,7 @@ public class Tag
 	{
 		return attrs;
 	}
-	
+
 	public String getAttribute(String name)
 	{
 		return attrs.get(name);
@@ -147,7 +153,13 @@ public class Tag
 		}
 	}
 
+	@Override
 	public String toString()
+	{
+		return toString(true);
+	}
+
+	public String toString(boolean showChildren)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -175,7 +187,7 @@ public class Tag
 		}
 		else
 		{
-			if (children.size() > 0)
+			if (showChildren && children.size() > 0)
 			{
 				builder.append(C_CLOSE_ANGLE).append(C_NEWLINE);
 
@@ -194,7 +206,7 @@ public class Tag
 					{
 						builder.append(INDENT);
 					}
-					
+
 					builder.append(textContent).append(C_NEWLINE);
 				}
 			}
@@ -213,17 +225,41 @@ public class Tag
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+		{
+			return true;
+		}
+        if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
 
         Tag tag = (Tag) o;
 
-        if (selfClosing != tag.selfClosing) return false;
-        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null) return false;
-        if (children != null ? !children.equals(tag.children) : tag.children != null) return false;
-        if (name != null ? !name.equals(tag.name) : tag.name != null) return false;
-        if (parent != null ? !parent.equals(tag.parent) : tag.parent != null) return false;
-        if (textContent != null ? !textContent.equals(tag.textContent) : tag.textContent != null) return false;
+        if (selfClosing != tag.selfClosing)
+		{
+			return false;
+		}
+        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null)
+		{
+			return false;
+		}
+        if (children != null ? !children.equals(tag.children) : tag.children != null)
+		{
+			return false;
+		}
+        if (name != null ? !name.equals(tag.name) : tag.name != null)
+		{
+			return false;
+		}
+        if (parent != null ? !parent.equals(tag.parent) : tag.parent != null)
+		{
+			return false;
+		}
+        if (textContent != null ? !textContent.equals(tag.textContent) : tag.textContent != null)
+		{
+			return false;
+		}
 
         return true;
     }

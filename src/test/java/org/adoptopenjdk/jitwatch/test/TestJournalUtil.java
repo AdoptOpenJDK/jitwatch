@@ -5,9 +5,24 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,18 +31,18 @@ import java.util.Map;
 import javafx.scene.paint.Color;
 
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
-import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TestJournalUtil
 {
@@ -36,37 +51,37 @@ public class TestJournalUtil
 	{
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
-		
+
 		assertFalse(JournalUtil.sanityCheckInline(instrAaload));
 	}
-	
+
 	@Test
 	public void testSanityCheckInlinePass()
 	{
 		BytecodeInstruction instrInvokeSpecial = new BytecodeInstruction();
 		instrInvokeSpecial.setOpcode(Opcode.INVOKESPECIAL);
-		
+
 		assertTrue(JournalUtil.sanityCheckInline(instrInvokeSpecial));
 	}
-	
+
 	@Test
 	public void testSanityCheckBranchFail()
 	{
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
-		
+
 		assertFalse(JournalUtil.sanityCheckBranch(instrAaload));
 	}
-	
+
 	@Test
 	public void testSanityCheckBranchPass()
 	{
 		BytecodeInstruction instrIfcmpne = new BytecodeInstruction();
 		instrIfcmpne.setOpcode(Opcode.IF_ICMPNE);
-		
+
 		assertTrue(JournalUtil.sanityCheckBranch(instrIfcmpne));
 	}
-	
+
 	@Test
 	public void testJava7NonTieredLeaf()
 	{
@@ -221,7 +236,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='528' count='10000' backedge_count='5245' inlined_bytes='22' stamp='11.387'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -261,9 +276,11 @@ public class TestJournalUtil
 				"62: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"65: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C2, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+
 		assertEquals(9, result.size());
 
 		checkLine(result, 10, "inline (hot)", Color.GREEN);
@@ -276,7 +293,7 @@ public class TestJournalUtil
 		checkLine(result, 59, "MinInliningThreshold", Color.RED);
 		checkLine(result, 62, "MinInliningThreshold", Color.RED);
 	}
-	
+
 	@Test
 	public void testJava7NonTieredChain()
 	{
@@ -458,7 +475,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='576' count='10000' backedge_count='5296' inlined_bytes='59' stamp='11.256'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -490,9 +507,11 @@ public class TestJournalUtil
 				"50: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"53: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C2, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+
 		assertEquals(7, result.size());
 
 		checkLine(result, 10, "inline (hot)", Color.GREEN);
@@ -502,8 +521,8 @@ public class TestJournalUtil
 		checkLine(result, 44, "MinInliningThreshold", Color.RED);
 		checkLine(result, 47, "MinInliningThreshold", Color.RED);
 		checkLine(result, 50, "MinInliningThreshold", Color.RED);
-	}	
-	
+	}
+
 	@Test
 	public void testJava7TieredLeaf()
 	{
@@ -625,7 +644,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='3560' count='1' backedge_count='70671' inlined_bytes='129' stamp='12.706'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -665,9 +684,11 @@ public class TestJournalUtil
 				"62: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"65: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C1, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+
 		assertEquals(8, result.size());
 
 		int bcOffsetStringBuilderInit = 52;
@@ -687,7 +708,7 @@ public class TestJournalUtil
 		checkLine(result, bcOffsetStringBuilderAppend, "Inlined: Yes", Color.GREEN);
 		checkLine(result, bcOffsetStringBuilderToString, "Inlined: Yes", Color.GREEN);
 		checkLine(result, bcOffsetPrintStreamPrintln, "Inlined: Yes", Color.GREEN);
-	}	
+	}
 
 	@Test
 	public void testJava7TieredChain()
@@ -826,7 +847,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='3960' count='1' backedge_count='82045' inlined_bytes='166' stamp='12.545'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -858,9 +879,11 @@ public class TestJournalUtil
 				"50: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"53: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C1, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+
 		assertEquals(6, result.size());
 
 		checkLine(result, 10, "Inlined: Yes", Color.GREEN);
@@ -1022,7 +1045,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='608' count='10000' backedge_count='5598' inlined_bytes='22' stamp='11.570'/>",
 				"</task>"
 			};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -1063,9 +1086,11 @@ public class TestJournalUtil
 				"65: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"68: return          "
 				};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C2, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+
 		assertEquals(10, result.size());
 
 		checkLine(result, 10, "never", Color.BLUE);
@@ -1079,7 +1104,8 @@ public class TestJournalUtil
 		checkLine(result, 62, "MinInliningThreshold", Color.RED);
 		checkLine(result, 65, "MinInliningThreshold", Color.RED);
 	}
-	
+
+	/*
 	@Test
 	public void testJava8NonTieredChain()
 	{
@@ -1230,7 +1256,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='640' count='10000' backedge_count='5906' inlined_bytes='32' stamp='11.526'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -1263,9 +1289,11 @@ public class TestJournalUtil
 				"53: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"56: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C2, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain2", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+
 		assertEquals(8, result.size());
 
 		checkLine(result, 10, "never", Color.BLUE);
@@ -1276,8 +1304,9 @@ public class TestJournalUtil
 		checkLine(result, 47, "MinInliningThreshold", Color.RED);
 		checkLine(result, 50, "MinInliningThreshold", Color.RED);
 		checkLine(result, 53, "MinInliningThreshold", Color.RED);
-	}	
-	
+	}
+	*/
+
 	@Test
 	public void testJava8TieredLeaf()
 	{
@@ -1398,7 +1427,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='3272' count='1' backedge_count='73158' inlined_bytes='112' stamp='12.199'/>",
 				"</task>"
 		};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -1439,9 +1468,12 @@ public class TestJournalUtil
 				"65: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"68: return          "
 					};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C1, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
+
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+
 		assertEquals(9, result.size());
 
 		checkLine(result, 15, "Inlined: Yes", Color.GREEN);
@@ -1453,7 +1485,7 @@ public class TestJournalUtil
 		checkLine(result, 59, "Inlined: Yes", Color.GREEN);
 		checkLine(result, 62, "Inlined: Yes", Color.GREEN);
 		checkLine(result, 65, "Inlined: Yes", Color.GREEN);
-	}	
+	}
 
 	@Test
 	public void testJava8TieredChain()
@@ -1591,7 +1623,7 @@ public class TestJournalUtil
 				"<task_done success='1' nmsize='3704' count='1' backedge_count='80786' inlined_bytes='149' stamp='12.049'/>",
 				"</task>"
 			};
-		
+
 		String[] bytecodeLines = new String[]{
 				"0: lconst_0        ",
 				"1: lstore_3        ",
@@ -1624,9 +1656,11 @@ public class TestJournalUtil
 				"53: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
 				"56: return          "
 		};
-		
-		Map<Integer, LineAnnotation> result = buildAnnotations(CompilerName.C1, logLines, bytecodeLines);
-	
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
+
+		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+
 		assertEquals(7, result.size());
 
 		checkLine(result, 15, "Inlined: Yes", Color.GREEN);
@@ -1637,9 +1671,9 @@ public class TestJournalUtil
 		checkLine(result, 50, "Inlined: Yes", Color.GREEN);
 		checkLine(result, 53, "Inlined: Yes", Color.GREEN);
 	}
-		
-	private Map<Integer, LineAnnotation> buildAnnotations(CompilerName compiler, String[] logLines, String[] bytecodeLines)
-	{	
+
+	private Map<Integer, LineAnnotation> buildAnnotations(IMetaMember member, CompilerName compiler, String[] logLines, String[] bytecodeLines)
+	{
 		TagProcessor tp = new TagProcessor();
 
 		tp.setCompiler(compiler);
@@ -1652,7 +1686,7 @@ public class TestJournalUtil
 		{
 			line = line.replace("&lt;", S_OPEN_ANGLE);
 			line = line.replace("&gt;", S_CLOSE_ANGLE);
-			
+
 			tag = tp.processLine(line);
 
 			if (count++ < logLines.length - 1)
@@ -1663,41 +1697,74 @@ public class TestJournalUtil
 
 		assertNotNull(tag);
 
-		Journal journal = new Journal();
-
-		journal.addEntry(tag);
+		member.addJournalEntry(tag);
 
 		StringBuilder bytecodeBuilder = new StringBuilder();
-		
+
 		for (String bcLine : bytecodeLines)
 		{
 			bytecodeBuilder.append(bcLine.trim()).append(S_NEWLINE);
 		}
-		
+
 		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
-			
+
 		Map<Integer, LineAnnotation> result = new HashMap<>();
-		
+
 		try
 		{
-			result = JournalUtil.buildBytecodeAnnotations(journal, instructions);
+			result = JournalUtil.buildBytecodeAnnotations(member, instructions);
 		}
 		catch (AnnotationException annoEx)
 		{
 			annoEx.printStackTrace();
-			
+
 			fail();
 		}
-		
+
 		return result;
 	}
-	
+
+	@Test
+	public void testMemberMatchesParseTag()
+	{
+		String methodName = "length";
+		String klassName = "java.lang.String";
+
+		Map<String, String> attrsMethod = new HashMap<>();
+		Map<String, String> attrsKlass = new HashMap<>();
+		Map<String, String> attrsParse = new HashMap<>();
+
+		String methodID = "123";
+		String klassID = "456";
+
+		attrsMethod.put(ATTR_NAME, methodName);
+		attrsMethod.put(ATTR_ID, methodID);
+		attrsMethod.put(ATTR_HOLDER, klassID);
+
+		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, false);
+
+		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
+		attrsKlass.put(ATTR_ID, klassID);
+		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, false);
+
+		attrsParse.put(ATTR_METHOD, methodID);
+		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+
+		IParseDictionary parseDictionary = new ParseDictionary();
+		parseDictionary.setKlass(klassID, tagKlass);
+		parseDictionary.setMethod(methodID, tagMethod);
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, new Class[0]);
+
+		assertTrue(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+	}
+
 	private void checkLine(Map<Integer, LineAnnotation> result, int index, String annotation, Color colour)
 	{
 		LineAnnotation line = result.get(index);
 
 		assertNotNull(line);
-				
+
 		assertTrue(line.getAnnotation().contains(annotation));
 		assertEquals(colour, line.getColour());
 	}

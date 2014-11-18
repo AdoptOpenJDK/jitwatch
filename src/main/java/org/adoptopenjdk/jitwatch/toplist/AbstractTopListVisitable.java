@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTopListVisitable implements ITopListVisitable
 {
@@ -19,12 +21,15 @@ public abstract class AbstractTopListVisitable implements ITopListVisitable
     protected List<ITopListScore> topList;
     protected boolean sortHighToLow;
 
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractTopListVisitable.class);
+
 	public AbstractTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
 	{
 		this.model = model;
 		this.sortHighToLow = sortHighToLow;
 	}
 
+	@Override
 	public void reset()
 	{
 	}
@@ -33,7 +38,8 @@ public abstract class AbstractTopListVisitable implements ITopListVisitable
 	public void postProcess()
 	{
 	}
-	
+
+	@Override
 	public List<ITopListScore> buildTopList()
 	{
 		topList = new ArrayList<>();
@@ -41,7 +47,7 @@ public abstract class AbstractTopListVisitable implements ITopListVisitable
 		TreeVisitor.walkTree(model, this);
 
 		postProcess();
-		
+
 		Collections.sort(topList, new Comparator<ITopListScore>()
 		{
 			@Override

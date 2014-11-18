@@ -10,11 +10,33 @@ import java.lang.reflect.Method;
 
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.model.MetaMethod;
+import org.adoptopenjdk.jitwatch.model.MetaPackage;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class UnitTestUtil
 {
+	public static IMetaMember createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
+	{
+		String packageName = StringUtil.getPackageName(fqClassName);
+
+		MetaPackage metaPackage = new MetaPackage(packageName);
+
+		MetaClass metaClass = new MetaClass(metaPackage, fqClassName);
+
+		return new MetaMethod(getMethod(fqClassName, methodName, params), metaClass);
+
+	}
+
+	public static IMetaMember createTestMetaMember()
+	{
+		return createTestMetaMember("java.lang.String", "length", new Class<?>[0]);
+	}
+
 	public static Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)
 	{
 		Method m = null;

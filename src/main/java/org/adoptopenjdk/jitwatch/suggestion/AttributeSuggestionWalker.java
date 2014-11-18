@@ -5,22 +5,42 @@
  */
 package org.adoptopenjdk.jitwatch.suggestion;
 
-import org.adoptopenjdk.jitwatch.model.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ALWAYS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_COUNT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
-import org.adoptopenjdk.jitwatch.util.JournalUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
+public class AttributeSuggestionWalker extends AbstractSuggestionVisitable implements ILastTaskParseTagVisitable
 {
-	private IParseDictionary parseDictionary;
+	private IMetaMember metaMember;
 
 	private static final Map<String, Double> scoreMap = new HashMap<>();
 	private static final Map<String, String> explanationMap = new HashMap<>();
@@ -73,34 +93,24 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	}
 
 	@Override
-	public void visit(IMetaMember mm)
+	public void visit(IMetaMember metaMember)
 	{
-		if (mm.isCompiled())
+		if (metaMember.isCompiled())
 		{
-			Journal journal = mm.getJournal();
+			this.metaMember = metaMember;
 
-			Task lastTaskTag = JournalUtil.getLastTask(journal);
-
-			if (lastTaskTag != null)
+			try
 			{
-				parseDictionary = lastTaskTag.getParseDictionary();
-
-				Tag parsePhase = JournalUtil.getParsePhase(journal);
-
-				if (parsePhase != null)
-				{
-					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-					for (Tag parseTag : parseTags)
-					{
-						processParseTag(parseTag, mm);
-					}
-				}
+				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+			}
+			catch (LogParseException e)
+			{
+				logger.error("Error building suggestions", e);
 			}
 		}
 	}
 
-	private void processParseTag(Tag parseTag, IMetaMember caller)
+	private void processParseTag(Tag parseTag, IMetaMember caller, IParseDictionary parseDictionary)
 	{
 		String methodID = null;
 
@@ -135,14 +145,14 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				break;
 
 			case TAG_INLINE_FAIL:
-				handleInlineFailTag(attrs, methodID, caller, currentBytecode);
+				handleInlineFailTag(attrs, methodID, caller, currentBytecode, parseDictionary);
 				break;
 
 			case TAG_PARSE:
 			{
 				String callerID = attrs.get(ATTR_METHOD);
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
-				processParseTag(child, nestedCaller);
+				processParseTag(child, nestedCaller, parseDictionary);
 			}
 
 			default:
@@ -151,7 +161,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		}
 	}
 
-	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode)
+	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode, IParseDictionary parseDictionary)
 	{
 		IMetaMember callee = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
@@ -290,5 +300,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				suggestionList.add(suggestion);
 			}
 		}
+	}
+
+	@Override
+	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+		processParseTag(parseTag, metaMember, parseDictionary);
 	}
 }

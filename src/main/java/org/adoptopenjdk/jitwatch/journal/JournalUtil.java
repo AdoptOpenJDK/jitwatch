@@ -3,9 +3,35 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.util;
+package org.adoptopenjdk.jitwatch.journal;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_COUNT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_NOT_TAKEN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_TAKEN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BUILDIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +41,15 @@ import javafx.scene.paint.Color;
 
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.util.InlineUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,25 +61,154 @@ public final class JournalUtil
 	{
 	}
 
-	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(Journal journal, List<BytecodeInstruction> instructions)
-			throws AnnotationException
+	public static void visitParseTagsOfLastTask(IMetaMember member, ILastTaskParseTagVisitable visitable) throws LogParseException
 	{
-		Map<Integer, LineAnnotation> result = new HashMap<>();
+		if (member == null)
+		{
+			throw new LogParseException("Cannot get Journal for null IMetaMember");
+		}
+
+		Journal journal = member.getJournal();
 
 		if (journal != null)
 		{
-			CompilerName compilerName = getLastTaskCompiler(journal);
+			Task lastTask = getLastTask(journal);
 
-			Tag parsePhase = getParsePhase(journal);
-
-			if (parsePhase != null)
+			if (lastTask == null)
 			{
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+				logger.warn("Last Task not found in Journal");
+				logger.debug(journal.toString());
+			}
+			else
+			{
+				IParseDictionary parseDictionary = lastTask.getParseDictionary();
 
-				for (Tag parseTag : parseTags)
+				Tag parsePhase = getParsePhase(lastTask);
+
+				if (parsePhase != null)
 				{
-					buildParseTagAnnotations(parseTag, result, instructions, compilerName);
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+					for (Tag parseTag : parseTags)
+					{
+						// logger.debug("Handling a parse tag: {}",
+						// parseTag.toString(false));
+
+						// parse tag has method attribute
+
+						String methodID = parseTag.getAttribute(ATTR_METHOD);
+
+						// logger.debug("methodID: {}", methodID);
+
+						Tag methodTag = parseDictionary.getMethod(methodID);
+
+						// logger.debug("method tag: {}",
+						// methodTag.toString(false));
+
+						String klassID = methodTag.getAttribute(ATTR_HOLDER);
+
+						Tag klassTag = parseDictionary.getKlass(klassID);
+
+						if (klassTag != null)
+						{
+							// logger.debug("klass tag: {}",
+							// klassTag.toString(false));
+						}
+						else
+						{
+							logger.debug("No Klass found for ID: {}", klassID);
+						}
+
+						visitable.visitParseTag(parseTag, parseDictionary);
+					}
 				}
+			}
+		}
+	}
+
+	public static Map<Integer, LineAnnotation> buildBytecodeAnnotations(final IMetaMember member,
+			final List<BytecodeInstruction> instructions) throws AnnotationException
+	{
+		final Map<Integer, LineAnnotation> result = new HashMap<>();
+
+		try
+		{
+			visitParseTagsOfLastTask(member, new ILastTaskParseTagVisitable()
+			{
+				@Override
+				public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+				{
+					if (memberMatchesParseTag(member, parseTag, parseDictionary))
+					{
+						try
+						{
+							final CompilerName compilerName = getCompilerNameForLastTask(member.getJournal());
+
+							buildParseTagAnnotations(parseTag, result, instructions, compilerName);
+						}
+						catch (Exception e)
+						{
+							throw new LogParseException("Could not parse annotations", e);
+						}
+					}
+				}
+			});
+		}
+		catch (LogParseException e)
+		{
+			logger.error("Error building bytecode annotations", e);
+
+			Throwable cause = e.getCause();
+
+			if (cause instanceof AnnotationException)
+			{
+				throw (AnnotationException) cause;
+			}
+		}
+
+		return result;
+	}
+
+	public static boolean memberMatchesParseTag(IMetaMember member, Tag parseTag, IParseDictionary parseDictionary)
+	{
+		boolean result = false;
+
+		logger.debug("parseTag: {}", parseTag.toString(true));
+
+		String methodID = parseTag.getAttribute(ATTR_METHOD);
+
+		Tag methodTag = parseDictionary.getMethod(methodID);
+
+		logger.debug("methodTag: {}", methodTag.toString(true));
+
+		if (methodTag != null)
+		{
+			String klassID = methodTag.getAttribute(ATTR_HOLDER);
+
+			Tag klassTag = parseDictionary.getKlass(klassID);
+
+			if (klassTag != null)
+			{
+				logger.debug("klass tag: {}", klassTag.toString(false));
+
+				String klassAttrName = klassTag.getAttribute(ATTR_NAME);
+				String methodAttrName = methodTag.getAttribute(ATTR_NAME);
+
+				if (klassAttrName != null)
+				{
+					klassAttrName = klassAttrName.replace(C_SLASH, C_DOT);
+				}
+
+				logger.debug("memberName: {}", member.getMemberName());
+				logger.debug("metaClass : {}", member.getMetaClass().getName());
+
+
+				boolean nameMatches = member.getMemberName().equals(methodAttrName);
+				boolean klassMatches = member.getMetaClass().getName().equals(klassAttrName);
+
+				// TODO and params
+
+				result = nameMatches && klassMatches;
 			}
 		}
 
@@ -168,7 +327,6 @@ public final class JournalUtil
 				break;
 			case TAG_INLINE_SUCCESS:
 			{
-
 				if (inMethod || isC2)
 				{
 					if (!sanityCheckInline(currentInstruction))
@@ -242,7 +400,7 @@ public final class JournalUtil
 				}
 			}
 				break;
-				
+
 			case TAG_ELIMINATE_ALLOCATION:
 				System.out.println("ELIM");
 				break;
@@ -331,7 +489,7 @@ public final class JournalUtil
 		return sane;
 	}
 
-	public static CompilerName getLastTaskCompiler(Journal journal)
+	public static CompilerName getCompilerNameForLastTask(Journal journal)
 	{
 		Task lastTask = getLastTask(journal);
 
@@ -345,11 +503,9 @@ public final class JournalUtil
 		return compilerName;
 	}
 
-	public static Tag getParsePhase(Journal journal)
+	private static Tag getParsePhase(Task lastTask)
 	{
 		Tag parsePhase = null;
-
-		Task lastTask = getLastTask(journal);
 
 		if (lastTask != null)
 		{
