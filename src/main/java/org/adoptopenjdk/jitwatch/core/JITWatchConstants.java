@@ -22,7 +22,7 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING = false;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
-	public static final boolean DEBUG_LOGGING_SIG_MATCH = false;
+	public static final boolean DEBUG_LOGGING_SIG_MATCH = true;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
@@ -121,17 +121,17 @@ public final class JITWatchConstants
 
 	public static final String S_PACKAGE = "package";
 	public static final String S_CLASS = "class";
-	
+
 	public static final String S_PROFILE_DEFAULT = "Default";
 	public static final String S_PROFILE_SANDBOX = "Sandbox";
-	
+
 	public static final String S_CLASS_PREFIX_INVOKE = "java.lang.invoke.";
 	public static final String S_CLASS_PREFIX_LAMBDAFORM = "java.lang.invoke.LambdaForm";
 	public static final String S_CLASS_PREFIX_STREAM_COLLECTORS = "java.util.stream.Collectors$";
 	public static final String S_CLASS_PREFIX_LAMBDA_LAMBDA= "Lambda$$Lambda";
-	
+
 	private static final Set<String> SET_LAMBDA_PREFIXES = new HashSet<>();
-	
+
 	static
 	{
 		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_INVOKE);
@@ -139,12 +139,12 @@ public final class JITWatchConstants
 		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_STREAM_COLLECTORS);
 		SET_LAMBDA_PREFIXES.add(S_CLASS_PREFIX_LAMBDA_LAMBDA);
 	}
-	
+
 	public static final Set<String> getLambdaClassPrefixes()
 	{
 		return Collections.unmodifiableSet(SET_LAMBDA_PREFIXES);
 	}
-	
+
 	public static final String REGEX_GROUP_ANY = "(.*)";
 	public static final String REGEX_ZERO_OR_MORE_SPACES = "( )*";
 	public static final String REGEX_ONE_OR_MORE_SPACES = "( )+";
@@ -195,7 +195,7 @@ public final class JITWatchConstants
 	public static final String S_DEFAULT = "default";
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";
-	
+
 	public static final String S_OPTIMIZED_VIRTUAL_CALL = "{optimized virtual_call}";
 
 	public static final char C_SLASH = '/';
@@ -227,7 +227,7 @@ public final class JITWatchConstants
 
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
-	
+
 	public static final String S_POLYMORPHIC_SIGNATURE = "PolymorphicSignature";
 
 	public static final String S_BYTECODE_CONSTANT_POOL = "Constant pool:";
@@ -237,7 +237,7 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
 	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
-	
+
 	public static final String S_BYTECODE_STATIC_INITIALISER_SIGNATURE = "static {}";
 
 	public static final String PUBLIC = "public";

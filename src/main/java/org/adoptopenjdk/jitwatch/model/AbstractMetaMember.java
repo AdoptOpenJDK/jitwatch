@@ -364,7 +364,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		if (this instanceof MetaConstructor)
 		{
 			builder.append(REGEX_UNICODE_PACKAGE_NAME);
-			builder.append(StringUtil.makeUnqualified(memberName));
+			builder.append(StringUtil.getUnqualifiedClassName(memberName));
 		}
 		else
 		{
@@ -411,7 +411,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (paramType.contains(S_DOT) && !fullyQualifiedType)
 		{
-			paramType = StringUtil.makeUnqualified(paramType);
+			paramType = StringUtil.getUnqualifiedClassName(paramType);
 		}
 
 		return paramType;
@@ -429,7 +429,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		if (paramType.contains(S_DOT))
 		{
-			paramType = REGEX_UNICODE_PACKAGE_NAME + StringUtil.makeUnqualified(paramType);
+			paramType = REGEX_UNICODE_PACKAGE_NAME + StringUtil.getUnqualifiedClassName(paramType);
 		}
 
 		return paramType;

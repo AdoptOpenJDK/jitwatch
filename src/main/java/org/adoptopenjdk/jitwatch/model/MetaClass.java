@@ -5,6 +5,12 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,16 +18,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
-
-
-
-
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MetaClass implements Comparable<MetaClass>
 {
@@ -101,7 +101,7 @@ public class MetaClass implements Comparable<MetaClass>
 		{
 			logger.debug("getClassBytecode for {} existing? {}", getName(), classBytecode != null);
 		}
-		
+
 		if (classBytecode == null)
 		{
 			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
@@ -197,7 +197,7 @@ public class MetaClass implements Comparable<MetaClass>
 	public IMetaMember getMemberFromSignature(MemberSignatureParts msp)
 	{
 		IMetaMember result = null;
-		
+
 		for (IMetaMember member : getMetaMembers())
 		{
 			if (member.matchesSignature(msp))
@@ -209,8 +209,8 @@ public class MetaClass implements Comparable<MetaClass>
 
 		return result;
 	}
-	
-	
+
+
 	public List<String> getTreePath()
 	{
 		MetaPackage metaPackage = getPackage();

@@ -40,11 +40,12 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.junit.Test;
 
-public class TestJournalUtil
+public class TestBytecodeAnnotationBuilder
 {
 	@Test
 	public void testSanityCheckInlineFail()
@@ -52,7 +53,7 @@ public class TestJournalUtil
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
 
-		assertFalse(JournalUtil.sanityCheckInline(instrAaload));
+		assertFalse(BytecodeAnnotationBuilder.sanityCheckInline(instrAaload));
 	}
 
 	@Test
@@ -61,7 +62,7 @@ public class TestJournalUtil
 		BytecodeInstruction instrInvokeSpecial = new BytecodeInstruction();
 		instrInvokeSpecial.setOpcode(Opcode.INVOKESPECIAL);
 
-		assertTrue(JournalUtil.sanityCheckInline(instrInvokeSpecial));
+		assertTrue(BytecodeAnnotationBuilder.sanityCheckInline(instrInvokeSpecial));
 	}
 
 	@Test
@@ -70,7 +71,7 @@ public class TestJournalUtil
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
 
-		assertFalse(JournalUtil.sanityCheckBranch(instrAaload));
+		assertFalse(BytecodeAnnotationBuilder.sanityCheckBranch(instrAaload));
 	}
 
 	@Test
@@ -79,7 +80,7 @@ public class TestJournalUtil
 		BytecodeInstruction instrIfcmpne = new BytecodeInstruction();
 		instrIfcmpne.setOpcode(Opcode.IF_ICMPNE);
 
-		assertTrue(JournalUtil.sanityCheckBranch(instrIfcmpne));
+		assertTrue(BytecodeAnnotationBuilder.sanityCheckBranch(instrIfcmpne));
 	}
 
 	@Test
@@ -1699,6 +1700,9 @@ public class TestJournalUtil
 
 		member.addJournalEntry(tag);
 
+		// marks member as compiled
+		member.setCompiledAttributes(new HashMap<String, String>());
+
 		StringBuilder bytecodeBuilder = new StringBuilder();
 
 		for (String bcLine : bytecodeLines)
@@ -1712,7 +1716,7 @@ public class TestJournalUtil
 
 		try
 		{
-			result = JournalUtil.buildBytecodeAnnotations(member, instructions);
+			result = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions);
 		}
 		catch (AnnotationException annoEx)
 		{
@@ -1757,6 +1761,36 @@ public class TestJournalUtil
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, new Class[0]);
 
 		assertTrue(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+	}
+
+	@Test
+	public void testIsJournalForCompile2NativeMember()
+	{
+		String tagText = "<nmethod address='0x00007fb0ef001550' method='sun/misc/Unsafe compareAndSwapLong (Ljava/lang/Object;JJJ)Z' consts_offset='872' count='5000' backedge_count='1' stamp='2.453' iicount='10000' entry='0x00007fb0ef0016c0' size='872' compile_kind='c2n' insts_offset='368' bytes='0' relocation_offset='296' compile_id='28'/>";
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember();
+
+		TagProcessor tp = new TagProcessor();
+		Tag tag = tp.processLine(tagText);
+
+		member.getJournal().addEntry(tag);
+
+		assertTrue(JournalUtil.isJournalForCompile2NativeMember(member.getJournal()));
+	}
+
+	@Test
+	public void testIsNotJournalForCompile2NativeMember()
+	{
+		String tagText = "<task_done success='1' nmsize='120' count='5000' backedge_count='5100' stamp='14.723'/>";
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember();
+
+		TagProcessor tp = new TagProcessor();
+		Tag tag = tp.processLine(tagText);
+
+		member.getJournal().addEntry(tag);
+
+		assertFalse(JournalUtil.isJournalForCompile2NativeMember(member.getJournal()));
 	}
 
 	private void checkLine(Map<Integer, LineAnnotation> result, int index, String annotation, Color colour)

@@ -198,7 +198,7 @@ public final class StringUtil
 		return result;
 	}
 
-	public static String makeUnqualified(String fqClassName)
+	public static String getUnqualifiedClassName(String fqClassName)
 	{
 		int lastDot = fqClassName.lastIndexOf('.');
 

@@ -61,7 +61,6 @@ import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,7 +412,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		StringBuilder statusBarBuilder = new StringBuilder();
 
 		List<String> allClassLocations = config.getAllClassLocations();
-		
+
 		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
 
 		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
@@ -602,7 +601,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 				}
 				else
 				{
-					logger.warn("Could not find member for bc sig: {}", msp);
+					logger.warn("Could not find member for bytecode signature: {}", msp);
+					logger.warn("entry: {}", entry.toString());
+
 				}
 			}
 

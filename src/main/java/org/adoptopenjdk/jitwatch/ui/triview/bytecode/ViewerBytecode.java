@@ -23,11 +23,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
@@ -125,7 +125,7 @@ public class ViewerBytecode extends Viewer
 		{
 			try
 			{
-				annotations = JournalUtil.buildBytecodeAnnotations(member, instructions);
+				annotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions);
 			}
 			catch (AnnotationException annoEx)
 			{

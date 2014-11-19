@@ -23,10 +23,11 @@ public class UnitTestUtil
 	public static IMetaMember createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
 	{
 		String packageName = StringUtil.getPackageName(fqClassName);
+		String className = StringUtil.getUnqualifiedClassName(fqClassName);
 
 		MetaPackage metaPackage = new MetaPackage(packageName);
 
-		MetaClass metaClass = new MetaClass(metaPackage, fqClassName);
+		MetaClass metaClass = new MetaClass(metaPackage, className);
 
 		return new MetaMethod(getMethod(fqClassName, methodName, params), metaClass);
 

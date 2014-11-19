@@ -443,7 +443,7 @@ public class TestParseUtil
 
 		MetaPackage metaPackage = new MetaPackage(StringUtil.getPackageName(thisClassName));
 
-		MetaClass metaClass = new MetaClass(metaPackage, StringUtil.makeUnqualified(thisClassName));
+		MetaClass metaClass = new MetaClass(metaPackage, StringUtil.getUnqualifiedClassName(thisClassName));
 
 		String testMethodName = "unicodeMethodNameµµµµµ";
 
