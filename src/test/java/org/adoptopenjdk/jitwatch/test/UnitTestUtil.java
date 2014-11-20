@@ -30,7 +30,6 @@ public class UnitTestUtil
 		MetaClass metaClass = new MetaClass(metaPackage, className);
 
 		return new MetaMethod(getMethod(fqClassName, methodName, params), metaClass);
-
 	}
 
 	public static IMetaMember createTestMetaMember()

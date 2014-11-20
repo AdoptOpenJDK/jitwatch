@@ -5,6 +5,32 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_HAT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_GROUP_ANY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ONE_OR_MORE_SPACES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PACKAGE_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PARAM_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ZERO_OR_MORE_SPACES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_POLYMORPHIC_SIGNATURE;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -21,11 +47,9 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
 public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMetaMember>
 {
-	private static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
 
 	protected MetaClass metaClass;
 	private AssemblyMethod asmMethod = null;
@@ -68,7 +92,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		return metaClass.getFullyQualifiedName() + C_DOT + memberName;
 	}
-	
+
 	@Override
 	public String getAbbreviatedFullyQualifiedMemberName()
 	{
@@ -448,11 +472,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 	}
 
+	@Override
 	public Journal getJournal()
 	{
 		return journal;
 	}
 
+	@Override
 	public void addJournalEntry(Tag entry)
 	{
 		journal.addEntry(entry);

@@ -387,14 +387,17 @@ public final class StringUtil
 	{
 		StringBuilder builder = new StringBuilder();
 
-		for (Object item : list)
+		if (list != null)
 		{
-			builder.append(item.toString()).append(separator);
-		}
+			for (Object item : list)
+			{
+				builder.append(item.toString()).append(separator);
+			}
 
-		if (builder.length() > 0)
-		{
-			builder.deleteCharAt(builder.length() - 1);
+			if (builder.length() > 0)
+			{
+				builder.deleteCharAt(builder.length() - 1);
+			}
 		}
 
 		return builder.toString();

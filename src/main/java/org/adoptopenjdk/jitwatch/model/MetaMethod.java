@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_MEMBER_CREATION;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -25,10 +27,15 @@ public class MetaMethod extends AbstractMetaMember
         // Can include non-method modifiers such as volatile so AND with
         // acceptable values
         modifier = method.getModifiers() & Modifier.methodModifiers();
-        
+
         isVarArgs = method.isVarArgs();
 
-        checkPolymorphicSignature(method);        
+        checkPolymorphicSignature(method);
+
+        if (DEBUG_MEMBER_CREATION)
+        {
+        	logger.debug("Created MetaMethod: {}", toString());
+        }
     }
 
     @Override
@@ -54,7 +61,7 @@ public class MetaMethod extends AbstractMetaMember
         int openParams = ts.lastIndexOf('(');
 
         // make method name unqualified
-        
+
         if (openParams != -1)
         {
             int pos = openParams;

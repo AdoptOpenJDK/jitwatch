@@ -5,14 +5,31 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import com.sun.tools.javap.JavapTask;
-import com.sun.tools.javap.JavapTask.BadArgs;
-
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.bytecode.*;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_HASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CONSTANT_POOL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTIONS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LINENUMBERTABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LOCALVARIABLETABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STACKMAPTABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,7 +42,23 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamConstant;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamNumeric;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamString;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamSwitch;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.IBytecodeParam;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.tools.javap.JavapTask;
+import com.sun.tools.javap.JavapTask.BadArgs;
 
 public final class BytecodeLoader
 {
@@ -61,12 +94,12 @@ public final class BytecodeLoader
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
-			
+
 			logger.info("Class locations: {}", StringUtil.listToString(classLocations));
 		}
-		
+
 		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);
-		
+
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			for (String arg : args)
@@ -74,7 +107,7 @@ public final class BytecodeLoader
 				logger.debug("arg: {}", arg);
 			}
 		}
-		
+
 		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
 
 		return parsedByteCodeFrom(fqClassName, byteCodeString);
@@ -83,7 +116,7 @@ public final class BytecodeLoader
 	private static ClassBC parsedByteCodeFrom(String fqClassName, String byteCodeString)
 	{
 		ClassBC result = null;
-		
+
 		if (byteCodeString != null)
 		{
 			try
@@ -95,14 +128,14 @@ public final class BytecodeLoader
 				logger.error("Exception parsing bytecode", ex);
 			}
 		}
-		
+
 		return result;
 	}
 
 	private static String createJavapTaskFromArguments(String fqClassName, String[] args)
 	{
 		String byteCodeString = null;
-		
+
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
 		{
 			JavapTask task = new JavapTask();
@@ -120,14 +153,15 @@ public final class BytecodeLoader
 		{
 			logger.error("", ioe);
 		}
-		
+
 		return byteCodeString;
 	}
 
 	private static String[] buildClassPathFromClassLocations(Collection<String> classLocations, String fqClassName)
 	{
 		String[] args;
-		if (classLocations.size() == 0)
+
+		if (classLocations == null || classLocations.size() == 0)
 		{
 			args = new String[] { "-c", "-p", "-v", fqClassName };
 		}
@@ -144,6 +178,7 @@ public final class BytecodeLoader
 
 			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
 		}
+
 		return args;
 	}
 
@@ -502,7 +537,7 @@ public final class BytecodeLoader
 		{
 			logger.debug("Raw bytecode: '{}'", bytecode);
 		}
-		
+
 		String[] lines = bytecode.split(S_NEWLINE);
 
 		boolean inSwitch = false;
@@ -526,7 +561,7 @@ public final class BytecodeLoader
 
 					bytecodeInstructions.add(instruction);
 					inSwitch = false;
-					
+
 					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("finished switch");
@@ -622,7 +657,7 @@ public final class BytecodeLoader
 				try
 				{
 					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, memberSignature);
-					
+
 					LineTableEntry entry = new LineTableEntry(msp, Integer.parseInt(source), Integer.parseInt(offset));
 					memberBytecode.getLineTable().add(entry);
 				}

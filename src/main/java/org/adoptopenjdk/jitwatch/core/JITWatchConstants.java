@@ -22,7 +22,8 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING = false;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
-	public static final boolean DEBUG_LOGGING_SIG_MATCH = true;
+	public static final boolean DEBUG_LOGGING_SIG_MATCH = false;
+	public static final boolean DEBUG_MEMBER_CREATION = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;

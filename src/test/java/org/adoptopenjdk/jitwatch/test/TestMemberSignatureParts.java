@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 import java.util.Map;
 
@@ -12,10 +14,16 @@ import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class TestMemberSignatureParts
 {
+	// used in this class to test static initialiser bytecode matching
+	private static long timestamp = 0;
+
+	static
+	{
+		timestamp = System.currentTimeMillis();
+	}
+
 	private void checkSame(MemberSignatureParts bc, MemberSignatureParts log)
 	{
 		assertEquals("return type", bc.getReturnType(), log.getReturnType());
@@ -110,7 +118,7 @@ public class TestMemberSignatureParts
 		assertEquals("void", mspBC.getReturnType());
 		assertEquals("gc", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
-		
+
 		checkSame(mspBC, mspLog);
 	}
 
@@ -132,7 +140,7 @@ public class TestMemberSignatureParts
 		assertEquals(1, mspBC.getParamTypes().size());
 		List<String> paramTypeList = mspBC.getParamTypes();
 		assertEquals("java.lang.String", paramTypeList.get(0));
-		
+
 		checkSame(mspBC, mspLog);
 	}
 
@@ -156,7 +164,7 @@ public class TestMemberSignatureParts
 		List<String> paramTypeListBC = mspBC.getParamTypes();
 		assertEquals("java.lang.String", paramTypeListBC.get(0));
 		assertEquals("int", paramTypeListBC.get(1));
-		
+
 		checkSame(mspBC, mspLog);
 	}
 
@@ -247,7 +255,7 @@ public class TestMemberSignatureParts
 		assertEquals("int", paramTypes.get(1));
 		assertEquals("java.lang.Class<? extends T[]>", paramTypes.get(2));
 	}
-	
+
 	@Test
 	public void testStaticInitialiserBytecode() throws Exception
 	{
@@ -262,4 +270,32 @@ public class TestMemberSignatureParts
 		assertEquals(ParseUtil.STATIC_INIT, mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 	}
+
+
+	/* TODO: class initialiser <clinit> does not appear in
+	 * Class.getDeclared{Methods|Constructors}()
+	 * Need to detect access and return dummy member.
+	 * Bytecode for <clinit> is available via ClassBC
+	@Test
+	public void testMatchStaticInitialiser()
+	{
+		JITDataModel model = new JITDataModel();
+
+		MetaClass metaClassThis = model.buildAndGetMetaClass(getClass());
+
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), ParseUtil.STATIC_BYTECODE_SIGNATURE);
+
+		IMetaMember memberFromSig = metaClassThis.getMemberFromSignature(msp);
+
+		ClassBC classBC = metaClassThis.getClassBytecode(null);
+
+		for (String sig : classBC.getBytecodeMethodSignatures())
+		{
+			System.out.println("BC: " + sig);
+		}
+
+		assertNotNull(memberFromSig);
+
+	}
+	*/
 }

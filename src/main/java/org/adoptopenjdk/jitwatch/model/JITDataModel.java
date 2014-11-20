@@ -5,9 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.MODIFIERS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -19,7 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
@@ -49,6 +59,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		this.vmVersionRelease = release;
 	}
 
+	@Override
 	public String getVmVersionRelease()
 	{
 		return vmVersionRelease;
@@ -57,7 +68,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	public void reset()
 	{
 		logger.info("JITDataModel.reset()");
-		
+
 		pm.clear();
 
 		stats.reset();
@@ -179,6 +190,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 	}
 
+	@Override
 	public IMetaMember findMetaMember(MemberSignatureParts msp)
 	{
 		MetaClass metaClass = pm.getMetaClass(msp.getFullyQualifiedClassName());
@@ -190,7 +202,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			List<IMetaMember> metaList = metaClass.getMetaMembers();
 
 			for (IMetaMember meta : metaList)
-			{								
+			{
 				if (meta.matchesSignature(msp))
 				{
 					result = meta;
@@ -207,12 +219,13 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	}
 
 
+	@Override
 	public MetaClass buildAndGetMetaClass(Class<?> clazz)
 	{
 		MetaClass resultMetaClass = null;
-		
+
 		String fqClassName = clazz.getName();
-		
+
 		String packageName;
 		String className;
 
@@ -254,6 +267,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		// for a parameter or return type.
 		try
 		{
+			//TODO HERE check for static
 			for (Method m : clazz.getDeclaredMethods())
 			{
 				MetaMethod metaMethod = new MetaMethod(m, resultMetaClass);
@@ -278,14 +292,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		{
 			logger.error("Something unexpected happened building meta class {}", fqClassName, t);
 		}
-		
+
 		return resultMetaClass;
 	}
 
 	public void addCodeCacheTag(Tag tag)
 	{
 		synchronized (codeCacheTagList)
-		{			
+		{
 			codeCacheTagList.add(tag);
 		}
 	}

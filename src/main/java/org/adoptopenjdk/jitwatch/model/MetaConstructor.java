@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_MEMBER_CREATION;
+
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
@@ -17,12 +19,17 @@ public class MetaConstructor extends AbstractMetaMember
 	public MetaConstructor(Constructor<?> constructor, MetaClass methodClass)
 	{
 		this.constructorToString = constructor.toString();
-		this.metaClass = methodClass;	
-		
+		this.metaClass = methodClass;
+
 		returnType = Void.TYPE;
 		memberName = constructor.getName();
 		paramTypes = Arrays.asList(constructor.getParameterTypes());
 		modifier = constructor.getModifiers();
+
+        if (DEBUG_MEMBER_CREATION)
+        {
+        	logger.debug("Created MetaConstructor: {}", toString());
+        }
 	}
 
 	@Override
