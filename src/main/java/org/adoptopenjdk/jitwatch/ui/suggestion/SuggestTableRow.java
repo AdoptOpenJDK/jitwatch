@@ -20,7 +20,7 @@ public class SuggestTableRow
 	{
 		return suggestion.getBytecodeOffset();
 	}
-	
+
 	public Suggestion getSuggestion()
 	{
 		return suggestion;
@@ -38,7 +38,6 @@ public class SuggestTableRow
 
 	public String getType()
 	{
-
 		switch (suggestion.getType())
 		{
 		case BRANCH:

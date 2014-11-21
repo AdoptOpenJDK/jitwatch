@@ -5,15 +5,13 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
-import org.adoptopenjdk.jitwatch.ui.Dialogs;
-import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -32,7 +30,13 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
+import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
+import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class EditorPane extends VBox
 {
@@ -61,7 +65,7 @@ public class EditorPane extends VBox
 
 		lblTitle = new Label("New File");
 
-		Button btnOpen = new Button("Open");
+		Button btnOpen = StyleUtil.buildButton("Open");
 		btnOpen.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -73,7 +77,7 @@ public class EditorPane extends VBox
 			}
 		});
 
-		btnSave = new Button("Save");
+		btnSave = StyleUtil.buildButton("Save");
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -85,7 +89,7 @@ public class EditorPane extends VBox
 
 		btnSave.setDisable(!isModified);
 
-		Button btnClear = new Button("Clear");
+		Button btnClear = StyleUtil.buildButton("Clear");
 		btnClear.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -96,7 +100,7 @@ public class EditorPane extends VBox
 			}
 		});
 
-		Button btnClose = new Button("Close");
+		Button btnClose = StyleUtil.buildButton("Close");
 		btnClose.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -108,7 +112,7 @@ public class EditorPane extends VBox
 			}
 		});
 
-		Button btnRun = new Button("Run");
+		Button btnRun = StyleUtil.buildButton("Run");
 		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -118,9 +122,9 @@ public class EditorPane extends VBox
 				{
 					promptSave();
 				}
-				
+
 				setVMLanguage();
-				
+
 				sandboxStage.runFile(EditorPane.this);
 			}
 		});
@@ -295,32 +299,29 @@ public class EditorPane extends VBox
 		return sourceFile;
 	}
 
-	public void loadSource(File dir, String filename)
+	public void loadSource(File filename)
 	{
-		if (filename.startsWith(File.separator))
-		{
-			sourceFile = new File(filename);
-		}
-		else
-		{
-			sourceFile = new File(dir, filename);
-		}
+		sourceFile = filename;
 
-		String source = ResourceLoader.readFile(sourceFile);
-
-		if (source != null)
+		if (sourceFile != null)
 		{
-			source = source.replace("\t", "    ");
-
 			lblTitle.setText(sourceFile.getName());
-			taSource.setText(source.trim());
-
-			setModified(false);
 
 			// add parent folder so source can be loaded in TriView
-			sandboxStage.addSourceFolder(dir);
+			sandboxStage.addSourceFolder(sourceFile.getParentFile());
 
-			setVMLanguage();
+			String source = ResourceLoader.readFile(sourceFile);
+
+			if (source != null)
+			{
+				source = source.replace("\t", "    ");
+
+				taSource.setText(source.trim());
+
+				setModified(false);
+
+				setVMLanguage();
+			}
 		}
 	}
 
@@ -350,7 +351,7 @@ public class EditorPane extends VBox
 
 		if (result != null)
 		{
-			loadSource(result.getParentFile(), result.getName());
+			loadSource(result);
 		}
 	}
 

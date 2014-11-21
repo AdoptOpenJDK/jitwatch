@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 
 public class VMLanguageList extends VBox implements IStageCloseListener
 {
@@ -42,7 +43,7 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 
 		updateList();
 
-		Button btnConfigureLanguage = new Button("Configure");
+		Button btnConfigureLanguage = StyleUtil.buildButton("Configure");
 		btnConfigureLanguage.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

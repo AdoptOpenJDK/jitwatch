@@ -12,10 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -28,6 +24,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+
 public class SuggestStage extends Stage
 {
 	private VBox vbox;
@@ -37,7 +37,7 @@ public class SuggestStage extends Stage
 	private Set<String> filterPackageSet = new HashSet<>();
 
 	private List<Suggestion> suggestions;
-	
+
 	public SuggestStage(final JITWatchUI parent, List<Suggestion> suggestions)
 	{
 		this.suggestions = suggestions;
@@ -49,7 +49,7 @@ public class SuggestStage extends Stage
 		BorderPane borderPane = new BorderPane();
 
 		vbox = new VBox();
-		
+
 		SuggestionPackageFilter filter = new SuggestionPackageFilter(this);
 
 		borderPane.setTop(filter);
@@ -59,7 +59,7 @@ public class SuggestStage extends Stage
 		Scene scene = new Scene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		tableView = SuggestionTableUtil.buildTableSuggestion(obList);
-		
+
 		filter.prefWidthProperty().bind(scene.widthProperty());
 
 		vbox.getChildren().add(tableView);
@@ -78,14 +78,14 @@ public class SuggestStage extends Stage
 				parent.handleStageClosed(SuggestStage.this);
 			}
 		});
-		
+
 		display();
 	}
 
 	private void display()
 	{
 		obList.clear();
-		
+
 		if (suggestions.size() == 0)
 		{
 			vbox.getChildren().clear();

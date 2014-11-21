@@ -5,30 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
+
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
-import org.adoptopenjdk.jitwatch.core.ILogParser;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
-import org.adoptopenjdk.jitwatch.ui.Dialogs;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.StageManager;
-import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
-import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -48,6 +35,24 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
+import org.adoptopenjdk.jitwatch.core.ILogParser;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.StageManager;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ISandboxLogListener, ILogParseErrorListener
 {
@@ -99,7 +104,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		taLog.setStyle(style);
 
-		Button btnNewEditor = new Button("New Editor");
+		Button btnNewEditor = StyleUtil.buildButton("New Editor");
 		btnNewEditor.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -109,7 +114,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		btnSandboxConfig = new Button("Configure Sandbox");
+		btnSandboxConfig = StyleUtil.buildButton("Configure Sandbox");
 		btnSandboxConfig.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -123,7 +128,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnResetSandbox = new Button("Reset Sandbox");
+		Button btnResetSandbox = StyleUtil.buildButton("Reset Sandbox");
 		btnResetSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -197,6 +202,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		loadLastEditorPanes();
 	}
 
+	@Override
 	public void runFile(final EditorPane pane)
 	{
 		saveUnsavedEditors();
@@ -257,7 +263,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		if (filename != null)
 		{
-			editor.loadSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), filename);
+			editor.loadSource(new File(filename));
 		}
 
 		editorPanes.add(editor);
@@ -364,23 +370,26 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 	}
 
+	@Override
 	public void editorClosed(EditorPane editor)
 	{
 		editorPanes.remove(editor);
 		splitEditorPanes.getItems().remove(editor);
 		setEditorDividers();
 	}
-	
+
 	public void editorGotFocus(EditorPane editor)
 	{
-		
+
 	}
 
+	@Override
 	public void addSourceFolder(File sourceFolder)
 	{
 		config.addSourceFolder(sourceFolder);
 	}
 
+	@Override
 	public void setVMLanguageFromFileExtension(String vmLanguage)
 	{
 		if (vmLanguage != null)
@@ -483,13 +492,15 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		Platform.runLater(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				Dialogs.showOKDialog(SandboxStage.this, title, body);
 			}
 		});
 	}
-	
+
+	@Override
 	public Stage getStageForChooser()
 	{
 		return this;

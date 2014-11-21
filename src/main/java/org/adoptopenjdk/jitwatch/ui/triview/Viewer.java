@@ -5,7 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import javafx.scene.layout.VBox;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE_CR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TAB;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,17 +19,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
-import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -42,6 +35,17 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
+import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Viewer extends VBox
 {
@@ -60,11 +64,11 @@ public class Viewer extends VBox
 	private boolean keyboardMode = false;
 
 	private static final String FONT_STYLE = "-fx-font-family:monospace; -fx-font-size:12px;";
-	
+
 	protected static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
 	protected static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
-	
+
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
 	protected static final Logger logger = LoggerFactory.getLogger(Viewer.class);
@@ -223,6 +227,8 @@ public class Viewer extends VBox
 			{
 				lines[i] = StringUtil.padLineNumber(i + 1, maxWidth) + S_DOUBLE_SPACE + row;
 			}
+
+			lines[i] = lines[i].replace(S_NEWLINE_CR, S_EMPTY);
 
 			Label lblLine = new Label(lines[i]);
 
@@ -537,7 +543,7 @@ public class Viewer extends VBox
 
 			if (count > 0)
 			{
-				scrollPercent = (double) scrollIndex / count;
+				scrollPercent = scrollIndex / count;
 			}
 
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);

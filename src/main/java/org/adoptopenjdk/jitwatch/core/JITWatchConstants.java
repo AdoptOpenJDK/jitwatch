@@ -172,6 +172,7 @@ public final class JITWatchConstants
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
 	public static final String S_NEWLINE = "\n";
+	public static final String S_NEWLINE_CR = "\n";
 	public static final String S_TAB = "\t";
 	public static final String S_DOUBLE_SPACE = "  ";
 	public static final String S_EMPTY = "";

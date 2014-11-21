@@ -5,14 +5,14 @@
  */
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 
 public final class SuggestionTableUtil
 {

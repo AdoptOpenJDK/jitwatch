@@ -5,15 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
-import org.adoptopenjdk.jitwatch.ui.FileChooserList;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -33,6 +24,16 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
+import org.adoptopenjdk.jitwatch.ui.FileChooserList;
+import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SandboxConfigStage extends Stage
 {
@@ -73,7 +74,7 @@ public class SandboxConfigStage extends Stage
 		vmLanguageList.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
 
 		vbox.getChildren().add(chooserClasses);
-		
+
 		vbox.getChildren().add(vmLanguageList);
 
 		vbox.getChildren().add(buildHBoxAssemblySyntax());
@@ -202,7 +203,7 @@ public class SandboxConfigStage extends Stage
 				getChangeListenerForGroupAssemblySyntax(rbIntel, groupAssemblySyntax));
 
 		HBox hbox = new HBox();
-		
+
 		hbox.setSpacing(20);
 
 		hbox.getChildren().add(buildCheckBoxPrintAssembly());
@@ -500,8 +501,8 @@ public class SandboxConfigStage extends Stage
 		hbox.setPadding(new Insets(0,10,0,10));
 		hbox.setAlignment(Pos.CENTER);
 
-		Button btnSave = new Button("Save");
-		Button btnCancel = new Button("Cancel");
+		Button btnSave = StyleUtil.buildButton("Save");
+		Button btnCancel = StyleUtil.buildButton("Cancel");
 
 		btnSave.setOnAction(getEventHandlerForSaveButton());
 

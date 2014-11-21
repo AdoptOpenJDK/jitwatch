@@ -5,17 +5,18 @@
  */
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
+
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
+import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
 public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 {
@@ -37,13 +38,12 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 
 		lblMetaClass = new Label();
 		lblMetaMember = new Label();
-		btnTriView = new Button();
-		btnTriView.setText("View");
+		btnTriView = StyleUtil.buildButton("View");
 
 		vb.getChildren().add(lblMetaClass);
 		vb.getChildren().add(lblMetaMember);
 		vb.getChildren().add(btnTriView);
-		
+
 		vb.setSpacing(5);
 
 		setGraphic(vb);
@@ -55,7 +55,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 		if (suggestion != null)
 		{
 			final IMetaMember member = suggestion.getCaller();
-			
+
 			btnTriView.setOnAction(new EventHandler<ActionEvent>()
 			{
 				@Override
@@ -68,6 +68,12 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 
 			lblMetaClass.setText(member.getMetaClass().getFullyQualifiedName());
 			lblMetaMember.setText(member.toStringUnqualifiedMethodName(false));
+
+			btnTriView.setVisible(true);
+		}
+		else
+		{
+			btnTriView.setVisible(false);
 		}
 	}
 }

@@ -256,13 +256,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private void buildSuggestions()
 	{
-		log("Building code suggestions.");
+		log("Finding code suggestions.");
 
 		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(logParser.getModel());
 
 		suggestions = walker.getSuggestionList();
 
-		log("Finished building code suggestions.");
+		log("Found " + suggestions.size() + " code suggestions.");
 	}
 
 	@Override
@@ -320,7 +320,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		Button btnChooseWatchFile = buildButton("Open Log");
+		Button btnChooseWatchFile = StyleUtil.buildButton("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -331,7 +331,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStart = buildButton("Start");
+		btnStart = StyleUtil.buildButton("Start");
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -362,7 +362,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStop = buildButton("Stop");
+		btnStop = StyleUtil.buildButton("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -372,7 +372,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnConfigure = buildButton("Config");
+		btnConfigure = StyleUtil.buildButton("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -382,7 +382,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTimeLine = buildButton("Chart");
+		btnTimeLine = StyleUtil.buildButton("Chart");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -396,7 +396,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStats = buildButton("Stats");
+		btnStats = StyleUtil.buildButton("Stats");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -410,7 +410,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnHisto = buildButton("Histo");
+		btnHisto = StyleUtil.buildButton("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -424,7 +424,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTopList = buildButton("TopList");
+		btnTopList = StyleUtil.buildButton("TopList");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -438,7 +438,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnCodeCache = buildButton("Code Cache");
+		btnCodeCache = StyleUtil.buildButton("Code Cache");
 		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -452,7 +452,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTriView = buildButton("TriView");
+		btnTriView = StyleUtil.buildButton("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -467,7 +467,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSuggest = buildButton("Suggest");
+		btnSuggest = StyleUtil.buildButton("Suggest");
 		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -481,7 +481,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnOptimizedVirtualCalls = buildButton("OVCs");
+		btnOptimizedVirtualCalls = StyleUtil.buildButton("OVCs");
 		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -501,7 +501,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSandbox = buildButton("Sandbox");
+		btnSandbox = StyleUtil.buildButton("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -656,14 +656,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
 
 		updateButtons();
-	}
-
-	private Button buildButton(String title)
-	{
-		Button button = new Button(title);
-		button.setStyle("-fx-font: 13 arial; -fx-base: #ccccff; -fx-padding: 3 9 4 9");
-
-		return button;
 	}
 
 	void openConfigStage()

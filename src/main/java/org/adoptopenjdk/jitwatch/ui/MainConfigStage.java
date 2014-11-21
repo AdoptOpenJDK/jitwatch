@@ -80,7 +80,7 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnNewProfile = new Button("New");
+		Button btnNewProfile = StyleUtil.buildButton("New");
 
 		btnNewProfile.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -118,7 +118,7 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnDelete = new Button("Delete");
+		Button btnDelete = StyleUtil.buildButton("Delete");
 
 		btnDelete.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -157,7 +157,7 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnSave = new Button("Save");
+		Button btnSave = StyleUtil.buildButton("Save");
 
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -174,7 +174,7 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnCancel = new Button("Cancel");
+		Button btnCancel = StyleUtil.buildButton("Cancel");
 
 		btnCancel.setOnAction(new EventHandler<ActionEvent>()
 		{

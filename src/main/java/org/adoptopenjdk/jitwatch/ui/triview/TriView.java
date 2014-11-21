@@ -57,6 +57,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
@@ -140,7 +141,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkBytecode.selectedProperty().addListener(checkListener);
 		checkAssembly.selectedProperty().addListener(checkListener);
 
-		Button btnCallChain = new Button("View Compile Chain");
+		Button btnCallChain = StyleUtil.buildButton("View Compile Chain");
 		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

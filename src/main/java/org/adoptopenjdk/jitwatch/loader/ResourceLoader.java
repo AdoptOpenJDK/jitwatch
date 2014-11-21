@@ -5,9 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +18,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ResourceLoader
 {
@@ -27,7 +28,7 @@ public final class ResourceLoader
 
 	public static String SUFFIX_SRC_JAVA = "java";
 	public static String SUFFIX_SRC_SCALA = "scala";
-	
+
 	/*
 	 * Hide Utility Class Constructor Utility classes should not have a public
 	 * or default constructor.
@@ -97,7 +98,7 @@ public final class ResourceLoader
 	{
 		String result = null;
 
-		if (sourceFile.exists())
+		if (sourceFile != null && sourceFile.exists())
 		{
 			try
 			{
@@ -108,6 +109,10 @@ public final class ResourceLoader
 			{
 				logger.error("Failed to read file: {}", sourceFile, ioe);
 			}
+		}
+		else
+		{
+			logger.warn("File {} not found", sourceFile);
 		}
 
 		return result;
