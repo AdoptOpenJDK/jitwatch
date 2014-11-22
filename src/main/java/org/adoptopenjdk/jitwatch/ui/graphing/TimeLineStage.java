@@ -29,7 +29,7 @@ public class TimeLineStage extends AbstractGraphStage
 {
 	public TimeLineStage(final JITWatchUI parent)
 	{
-		super(parent, 640, 480, true);
+		super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, true);
 
 		initStyle(StageStyle.DECORATED);
 

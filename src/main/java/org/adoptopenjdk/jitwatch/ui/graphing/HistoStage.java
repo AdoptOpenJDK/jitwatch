@@ -37,7 +37,7 @@ public class HistoStage extends AbstractGraphStage
 
     public HistoStage(final JITWatchUI parent)
     {
-        super(parent, 640, 480, false);
+        super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, false);
         
         IReadOnlyJITDataModel model = parent.getJITDataModel();
 
