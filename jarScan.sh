@@ -19,10 +19,14 @@ if [ $# -lt 1 ]; then
   exit 1;
 fi
 
-CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
+# make jarScan.sh runnable from any directory
+jarscan=`readlink -f $0`
+jitwatch=`dirname $jarscan`
+
+CLASSPATH=$CLASSPATH:$jitwatch/lib/logback-classic-1.1.2.jar
+CLASSPATH=$CLASSPATH:$jitwatch/lib/logback-core-1.1.2.jar
+CLASSPATH=$CLASSPATH:$jitwatch/lib/slf4j-api-1.7.7.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
-CLASSPATH=$CLASSPATH:target/classes
+CLASSPATH=$CLASSPATH:$jitwatch/target/classes
 
 $JAVA_HOME/bin/java -cp $CLASSPATH org.adoptopenjdk.jitwatch.jarscan.JarScan "$@"
