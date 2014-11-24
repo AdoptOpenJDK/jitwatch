@@ -19,14 +19,18 @@ if [ $# -lt 1 ]; then
   exit 1;
 fi
 
-# make jarScan.sh runnable from any directory
-jarscan=`readlink -f $0`
-jitwatch=`dirname $jarscan`
+# make jarScan.sh runnable from any directory (only works on Linux where readlink -f returns canonical path)
+if [ "$unamestr" = 'Darwin' ]; then
+  export JITWATCH=.
+else
+  export JARSCAN=`readlink -f $0`
+  export JITWATCH=`dirname $JARSCAN`
+fi
 
-CLASSPATH=$CLASSPATH:$jitwatch/lib/logback-classic-1.1.2.jar
-CLASSPATH=$CLASSPATH:$jitwatch/lib/logback-core-1.1.2.jar
-CLASSPATH=$CLASSPATH:$jitwatch/lib/slf4j-api-1.7.7.jar
+CLASSPATH=$CLASSPATH:$JITWATCH/lib/logback-classic-1.1.2.jar
+CLASSPATH=$CLASSPATH:$JITWATCH/lib/logback-core-1.1.2.jar
+CLASSPATH=$CLASSPATH:$JITWATCH/lib/slf4j-api-1.7.7.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
-CLASSPATH=$CLASSPATH:$jitwatch/target/classes
+CLASSPATH=$CLASSPATH:$JITWATCH/target/classes
 
 $JAVA_HOME/bin/java -cp $CLASSPATH org.adoptopenjdk.jitwatch.jarscan.JarScan "$@"
