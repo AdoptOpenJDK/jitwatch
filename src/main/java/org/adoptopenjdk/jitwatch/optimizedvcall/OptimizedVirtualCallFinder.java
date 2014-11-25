@@ -5,12 +5,14 @@
  */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
@@ -88,7 +90,7 @@ public class OptimizedVirtualCallFinder
 					{
 						logger.debug("OVCF Class locations: {}", StringUtil.listToString(classLocations));
 					}
-					
+
 					ClassBC classBytecode = metaClass.getClassBytecode(classLocations);
 
 					if (classBytecode != null)
@@ -151,6 +153,7 @@ public class OptimizedVirtualCallFinder
 
 					if (optimizedVCall != null && !result.contains(optimizedVCall))
 					{
+						logger.debug("Found OVC {} for member {}", optimizedVCall, member);
 						result.add(optimizedVCall);
 					}
 				}

@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 
@@ -33,7 +35,7 @@ public class OptimizedVirtualCall
 	{
 		return bytecodeInstruction;
 	}
-	
+
 	public VirtualCallSite getCaller()
 	{
 		return caller;
@@ -42,6 +44,19 @@ public class OptimizedVirtualCall
 	public VirtualCallSite getCallee()
 	{
 		return callee;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("Member: ").append(callingMember).append(C_NEWLINE);
+		builder.append("Caller: ").append(caller).append(C_NEWLINE);
+		builder.append("Callee: ").append(callee).append(C_NEWLINE);
+		builder.append("Instr : ").append(bytecodeInstruction);
+
+		return builder.toString();
 	}
 
 	@Override

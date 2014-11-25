@@ -5,10 +5,16 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,8 +29,6 @@ import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TestCompileChain
 {
@@ -153,31 +157,31 @@ public class TestCompileChain
 				"<task_done inlined_bytes='142' success='1' count='1' backedge_count='100000' stamp='13.173' nmsize='3624'/>",
 				"</task>"
 		};
-		
+
 		JITDataModel testModel = new JITDataModel();
 		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
 		String methodName = "testCallChain3";
-		
+
 		try
 		{
 			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
-			
+
 			String fqClassNameSB = "java.lang.AbstractStringBuilder";
 			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
 		}
 		catch (ClassNotFoundException cnfe)
-		{			
+		{
 			fail();
 		}
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		
+
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog " + methodName + " ()V");
-		
+
 		IMetaMember testMember = metaClass.getMemberFromSignature(msp);
 
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
-		
+
 //		private void testCallChain3()
 //		{
 //		  long count = 0;
@@ -195,9 +199,9 @@ public class TestCompileChain
 //		   }
 //		   System.out.println("testCallChain2: " + count);
 //		}
-		
+
 		// root
-		// -> test() 
+		// -> test()
 		// -> chainC1() -> chainC2()
 		//              -> chainC3()
 		// -> chainC2()
@@ -208,11 +212,11 @@ public class TestCompileChain
 		// -> println
 
 		List<CompileNode> rootChildren = root.getChildren();
-		
+
 		assertEquals(8, rootChildren.size());
-		
+
 		int pos = 0;
-		
+
 		assertEquals("test", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("chainC1", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("chainC2", rootChildren.get(pos++).getMember().getMemberName());
@@ -222,7 +226,7 @@ public class TestCompileChain
 		assertEquals("toString", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
 	}
-	
+
 	@Test
 	public void testJava7LateInlineRegression()
 	{
@@ -419,7 +423,7 @@ public class TestCompileChain
 				"<dependency type='unique_concrete_method' ctxk='702' x='772'/>",
 				"<code_cache total_blobs='255' nmethods='75' adapters='134' free_code_cache='49824384' largest_free_block='49810304'/>",
 				"<task_done success='1' nmsize='800' count='10000' backedge_count='5317' inlined_bytes='79' stamp='11.662'/>",
-				"</task>"		
+				"</task>"
 		};
 
 		JITDataModel testModel = new JITDataModel();
@@ -439,13 +443,16 @@ public class TestCompileChain
 			fail();
 		}
 
+		List<String> paramList = new ArrayList<>();
+		paramList.add("long");
+
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", new String[] { "long" }));
+		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
 
 		assertNotNull(testMember);
-		
+
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
-		
+
 		// root
 		// -> chainA1() -> chainA2() -> chainA3() -> chainA4() -> bigMethod()
 		// -> chainB1() -> chainB2() -> chainB3()
@@ -456,11 +463,11 @@ public class TestCompileChain
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
 
 		List<CompileNode> rootChildren = root.getChildren();
-		
+
 		assertEquals(7, rootChildren.size());
-		
+
 		int pos = 0;
-		
+
 		assertEquals("chainA1", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("chainB1", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
@@ -469,8 +476,8 @@ public class TestCompileChain
 		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
 	}
-	
-	
+
+
 	@Test
 	public void testJava8LateInlineRegression()
 	{
@@ -661,13 +668,16 @@ public class TestCompileChain
 			fail();
 		}
 
+		List<String> paramList = new ArrayList<>();
+		paramList.add("long");
+
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", new String[] { "long" }));
+		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
 
 		assertNotNull(testMember);
-		
+
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
-		
+
 		// root
 		// -> chainA1() -> chainA2() -> chainA3() -> chainA4() -> bigMethod()
 		// -> chainB1() -> chainB2() -> chainB3()
@@ -678,11 +688,11 @@ public class TestCompileChain
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
 
 		List<CompileNode> rootChildren = root.getChildren();
-		
+
 		assertEquals(7, rootChildren.size());
-		
+
 		int pos = 0;
-		
+
 		assertEquals("chainA1", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("chainB1", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
@@ -691,7 +701,7 @@ public class TestCompileChain
 		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
 		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
 	}
-	
+
 	private CompileNode buildCompileNodeForXML(String[] lines, IMetaMember member, JITDataModel model)
 	{
 		TagProcessor tp = new TagProcessor();
@@ -701,7 +711,7 @@ public class TestCompileChain
 		Tag tag = null;
 
 		for (String line : lines)
-		{		
+		{
 			line = line.trim();
 			line = line.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 			line = line.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
@@ -715,7 +725,7 @@ public class TestCompileChain
 		}
 
 		assertNotNull(tag);
-		
+
 		member.setCompiledAttributes(new HashMap<String, String>());
 
 		Journal journal = member.getJournal();
@@ -726,7 +736,7 @@ public class TestCompileChain
 		CompileNode root = walker.buildCallTree(member);
 
 		assertNotNull(root);
-		
+
 		return root;
 
 	}

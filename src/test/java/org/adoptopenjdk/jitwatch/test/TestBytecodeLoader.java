@@ -5,21 +5,34 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.MetaMethod;
-import org.adoptopenjdk.jitwatch.model.bytecode.*;
-import org.adoptopenjdk.jitwatch.util.ClassUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-import org.junit.Test;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaMethod;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamConstant;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamNumeric;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamString;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCParamSwitch;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.IBytecodeParam;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import org.junit.Test;
 
 public class TestBytecodeLoader
 {
@@ -235,7 +248,7 @@ public class TestBytecodeLoader
 
 		IBytecodeParam paramI0 = i3.getParameters().get(0);
 		assertTrue(paramI0 instanceof BCParamSwitch);
-		
+
 		BytecodeInstruction i99 = instructions.get(4);
 		assertEquals(99, i99.getOffset());
 		assertEquals(Opcode.LSTORE_2, i99.getOpcode());
@@ -249,7 +262,7 @@ public class TestBytecodeLoader
 		builder.append("39: ldc           #8                  // int 1000000").append(S_NEWLINE);
 		builder.append("41: if_icmpge     104").append(S_NEWLINE);
 		builder.append("44: iload         5").append(S_NEWLINE);
-		builder.append("46: iconst_3").append(S_NEWLINE);      
+		builder.append("46: iconst_3").append(S_NEWLINE);
 		builder.append("47: irem          ").append(S_NEWLINE);
 		builder.append("48: tableswitch   { // 0 to 2").append(S_NEWLINE);
 		builder.append("             0: 76").append(S_NEWLINE);
@@ -269,14 +282,14 @@ public class TestBytecodeLoader
 		assertEquals(47, i47.getOffset());
 		assertEquals(Opcode.IREM, i47.getOpcode());
 		assertEquals(false, i47.hasParameters());
-		
+
 		BytecodeInstruction i76 = instructions.get(6);
 		assertEquals(76, i76.getOffset());
 		assertEquals(Opcode.ALOAD_1, i76.getOpcode());
 		assertEquals(false, i76.hasParameters());
 	}
 
-	
+
 	@Test
 	public void testParseBytecodeRegressionLookupSwitch()
 	{
@@ -396,9 +409,9 @@ public class TestBytecodeLoader
 		int offset = entry.getBytecodeOffset();
 
 		assertEquals(0, offset);
-		
+
 		MemberSignatureParts msp = entry.getMemberSignatureParts();
-		
+
 		assertEquals("add", msp.getMemberName());
 		assertEquals("int", msp.getReturnType());
 		assertEquals(2, msp.getParamTypes().size());
@@ -412,7 +425,7 @@ public class TestBytecodeLoader
 		List<BytecodeInstruction> instructions2 = memberBytecode2.getInstructions();
 
 		assertEquals(3, instructions2.size());
-		
+
 		LineTable lineTable2 = memberBytecode2.getLineTable();
 
 		LineTableEntry entry2 = lineTable2.getEntryForSourceLine(3);
@@ -420,9 +433,9 @@ public class TestBytecodeLoader
 		int offset2 = entry2.getBytecodeOffset();
 
 		assertEquals(0, offset2);
-		
+
 		MemberSignatureParts msp2 = entry2.getMemberSignatureParts();
-		
+
 		assertEquals("org.adoptopenjdk.jitwatch.demo.SandboxTest", msp2.getMemberName());
 		assertEquals("void", msp2.getReturnType());
 		assertEquals(0, msp2.getParamTypes().size());
@@ -491,7 +504,7 @@ public class TestBytecodeLoader
 		builder.append("    RuntimeVisibleAnnotations:").append(S_NEWLINE);
 		builder.append("      0: #35()").append(S_NEWLINE);
 		builder.append("      0: #35()").append(S_NEWLINE);
-		
+
 		ClassBC classBytecode = BytecodeLoader.parse("com.chrisnewland.Test", builder.toString());
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode("public void measureWrong()");
@@ -501,39 +514,39 @@ public class TestBytecodeLoader
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 		assertEquals(6, instructions.size());
-		
+
 		int pos = 0;
-		
+
 		BytecodeInstruction i0 = instructions.get(pos++);
 		assertEquals(0, i0.getOffset());
 		assertEquals(Opcode.ALOAD_0, i0.getOpcode());
 		assertEquals(false, i0.hasParameters());
 		assertEquals(0, i0.getParameters().size());
-		
+
 		BytecodeInstruction i1 = instructions.get(pos++);
 		assertEquals(0, i1.getOffset());
 		assertEquals(Opcode.ALOAD_0, i1.getOpcode());
 		assertEquals(false, i1.hasParameters());
 		assertEquals(0, i1.getParameters().size());
-		
+
 		BytecodeInstruction i2 = instructions.get(pos++);
 		assertEquals(1, i2.getOffset());
 		assertEquals(Opcode.GETFIELD, i2.getOpcode());
 		assertEquals(true, i2.hasParameters());
 		assertEquals(1, i2.getParameters().size());
-		
+
 		BytecodeInstruction i3 = instructions.get(pos++);
 		assertEquals(4, i3.getOffset());
 		assertEquals(Opcode.INVOKESTATIC, i3.getOpcode());
 		assertEquals(true, i3.hasParameters());
 		assertEquals(1, i3.getParameters().size());
-	
+
 		BytecodeInstruction i4 = instructions.get(pos++);
 		assertEquals(7, i4.getOffset());
 		assertEquals(Opcode.POP2, i4.getOpcode());
 		assertEquals(false, i4.hasParameters());
 		assertEquals(0, i4.getParameters().size());
-		
+
 		BytecodeInstruction i5 = instructions.get(pos++);
 		assertEquals(8, i5.getOffset());
 		assertEquals(Opcode.RETURN, i5.getOpcode());
@@ -558,14 +571,14 @@ public class TestBytecodeLoader
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(8));
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(9));
 		assertEquals(66, lineTable.findSourceLineForBytecodeOffset(100));
-		
+
 		MemberSignatureParts msp = lineTable.getEntryForSourceLine(65).getMemberSignatureParts();
-		
+
 		assertEquals("measureWrong", msp.getMemberName());
 		assertEquals("void", msp.getReturnType());
 		assertEquals(0, msp.getParamTypes().size());
 	}
-	
+
 	@Test
 	public void testStaticInitialiserRegression()
 	{
@@ -627,16 +640,16 @@ public class TestBytecodeLoader
 				"                            line 44: 60",
 				"                            line 45: 74"
 		};
-		
+
 		StringBuilder builder = new StringBuilder();
-		
+
 		for (String line : lines)
 		{
 			builder.append(line).append(C_NEWLINE);
 		}
-		
+
 		ClassBC classBytecode = BytecodeLoader.parse("com.chrisnewland.Test", builder.toString());
-		
+
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 
 		assertNotNull(memberBytecode);
@@ -644,5 +657,55 @@ public class TestBytecodeLoader
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 		assertEquals(43, instructions.size());
+	}
+
+	@Test
+	public void testRegressionLoadJavaIoPrintStreamString()
+	{
+		String className = "java.io.PrintStream";
+		String methodName = "print";
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class });
+
+		String bcSig = member.getSignatureForBytecode();
+
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
+
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertNotNull(instructions);
+
+		System.out.println(memberBytecode);
+
+		assertEquals(8, instructions.size());
+	}
+
+	@Test
+	public void testRegressionLoadJavaIoPrintStreamObject()
+	{
+		String className = "java.io.PrintStream";
+		String methodName = "print";
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class });
+
+		String bcSig = member.getSignatureForBytecode();
+
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
+
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(bcSig);
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertNotNull(instructions);
+
+		System.out.println(memberBytecode);
+
+		assertEquals(5, instructions.size());
 	}
 }

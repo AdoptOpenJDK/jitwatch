@@ -28,6 +28,8 @@ import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,18 +148,47 @@ public final class JournalUtil
 					klassAttrName = klassAttrName.replace(C_SLASH, C_DOT);
 				}
 
+				String returnType = ParseUtil.getMethodTagReturn(methodTag, parseDictionary);
+				List<String> paramTypes = ParseUtil.getMethodTagArguments(methodTag, parseDictionary);
+
 				if (DEBUG_LOGGING)
 				{
 					logger.debug("memberName: {}", member.getMemberName());
 					logger.debug("metaClass : {}", member.getMetaClass().getFullyQualifiedName());
+					logger.debug("return    : {}/{}", member.getReturnTypeName(), returnType);
+					logger.debug("params    : {}/{}", StringUtil.arrayToString(member.getParamTypeNames()), StringUtil.listToString(paramTypes));
 				}
 
 				boolean nameMatches = member.getMemberName().equals(methodAttrName);
 				boolean klassMatches = member.getMetaClass().getFullyQualifiedName().equals(klassAttrName);
+				boolean returnMatches = member.getReturnTypeName().equals(returnType);
 
-				// TODO and params
+				boolean paramsMatch = true;
+				
+				if (member.getParamTypeNames().length == paramTypes.size())
+				{
+					for (int pos = 0; pos < member.getParamTypeNames().length; pos++)
+					{
+						String memberParamType = member.getParamTypeNames()[pos];
+						String tagParamType = paramTypes.get(pos);
+						
+						logger.debug("checking: {}/{}", memberParamType, tagParamType);
+						
+						if (!memberParamType.equals(tagParamType))
+						{
+							paramsMatch = false;
+							break;
+						}
+					}
+				}
+				else
+				{
+					paramsMatch = false;
+				}
 
-				result = nameMatches && klassMatches;
+				result = nameMatches && klassMatches && returnMatches && paramsMatch;
+				
+				logger.debug("result: {}", result);
 			}
 		}
 

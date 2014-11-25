@@ -498,6 +498,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
+		logger.debug("Getting bytecode for {}", currentMember);
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
 
 		return classBytecode;

@@ -36,14 +36,11 @@ public class OptimizedVirtualCallStage extends Stage
 			}
 		});
 
-		int width = 960;
-		int height = 480;
-
 		VBox vbox = new VBox();
 		vbox.setPadding(new Insets(8));
 		vbox.setSpacing(8);
 
-		Scene scene = new Scene(vbox, width, height);
+		Scene scene = new Scene(vbox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setTitle("Optimized Virtual Calls");
 

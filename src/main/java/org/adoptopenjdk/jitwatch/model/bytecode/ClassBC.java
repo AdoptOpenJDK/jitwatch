@@ -5,6 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +17,8 @@ import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClassBC
 {
@@ -23,21 +27,23 @@ public class ClassBC
 	private int majorVersion;
 	private int minorVersion;
 	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
-	
+
 	private LineTable compositeLineTable = null;
+
+	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
 
 	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
 	{
 		if (memberName == null)
 		{
-			throw new RuntimeException("tried to add null");
+			throw new RuntimeException("Refusing to add null memberName");
 		}
-		
+
 		memberBytecodeMap.put(memberName, memberBytecode);
 	}
-	
+
 	public LineTableEntry findLineTableEntryForSourceLine(int sourceLine)
-	{		
+	{
 		if (compositeLineTable == null)
 		{
 			buildCompositeLineTable();
@@ -45,18 +51,18 @@ public class ClassBC
 
 		return compositeLineTable.getEntryForSourceLine(sourceLine);
 	}
-	
+
 	private void buildCompositeLineTable()
 	{
 		compositeLineTable = new LineTable();
-		
+
 		for (MemberBytecode memberBC : memberBytecodeMap.values())
 		{
 			LineTable lineTable = memberBC.getLineTable();
-			
+
 			compositeLineTable.add(lineTable);
-		}		
-		
+		}
+
 		compositeLineTable.sort();
 	}
 
@@ -64,10 +70,14 @@ public class ClassBC
 	{
 		String bytecodeSignature = member.getSignatureForBytecode();
 
+		logger.debug("getMemberBytecode: {} sig: {}", member.toString(), bytecodeSignature);
+
 		MemberBytecode result = getMemberBytecode(bytecodeSignature);
 
 		if (result == null)
 		{
+			logger.debug("did not find {} on first try, using heuristic", member.toString());
+
 			List<String> keys = new ArrayList<>(getBytecodeMethodSignatures());
 
 			bytecodeSignature = ParseUtil.findBestMatchForMemberSignature(member, keys);

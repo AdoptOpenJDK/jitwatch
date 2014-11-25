@@ -5,7 +5,19 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import java.io.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PROFILE_DEFAULT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PROFILE_SANDBOX;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,8 +29,6 @@ import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class JITWatchConfig
 {
@@ -88,9 +98,9 @@ public class JITWatchConfig
 	private Properties loadedProps;
 
 	private String preSandboxProfile = S_PROFILE_DEFAULT;
-	
+
 	private ParsedClasspath parsedClasspath = new ParsedClasspath();
-	
+
 	public JITWatchConfig()
 	{
 		initialise();
@@ -138,7 +148,8 @@ public class JITWatchConfig
 	{
 		return parsedClasspath;
 	}
-	
+
+	@Override
 	public JITWatchConfig clone()
 	{
 		if (DEBUG_LOGGING)
@@ -187,8 +198,12 @@ public class JITWatchConfig
 
 		if (name != null && !isBuiltInProfile(name))
 		{
-			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS, KEY_SHOW_JIT_ONLY_MEMBERS,
-					KEY_SHOW_JIT_ONLY_CLASSES, KEY_SHOW_HIDE_INTERFACES };
+			String[] keys = new String[] {
+					KEY_SOURCE_LOCATIONS,
+					KEY_CLASS_LOCATIONS,
+					KEY_SHOW_JIT_ONLY_MEMBERS,
+					KEY_SHOW_JIT_ONLY_CLASSES,
+					KEY_SHOW_HIDE_INTERFACES };
 
 			for (String key : keys)
 			{
@@ -276,7 +291,7 @@ public class JITWatchConfig
 
 		classLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_CLASS_LOCATIONS);
 		sourceLocations = loadCommaSeparatedListFromProperty(loadedProps, KEY_SOURCE_LOCATIONS);
-		editorPanes =  loadCommaSeparatedListFromProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES);
+		editorPanes = loadCommaSeparatedListFromProperty(loadedProps, KEY_LAST_SANDBOX_EDITOR_PANES);
 
 		showOnlyCompiledMembers = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_MEMBERS, true);
 		showOnlyCompiledClasses = loadBooleanFromProperty(loadedProps, KEY_SHOW_JIT_ONLY_CLASSES, false);
@@ -513,7 +528,7 @@ public class JITWatchConfig
 	{
 		return Collections.unmodifiableList(classLocations);
 	}
-	
+
 	public List<String> getAllClassLocations()
 	{
 		ParsedClasspath parsedClasspath = getParsedClasspath();
@@ -527,7 +542,7 @@ public class JITWatchConfig
 				mergedClassLocations.add(parsedLocation);
 			}
 		}
-		
+
 		return mergedClassLocations;
 	}
 
@@ -535,7 +550,7 @@ public class JITWatchConfig
 	{
 		return Collections.unmodifiableList(sourceLocations);
 	}
-	
+
 	public List<String> getLastEditorPaneList()
 	{
 		return Collections.unmodifiableList(editorPanes);
@@ -543,14 +558,21 @@ public class JITWatchConfig
 
 	public void addSourceFolder(File sourceFolder)
 	{
-		String absPath = sourceFolder.getAbsolutePath();
-		
-		if (!sourceLocations.contains(absPath))
+		if (sourceFolder != null)
 		{
-			sourceLocations.add(absPath);
+			String absPath = sourceFolder.getAbsolutePath();
+
+			if (!sourceLocations.contains(absPath))
+			{
+				sourceLocations.add(absPath);
+			}
+		}
+		else
+		{
+			logger.warn("Tried to add a null source folder");
 		}
 	}
-	
+
 	public void setSourceLocations(List<String> sourceLocations)
 	{
 		this.sourceLocations = sourceLocations;
@@ -565,7 +587,7 @@ public class JITWatchConfig
 	{
 		this.editorPanes = editorPanes;
 	}
-	
+
 	public boolean isShowOnlyCompiledMembers()
 	{
 		return showOnlyCompiledMembers;
@@ -700,7 +722,7 @@ public class JITWatchConfig
 	{
 		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
 		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
-		
+
 		loadedProps.setProperty(compilerKey, compilerPath);
 		loadedProps.setProperty(runtimeKey, runtimePath);
 	}
@@ -708,28 +730,28 @@ public class JITWatchConfig
 	public String getVMLanguageCompilerPath(String language)
 	{
 		String result = S_EMPTY;
-		
+
 		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
 
 		if (loadedProps.containsKey(compilerKey))
 		{
 			result = loadedProps.getProperty(compilerKey);
 		}
-		
+
 		return result;
 	}
 
 	public String getVMLanguageRuntimePath(String language)
 	{
 		String result = S_EMPTY;
-		
+
 		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
 
 		if (loadedProps.containsKey(runtimeKey))
 		{
 			result = loadedProps.getProperty(runtimeKey);
 		}
-		
+
 		return result;
 	}
 

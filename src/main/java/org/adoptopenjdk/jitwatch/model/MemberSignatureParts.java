@@ -5,9 +5,21 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUESTION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +30,6 @@ import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
 public class MemberSignatureParts
 {
 	private String fullyQualifiedClassName;
@@ -29,7 +39,7 @@ public class MemberSignatureParts
 	private String returnType;
 	private String memberName;
 	private List<String> paramTypeList;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(MemberSignatureParts.class);
 
 	// LinkedHashMap to ensure entry set iteration matches insertion order
@@ -79,7 +89,7 @@ public class MemberSignatureParts
 	}
 
 	public static MemberSignatureParts fromParts(String fullyQualifiedClassName, String memberName, String returnType,
-			String[] paramTypes)
+			List<String> paramTypes)
 	{
 		MemberSignatureParts msp = new MemberSignatureParts();
 
@@ -87,7 +97,7 @@ public class MemberSignatureParts
 
 		msp.memberName = memberName;
 
-		msp.paramTypeList.addAll(Arrays.asList(paramTypes));
+		msp.paramTypeList.addAll(paramTypes);
 
 		msp.returnType = returnType;
 
@@ -133,23 +143,23 @@ public class MemberSignatureParts
 
 		return msp;
 	}
-	
+
 	private static boolean isStaticInitialiser(String bytecodeSignature)
 	{
 		return ParseUtil.STATIC_BYTECODE_SIGNATURE.equals(bytecodeSignature);
 	}
 
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
-	{		
+	{
 		MemberSignatureParts msp = new MemberSignatureParts();
 
 		msp.fullyQualifiedClassName = fqClassName;
-		
+
 		if (isStaticInitialiser(toParse))
 		{
 			msp.memberName = ParseUtil.STATIC_INIT;
 			msp.returnType = Void.TYPE.getName();
-			
+
 			return msp;
 		}
 
@@ -388,11 +398,11 @@ public class MemberSignatureParts
 
 	@Override
 	public String toString()
-	{		
+	{
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(C_NEWLINE);
-		
+
 		sb.append("modifiers: ");
 
 		if (modifierList.size() > 0)

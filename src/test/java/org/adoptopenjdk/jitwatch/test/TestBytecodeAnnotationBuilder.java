@@ -5,10 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
@@ -17,6 +18,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -1737,6 +1739,15 @@ public class TestBytecodeAnnotationBuilder
 		Map<String, String> attrsMethod = new HashMap<>();
 		Map<String, String> attrsKlass = new HashMap<>();
 		Map<String, String> attrsParse = new HashMap<>();
+		Map<String, String> attrsTypeInt = new HashMap<>();
+
+		String idInt = "1";
+		String nameInt = "int";
+
+		attrsTypeInt.put(ATTR_ID, idInt);
+		attrsTypeInt.put(ATTR_NAME, nameInt);
+
+		Tag tagTypeInt = new Tag(TAG_TYPE, attrsTypeInt, true);
 
 		String methodID = "123";
 		String klassID = "456";
@@ -1744,12 +1755,13 @@ public class TestBytecodeAnnotationBuilder
 		attrsMethod.put(ATTR_NAME, methodName);
 		attrsMethod.put(ATTR_ID, methodID);
 		attrsMethod.put(ATTR_HOLDER, klassID);
+		attrsMethod.put(ATTR_RETURN, idInt);
 
-		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, false);
+		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
 
 		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
 		attrsKlass.put(ATTR_ID, klassID);
-		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, false);
+		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
 
 		attrsParse.put(ATTR_METHOD, methodID);
 		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
@@ -1757,6 +1769,7 @@ public class TestBytecodeAnnotationBuilder
 		IParseDictionary parseDictionary = new ParseDictionary();
 		parseDictionary.setKlass(klassID, tagKlass);
 		parseDictionary.setMethod(methodID, tagMethod);
+		parseDictionary.setType(idInt, tagTypeInt);
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, new Class[0]);
 
@@ -1801,5 +1814,121 @@ public class TestBytecodeAnnotationBuilder
 
 		assertTrue(line.getAnnotation().contains(annotation));
 		assertEquals(colour, line.getColour());
+	}
+	
+	@Test
+	public void testMemberMatchesParseTagWithExactParams()
+	{
+		String methodName = "print";
+		String klassName = "java.io.PrintStream";
+		Class<?>[] params = new Class[]{java.lang.String.class};
+
+		Map<String, String> attrsMethod = new HashMap<>();
+		Map<String, String> attrsKlass = new HashMap<>();
+		Map<String, String> attrsParse = new HashMap<>();
+		
+		Map<String, String> attrsTypeVoid = new HashMap<>();
+		Map<String, String> attrsTypeString = new HashMap<>();
+
+		String idString = "1";
+		String nameString = "java.lang.String";
+		
+		String idVoid = "2";
+		String nameVoid = "void";
+
+		attrsTypeString.put(ATTR_ID, idString);
+		attrsTypeString.put(ATTR_NAME, nameString);
+		
+		attrsTypeVoid.put(ATTR_ID, idVoid);
+		attrsTypeVoid.put(ATTR_NAME, nameVoid);
+
+		Tag tagTypeString = new Tag(TAG_TYPE, attrsTypeString, true);
+		Tag tagTypeVoid = new Tag(TAG_TYPE, attrsTypeVoid, true);
+
+		String methodID = "123";
+		String klassID = "456";
+
+		attrsMethod.put(ATTR_NAME, methodName);
+		attrsMethod.put(ATTR_ID, methodID);
+		attrsMethod.put(ATTR_HOLDER, klassID);
+		attrsMethod.put(ATTR_ARGUMENTS, idString);
+		attrsMethod.put(ATTR_RETURN, idVoid);
+
+		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
+
+		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
+		attrsKlass.put(ATTR_ID, klassID);
+		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
+
+		attrsParse.put(ATTR_METHOD, methodID);
+		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+
+		IParseDictionary parseDictionary = new ParseDictionary();
+		parseDictionary.setKlass(klassID, tagKlass);
+		parseDictionary.setMethod(methodID, tagMethod);
+		parseDictionary.setType(idString, tagTypeString);
+		parseDictionary.setType(idVoid, tagTypeVoid);
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params);
+
+		assertTrue(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+	}
+	
+	@Test
+	public void testMemberDoesNotMatchParseTagWithInexactParams()
+	{
+		String methodName = "print";
+		String klassName = "java.io.PrintStream";
+		Class<?>[] params = new Class[]{java.lang.Object.class};
+
+		Map<String, String> attrsMethod = new HashMap<>();
+		Map<String, String> attrsKlass = new HashMap<>();
+		Map<String, String> attrsParse = new HashMap<>();
+		
+		Map<String, String> attrsTypeVoid = new HashMap<>();
+		Map<String, String> attrsTypeString = new HashMap<>();
+
+		String idString = "1";
+		String nameString = "java.lang.String";
+		
+		String idVoid = "2";
+		String nameVoid = "void";
+
+		attrsTypeString.put(ATTR_ID, idString);
+		attrsTypeString.put(ATTR_NAME, nameString);
+		
+		attrsTypeVoid.put(ATTR_ID, idVoid);
+		attrsTypeVoid.put(ATTR_NAME, nameVoid);
+
+		Tag tagTypeString = new Tag(TAG_TYPE, attrsTypeString, true);
+		Tag tagTypeVoid = new Tag(TAG_TYPE, attrsTypeVoid, true);
+
+		String methodID = "123";
+		String klassID = "456";
+
+		attrsMethod.put(ATTR_NAME, methodName);
+		attrsMethod.put(ATTR_ID, methodID);
+		attrsMethod.put(ATTR_HOLDER, klassID);
+		attrsMethod.put(ATTR_ARGUMENTS, idString);
+		attrsMethod.put(ATTR_RETURN, idVoid);
+
+		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
+
+		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
+		attrsKlass.put(ATTR_ID, klassID);
+		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
+
+		attrsParse.put(ATTR_METHOD, methodID);
+		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+
+		IParseDictionary parseDictionary = new ParseDictionary();
+		parseDictionary.setKlass(klassID, tagKlass);
+		parseDictionary.setMethod(methodID, tagMethod);
+		parseDictionary.setType(idString, tagTypeString);
+		parseDictionary.setType(idVoid, tagTypeVoid);
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params);
+
+		assertFalse(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
 	}
 }

@@ -5,7 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
@@ -13,18 +16,20 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.junit.Test;
 
 public class TestLineTable
-{	
+{
 	@Test
 	public void testCompositeLineTable()
 	{
 		LineTable table1 = new LineTable();
 		LineTable table2 = new LineTable();
-		
-		LineTableEntry entry1 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "foo", void.class.getName(), new String[0]), 0, 0);
-		LineTableEntry entry2 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "foo", void.class.getName(), new String[0]), 5, 5);
-		LineTableEntry entry3 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "bar", void.class.getName(), new String[0]), 10, 10);
-		LineTableEntry entry4 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "bar", void.class.getName(), new String[0]), 15, 15);
-		
+
+		List<String> paramList = new ArrayList<>();
+
+		LineTableEntry entry1 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "foo", void.class.getName(), paramList), 0, 0);
+		LineTableEntry entry2 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "foo", void.class.getName(), paramList), 5, 5);
+		LineTableEntry entry3 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "bar", void.class.getName(), paramList), 10, 10);
+		LineTableEntry entry4 = new LineTableEntry(MemberSignatureParts.fromParts("TestClass", "bar", void.class.getName(), paramList), 15, 15);
+
 		table1.add(entry1);
 		table1.add(entry2);
 
@@ -35,7 +40,7 @@ public class TestLineTable
 		composite.add(table2);
 		composite.add(table1);
 		composite.sort();
-		
+
 		assertEquals(0, composite.findSourceLineForBytecodeOffset(0));
 		assertEquals(0, composite.findSourceLineForBytecodeOffset(1));
 		assertEquals(5, composite.findSourceLineForBytecodeOffset(5));
@@ -44,7 +49,7 @@ public class TestLineTable
 		assertEquals(10, composite.findSourceLineForBytecodeOffset(11));
 		assertEquals(15, composite.findSourceLineForBytecodeOffset(15));
 		assertEquals(15, composite.findSourceLineForBytecodeOffset(16));
-		
+
 		assertEquals("foo", composite.getEntryForSourceLine(0).getMemberSignatureParts().getMemberName());
 		assertEquals("foo", composite.getEntryForSourceLine(5).getMemberSignatureParts().getMemberName());
 		assertEquals("bar", composite.getEntryForSourceLine(10).getMemberSignatureParts().getMemberName());

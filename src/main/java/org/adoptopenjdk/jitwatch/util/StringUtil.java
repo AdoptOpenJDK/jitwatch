@@ -19,6 +19,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -376,6 +377,11 @@ public final class StringUtil
 		}
 
 		return value;
+	}
+
+	public static String arrayToString(Object[] array)
+	{
+		return listToString(Arrays.asList(array), C_SPACE);
 	}
 
 	public static String listToString(List<?> list)

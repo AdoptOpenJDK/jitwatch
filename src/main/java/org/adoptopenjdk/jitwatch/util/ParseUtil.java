@@ -235,10 +235,10 @@ public final class ParseUtil
 	public static String[] splitLogSignatureWithRegex(final String logSignature) throws LogParseException
 	{
 		String sig = logSignature;
-		
+
 		sig = sig.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		sig = sig.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
-		
+
 		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(sig);
 
 		if (matcher.find())
@@ -646,6 +646,8 @@ public final class ParseUtil
 	{
 		String match = null;
 
+		logger.debug("findBestMatch: {}", member.toString());
+
 		if (lines != null)
 		{
 			int index = findBestLineMatchForMemberSignature(member, lines);
@@ -680,6 +682,8 @@ public final class ParseUtil
 
 				if (line.contains(memberName))
 				{
+					logger.debug("Comparing {} with {}", line, member);
+
 					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass()
 							.getFullyQualifiedName(), line);
 
@@ -776,6 +780,34 @@ public final class ParseUtil
 		}
 	}
 
+	public static String getMethodTagReturn(Tag methodTag, IParseDictionary parseDictionary)
+	{
+		String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
+
+		String returnType = lookupType(returnTypeId, parseDictionary);
+
+		return returnType;
+	}
+
+	public static List<String> getMethodTagArguments(Tag methodTag, IParseDictionary parseDictionary)
+	{
+		List<String> result = new ArrayList<>();
+
+		String argumentsTypeId = methodTag.getAttribute(ATTR_ARGUMENTS);
+
+		if (argumentsTypeId != null)
+		{
+			String[] typeIDs = argumentsTypeId.split(S_SPACE);
+
+			for (String typeID : typeIDs)
+			{
+				result.add(lookupType(typeID, parseDictionary));
+			}
+		}
+
+		return result;
+	}
+
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
 		IMetaMember result = null;
@@ -794,27 +826,9 @@ public final class ParseUtil
 
 			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
 
-			String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
+			String returnType = getMethodTagReturn(methodTag, parseDictionary);
 
-			String argumentsTypeId = methodTag.getAttribute(ATTR_ARGUMENTS);
-
-			String returnType = lookupType(returnTypeId, parseDictionary);
-
-			String[] argumentTypes = new String[0];
-
-			if (argumentsTypeId != null)
-			{
-				String[] typeIDs = argumentsTypeId.split(S_SPACE);
-
-				argumentTypes = new String[typeIDs.length];
-
-				int pos = 0;
-
-				for (String typeID : typeIDs)
-				{
-					argumentTypes[pos++] = lookupType(typeID, parseDictionary);
-				}
-			}
+			List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
 
 			PackageManager pm = model.getPackageManager();
 
@@ -866,21 +880,34 @@ public final class ParseUtil
 	public static String lookupType(String typeOrKlassID, IParseDictionary parseDictionary)
 	{
 		String result = null;
+		
+		logger.debug("Looking up type: {}", typeOrKlassID);
 
 		if (typeOrKlassID != null)
 		{
 			Tag typeTag = parseDictionary.getType(typeOrKlassID);
+			
+			logger.debug("Type? {}", typeTag);
 
 			if (typeTag == null)
 			{
 				typeTag = parseDictionary.getKlass(typeOrKlassID);
+				
+				logger.debug("Klass? {}", typeTag);
 			}
 
 			if (typeTag != null)
 			{
-				result = typeTag.getAttribute(ATTR_NAME).replace(S_SLASH, S_DOT);
+				String typeAttrName = typeTag.getAttribute(ATTR_NAME);
+				
+				logger.debug("Name {}", typeAttrName);
 
-				result = ParseUtil.expandParameterType(result);
+				if (typeAttrName != null)
+				{
+					result = typeAttrName.replace(S_SLASH, S_DOT);
+
+					result = ParseUtil.expandParameterType(result);
+				}
 			}
 		}
 

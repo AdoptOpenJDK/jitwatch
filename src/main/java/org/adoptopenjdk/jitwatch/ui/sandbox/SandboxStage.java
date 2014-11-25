@@ -239,7 +239,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 			for (String panePath : panes)
 			{
-				addEditor(panePath);
+				addEditor(new File(panePath));
 			}
 		}
 	}
@@ -249,13 +249,13 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		editorPanes.clear();
 		splitEditorPanes.getItems().clear();
 
-		addEditor("SandboxTest.java");
-		addEditor("SandboxTestLoad.java");
+		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTest.java"));
+		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTestLoad.java"));
 
 		saveEditorPaneConfig();
 	}
 
-	private void addEditor(String filename)
+	private void addEditor(File filename)
 	{
 		EditorPane editor = new EditorPane(this);
 
@@ -263,7 +263,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		if (filename != null)
 		{
-			editor.loadSource(new File(filename));
+			editor.loadSource(filename);
 		}
 
 		editorPanes.add(editor);
