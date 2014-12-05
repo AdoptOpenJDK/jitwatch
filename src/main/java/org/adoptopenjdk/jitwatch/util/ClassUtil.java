@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,22 +26,27 @@ public final class ClassUtil
 
 	public static void initialise(final List<URL> urls)
 	{
-		if (JITWatchConstants.DEBUG_LOGGING)
+		if (DEBUG_LOGGING_CLASSPATH)
 		{
 			for (URL url : urls)
 			{
 				logger.debug("Adding classpath to DisposableURLClassLoader {}", url);
 			}
 		}
-		
+
 		disposableClassLoader = new DisposableURLClassLoader(urls);
 	}
 
 	public static Class<?> loadClassWithoutInitialising(String fqClassName) throws ClassNotFoundException
 	{
+		if (DEBUG_LOGGING_CLASSPATH)
+		{
+			logger.debug("loadClassWithoutInitialising '{}'", fqClassName);
+		}
+		
 		return Class.forName(fqClassName, false, disposableClassLoader);
 	}
-	
+
 	public static Class<?> loadClassWithoutInitialising(String fqClassName, ClassLoader classLoader) throws ClassNotFoundException
 	{
 		return Class.forName(fqClassName, false, classLoader);

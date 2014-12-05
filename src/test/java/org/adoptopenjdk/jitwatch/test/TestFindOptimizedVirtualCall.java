@@ -1,21 +1,67 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.test;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
-import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
+import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
 import org.junit.Test;
 
 public class TestFindOptimizedVirtualCall
 {
+	@Test
+	public void testNoOptimizedVirtualCallFoundWithEmptyComment()
+	{
+		String annotation = null;
+		long address = 1;
+		String modifier = null;
+		String mnemonic = "ADD";
+		List<String> operands = new ArrayList<>();
+		operands.add("%rdx");
+		operands.add("%rax");
+		String firstComment = S_EMPTY;
+
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+
+		assertFalse(ins.isOptimizedVCall());
+
+		assertNull(ins.getOptimizedVirtualCallSiteOrNull());
+
+		JITDataModel model = new JITDataModel();
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall vCall = finder.findOptimizedCall(ins);
+
+		assertNull(vCall);
+	}
+
 	@Test
 	public void testNoOptimizedVirtualCallFoundWithNullComment()
 	{
@@ -30,13 +76,52 @@ public class TestFindOptimizedVirtualCall
 
 		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
 
-		OptimizedVirtualCall vCall = OptimizedVirtualCallFinder.findOptimizedCall(null, ins);
+		assertFalse(ins.isOptimizedVCall());
+
+		assertNull(ins.getOptimizedVirtualCallSiteOrNull());
+
+		JITDataModel model = new JITDataModel();
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall vCall = finder.findOptimizedCall(ins);
 
 		assertNull(vCall);
 	}
 
 	@Test
-	public void testNoOptimizedVirtualCallFoundWithComment()
+	public void testNoOptimizedVirtualCallFoundWithNonVCallComment()
+	{
+		String annotation = null;
+		long address = 1;
+		String modifier = null;
+		String mnemonic = "ADD";
+		List<String> operands = new ArrayList<>();
+		operands.add("%rdx");
+		operands.add("%rax");
+		String firstComment = "; Every day sends future a past.";
+
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+
+		assertFalse(ins.isOptimizedVCall());
+
+		assertNull(ins.getOptimizedVirtualCallSiteOrNull());
+
+		JITDataModel model = new JITDataModel();
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall vCall = finder.findOptimizedCall(ins);
+
+		assertNull(vCall);
+	}
+
+	@Test
+	public void testNoOptimizedVirtualCallFoundWithOnlyVCallSiteComment()
 	{
 		String annotation = null;
 		long address = 1;
@@ -49,18 +134,80 @@ public class TestFindOptimizedVirtualCall
 
 		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
 
-		OptimizedVirtualCall vCall = OptimizedVirtualCallFinder.findOptimizedCall(null, ins);
+		assertFalse(ins.isOptimizedVCall());
 
+		assertNull(ins.getOptimizedVirtualCallSiteOrNull());
+
+		JITDataModel model = new JITDataModel();
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall vCall = finder.findOptimizedCall(ins);
 		assertNull(vCall);
 	}
 
 	@Test
-	public void testOptimizedVirtualCallRegex()
+	public void testNoOptimizedVirtualCallFoundWithOVCTagNoCallSiteComment()
 	{
-		String valid = "; - FooClass::fooMethod@1 (line 42)";
-		VirtualCallSite callSite = OptimizedVirtualCallFinder.buildCallSiteForLine(valid);
+		String annotation = null;
+		long address = 1;
+		String modifier = null;
+		String mnemonic = "ADD";
+		List<String> operands = new ArrayList<>();
+		operands.add("%rdx");
+		operands.add("%rax");
+		String firstComment = C_SEMICOLON + S_OPTIMIZED_VIRTUAL_CALL;
+
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+
+		assertFalse(ins.isOptimizedVCall());
+
+		assertNull(ins.getOptimizedVirtualCallSiteOrNull());
+
+		JITDataModel model = new JITDataModel();
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall vCall = finder.findOptimizedCall(ins);
+
+		assertNull(vCall);
+	}
+
+	private AssemblyInstruction buildInstructionForValidCallSite(String callSiteComment)
+	{
+		String annotation = null;
+		long address = 1;
+		String modifier = null;
+		String mnemonic = "ADD";
+		List<String> operands = new ArrayList<>();
+		operands.add("%rdx");
+		operands.add("%rax");
+
+		String comment0 = " ; OopMap{rbp=Oop off=940}";
+
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0);
+		ins.addCommentLine(";*invokevirtual toString");
+		ins.addCommentLine(callSiteComment);
+		ins.addCommentLine("; " + S_OPTIMIZED_VIRTUAL_CALL);
+
+		return ins;
+	}
+
+	@Test
+	public void testBuildCallSite()
+	{
+		AssemblyInstruction ins = buildInstructionForValidCallSite("; - FooClass::fooMethod@1 (line 42)");
+
+		assertTrue(ins.isOptimizedVCall());
+
+		VirtualCallSite callSite = ins.getOptimizedVirtualCallSiteOrNull();
 
 		assertNotNull(callSite);
+
 		assertEquals("FooClass", callSite.getClassName());
 		assertEquals("fooMethod", callSite.getMemberName());
 		assertEquals(1, callSite.getBytecodeOffset());
@@ -70,8 +217,11 @@ public class TestFindOptimizedVirtualCall
 	@Test
 	public void testOptimizedVirtualCallRegexConstructor()
 	{
-		String valid = "; - FooClass::<init>@1 (line 42)";
-		VirtualCallSite callSite = OptimizedVirtualCallFinder.buildCallSiteForLine(valid);
+		AssemblyInstruction ins = buildInstructionForValidCallSite("; - FooClass::<init>@1 (line 42)");
+
+		assertTrue(ins.isOptimizedVCall());
+
+		VirtualCallSite callSite = ins.getOptimizedVirtualCallSiteOrNull();
 
 		assertNotNull(callSite);
 		assertEquals("FooClass", callSite.getClassName());
@@ -83,8 +233,11 @@ public class TestFindOptimizedVirtualCall
 	@Test
 	public void testOptimizedVirtualCallRegexNegativeBCI()
 	{
-		String valid = "; - FooClass::foo@-1 (line 42)";
-		VirtualCallSite callSite = OptimizedVirtualCallFinder.buildCallSiteForLine(valid);
+		AssemblyInstruction ins = buildInstructionForValidCallSite("; - FooClass::foo@-1 (line 42)");
+
+		assertTrue(ins.isOptimizedVCall());
+
+		VirtualCallSite callSite = ins.getOptimizedVirtualCallSiteOrNull();
 
 		assertNotNull(callSite);
 		assertEquals("FooClass", callSite.getClassName());
@@ -96,8 +249,12 @@ public class TestFindOptimizedVirtualCall
 	@Test
 	public void testOptimizedVirtualCallRegexInnerClass()
 	{
-		String valid = "; - FooClass$Inner::foo@-1 (line 42)";
-		VirtualCallSite callSite = OptimizedVirtualCallFinder.buildCallSiteForLine(valid);
+
+		AssemblyInstruction ins = buildInstructionForValidCallSite("; - FooClass$Inner::foo@-1 (line 42)");
+
+		assertTrue(ins.isOptimizedVCall());
+
+		VirtualCallSite callSite = ins.getOptimizedVirtualCallSiteOrNull();
 
 		assertNotNull(callSite);
 		assertEquals("FooClass$Inner", callSite.getClassName());
@@ -109,47 +266,99 @@ public class TestFindOptimizedVirtualCall
 	@Test
 	public void testOptimizedVirtualCallRegexInvalid()
 	{
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("; - FooClass::foo@ (line 42)"));
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("; - FooClass::foo@bar (line 42)"));
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("; - FooClass::foo@5 (line )"));
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("; - FooClass::foo@5 (line bar)"));
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("; - ::@"));
-		assertNull(OptimizedVirtualCallFinder.buildCallSiteForLine("There is no knowledge that is not power."));
+		assertNull(buildInstructionForValidCallSite("; - FooClass::foo@ (line 42)").getOptimizedVirtualCallSiteOrNull());
+		assertNull(buildInstructionForValidCallSite("; - FooClass::foo@bar (line 42)").getOptimizedVirtualCallSiteOrNull());
+		assertNull(buildInstructionForValidCallSite("; - FooClass::foo@5 (line )").getOptimizedVirtualCallSiteOrNull());
+		assertNull(buildInstructionForValidCallSite("; - FooClass::foo@5 (line bar)").getOptimizedVirtualCallSiteOrNull());
+		assertNull(buildInstructionForValidCallSite("; - ::@").getOptimizedVirtualCallSiteOrNull());
+		assertNull(buildInstructionForValidCallSite("In the trail of fire I know we will be free again")
+				.getOptimizedVirtualCallSiteOrNull());
+	}
+
+	private static final int sourceLine = 282; // update if call to test2() changes line!
+
+	public void test1()
+	{
+		test2();
+	}
+
+	public void test2()
+	{
+		System.out.println("Raise the anchor, bring it on home");
 	}
 
 	@Test
-	public void testOptimizedVirtualCallFound()
+	public void testCallSiteFoundMultiLineComment() throws ClassNotFoundException
 	{
+		String fqClassName = getClass().getName();
+
 		String annotation = null;
-		long address = 1;
+		long address = 16;
 		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
-		String comment1 = "; - BarClass::barMethod@22 (line 19)";
-		String comment2 = "; - FooClass::fooMethod@11 (line 76)";
+
+		String callerMethod = "test1";
+		String calleeMethod = "test2";
+
+		int vCallBCI = 1;
+
+		String comment0 = "; OopMap{rbp=Oop off=940}";
+		String comment1 = "; *invokespecial " + calleeMethod;
+		String comment2 = "; - " + fqClassName + "::" + callerMethod + "@" + vCallBCI + " (line " + sourceLine + ")";
 		String comment3 = ";  " + JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment1);
-		ins.addCommentLine(comment2);
-		ins.addCommentLine(comment3);
+		AssemblyInstruction instruction = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0);
+		instruction.addCommentLine(comment1);
+		instruction.addCommentLine(comment2);
+		instruction.addCommentLine(comment3);
 
-		OptimizedVirtualCall vCall = OptimizedVirtualCallFinder.findOptimizedCall(null, ins);
+		assertTrue(instruction.isOptimizedVCall());
 
-		assertNotNull(vCall);
+		VirtualCallSite callSite = instruction.getOptimizedVirtualCallSiteOrNull();
 
-		VirtualCallSite caller = vCall.getCaller();
-		VirtualCallSite callee = vCall.getCallee();
+		assertNotNull(callSite);
 
-		assertEquals("FooClass", caller.getClassName());
-		assertEquals("fooMethod", caller.getMemberName());
-		assertEquals(11, caller.getBytecodeOffset());
-		assertEquals(76, caller.getSourceLine());
+		assertEquals(fqClassName, callSite.getClassName());
+		assertEquals(callerMethod, callSite.getMemberName());
+		assertEquals(vCallBCI, callSite.getBytecodeOffset());
+		assertEquals(sourceLine, callSite.getSourceLine());
 
-		assertEquals("BarClass", callee.getClassName());
-		assertEquals("barMethod", callee.getMemberName());
-		assertEquals(22, callee.getBytecodeOffset());
-		assertEquals(19, callee.getSourceLine());
+		JITDataModel model = new JITDataModel();
+
+		MetaClass metaClass = UnitTestUtil.createMetaClassFor(model, fqClassName);
+
+		String bcSigTest1 = "public void test1();";
+		String bcSigTest2 = "public void test2();";
+
+		MemberSignatureParts mspTest1 = MemberSignatureParts.fromBytecodeSignature(fqClassName, bcSigTest1);
+		MemberSignatureParts mspTest2 = MemberSignatureParts.fromBytecodeSignature(fqClassName, bcSigTest2);
+
+		IMetaMember memberTest1 = metaClass.getMemberForSignature(mspTest1);
+		IMetaMember memberTest2 = metaClass.getMemberForSignature(mspTest2);
+
+		List<String> classLocations = new ArrayList<>();
+
+		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
+
+		OptimizedVirtualCall ovc = finder.findOptimizedCall(instruction);
+
+		assertNotNull(ovc);
+
+		assertEquals(callSite, ovc.getCallsite());
+
+		assertEquals(memberTest1, ovc.getCallerMember());
+
+		assertEquals(memberTest2, ovc.getCalleeMember());
+
+		ClassBC classBytecode = metaClass.getClassBytecode(classLocations);
+
+		MemberBytecode bytecodeMemberTest1 = classBytecode.getMemberBytecode(memberTest1);
+
+		BytecodeInstruction bytecodeInstruction = bytecodeMemberTest1.getBytecodeAtOffset(vCallBCI);
+
+		assertEquals(bytecodeInstruction, ovc.getBytecodeInstruction());
 	}
 }

@@ -33,8 +33,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ClassMemberList extends VBox
 {
@@ -42,8 +40,6 @@ public class ClassMemberList extends VBox
 	private ListView<IMetaMember> memberList;
 	private MetaClass metaClass = null;
 	private JITWatchConfig config;
-
-	private static final Logger logger = LoggerFactory.getLogger(ClassMemberList.class);
 
 	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
 	{

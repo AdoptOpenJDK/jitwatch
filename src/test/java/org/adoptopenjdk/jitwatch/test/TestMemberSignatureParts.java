@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import org.junit.Test;
 public class TestMemberSignatureParts
 {
 	// used in this class to test static initialiser bytecode matching
-	private static long timestamp = 0;
+	public static long timestamp = 0;
 
 	static
 	{
@@ -271,6 +272,57 @@ public class TestMemberSignatureParts
 		assertEquals(0, mspBC.getParamTypes().size());
 	}
 
+	@Test
+	public void testJava7DisassemblySignature() throws LogParseException
+	{
+		String sig = "# {method} &apos;chainA2&apos; &apos;(J)J&apos; in &apos;org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog&apos;";
+
+		MemberSignatureParts msp = MemberSignatureParts.fromAssembly(sig);
+
+		List<String> modList = msp.getModifiers();
+		assertEquals(0, modList.size());
+		assertEquals(0, msp.getGenerics().size());
+		assertEquals("long", msp.getReturnType());
+		assertEquals("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", msp.getFullyQualifiedClassName());
+		assertEquals("chainA2", msp.getMemberName());
+		assertEquals(1, msp.getParamTypes().size());
+		assertEquals("long", msp.getParamTypes().get(0));
+	}
+
+	@Test
+	public void testJava8DisassemblySignature() throws LogParseException
+	{
+		String sig = "  # {method} {0x00007fb6a89c4f80} &apos;hashCode&apos; &apos;()I&apos; in &apos;java/lang/String&apos;";
+
+		MemberSignatureParts msp = MemberSignatureParts.fromAssembly(sig);
+
+		List<String> modList = msp.getModifiers();
+		assertEquals(0, modList.size());
+		assertEquals(0, msp.getGenerics().size());
+		assertEquals("int", msp.getReturnType());
+		assertEquals("java.lang.String", msp.getFullyQualifiedClassName());
+		assertEquals("hashCode", msp.getMemberName());
+		assertEquals(0, msp.getParamTypes().size());
+	}
+
+	@Test
+	public void testFromAssemblyRegression() throws LogParseException
+	{
+		String toParse = "# {method} &apos;write&apos; &apos;(Ljava/lang/String;II)V&apos; in &apos;java/io/BufferedWriter&apos;";
+		MemberSignatureParts msp = MemberSignatureParts.fromAssembly(toParse);
+
+		List<String> modList = msp.getModifiers();
+		assertEquals(0, modList.size());
+		assertEquals(0, msp.getGenerics().size());
+		assertEquals("void", msp.getReturnType());
+		assertEquals("java.io.BufferedWriter", msp.getFullyQualifiedClassName());
+		assertEquals("write", msp.getMemberName());
+		assertEquals(3, msp.getParamTypes().size());
+		assertEquals("java.lang.String", msp.getParamTypes().get(0));
+		assertEquals("int", msp.getParamTypes().get(1));
+		assertEquals("int", msp.getParamTypes().get(2));
+
+	}
 
 	/* TODO: class initialiser <clinit> does not appear in
 	 * Class.getDeclared{Methods|Constructors}()

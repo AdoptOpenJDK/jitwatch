@@ -5,10 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MemberBytecode
 {
@@ -16,8 +21,18 @@ public class MemberBytecode
 
 	private LineTable lineTable = new LineTable();
 
-	public MemberBytecode()
+	private MemberSignatureParts msp;
+
+	private static final Logger logger = LoggerFactory.getLogger(MemberBytecode.class);
+
+	public MemberBytecode(MemberSignatureParts msp)
 	{
+		this.msp = msp;
+	}
+
+	public MemberSignatureParts getMemberSignatureParts()
+	{
+		return msp;
 	}
 
 	public void setInstructions(List<BytecodeInstruction> bytecodeInstructions)
@@ -32,10 +47,20 @@ public class MemberBytecode
 
 	public BytecodeInstruction getBytecodeAtOffset(int bci)
 	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getBytecodeAtOffset({})", bci);
+		}
+
 		BytecodeInstruction result = null;
 
-		for (BytecodeInstruction instruction: bytecodeInstructions)
+		for (BytecodeInstruction instruction : bytecodeInstructions)
 		{
+			if (DEBUG_LOGGING_BYTECODE)
+			{
+				// logger.debug("checking: {}", instruction);
+			}
+
 			if (instruction.getOffset() == bci)
 			{
 				result = instruction;
@@ -43,12 +68,16 @@ public class MemberBytecode
 			}
 		}
 
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("found: {}", result);
+		}
 		return result;
 	}
 
-	public void setLineTable(LineTable table)
+	public void addLineTableEntry(LineTableEntry entry)
 	{
-		this.lineTable = table;
+		this.lineTable.add(entry);
 	}
 
 	public LineTable getLineTable()
@@ -61,9 +90,11 @@ public class MemberBytecode
 	{
 		StringBuilder builder = new StringBuilder();
 
-		for (BytecodeInstruction instruction: bytecodeInstructions)
+		builder.append("MemberBytcode signature:\n").append(msp).append(S_NEWLINE);
+
+		for (BytecodeInstruction instruction : bytecodeInstructions)
 		{
-			builder.append(instruction.toString()).append(JITWatchConstants.S_NEWLINE);
+			builder.append(instruction.toString()).append(S_NEWLINE);
 		}
 
 		return builder.toString();

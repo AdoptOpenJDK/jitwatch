@@ -198,12 +198,8 @@ public class JITWatchConfig
 
 		if (name != null && !isBuiltInProfile(name))
 		{
-			String[] keys = new String[] {
-					KEY_SOURCE_LOCATIONS,
-					KEY_CLASS_LOCATIONS,
-					KEY_SHOW_JIT_ONLY_MEMBERS,
-					KEY_SHOW_JIT_ONLY_CLASSES,
-					KEY_SHOW_HIDE_INTERFACES };
+			String[] keys = new String[] { KEY_SOURCE_LOCATIONS, KEY_CLASS_LOCATIONS, KEY_SHOW_JIT_ONLY_MEMBERS,
+					KEY_SHOW_JIT_ONLY_CLASSES, KEY_SHOW_HIDE_INTERFACES };
 
 			for (String key : keys)
 			{
@@ -264,7 +260,10 @@ public class JITWatchConfig
 		}
 		catch (FileNotFoundException fnf)
 		{
-			logger.warn("Could not find config file {}", propertiesFile.getName());
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Could not find config file {}", propertiesFile.getName());
+			}
 		}
 		catch (IOException ioe)
 		{
@@ -275,7 +274,11 @@ public class JITWatchConfig
 
 		if (S_PROFILE_SANDBOX.equals(profileName))
 		{
-			logger.debug("Resetting last used profile to Default from Sandbox");
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Resetting last used profile to Default from Sandbox");
+			}
+			
 			profileName = S_PROFILE_DEFAULT;
 		}
 

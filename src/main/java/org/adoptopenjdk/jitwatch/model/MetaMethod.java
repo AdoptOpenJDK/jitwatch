@@ -52,44 +52,4 @@ public class MetaMethod extends AbstractMetaMember
 
         return methodSigWithoutThrows;
     }
-
-    @Override
-    public String getSignatureForBytecode()
-    {
-        String ts = methodToString;
-
-        int openParams = ts.lastIndexOf('(');
-
-        // make method name unqualified
-
-        if (openParams != -1)
-        {
-            int pos = openParams;
-
-            int lastDot = -1;
-
-            while (pos-- > 0)
-            {
-                if (ts.charAt(pos) == '.' && lastDot == -1)
-                {
-                    lastDot = pos;
-                }
-
-                if (ts.charAt(pos) == ' ')
-                {
-                    break;
-                }
-            }
-
-            StringBuilder builder = new StringBuilder(ts);
-            if (lastDot != -1)
-            {
-                builder.delete(pos + 1, lastDot + 1);
-            }
-            ts = builder.toString();
-
-        }
-
-        return ts;
-    }
 }

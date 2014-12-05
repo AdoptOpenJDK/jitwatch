@@ -5,15 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_OVC;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
@@ -21,7 +23,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,131 +34,241 @@ public class OptimizedVirtualCallFinder
 
 	private static final Logger logger = LoggerFactory.getLogger(OptimizedVirtualCallFinder.class);
 
-	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
+	private IReadOnlyJITDataModel model;
+	private List<String> classLocations = new ArrayList<>();
 
-	public static List<String> classLocations = new ArrayList<>();
-
-	public static void setClassLocations(List<String> classLocations)
+	public OptimizedVirtualCallFinder(IReadOnlyJITDataModel model, List<String> classLocations)
 	{
-		OptimizedVirtualCallFinder.classLocations = classLocations;
+		this.model = model;
+		this.classLocations = classLocations;
 	}
 
-	public static OptimizedVirtualCall findOptimizedCall(IMetaMember callingMember, AssemblyInstruction instruction)
+	public OptimizedVirtualCall findOptimizedCall(AssemblyInstruction instruction)
 	{
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("findOptimizedCall: {}", instruction);
+		}
+
 		OptimizedVirtualCall result = null;
 
-		List<String> commentLines = instruction.getCommentLines();
-
-		int pos = 0;
-
-		for (String line : commentLines)
+		if (instruction != null && instruction.isOptimizedVCall())
 		{
-			if (line.contains(S_OPTIMIZED_VIRTUAL_CALL))
+			if (DEBUG_LOGGING_OVC)
 			{
-				if (pos >= 2)
-				{
-					String callerLine = commentLines.get(pos - 1);
-					String calleeLine = commentLines.get(pos - 2);
-
-					result = getOptimizedVirtualCall(callingMember, callerLine, calleeLine);
-					break;
-				}
+				logger.debug("Instruction is an OVC");
 			}
 
-			pos++;
+			VirtualCallSite callSite = instruction.getOptimizedVirtualCallSiteOrNull();
+
+			if (DEBUG_LOGGING_OVC)
+			{
+				logger.debug("Found callSite: {}", callSite);
+			}
+
+			result = getOptimizedVirtualCall(callSite);
+		}
+		else
+		{
+			if (DEBUG_LOGGING_OVC)
+			{
+				logger.debug("Instruction is not an OVC");
+			}
 		}
 
 		return result;
 	}
 
-	public static OptimizedVirtualCall getOptimizedVirtualCall(IMetaMember callingMember, String callerLine, String calleeLine)
+	public OptimizedVirtualCall getOptimizedVirtualCall(VirtualCallSite callSite)
 	{
-		VirtualCallSite caller = buildCallSiteForLine(callerLine);
-		VirtualCallSite callee = buildCallSiteForLine(calleeLine);
-
 		OptimizedVirtualCall result = null;
 
-		if (caller != null && callee != null)
+		if (callSite != null)
 		{
 			BytecodeInstruction bytecodeInstruction = null;
 
-			if (callingMember != null)
-			{
-				MetaClass metaClass = callingMember.getMetaClass();
+			MemberBytecode memberBytecode = getMemberBytecodeForCallSite(callSite);
 
-				if (metaClass != null)
+			if (DEBUG_LOGGING_OVC)
+			{
+				logger.debug("VCS: {} found MemberBytecode {}", callSite, memberBytecode != null);
+			}
+
+			if (memberBytecode != null)
+			{
+				IMetaMember callerMember = findMember(memberBytecode.getMemberSignatureParts());
+
+				if (DEBUG_LOGGING_OVC)
 				{
-					if (DEBUG_LOGGING)
+					logger.debug("Found member for msp:\n{}\nMember:{}", memberBytecode.getMemberSignatureParts(), callerMember);
+				}
+
+				bytecodeInstruction = memberBytecode.getBytecodeAtOffset(callSite.getBytecodeOffset());
+
+				if (DEBUG_LOGGING_OVC)
+				{
+					logger.debug("Found BytecodeInstruction: {}", bytecodeInstruction);
+				}
+
+				if (bytecodeInstruction != null)
+				{
+					IMetaMember calleeMember = null;
+
+					try
 					{
-						logger.debug("OVCF Class locations: {}", StringUtil.listToString(classLocations));
+						calleeMember = ParseUtil.getMemberFromBytecodeComment(model, callerMember, bytecodeInstruction);
+					}
+					catch (LogParseException e)
+					{
+						logger.error("Could not get member from bytecode comment", e);
 					}
 
-					ClassBC classBytecode = metaClass.getClassBytecode(classLocations);
-
-					if (classBytecode != null)
+					if (DEBUG_LOGGING_OVC)
 					{
-						MemberBytecode memberBytecode = classBytecode.getMemberBytecode(callingMember);
+						logger.debug("=========================");
+						logger.debug("callerMember: {}", callerMember);
+						logger.debug("calleeMember: {}", calleeMember);
+						logger.debug("callSite    : {}", callSite);
+						logger.debug("bytecodeInstruction : {}", bytecodeInstruction);
+						logger.debug("=========================");
+					}
 
-						if (memberBytecode != null)
-						{
-							bytecodeInstruction = memberBytecode.getBytecodeAtOffset(caller.getBytecodeOffset());
-						}
+					if (callerMember != null && calleeMember != null)
+					{
+						result = new OptimizedVirtualCall(callerMember, calleeMember, callSite, bytecodeInstruction);
+					}
+					else
+					{
+						logger.error("Could not create OVC from\ncaller: {}\ncallee: {}\nCallSite was: {}", callerMember,
+								calleeMember, callSite);
 					}
 				}
+				else
+				{
+					logger.error("Could not find BytecodeInstruction for VCS: {}", callSite);
+				}
 			}
-
-			result = new OptimizedVirtualCall(callingMember, bytecodeInstruction, caller, callee);
 		}
-
-		return result;
-	}
-
-	public static VirtualCallSite buildCallSiteForLine(String line)
-	{
-		Matcher matcher = PATTERN_ASSEMBLY_CALL_SIG.matcher(line);
-
-		VirtualCallSite result = null;
-
-		if (matcher.find())
+		else
 		{
-			String className = matcher.group(1);
-			String methodName = matcher.group(2);
-			String bytecodeOffset = matcher.group(3);
-			String lineNumber = matcher.group(4);
-
-			try
+			if (DEBUG_LOGGING_OVC)
 			{
-				result = new VirtualCallSite(className, methodName, Integer.parseInt(bytecodeOffset), Integer.parseInt(lineNumber));
-			}
-			catch (NumberFormatException nfe)
-			{
-				logger.warn("Could not parse CallSite from line: {}", line);
+				logger.warn("Could not find memberBytecode for VCS: {}", callSite);
 			}
 		}
 
 		return result;
 	}
 
-	public static List<OptimizedVirtualCall> findOptimizedCalls(IMetaMember member)
+	public IMetaMember findMember(MemberSignatureParts msp)
 	{
-		List<OptimizedVirtualCall> result = new ArrayList<>();
+		IMetaMember result = null;
+
+		String metaClassName = msp.getFullyQualifiedClassName();
+
+		MetaClass metaClass = model.getPackageManager().getMetaClass(metaClassName);
+
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("Looking for metaClass: {} found: {}", metaClassName, metaClass);
+		}
+
+		if (metaClass != null)
+		{
+			result = metaClass.getMemberForSignature(msp);
+		}
+
+		return result;
+	}
+
+	private MemberBytecode getMemberBytecodeForCallSite(VirtualCallSite callSite)
+	{
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("getMemberBytecodeForCallSite({})", callSite);
+		}
+
+		MemberBytecode result = null;
+
+		if (callSite != null)
+		{
+			String callerClass = callSite.getClassName();
+
+			MetaClass metaClass = model.getPackageManager().getMetaClass(callerClass);
+
+			if (DEBUG_LOGGING_OVC)
+			{
+				logger.debug("Found MetaClass {} for callerClass {}", metaClass, callerClass);
+			}
+
+			if (metaClass != null)
+			{
+				ClassBC classBC = metaClass.getClassBytecode(classLocations);
+
+				if (DEBUG_LOGGING_OVC)
+				{
+					logger.debug("Got ClassBC: {}", classBC != null);
+				}
+
+				if (classBC != null)
+				{
+					result = classBC.getMemberBytecodeForSourceLine(callSite.getSourceLine());
+				}
+			}
+		}
+
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("Got MemberBytecode: {}", result != null);
+		}
+		return result;
+	}
+
+	public List<OptimizedVirtualCall> findOptimizedCalls(IMetaMember member)
+	{
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("Looking for OVCs for member: {}", member);
+		}
+
+		Set<OptimizedVirtualCall> squashDuplicatesSet = new HashSet<>();
 
 		AssemblyMethod asmMethod = member.getAssembly();
+
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("Member assembly\n{}", asmMethod);
+		}
 
 		if (asmMethod != null)
 		{
 			for (AssemblyBlock block : asmMethod.getBlocks())
 			{
-				for (AssemblyInstruction instruction : block.getInstructions())
-				{
-					OptimizedVirtualCall optimizedVCall = findOptimizedCall(member, instruction);
+				squashDuplicatesSet.addAll(findInstructionsForBlock(member, block));
+			}
+		}
 
-					if (optimizedVCall != null && !result.contains(optimizedVCall))
-					{
-						logger.debug("Found OVC {} for member {}", optimizedVCall, member);
-						result.add(optimizedVCall);
-					}
+		List<OptimizedVirtualCall> result = new ArrayList<>(squashDuplicatesSet);
+
+		return result;
+	}
+
+	public List<OptimizedVirtualCall> findInstructionsForBlock(IMetaMember member, AssemblyBlock block)
+	{
+		List<OptimizedVirtualCall> result = new ArrayList<>();
+
+		for (AssemblyInstruction instruction : block.getInstructions())
+		{
+			OptimizedVirtualCall optimizedVCall = findOptimizedCall(instruction);
+
+			if (optimizedVCall != null && !result.contains(optimizedVCall))
+			{
+				if (DEBUG_LOGGING_OVC)
+				{
+					logger.debug("Found OVC {} for member {}", optimizedVCall, member);
 				}
+
+				result.add(optimizedVCall);
 			}
 		}
 

@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.model;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
@@ -194,13 +195,18 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public IMetaMember getMemberFromSignature(MemberSignatureParts msp)
+	public IMetaMember getMemberForSignature(MemberSignatureParts msp)
 	{
 		IMetaMember result = null;
 
+		if (DEBUG_LOGGING_SIG_MATCH)
+		{
+			logger.debug("Comparing: {} members of {}", getMetaMembers().size(), this);
+		}
+
 		for (IMetaMember member : getMetaMembers())
 		{
-			if (member.matchesSignature(msp))
+			if (member.matchesSignature(msp, true))
 			{
 				result = member;
 				break;

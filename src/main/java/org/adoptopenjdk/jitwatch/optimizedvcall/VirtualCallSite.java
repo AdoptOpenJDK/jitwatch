@@ -16,6 +16,11 @@ public class VirtualCallSite
 
 	public String getClassName()
 	{
+		return className;
+	}
+
+	public String getClassNameForDisplay()
+	{
 		return StringUtil.getAbbreviatedFQName(className);
 	}
 
@@ -62,19 +67,24 @@ public class VirtualCallSite
 		{
 			return true;
 		}
+
 		if (obj == null)
 		{
 			return false;
 		}
+
 		if (getClass() != obj.getClass())
 		{
 			return false;
 		}
+
 		VirtualCallSite other = (VirtualCallSite) obj;
+
 		if (bytecodeOffset != other.bytecodeOffset)
 		{
 			return false;
 		}
+
 		if (className == null)
 		{
 			if (other.className != null)
@@ -86,6 +96,7 @@ public class VirtualCallSite
 		{
 			return false;
 		}
+
 		if (memberName == null)
 		{
 			if (other.memberName != null)
@@ -97,10 +108,12 @@ public class VirtualCallSite
 		{
 			return false;
 		}
+
 		if (sourceLine != other.sourceLine)
 		{
 			return false;
 		}
+
 		return true;
 	}
 

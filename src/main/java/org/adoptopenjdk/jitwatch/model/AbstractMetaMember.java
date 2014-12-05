@@ -149,7 +149,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public boolean matchesSignature(MemberSignatureParts msp)
+	public boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly)
 	{
 		boolean result = false;
 
@@ -157,7 +157,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			if (DEBUG_LOGGING_SIG_MATCH)
 			{
-				logger.debug("Comparing: {} to {}", this, msp);
+				logger.debug("Comparing:\n--------------\n{}\n--------------\n{}\n--------------", this, msp);
 			}
 
 			if (isPolymorphicSignature)
@@ -179,7 +179,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 					{
 						List<Class<?>> mspClassTypes = getClassesForParamTypes(msp.getParamTypes());
 
-						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypes, mspClassTypes))
+						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypes, mspClassTypes, matchTypesExactly))
 						{
 							result = true;
 						}
@@ -187,7 +187,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				}
 				catch (ClassNotFoundException cnfe)
 				{
-					logger.error("Class not found while matching signature: {}", msp, cnfe);
+					logger.error("Class not found while matching signature:\n{}", msp, cnfe);
 				}
 			}
 

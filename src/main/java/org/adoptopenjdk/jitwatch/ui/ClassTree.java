@@ -13,8 +13,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -43,8 +41,6 @@ public class ClassTree extends VBox
 	private CheckBox cbHideInterfaces;
 	private CheckBox cbHideUncompiled;
 	
-	private static final Logger logger = LoggerFactory.getLogger(ClassTree.class);
-
 	public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.parent = parent;

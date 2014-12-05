@@ -12,6 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.MODIFIERS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
@@ -67,7 +68,10 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	public void reset()
 	{
-		logger.info("JITDataModel.reset()");
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("JITDataModel.reset()");
+		}
 
 		pm.clear();
 
@@ -201,23 +205,25 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		{
 			List<IMetaMember> metaList = metaClass.getMetaMembers();
 
-			for (IMetaMember meta : metaList)
+			for (IMetaMember member : metaList)
 			{
-				if (meta.matchesSignature(msp))
+				if (member.matchesSignature(msp, true))
 				{
-					result = meta;
+					result = member;
 					break;
 				}
 			}
 		}
 		else
 		{
-			logger.warn("No metaClass found for MemberSignatureParts {}", msp.getMemberName());
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("No metaClass found for fqClassName {}", msp.getFullyQualifiedClassName());
+			}
 		}
 
 		return result;
 	}
-
 
 	@Override
 	public MetaClass buildAndGetMetaClass(Class<?> clazz)
@@ -267,7 +273,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		// for a parameter or return type.
 		try
 		{
-			//TODO HERE check for static
+			// TODO HERE check for static
 			for (Method m : clazz.getDeclaredMethods())
 			{
 				MetaMethod metaMethod = new MetaMethod(m, resultMetaClass);

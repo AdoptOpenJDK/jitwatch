@@ -36,16 +36,16 @@ public class TagProcessor
 	{
 		return currentCompiler;
 	}
-	
+
 	public String getTopTagName()
 	{
 		String result = null;
-		
+
 		if (topTag != null)
 		{
 			result = topTag.getName();
 		}
-		
+
 		return result;
 	}
 
@@ -65,7 +65,10 @@ public class TagProcessor
 			}
 			else
 			{
-				logger.error("Did not handle: {}", line);
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Did not handle: {}", line);
+				}
 			}
 		}
 
@@ -84,11 +87,11 @@ public class TagProcessor
 
 		// closing tag
 		if (line.charAt(1) == C_SLASH)
-		{			
+		{
 			String closeName = line.substring(2, line.length() - 1);
 
 			if (closeName.equals(currentTag.getName()))
-			{				
+			{
 				if (currentTag.getParent() == null)
 				{
 					result = currentTag;
@@ -102,13 +105,13 @@ public class TagProcessor
 		else
 		{
 			boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
-			
+
 			int indexEndName = line.indexOf(C_SPACE);
 
 			if (indexEndName == -1)
 			{
 				indexEndName = line.indexOf(C_CLOSE_ANGLE);
-				
+
 				if (indexEndName > 0)
 				{
 					if (selfClosing)

@@ -120,24 +120,27 @@ public final class StringUtil
 	{
 		StringBuilder sb = new StringBuilder();
 
-		int len = str.length();
-
-		if (!left)
+		if (str != null)
 		{
-			sb.append(str);
-		}
+			int len = str.length();
 
-		if (len < width)
-		{
-			for (int i = 0; i < width - len; i++)
+			if (!left)
 			{
-				sb.append(padding);
+				sb.append(str);
 			}
-		}
 
-		if (left)
-		{
-			sb.append(str);
+			if (len < width)
+			{
+				for (int i = 0; i < width - len; i++)
+				{
+					sb.append(padding);
+				}
+			}
+
+			if (left)
+			{
+				sb.append(str);
+			}
 		}
 
 		return sb.toString();

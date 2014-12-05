@@ -487,11 +487,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(ActionEvent e)
 			{
-				OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
-
 				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
 
-				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(logParser.getModel());
+				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(logParser.getModel(), getConfig().getAllClassLocations());
 
 				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
 
@@ -856,9 +854,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		if (member.isCompiled())
 		{
-			OptimizedVirtualCallFinder.setClassLocations(getConfig().getAllClassLocations());
+			OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(logParser.getModel(), getConfig().getAllClassLocations());
 
-			List<OptimizedVirtualCall> optimizedVirtualCalls = OptimizedVirtualCallFinder.findOptimizedCalls(member);
+			List<OptimizedVirtualCall> optimizedVirtualCalls = finder.findOptimizedCalls(member);
 
 			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
 

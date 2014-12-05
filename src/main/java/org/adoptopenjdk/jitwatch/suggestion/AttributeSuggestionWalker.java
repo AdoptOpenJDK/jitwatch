@@ -232,18 +232,18 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		String countStr = attrs.get(ATTR_BRANCH_COUNT);
 		String probStr = attrs.get(ATTR_BRANCH_PROB);
 
-		int count = 0;
+		long count = 0;
 		double probability = 0.0;
 
 		if (countStr != null)
 		{
 			try
 			{
-				count = Integer.parseInt(countStr);
+				count = Double.valueOf(countStr).longValue();
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("", nfe);
+				logger.error("Couldn't parse branch tag attribute {}", countStr, nfe);
 			}
 		}
 

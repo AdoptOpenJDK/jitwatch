@@ -5,9 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.bytecode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
@@ -52,8 +50,8 @@ public class ViewerBytecode extends Viewer
 	private TriViewNavigationStack navigationStack;
 	private Suggestion lastSuggestion = null;
 
-	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model, ILineListener lineListener,
-			LineType lineType)
+	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model,
+			ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
 		this.model = model;
@@ -68,13 +66,8 @@ public class ViewerBytecode extends Viewer
 
 		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
 
-		BytecodeLabel labelAtIndex = (BytecodeLabel)getLabelAtIndex(index);
-
-		if (labelAtIndex != null)
-		{
-			labelAtIndex.setUnhighlightedStyle(STYLE_UNHIGHLIGHTED_SUGGESTION);
-		}
-
+		BytecodeLabel labelAtIndex = (BytecodeLabel) getLabelAtIndex(index);
+		
 		StringBuilder ttBuilder = new StringBuilder();
 
 		Tooltip tooltip = labelAtIndex.getTooltip();
@@ -98,6 +91,14 @@ public class ViewerBytecode extends Viewer
 
 		tooltip = new Tooltip(ttBuilder.toString());
 		labelAtIndex.setTooltip(tooltip);
+		
+		highlightLine(index);
+	}
+	
+	public void highlightBytecodeOffset(int bci)
+	{
+		int index = getLineIndexForBytecodeOffset(bci);
+		highlightLine(index);
 	}
 
 	public void setContent(final IMetaMember member, final ClassBC metaClassBytecode, final List<String> classLocations)
@@ -169,7 +170,8 @@ public class ViewerBytecode extends Viewer
 		}
 	}
 
-	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line, final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
+	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line,
+			final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
 	{
 		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
 
@@ -241,45 +243,22 @@ public class ViewerBytecode extends Viewer
 		{
 			if (instruction != null && instruction.isInvoke())
 			{
-				String comment = instruction.getCommentWithMethodPrefixStripped();
-
-				if (comment != null)
+				try
 				{
-					if (commentMethodHasNoClassPrefix(comment))
-					{
-						comment = prependCurrentMember(comment, currentMember);
-					}
+					IMetaMember member = ParseUtil.getMemberFromBytecodeComment(model, currentMember, instruction);
 
-					try
+					if (member != null)
 					{
-						IMetaMember member = ParseUtil.getMemberFromComment(model, comment);
-
-						if (member != null)
-						{
-							navigationStack.navigateTo(member);
-						}
-					}
-					catch (Exception ex)
-					{
-						logger.error("Could not calculate member for comment: {}", comment, ex);
+						navigationStack.navigateTo(member);
 					}
 				}
+				catch (Exception ex)
+				{
+					logger.error("Could not calculate member for instruction: {}", instruction, ex);
+				}
+
 			}
 		}
-	}
-
-	private boolean commentMethodHasNoClassPrefix(String comment)
-	{
-		return (comment.indexOf(C_DOT) == -1);
-	}
-
-	private String prependCurrentMember(String comment, IMetaMember member)
-	{
-		String currentClass = member.getMetaClass().getFullyQualifiedName();
-
-		currentClass = currentClass.replace(C_DOT, C_SLASH);
-
-		return currentClass + C_DOT + comment;
 	}
 
 	public boolean isOffsetMismatchDetected()
@@ -301,9 +280,9 @@ public class ViewerBytecode extends Viewer
 				break;
 			}
 
-			pos++;
+			pos+= instruction.getLabelLines();
 		}
-
+	
 		return result;
 	}
 

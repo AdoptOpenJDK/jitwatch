@@ -9,26 +9,27 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class VCallRow
 {
-	private IMetaMember callingMember;
+	private IMetaMember callerMember;
+	private IMetaMember calleeMember;
 	private BytecodeInstruction bytecodeInstruction;
-	private VirtualCallSite caller;
-	private VirtualCallSite callee;
+	private VirtualCallSite callSite;
 
-	public VCallRow(OptimizedVirtualCall vCall)
+	public VCallRow(OptimizedVirtualCall optimizedVCall)
 	{
-		this.callingMember = vCall.getCallingMember();
-		this.bytecodeInstruction = vCall.getBytecodeInstruction();
-		this.caller = vCall.getCaller();
-		this.callee = vCall.getCallee();
+		this.callerMember = optimizedVCall.getCallerMember();
+		this.calleeMember = optimizedVCall.getCalleeMember();
+		this.bytecodeInstruction = optimizedVCall.getBytecodeInstruction();
+		this.callSite = optimizedVCall.getCallsite();
 	}
 
 	public String getInvokeType()
 	{
 		String invokeType = null;
-		
+
 		if (bytecodeInstruction == null)
 		{
 			invokeType = "Unknown";
@@ -37,52 +38,42 @@ public class VCallRow
 		{
 			invokeType = bytecodeInstruction.getOpcode().getMnemonic();
 		}
-		
+
 		return invokeType;
 	}
 
 	public String getCallerClass()
 	{
-		return caller.getClassName();
+		return StringUtil.getAbbreviatedFQName(callerMember.getMetaClass().getFullyQualifiedName());
 	}
 
 	public String getCallerMember()
 	{
-		return caller.getMemberName();
+		return callerMember.getMemberName();
 	}
 
 	public int getCallerBCI()
 	{
-		return caller.getBytecodeOffset();
+		return callSite.getBytecodeOffset();
 	}
 
 	public int getCallerSourceLine()
 	{
-		return caller.getSourceLine();
+		return callSite.getSourceLine();
 	}
 
 	public String getCalleeClass()
 	{
-		return callee.getClassName();
+		return StringUtil.getAbbreviatedFQName(calleeMember.getMetaClass().getFullyQualifiedName());
 	}
 
 	public String getCalleeMember()
 	{
-		return callee.getMemberName();
+		return calleeMember.getMemberName();
 	}
 
-	public int getCalleeBCI()
+	public IMetaMember getCaller()
 	{
-		return callee.getBytecodeOffset();
-	}
-
-	public int getCalleeSourceLine()
-	{
-		return callee.getSourceLine();
-	}
-
-	public IMetaMember getCallingMember()
-	{
-		return callingMember;
+		return callerMember;
 	}
 }

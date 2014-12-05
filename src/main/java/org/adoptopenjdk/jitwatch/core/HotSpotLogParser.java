@@ -5,12 +5,42 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import org.adoptopenjdk.jitwatch.model.*;
-import org.adoptopenjdk.jitwatch.util.ClassUtil;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_AT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_BODY_TAGS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_HEADER_TAGS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_AT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_FILE_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMAND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_START_COMPILE_THREAD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,9 +54,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.model.CompilerName;
+import org.adoptopenjdk.jitwatch.model.EventType;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.JITEvent;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.NumberedLine;
+import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
+import org.adoptopenjdk.jitwatch.model.SplitLog;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class HotSpotLogParser implements ILogParser, IMemberFinder
+public class HotSpotLogParser implements ILogParser
 {
 	private static final Logger logger = LoggerFactory.getLogger(HotSpotLogParser.class);
 
@@ -69,6 +113,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		this.logListener = logListener;
 	}
 
+	@Override
 	public void setConfig(JITWatchConfig config)
 	{
 		this.config = config;
@@ -86,6 +131,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		return splitLog;
 	}
 
+	@Override
 	public ParsedClasspath getParsedClasspath()
 	{
 		return config.getParsedClasspath();
@@ -169,8 +215,11 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	@Override
 	public void reset()
 	{
-		logger.info("HotSpotLogParser.reset()");
-		
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("HotSpotLogParser.reset()");
+		}
+
 		getModel().reset();
 
 		splitLog.clear();
@@ -199,7 +248,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		tagProcessor = new TagProcessor();
 
-		asmProcessor = new AssemblyProcessor(this);
+		asmProcessor = new AssemblyProcessor(model.getPackageManager());
 	}
 
 	@Override
@@ -211,7 +260,10 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 
 		splitLogFile(hotspotLog);
 
-		logSplitStats();
+		if (DEBUG_LOGGING)
+		{
+			logSplitStats();
+		}
 
 		parseLogFile();
 	}
@@ -285,7 +337,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 
 		for (NumberedLine numberedLine : splitLog.getLogCompilationLines())
-		{			
+		{
 			if (!skipLine(numberedLine.getLine(), SKIP_BODY_TAGS))
 			{
 				Tag tag = tagProcessor.processLine(numberedLine.getLine());
@@ -479,7 +531,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	private void handleTag(Tag tag)
 	{
 		String tagName = tag.getName();
-		
+
 		switch (tagName)
 		{
 		case TAG_VM_VERSION:
@@ -522,18 +574,26 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		if (tweakVMTags.size() == 1)
 		{
 			isTweakVMLog = true;
-			logger.debug("TweakVM detected!");
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("TweakVM detected!");
+			}
 		}
 	}
 
 	private void handleTagVmArguments(Tag tag)
 	{
 		List<Tag> tagCommandChildren = tag.getNamedChildren(TAG_COMMAND);
-		
+
 		if (tagCommandChildren.size() > 0)
 		{
 			vmCommand = tagCommandChildren.get(0).getTextContent();
-			logger.debug("VM Command: {}", vmCommand);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("VM Command: {}", vmCommand);
+			}
 		}
 	}
 
@@ -577,9 +637,12 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 		}
 		catch (LogParseException ex)
 		{
-			logger.warn("Could not parse signature: {}", logSignature);
-			logger.warn("Exception was {}", ex.getMessage());
-			
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Could not parse signature: {}", logSignature);
+				logger.debug("Exception was {}", ex.getMessage());
+			}
+
 			logError("Could not parse line " + processLineNumber + " : " + logSignature + " : " + ex.getMessage());
 		}
 
@@ -626,7 +689,7 @@ public class HotSpotLogParser implements ILogParser, IMemberFinder
 	}
 
 	private void handleTagTask(Tag tag)
-	{		
+	{
 		handleMethodLine(tag, EventType.TASK);
 
 		Tag tagCodeCache = tag.getFirstNamedChild(TAG_CODE_CACHE);

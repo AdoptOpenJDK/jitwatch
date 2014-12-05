@@ -5,12 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_DOT;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +49,26 @@ public class PackageManager
 
 	public MetaClass getMetaClass(String className)
 	{
-		return metaClasses.get(className);
+		MetaClass result = null;
+
+		if (className != null)
+		{
+			result = metaClasses.get(className);
+		}
+
+		return result;
 	}
 
 	public MetaPackage getMetaPackage(String packageName)
 	{
-		return metaPackages.get(packageName);
+		MetaPackage result = null;
+
+		if (packageName != null)
+		{
+			result = metaPackages.get(packageName);
+		}
+
+		return result;
 	}
 
 	public MetaPackage buildPackage(String packageName)

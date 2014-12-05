@@ -20,16 +20,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_RUNTIM
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STACKMAPTABLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -195,7 +191,7 @@ public final class BytecodeLoader
 
 		BytecodeSection section = BytecodeSection.NONE;
 
-		String memberSignature = null;
+		MemberSignatureParts msp = null;
 
 		MemberBytecode memberBytecode = null;
 
@@ -212,7 +208,7 @@ public final class BytecodeLoader
 
 			if (nextSection != null)
 			{
-				sectionFinished(fqClassName, section, memberSignature, builder, memberBytecode, classBytecode);
+				sectionFinished(fqClassName, section, msp, builder, memberBytecode, classBytecode);
 
 				section = changeSection(nextSection);
 				pos++;
@@ -233,14 +229,14 @@ public final class BytecodeLoader
 			case NONE:
 				if (couldBeMemberSignature(line))
 				{
-					memberSignature = cleanBytecodeMemberSignature(line);
+					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);
 
 					if (DEBUG_LOGGING_BYTECODE)
 					{
-						logger.debug("New signature: {}", memberSignature);
+						logger.debug("New signature: {}", msp);
 					}
 
-					memberBytecode = new MemberBytecode();
+					memberBytecode = new MemberBytecode(msp);
 
 					if (DEBUG_LOGGING_BYTECODE)
 					{
@@ -259,13 +255,13 @@ public final class BytecodeLoader
 				}
 				break;
 			case CODE:
-				section = performCODE(fqClassName, classBytecode, builder, section, memberSignature, memberBytecode, line);
+				section = performCODE(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
 				break;
 			case CONSTANT_POOL:
-				section = performConstantPool(fqClassName, classBytecode, builder, section, memberSignature, memberBytecode, line);
+				section = performConstantPool(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
 				break;
 			case LINETABLE:
-				section = performLINETABLE(fqClassName, classBytecode, builder, section, memberSignature, memberBytecode, line);
+				section = performLINETABLE(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
 				break;
 			case RUNTIMEVISIBLEANNOTATIONS:
 				if (!isRunTimeVisibleAnnotation(line))
@@ -299,7 +295,7 @@ public final class BytecodeLoader
 	}
 
 	private static BytecodeSection performLINETABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			String memberSignature, MemberBytecode memberBytecode, String line)
+			MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
 	{
 		if (line.startsWith("line "))
 		{
@@ -307,7 +303,7 @@ public final class BytecodeLoader
 		}
 		else
 		{
-			sectionFinished(fqClassName, BytecodeSection.LINETABLE, memberSignature, builder, memberBytecode, classBytecode);
+			sectionFinished(fqClassName, BytecodeSection.LINETABLE, msp, builder, memberBytecode, classBytecode);
 
 			section = changeSection(BytecodeSection.NONE);
 		}
@@ -315,11 +311,11 @@ public final class BytecodeLoader
 	}
 
 	private static BytecodeSection performConstantPool(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			String memberSignature, MemberBytecode memberBytecode, String line)
+			MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
 	{
 		if (!line.startsWith(S_HASH))
 		{
-			sectionFinished(fqClassName, BytecodeSection.CONSTANT_POOL, memberSignature, builder, memberBytecode, classBytecode);
+			sectionFinished(fqClassName, BytecodeSection.CONSTANT_POOL, msp, builder, memberBytecode, classBytecode);
 
 			section = changeSection(BytecodeSection.NONE);
 		}
@@ -327,7 +323,7 @@ public final class BytecodeLoader
 	}
 
 	private static BytecodeSection performCODE(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			String memberSignature, MemberBytecode memberBytecode, final String line)
+			MemberSignatureParts msp, MemberBytecode memberBytecode, final String line)
 	{
 		int firstColonIndex = line.indexOf(C_COLON);
 
@@ -351,7 +347,7 @@ public final class BytecodeLoader
 				}
 				else
 				{
-					sectionFinished(fqClassName, BytecodeSection.CODE, memberSignature, builder, memberBytecode, classBytecode);
+					sectionFinished(fqClassName, BytecodeSection.CODE, msp, builder, memberBytecode, classBytecode);
 					section = changeSection(BytecodeSection.NONE);
 				}
 			}
@@ -387,7 +383,7 @@ public final class BytecodeLoader
 				|| line.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 	}
 
-	private static void sectionFinished(String fqClassName, BytecodeSection lastSection, String memberSignature, StringBuilder builder,
+	private static void sectionFinished(String fqClassName, BytecodeSection lastSection, MemberSignatureParts msp, StringBuilder builder,
 			MemberBytecode memberBytecode, ClassBC classBytecode)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
@@ -403,11 +399,11 @@ public final class BytecodeLoader
 			{
 				memberBytecode.setInstructions(instructions);
 
-				classBytecode.putMemberBytecode(memberSignature, memberBytecode);
+				classBytecode.addMemberBytecode(memberBytecode);
 
 				if (DEBUG_LOGGING_BYTECODE)
 				{
-					logger.debug("stored bytecode for : {}", memberSignature);
+					logger.debug("stored bytecode for:\n{}", msp);
 				}
 			}
 			else
@@ -422,11 +418,11 @@ public final class BytecodeLoader
 		}
 		else if (lastSection == BytecodeSection.LINETABLE)
 		{
-			storeLineNumberTable(fqClassName, memberBytecode, builder.toString(), memberSignature);
+			storeLineNumberTable(fqClassName, memberBytecode, builder.toString(), msp);
 
 			if (DEBUG_LOGGING_BYTECODE)
 			{
-				logger.debug("stored line number table for : {}", memberSignature);
+				logger.debug("stored line number table for : {}", msp);
 			}
 		}
 
@@ -488,45 +484,6 @@ public final class BytecodeLoader
 		}
 
 		return version;
-	}
-
-	private static String cleanBytecodeMemberSignature(final String signature)
-	{
-		if (DEBUG_LOGGING_BYTECODE)
-		{
-			logger.debug("cleanBytecodeMemberSignature: {}", signature);
-		}
-
-		String result = null;
-
-		if (signature != null)
-		{
-			if (signature.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
-			{
-				result = S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
-			}
-			else
-			{
-				// remove spaces between multiple method parameters
-
-				int openParentheses = signature.lastIndexOf(S_OPEN_PARENTHESES);
-
-				if (openParentheses != -1)
-				{
-					int closeParentheses = signature.indexOf(S_CLOSE_PARENTHESES, openParentheses);
-
-					if (closeParentheses != -1)
-					{
-						String params = signature.substring(openParentheses, closeParentheses);
-						params = params.replace(S_SPACE, S_EMPTY);
-
-						result = signature.substring(0, openParentheses) + params + S_CLOSE_PARENTHESES;
-					}
-				}
-			}
-		}
-
-		return result;
 	}
 
 	public static List<BytecodeInstruction> parseInstructions(final String bytecode)
@@ -638,7 +595,7 @@ public final class BytecodeLoader
 		return bytecodeInstructions;
 	}
 
-	private static void storeLineNumberTable(String fqClassName, MemberBytecode memberBytecode, String tableLines, String memberSignature)
+	private static void storeLineNumberTable(String fqClassName, MemberBytecode memberBytecode, String tableLines, MemberSignatureParts msp)
 	{
 		String[] lines = tableLines.split(S_NEWLINE);
 
@@ -656,10 +613,8 @@ public final class BytecodeLoader
 
 				try
 				{
-					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, memberSignature);
-
-					LineTableEntry entry = new LineTableEntry(msp, Integer.parseInt(source), Integer.parseInt(offset));
-					memberBytecode.getLineTable().add(entry);
+					LineTableEntry entry = new LineTableEntry(Integer.parseInt(source), Integer.parseInt(offset));
+					memberBytecode.addLineTableEntry(entry);
 				}
 				catch (NumberFormatException nfe)
 				{

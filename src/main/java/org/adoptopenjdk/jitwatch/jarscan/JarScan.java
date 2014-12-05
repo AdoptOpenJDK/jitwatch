@@ -15,9 +15,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public final class JarScan
@@ -59,10 +62,8 @@ public final class JarScan
 
 		if (classBytecode != null)
 		{
-			for (String memberName : classBytecode.getBytecodeMethodSignatures())
+			for (MemberBytecode memberBytecode : classBytecode.getMemberBytecodeList())
 			{
-				MemberBytecode memberBytecode = classBytecode.getMemberBytecode(memberName);
-
 				List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 				if (instructions != null && instructions.size() > 0)
@@ -72,7 +73,9 @@ public final class JarScan
 					// final instruction is a return for 1 byte
 					int bcSize = 1 + lastInstruction.getOffset();
 
-					if (bcSize >= maxMethodBytes && !memberName.equals(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
+					MemberSignatureParts msp = memberBytecode.getMemberSignatureParts();
+
+					if (bcSize >= maxMethodBytes && !ParseUtil.STATIC_INIT.equals(msp.getMemberName()))
 					{
 						writer.print(C_DOUBLE_QUOTE);
 						writer.print(className);
@@ -80,10 +83,10 @@ public final class JarScan
 						writer.print(C_COMMA);
 
 						writer.print(C_DOUBLE_QUOTE);
-						writer.print(memberName);
+						writer.print(msp.getMemberName());
 						writer.print(C_DOUBLE_QUOTE);
 						writer.print(C_COMMA);
-						
+
 						writer.print(bcSize);
 						writer.println();
 

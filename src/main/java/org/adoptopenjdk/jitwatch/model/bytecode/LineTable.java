@@ -5,16 +5,22 @@
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LineTable
 {
 	private List<LineTableEntry> lineTableEntries = new ArrayList<>();
+
+	private static final Logger logger = LoggerFactory.getLogger(LineTable.class);
 
 	public void add(LineTableEntry entry)
 	{
@@ -26,10 +32,33 @@ public class LineTable
 		if (lineTable != null)
 		{
 			lineTableEntries.addAll(lineTable.lineTableEntries);
+			sort();
 		}
 	}
 
-	public void sort()
+	public boolean sourceLineInRange(int sourceLine)
+	{
+		boolean result = false;
+
+		if (lineTableEntries.size() > 0)
+		{
+			int maxIndex = lineTableEntries.size() - 1;
+
+			int minSourceLine = lineTableEntries.get(0).getSourceOffset();
+			int maxSourceLine = lineTableEntries.get(maxIndex).getSourceOffset();
+
+			result = (sourceLine >= minSourceLine) && (sourceLine <= maxSourceLine);
+
+			if (DEBUG_LOGGING_BYTECODE)
+			{
+				logger.debug("{} in range {}-{} : {}", sourceLine, minSourceLine, maxSourceLine, result);
+			}
+		}
+
+		return result;
+	}
+
+	private void sort()
 	{
 		Collections.sort(lineTableEntries, new Comparator<LineTableEntry>()
 		{
@@ -55,6 +84,11 @@ public class LineTable
 		}
 
 		return result;
+	}
+
+	public List<LineTableEntry> getEntries()
+	{
+		return Collections.unmodifiableList(lineTableEntries);
 	}
 
 	public int findSourceLineForBytecodeOffset(int offset)
@@ -118,4 +152,49 @@ public class LineTable
 
 		return builder.toString();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((lineTableEntries == null) ? 0 : lineTableEntries.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+
+		LineTable other = (LineTable) obj;
+
+		if (lineTableEntries == null)
+		{
+			if (other.lineTableEntries != null)
+			{
+				return false;
+			}
+		}
+		else if (!lineTableEntries.equals(other.lineTableEntries))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 }

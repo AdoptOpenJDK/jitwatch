@@ -6,15 +6,24 @@
 package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUESTION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
@@ -39,6 +48,8 @@ public class MemberSignatureParts
 	private String returnType;
 	private String memberName;
 	private List<String> paramTypeList;
+
+	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(\\(.*\\))(.*)'\\sin\\s'(.*)'");
 
 	private static final Logger logger = LoggerFactory.getLogger(MemberSignatureParts.class);
 
@@ -84,7 +95,10 @@ public class MemberSignatureParts
 		}
 		else
 		{
-			logger.warn("MemberSignatureParts.memberName was null for signature: '{}'\n{}", origSig, msp);
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("MemberSignatureParts.memberName was null for signature: '{}'\n{}", origSig, msp);
+			}
 		}
 	}
 
@@ -101,7 +115,7 @@ public class MemberSignatureParts
 
 		msp.returnType = returnType;
 
-		completeSignature(fullyQualifiedClassName+S_COMMA+memberName+S_COMMA+returnType, msp);
+		completeSignature(fullyQualifiedClassName + S_COMMA + memberName + S_COMMA + returnType, msp);
 
 		return msp;
 	}
@@ -118,26 +132,7 @@ public class MemberSignatureParts
 		String paramTypes = parts[2];
 		String returnType = parts[3];
 
-		Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
-		Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
-
-		Class<?> returnClass;
-
-		if (returnClasses.length == 1)
-		{
-			returnClass = returnClasses[0];
-		}
-		else
-		{
-			returnClass = Void.class;
-		}
-
-		for (Class<?> paramClass : paramClasses)
-		{
-			msp.paramTypeList.add(paramClass.getName());
-		}
-
-		msp.returnType = returnClass.getName();
+		setParamsAndReturn(msp, paramTypes, returnType);
 
 		completeSignature(toParse, msp);
 
@@ -146,7 +141,25 @@ public class MemberSignatureParts
 
 	private static boolean isStaticInitialiser(String bytecodeSignature)
 	{
-		return ParseUtil.STATIC_BYTECODE_SIGNATURE.equals(bytecodeSignature);
+		boolean isClinit = false;
+
+		if (bytecodeSignature != null && bytecodeSignature.startsWith(ParseUtil.STATIC_BYTECODE_SIGNATURE))
+		{
+			isClinit = true;
+		}
+
+		return isClinit;
+	}
+
+	// TODO unit test me!
+	public static MemberSignatureParts fromBytecodeComment(String toParse) throws LogParseException
+	{
+		String replace1 = toParse.replace(C_DOT, C_SPACE);
+		String replace2 = replace1.replace(C_COLON, C_SPACE);
+		String replace3 = replace2.replace(C_SLASH, C_DOT);
+		String replace4 = replace3.replace(S_DOUBLE_QUOTE, S_EMPTY);
+
+		return fromLogCompilationSignature(replace4);
 	}
 
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
@@ -248,6 +261,65 @@ public class MemberSignatureParts
 		completeSignature(toParse, msp);
 
 		return msp;
+	}
+
+	public static MemberSignatureParts fromAssembly(final String toParse) throws LogParseException
+	{
+		MemberSignatureParts msp = new MemberSignatureParts();
+
+		String line = toParse.replace(S_ENTITY_APOS, S_QUOTE);
+
+		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
+
+		if (matcher.find())
+		{
+			if (DEBUG_LOGGING_ASSEMBLY)
+			{
+				for (int i = 0; i < matcher.groupCount(); i++)
+				{
+					logger.debug("part[{}] = '{}'", i, matcher.group(i));
+				}
+			}
+
+			String memberName = matcher.group(2);
+			String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
+			String returnType = matcher.group(4);
+			String className = matcher.group(5).replace(S_SLASH, S_DOT);
+
+			msp.memberName = memberName;
+			msp.fullyQualifiedClassName = className;
+
+			setParamsAndReturn(msp, paramTypes, returnType);
+
+		}
+
+		completeSignature(toParse, msp);
+
+		return msp;
+	}
+
+	private static void setParamsAndReturn(MemberSignatureParts msp, String paramTypes, String returnType) throws LogParseException
+	{
+		Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
+		Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
+
+		Class<?> returnClass;
+
+		if (returnClasses.length == 1)
+		{
+			returnClass = returnClasses[0];
+		}
+		else
+		{
+			returnClass = Void.class;
+		}
+
+		for (Class<?> paramClass : paramClasses)
+		{
+			msp.paramTypeList.add(paramClass.getName());
+		}
+
+		msp.returnType = returnClass.getName();
 	}
 
 	private void buildGenerics(String genericsString)
@@ -401,9 +473,7 @@ public class MemberSignatureParts
 	{
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(C_NEWLINE);
-
-		sb.append("modifiers: ");
+		sb.append("modifiers : ");
 
 		if (modifierList.size() > 0)
 		{
@@ -418,7 +488,7 @@ public class MemberSignatureParts
 
 		sb.append(C_NEWLINE);
 
-		sb.append("generics: ");
+		sb.append("generics  : ");
 
 		if (genericsMap.size() > 0)
 		{
@@ -443,7 +513,7 @@ public class MemberSignatureParts
 
 		sb.append(C_NEWLINE);
 
-		sb.append("class: ").append(fullyQualifiedClassName).append(C_NEWLINE);
+		sb.append("class     : ").append(fullyQualifiedClassName).append(C_NEWLINE);
 
 		sb.append("returnType: ").append(returnType).append(C_NEWLINE);
 
@@ -462,8 +532,122 @@ public class MemberSignatureParts
 			sb.deleteCharAt(sb.length() - 1);
 		}
 
-		sb.append(C_NEWLINE);
-
 		return sb.toString();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((fullyQualifiedClassName == null) ? 0 : fullyQualifiedClassName.hashCode());
+		result = prime * result + ((genericsMap == null) ? 0 : genericsMap.hashCode());
+		result = prime * result + ((memberName == null) ? 0 : memberName.hashCode());
+		result = prime * result + modifier;
+		result = prime * result + ((modifierList == null) ? 0 : modifierList.hashCode());
+		result = prime * result + ((paramTypeList == null) ? 0 : paramTypeList.hashCode());
+		result = prime * result + ((returnType == null) ? 0 : returnType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+
+		MemberSignatureParts other = (MemberSignatureParts) obj;
+
+		if (fullyQualifiedClassName == null)
+		{
+			if (other.fullyQualifiedClassName != null)
+			{
+				return false;
+			}
+		}
+		else if (!fullyQualifiedClassName.equals(other.fullyQualifiedClassName))
+		{
+			return false;
+		}
+
+		if (genericsMap == null)
+		{
+			if (other.genericsMap != null)
+			{
+				return false;
+			}
+		}
+		else if (!genericsMap.equals(other.genericsMap))
+		{
+			return false;
+		}
+
+		if (memberName == null)
+		{
+			if (other.memberName != null)
+			{
+				return false;
+			}
+		}
+		else if (!memberName.equals(other.memberName))
+		{
+			return false;
+		}
+
+		if (modifier != other.modifier)
+		{
+			return false;
+		}
+
+		if (modifierList == null)
+		{
+			if (other.modifierList != null)
+			{
+				return false;
+			}
+		}
+		else if (!modifierList.equals(other.modifierList))
+		{
+			return false;
+		}
+
+		if (paramTypeList == null)
+		{
+			if (other.paramTypeList != null)
+			{
+				return false;
+			}
+		}
+		else if (!paramTypeList.equals(other.paramTypeList))
+		{
+			return false;
+		}
+
+		if (returnType == null)
+		{
+			if (other.returnType != null)
+			{
+				return false;
+			}
+		}
+		else if (!returnType.equals(other.returnType))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 }

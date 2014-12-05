@@ -178,7 +178,7 @@ public class TestCompileChain
 
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog " + methodName + " ()V");
 
-		IMetaMember testMember = metaClass.getMemberFromSignature(msp);
+		IMetaMember testMember = metaClass.getMemberForSignature(msp);
 
 		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
 
@@ -447,7 +447,7 @@ public class TestCompileChain
 		paramList.add("long");
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
+		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
 
 		assertNotNull(testMember);
 
@@ -672,7 +672,7 @@ public class TestCompileChain
 		paramList.add("long");
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
+		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
 
 		assertNotNull(testMember);
 

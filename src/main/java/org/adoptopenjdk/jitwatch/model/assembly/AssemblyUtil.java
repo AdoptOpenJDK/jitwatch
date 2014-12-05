@@ -5,8 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

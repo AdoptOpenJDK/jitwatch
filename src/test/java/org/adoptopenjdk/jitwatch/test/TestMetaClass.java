@@ -79,7 +79,7 @@ public class TestMetaClass
 		List<String> paramList = new ArrayList<>();
 		paramList.add("int");
 
-    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), testMethodName, testRetType, paramList));
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -107,7 +107,7 @@ public class TestMetaClass
     	List<String> paramList = new ArrayList<>();
 		paramList.add("int");
 
-    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -133,7 +133,7 @@ public class TestMetaClass
     	String testRetType = "void";
 		List<String> paramList = new ArrayList<>();
 
-    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -161,7 +161,7 @@ public class TestMetaClass
 		List<String> paramList = new ArrayList<>();
 		paramList.add("java.lang.String");
 
-    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -189,7 +189,7 @@ public class TestMetaClass
 		List<String> paramList = new ArrayList<>();
 		paramList.add("[I");
 
-    	IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testMethod.toString(), result.toString());
@@ -215,7 +215,7 @@ public class TestMetaClass
     	String testRetType = getClass().getName();
 		List<String> paramList = new ArrayList<>();
 
-		IMetaMember result = metaClass.getMemberFromSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
+		IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),testMethodName, testRetType, paramList));
 
     	assertNotNull(result);
     	assertEquals(testConstructor.toString(), result.toString());

@@ -5,16 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.util.List;
 
@@ -498,7 +489,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
-		logger.debug("Getting bytecode for {}", currentMember);
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
 
 		return classBytecode;
@@ -555,7 +545,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		switch (lineType)
 		{
 		case SOURCE:
-			highlightFromSource(index);
+			highlightFromSource(index, MASK_UPDATE_ASSEMBLY | MASK_UPDATE_BYTECODE);
 			break;
 		case BYTECODE:
 			highlightFromBytecode(index);
@@ -566,12 +556,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void highlightFromSource(int index)
+	private void highlightFromSource(int index, int updateMask)
 	{
 		int sourceLine = index + 1;
-
-		int bytecodeHighlight = -1;
-		int assemblyHighlight = -1;
 
 		MetaClass metaClass = null;
 
@@ -580,15 +567,35 @@ public class TriView extends Stage implements ITriView, ILineListener
 			metaClass = currentMember.getMetaClass();
 		}
 
+		if (DEBUG_LOGGING_TRIVIEW)
+		{
+			logger.debug("highlightFromSource: {}", sourceLine);
+		}
+
 		if (metaClass != null)
 		{
-			LineTableEntry entry = getLineTableEntryForSourceLine(metaClass, sourceLine);
+			MemberBytecode memberBytecode = getMemberBytecodeForSourceLine(metaClass, sourceLine);
 
-			if (entry != null)
+			if (memberBytecode != null)
 			{
-				MemberSignatureParts msp = entry.getMemberSignatureParts();
+				if (DEBUG_LOGGING_TRIVIEW)
+				{
+					logger.debug("Found MemberBytecode for sourceLine: {}", sourceLine);
+				}
 
-				IMetaMember nextMember = metaClass.getMemberFromSignature(msp);
+				MemberSignatureParts msp = memberBytecode.getMemberSignatureParts();
+
+				if (DEBUG_LOGGING_TRIVIEW)
+				{
+					logger.debug("MemberSignatureParts:\n{}", msp);
+				}
+
+				IMetaMember nextMember = metaClass.getMemberForSignature(msp);
+
+				if (DEBUG_LOGGING_TRIVIEW)
+				{
+					logger.debug("nextMember: {}", nextMember);
+				}
 
 				if (nextMember != null)
 				{
@@ -597,39 +604,56 @@ public class TriView extends Stage implements ITriView, ILineListener
 						setMember(nextMember, false, false);
 					}
 
-					int bcOffset = entry.getBytecodeOffset();
+					LineTable lineTable = memberBytecode.getLineTable();
 
-					bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
+					if ((updateMask & MASK_UPDATE_BYTECODE) == MASK_UPDATE_BYTECODE)
+					{
+
+						LineTableEntry lineTableEntry = lineTable.getEntryForSourceLine(sourceLine);
+
+						if (DEBUG_LOGGING_TRIVIEW)
+						{
+							logger.debug("getEntryForSourceLine({}) : {}", sourceLine, lineTableEntry);
+						}
+
+						if (lineTableEntry != null)
+						{
+							int bcOffset = lineTableEntry.getBytecodeOffset();
+
+							int bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
+							viewerBytecode.highlightLine(bytecodeHighlight);
+						}
+					}
 				}
 				else
 				{
 					logger.warn("Could not find member for bytecode signature: {}", msp);
-					logger.warn("entry: {}", entry.toString());
-
 				}
 			}
 
-			assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
+			if ((updateMask & MASK_UPDATE_ASSEMBLY) == MASK_UPDATE_ASSEMBLY)
+			{
+				int assemblyHighlight = -1;
+				assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
+				viewerAssembly.highlightLine(assemblyHighlight);
+			}
 		}
-
-		viewerBytecode.highlightLine(bytecodeHighlight);
-		viewerAssembly.highlightLine(assemblyHighlight);
 	}
 
-	private LineTableEntry getLineTableEntryForSourceLine(MetaClass metaClass, int sourceIndex)
+	private MemberBytecode getMemberBytecodeForSourceLine(MetaClass metaClass, int sourceIndex)
 	{
-		LineTableEntry result = null;
+		MemberBytecode result = null;
 
 		ClassBC classBytecode = metaClass.getClassBytecode(config.getConfiguredClassLocations());
 
 		if (classBytecode != null)
 		{
-			result = classBytecode.findLineTableEntryForSourceLine(sourceIndex);
+			result = classBytecode.getMemberBytecodeForSourceLine(sourceIndex);
 		}
 
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_TRIVIEW)
 		{
-			logger.debug("source: {} result: {}", sourceIndex, result);
+			logger.debug("source: {} result: {}", sourceIndex, result != null);
 		}
 
 		return result;
@@ -844,9 +868,18 @@ public class TriView extends Stage implements ITriView, ILineListener
 	}
 
 	@Override
-	public void highlightSourceLine(int line)
+	public void highlightBytecodeOffset(int bci, int updateMask)
 	{
-		highlightFromSource(line-1);
-		viewerSource.highlightLine(line-1);
+		if (viewerBytecode != null)
+		{
+			viewerBytecode.highlightBytecodeOffset(bci);
+		}
+	}
+
+	@Override
+	public void highlightSourceLine(int line, int updateMask)
+	{
+		highlightFromSource(line - 1, updateMask);
+		viewerSource.highlightLine(line - 1);
 	}
 }

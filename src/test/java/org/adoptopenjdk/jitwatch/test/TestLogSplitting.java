@@ -151,7 +151,7 @@ public class TestLogSplitting
 	}
 
 	@Test
-	public void testInitMethodInAssemblyNotIdentifiedAsLogCompilation() throws IOException
+	public void testInitMethodInAssemblyNotIdentifiedAsLogCompilation() throws IOException, ClassNotFoundException
 	{
 		String[] lines = new String[] {
 				"<?xml version='1.0' encoding='UTF-8'?>",
@@ -201,7 +201,7 @@ public class TestLogSplitting
 				"</vm_arguments>",
 				"<tty>",
 				"<writer thread='3'/>",
-				"<nmethod compile_id='236' compiler='C2' entry='0x0000000105a44ce0' size='736' address='0x0000000105a44b90' relocation_offset='296' insts_offset='336' stub_offset='464' scopes_data_offset='504' scopes_pcs_offset='552' dependencies_offset='712' nul_chk_table_offset='720' method='java/util/ArrayList$Itr &lt;init&gt; (Ljava/util/ArrayList;)V' bytes='26' count='5047' backedge_count='1' iicount='10047' stamp='3.560'/>",
+				"<nmethod compile_id='236' compiler='C2' entry='0x0000000105a44ce0' size='736' address='0x0000000105a44b90' relocation_offset='296' insts_offset='336' stub_offset='464' scopes_data_offset='504' scopes_pcs_offset='552' dependencies_offset='712' nul_chk_table_offset='720' method='java/lang/String &lt;init&gt; ()V' bytes='26' count='5047' backedge_count='1' iicount='10047' stamp='3.560'/>",
 				"<writer thread='1'/>",
 				"Decoding compiled method 0x0000000105a44850:",
 				"Code:",
@@ -211,7 +211,7 @@ public class TestLogSplitting
 				"<writer thread='2'/>",
 				"[Loaded org.eclipse.emf.common.util.DelegatingResourceLocator from file:/Users/chris/eclipse/plugins/org.eclipse.emf.common_2.10.0.v20140514-1158.jar]",
 				"<writer thread='1'/>",
-				"&lt;init&gt;&apos; &apos;(Ljava/util/ArrayList;Ljava/util/ArrayList$1;)V&apos; in &apos;java/util/ArrayList$Itr&apos;",
+				"&lt;init&gt;&apos; &apos;()V&apos; in &apos;java/lang/String&apos;",
 				"--",
 				"[Stub Code]",
 				"  0x0000000105a44a20: jmpq   0x00000001059801a0  ;   {no_reloc}",

@@ -5,12 +5,24 @@
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AssemblyInstruction
 {
@@ -21,7 +33,12 @@ public class AssemblyInstruction
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
 
-	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands, String firstComment)
+	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
+
+	private static final Logger logger = LoggerFactory.getLogger(AssemblyInstruction.class);
+
+	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands,
+			String firstComment)
 	{
 		this.annotation = annotation;
 		this.address = address;
@@ -39,7 +56,7 @@ public class AssemblyInstruction
 	{
 		return annotation;
 	}
-	
+
 	public long getAddress()
 	{
 		return address;
@@ -76,7 +93,7 @@ public class AssemblyInstruction
 
 		return builder.toString();
 	}
-	
+
 	public List<String> getCommentLines()
 	{
 		return commentLines;
@@ -89,7 +106,67 @@ public class AssemblyInstruction
 			commentLines.add(comment.trim());
 		}
 	}
-	
+
+	public boolean isOptimizedVCall()
+	{
+		boolean result = false;
+
+		int commentLineCount = commentLines.size();
+
+		if (commentLineCount > 1)
+		{
+			String lastLine = commentLines.get(commentLineCount - 1);
+
+			if (lastLine.contains(S_OPTIMIZED_VIRTUAL_CALL))
+			{
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	public VirtualCallSite getOptimizedVirtualCallSiteOrNull()
+	{
+		VirtualCallSite result = null;
+
+		if (isOptimizedVCall())
+		{
+			// Oop comment
+			// *invoke comment
+			// callsite comment+
+			// optimized virtual_call
+
+			String callSiteCommentLine = commentLines.get(2);
+
+			Matcher matcher = PATTERN_ASSEMBLY_CALL_SIG.matcher(callSiteCommentLine);
+
+			if (matcher.find())
+			{
+				String className = matcher.group(1);
+				String methodName = matcher.group(2);
+				String bytecodeOffset = matcher.group(3);
+				String lineNumber = matcher.group(4);
+
+				try
+				{
+					result = new VirtualCallSite(className, methodName, Integer.parseInt(bytecodeOffset),
+							Integer.parseInt(lineNumber));
+				}
+				catch (NumberFormatException nfe)
+				{
+					if (DEBUG_LOGGING_ASSEMBLY)
+					{
+						logger.warn("Could not parse CallSite from line: {}", callSiteCommentLine);
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	@Override
 	public String toString()
 	{
 		return toString(0);
@@ -98,7 +175,7 @@ public class AssemblyInstruction
 	public String toString(int annoWidth)
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
 		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		builder.append(C_COLON).append(C_SPACE);
@@ -147,11 +224,12 @@ public class AssemblyInstruction
 		{
 			builder.append(S_NEWLINE);
 		}
-		
+
 		return StringUtil.rtrim(builder.toString());
 	}
-	
-	// Allow splitting an instruction with a multi-line comment across multiple labels
+
+	// Allow splitting an instruction with a multi-line comment across multiple
+	// labels
 	// which all contain the instruction
 	public String toString(int annoWidth, int line)
 	{
@@ -182,7 +260,7 @@ public class AssemblyInstruction
 		}
 
 		int lineLength = builder.length();
-		
+
 		if (commentLines.size() > 0)
 		{
 			if (line == 0)
@@ -202,7 +280,7 @@ public class AssemblyInstruction
 		{
 			builder.append(S_NEWLINE);
 		}
-				
+
 		return StringUtil.rtrim(builder.toString());
 	}
 }

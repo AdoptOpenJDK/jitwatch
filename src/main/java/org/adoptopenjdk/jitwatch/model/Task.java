@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
@@ -46,19 +46,31 @@ public class Task extends Tag
 
 	public void addDictionaryType(String type, Tag tag)
 	{
-		//logger.debug("Adding type: {}", type);
+		if (DEBUG_LOGGING_PARSE_DICTIONARY)
+		{
+			logger.debug("Adding type: {}", type);
+		}
+
 		parseDictionary.setType(type, tag);
 	}
 
 	public void addDictionaryMethod(String method, Tag tag)
 	{
-		//logger.debug("Adding method: {}", method);
+		if (DEBUG_LOGGING_PARSE_DICTIONARY)
+		{
+			logger.debug("Adding method: {}", method);
+		}
+
 		parseDictionary.setMethod(method, tag);
 	}
 
 	public void addDictionaryKlass(String klass, Tag tag)
 	{
-		//logger.debug("Adding klass: {}", klass);
+		if (DEBUG_LOGGING_PARSE_DICTIONARY)
+		{
+			logger.debug("Adding klass: {}", klass);
+		}
+
 		parseDictionary.setKlass(klass, tag);
 	}
 
@@ -93,13 +105,13 @@ public class Task extends Tag
 		{
 			String[] ids = args.split(S_SPACE);
 
-			for(String id : ids)
+			for (String id : ids)
 			{
 				builder.append(getTypeOrKlass(id));
 				builder.append(S_COMMA);
 			}
 
-			builder.deleteCharAt(builder.length()-1);
+			builder.deleteCharAt(builder.length() - 1);
 		}
 
 		builder.append(") -->");

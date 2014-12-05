@@ -46,10 +46,4 @@ public class MetaConstructor extends AbstractMetaMember
 
 		return methodSigWithoutThrows;
 	}
-
-	@Override
-	public String getSignatureForBytecode()
-	{
-		return constructorToString;
-	}
 }

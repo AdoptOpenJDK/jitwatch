@@ -164,16 +164,16 @@ public final class JournalUtil
 				boolean returnMatches = member.getReturnTypeName().equals(returnType);
 
 				boolean paramsMatch = true;
-				
+
 				if (member.getParamTypeNames().length == paramTypes.size())
 				{
 					for (int pos = 0; pos < member.getParamTypeNames().length; pos++)
 					{
 						String memberParamType = member.getParamTypeNames()[pos];
 						String tagParamType = paramTypes.get(pos);
-						
-						logger.debug("checking: {}/{}", memberParamType, tagParamType);
-						
+
+						//logger.debug("checking: {}/{}", memberParamType, tagParamType);
+
 						if (!memberParamType.equals(tagParamType))
 						{
 							paramsMatch = false;
@@ -187,8 +187,8 @@ public final class JournalUtil
 				}
 
 				result = nameMatches && klassMatches && returnMatches && paramsMatch;
-				
-				logger.debug("result: {}", result);
+
+				//logger.debug("result: {}", result);
 			}
 		}
 

@@ -9,6 +9,12 @@ import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 
 public interface ITriView
 {
+	public static final int MASK_UPDATE_NONE = 0;
+	public static final int MASK_UPDATE_SOURCE = 1;
+	public static final int MASK_UPDATE_BYTECODE = 2;
+	public static final int MASK_UPDATE_ASSEMBLY = 4;
+
 	void highlightBytecodeForSuggestion(Suggestion suggestion);
-	void highlightSourceLine(int line);
+	void highlightBytecodeOffset(int bci, int updateMask);
+	void highlightSourceLine(int line, int updateMask);
 }

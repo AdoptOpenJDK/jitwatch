@@ -5,30 +5,39 @@
  */
 package org.adoptopenjdk.jitwatch.optimizedvcall;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 
 public class OptimizedVirtualCall
 {
-	private IMetaMember callingMember;
-	private VirtualCallSite caller;
-	private VirtualCallSite callee;
+	private IMetaMember callerMember;
+	private IMetaMember calleeMember;
+	private VirtualCallSite callsite;
 	private BytecodeInstruction bytecodeInstruction;
 
-	public OptimizedVirtualCall(IMetaMember callingMember, BytecodeInstruction bytecodeInstruction, VirtualCallSite caller, VirtualCallSite callee)
+	public OptimizedVirtualCall(IMetaMember callerMember, IMetaMember calleeMember, VirtualCallSite callsite,
+			BytecodeInstruction bytecodeInstruction)
 	{
 		super();
-		this.callingMember = callingMember;
+		this.callerMember = callerMember;
+		this.calleeMember = calleeMember;
+		this.callsite = callsite;
 		this.bytecodeInstruction = bytecodeInstruction;
-		this.caller = caller;
-		this.callee = callee;
 	}
 
-	public IMetaMember getCallingMember()
+	public IMetaMember getCallerMember()
 	{
-		return callingMember;
+		return callerMember;
+	}
+
+	public IMetaMember getCalleeMember()
+	{
+		return calleeMember;
+	}
+
+	public VirtualCallSite getCallsite()
+	{
+		return callsite;
 	}
 
 	public BytecodeInstruction getBytecodeInstruction()
@@ -36,37 +45,15 @@ public class OptimizedVirtualCall
 		return bytecodeInstruction;
 	}
 
-	public VirtualCallSite getCaller()
-	{
-		return caller;
-	}
-
-	public VirtualCallSite getCallee()
-	{
-		return callee;
-	}
-
-	@Override
-	public String toString()
-	{
-		StringBuilder builder = new StringBuilder();
-
-		builder.append("Member: ").append(callingMember).append(C_NEWLINE);
-		builder.append("Caller: ").append(caller).append(C_NEWLINE);
-		builder.append("Callee: ").append(callee).append(C_NEWLINE);
-		builder.append("Instr : ").append(bytecodeInstruction);
-
-		return builder.toString();
-	}
-
 	@Override
 	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((callee == null) ? 0 : callee.hashCode());
-		result = prime * result + ((caller == null) ? 0 : caller.hashCode());
-		result = prime * result + ((callingMember == null) ? 0 : callingMember.hashCode());
+		result = prime * result + ((bytecodeInstruction == null) ? 0 : bytecodeInstruction.hashCode());
+		result = prime * result + ((calleeMember == null) ? 0 : calleeMember.hashCode());
+		result = prime * result + ((callerMember == null) ? 0 : callerMember.hashCode());
+		result = prime * result + ((callsite == null) ? 0 : callsite.hashCode());
 		return result;
 	}
 
@@ -90,43 +77,62 @@ public class OptimizedVirtualCall
 
 		OptimizedVirtualCall other = (OptimizedVirtualCall) obj;
 
-		if (callee == null)
+		if (bytecodeInstruction == null)
 		{
-			if (other.callee != null)
+			if (other.bytecodeInstruction != null)
 			{
 				return false;
 			}
 		}
-		else if (!callee.equals(other.callee))
+		else if (!bytecodeInstruction.equals(other.bytecodeInstruction))
 		{
 			return false;
 		}
 
-		if (caller == null)
+		if (calleeMember == null)
 		{
-			if (other.caller != null)
+			if (other.calleeMember != null)
 			{
 				return false;
 			}
 		}
-		else if (!caller.equals(other.caller))
+		else if (!calleeMember.equals(other.calleeMember))
 		{
 			return false;
 		}
 
-		if (callingMember == null)
+		if (callerMember == null)
 		{
-			if (other.callingMember != null)
+			if (other.callerMember != null)
 			{
 				return false;
 			}
 		}
+		else if (!callerMember.equals(other.callerMember))
+		{
+			return false;
+		}
 
-		else if (!callingMember.equals(other.callingMember))
+		if (callsite == null)
+		{
+			if (other.callsite != null)
+			{
+				return false;
+			}
+		}
+		else if (!callsite.equals(other.callsite))
 		{
 			return false;
 		}
 
 		return true;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "OptimizedVirtualCall [callerMember=" + callerMember + ", calleeMember=" + calleeMember + ", callsite=" + callsite
+				+ ", bytecodeInstruction=" + bytecodeInstruction + "]";
+	}
+
 }

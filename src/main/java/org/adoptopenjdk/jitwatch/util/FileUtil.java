@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 
@@ -31,8 +32,11 @@ public final class FileUtil
 		if (sourceDir.exists() && sourceDir.isDirectory())
 		{
 			File[] sourceFiles = sourceDir.listFiles();
-			
-			logger.debug("Copying {} files", sourceFiles.length);
+
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Copying {} files", sourceFiles.length);
+			}
 
 			for (File exampleFile : sourceFiles)
 			{
@@ -41,8 +45,11 @@ public final class FileUtil
 					Path srcPath = exampleFile.toPath();
 					Path dstPath = targetDir.toPath().resolve(exampleFile.getName());
 
-					logger.debug("Copying file {} -> {}", srcPath, dstPath);
-					
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("Copying file {} -> {}", srcPath, dstPath);
+					}
+
 					Files.copy(srcPath, dstPath);
 				}
 				catch (IOException ioe)
@@ -98,7 +105,10 @@ public final class FileUtil
 			sourceFile = new File(filePathString);
 		}
 
-		logger.info("Writing source file: {}", sourceFile.getAbsolutePath());
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("Writing source file: {}", sourceFile.getAbsolutePath());
+		}
 
 		BufferedWriter fout = new BufferedWriter(new FileWriter(sourceFile));
 

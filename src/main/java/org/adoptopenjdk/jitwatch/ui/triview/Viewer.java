@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE_CR;
@@ -475,6 +475,11 @@ public class Viewer extends VBox
 			// leave source position unchanged if not a known source line
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
+			
+			if (DEBUG_LOGGING_TRIVIEW)
+			{
+				logger.debug("highlighting line {} in {}", index, getClass().getName());
+			}
 
 			lastScrollIndex = index;
 

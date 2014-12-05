@@ -6,17 +6,16 @@
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_VERSION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +25,43 @@ public class ClassBC
 	private String sourceFile;
 	private int majorVersion;
 	private int minorVersion;
-	private Map<String, MemberBytecode> memberBytecodeMap = new HashMap<>();
+	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
 	private LineTable compositeLineTable = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
 
-	public void putMemberBytecode(String memberName, MemberBytecode memberBytecode)
+	public void addMemberBytecode(MemberBytecode memberBytecode)
 	{
-		if (memberName == null)
+		memberBytecodeList.add(memberBytecode);
+	}
+
+	public List<MemberBytecode> getMemberBytecodeList()
+	{
+		return Collections.unmodifiableList(memberBytecodeList);
+	}
+
+	public MemberBytecode getMemberBytecodeForSourceLine(int sourceLine)
+	{
+		MemberBytecode result = null;
+
+		for (MemberBytecode memberBytecode : memberBytecodeList)
 		{
-			throw new RuntimeException("Refusing to add null memberName");
+			if (DEBUG_LOGGING_BYTECODE)
+			{
+				logger.debug("checking lineTable for member {}", memberBytecode.getMemberSignatureParts().getMemberName());
+			}
+
+			LineTable lineTable = memberBytecode.getLineTable();
+
+			if (lineTable.sourceLineInRange(sourceLine))
+			{
+				result = memberBytecode;
+				break;
+			}
 		}
 
-		memberBytecodeMap.put(memberName, memberBytecode);
+		return result;
 	}
 
 	public LineTableEntry findLineTableEntryForSourceLine(int sourceLine)
@@ -56,49 +78,70 @@ public class ClassBC
 	{
 		compositeLineTable = new LineTable();
 
-		for (MemberBytecode memberBC : memberBytecodeMap.values())
+		for (MemberBytecode memberBytecode : memberBytecodeList)
 		{
-			LineTable lineTable = memberBC.getLineTable();
+			LineTable lineTable = memberBytecode.getLineTable();
 
 			compositeLineTable.add(lineTable);
 		}
-
-		compositeLineTable.sort();
 	}
 
 	public MemberBytecode getMemberBytecode(IMetaMember member)
 	{
-		String bytecodeSignature = member.getSignatureForBytecode();
-
-		logger.debug("getMemberBytecode: {} sig: {}", member.toString(), bytecodeSignature);
-
-		MemberBytecode result = getMemberBytecode(bytecodeSignature);
-
-		if (result == null)
+		if (DEBUG_LOGGING_BYTECODE)
 		{
-			logger.debug("did not find {} on first try, using heuristic", member.toString());
+			logger.debug("getMemberBytecode: {}", member);
+		}
 
-			List<String> keys = new ArrayList<>(getBytecodeMethodSignatures());
+		MemberBytecode result = null;
 
-			bytecodeSignature = ParseUtil.findBestMatchForMemberSignature(member, keys);
-
-			if (bytecodeSignature != null)
+		if (member != null)
+		{
+			for (MemberBytecode item : memberBytecodeList)
 			{
-				result = getMemberBytecode(bytecodeSignature);
+				if (member.matchesSignature(item.getMemberSignatureParts(), true))
+				{
+					result = item;
+					break;
+				}
 			}
+		}
+
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getMemberBytecode found: {}", result);
 		}
 
 		return result;
 	}
 
-	public MemberBytecode getMemberBytecode(String memberName)
+	public MemberBytecode getMemberBytecodeForSignature(MemberSignatureParts msp)
 	{
-		return memberBytecodeMap.get(memberName);
-	}
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getMemberBytecodeForSignature: {}", msp);
+		}
 
-	public Set<String> getBytecodeMethodSignatures()
-	{
-		return memberBytecodeMap.keySet();
+		MemberBytecode result = null;
+
+		if (msp != null)
+		{
+			for (MemberBytecode item : memberBytecodeList)
+			{
+				if (msp.equals(item.getMemberSignatureParts()))
+				{
+					result = item;
+					break;
+				}
+			}
+		}
+
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("Found MemberBytecode: {}", result != null);
+		}
+
+		return result;
 	}
 
 	public ConstantPool getConstantPool()
@@ -187,12 +230,11 @@ public class ClassBC
 		builder.append(S_BYTECODE_MAJOR_VERSION).append(majorVersion).append(C_NEWLINE);
 		builder.append(S_BYTECODE_MINOR_VERSION).append(minorVersion).append(C_NEWLINE);
 
-		for (Map.Entry<String, MemberBytecode> entry : memberBytecodeMap.entrySet())
+		for (MemberBytecode item : memberBytecodeList)
 		{
-			builder.append("member: ").append(entry.getKey());
+			builder.append("member: ").append(item).append(C_NEWLINE);
 		}
 
 		return builder.toString();
 	}
-
 }

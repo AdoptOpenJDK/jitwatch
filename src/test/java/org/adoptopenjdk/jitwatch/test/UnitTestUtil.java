@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaMethod;
@@ -20,6 +21,14 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class UnitTestUtil
 {
+
+	public static MetaClass createMetaClassFor(JITDataModel model, String fqClassName) throws ClassNotFoundException
+	{
+		Class<?> clazz = Class.forName(fqClassName);
+
+		return model.buildAndGetMetaClass(clazz);
+	}
+
 	public static IMetaMember createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
 	{
 		String packageName = StringUtil.getPackageName(fqClassName);

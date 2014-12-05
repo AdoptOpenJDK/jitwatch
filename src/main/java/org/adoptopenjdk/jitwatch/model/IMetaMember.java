@@ -15,7 +15,7 @@ public interface IMetaMember
 	List<String> getQueuedAttributes();
 
 	MetaClass getMetaClass();
-	
+
 	void addJournalEntry(Tag entry);
 	Journal getJournal();
 
@@ -38,7 +38,7 @@ public interface IMetaMember
 	boolean isCompiled();
 
 	String toStringUnqualifiedMethodName(boolean fqParamTypes);
-		
+
 	String getMemberName();
 	String getFullyQualifiedMemberName();
 	String getAbbreviatedFullyQualifiedMemberName();
@@ -47,14 +47,12 @@ public interface IMetaMember
 	String getModifierString();
 	String getReturnTypeName();
 	String[] getParamTypeNames();
-	
-	boolean matchesSignature(MemberSignatureParts msp);
+
+	boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly);
 
 	AssemblyMethod getAssembly();
 
 	void setAssembly(AssemblyMethod asmMethod);
 
 	String getSignatureRegEx();
-
-	String getSignatureForBytecode();
 }

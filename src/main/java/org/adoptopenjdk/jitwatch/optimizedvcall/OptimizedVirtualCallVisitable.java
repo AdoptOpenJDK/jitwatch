@@ -19,8 +19,12 @@ public class OptimizedVirtualCallVisitable implements ITreeVisitable
 {
 	private List<OptimizedVirtualCall> optimizedVCallReport = new ArrayList<>();
 
-	public List<OptimizedVirtualCall> buildOptimizedCalleeReport(IReadOnlyJITDataModel model)
+	private OptimizedVirtualCallFinder finder;
+
+	public List<OptimizedVirtualCall> buildOptimizedCalleeReport(IReadOnlyJITDataModel model, List<String> classLocations)
 	{
+		finder = new OptimizedVirtualCallFinder(model, classLocations);
+
 		TreeVisitor.walkTree(model, this);
 
 		Collections.sort(optimizedVCallReport, new Comparator<OptimizedVirtualCall>()
@@ -28,8 +32,8 @@ public class OptimizedVirtualCallVisitable implements ITreeVisitable
 			@Override
 			public int compare(OptimizedVirtualCall o1, OptimizedVirtualCall o2)
 			{
-				return o1.getCallingMember().getFullyQualifiedMemberName()
-						.compareTo(o2.getCallingMember().getFullyQualifiedMemberName());
+				return o1.getCallerMember().getFullyQualifiedMemberName()
+						.compareTo(o2.getCallerMember().getFullyQualifiedMemberName());
 			}
 		});
 
@@ -43,10 +47,10 @@ public class OptimizedVirtualCallVisitable implements ITreeVisitable
 	}
 
 	@Override
-	public void visit(IMetaMember mm)
+	public void visit(IMetaMember member)
 	{
-		List<OptimizedVirtualCall> vCallsForMember = OptimizedVirtualCallFinder.findOptimizedCalls(mm);
-		
+		List<OptimizedVirtualCall> vCallsForMember = finder.findOptimizedCalls(member);
+
 		optimizedVCallReport.addAll(vCallsForMember);
 	}
 }

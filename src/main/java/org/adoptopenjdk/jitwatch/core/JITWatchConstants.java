@@ -17,12 +17,17 @@ public final class JITWatchConstants
 	{
 	}
 
-	// *verbose* debugging
+	// Enable debugging for specific functionality
 	// DEBUG level logging requires editing src/main/resources/logback.xml
 	public static final boolean DEBUG_LOGGING = false;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
+	public static final boolean DEBUG_LOGGING_CLASSPATH = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
 	public static final boolean DEBUG_LOGGING_SIG_MATCH = false;
+	public static final boolean DEBUG_LOGGING_OVC = false;
+	public static final boolean DEBUG_LOGGING_PARSE_DICTIONARY = false;
+	public static final boolean DEBUG_LOGGING_TRIVIEW = false;
+
 	public static final boolean DEBUG_MEMBER_CREATION = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;

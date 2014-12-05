@@ -53,16 +53,8 @@ public class VCallTableBuilder
 		TableColumn<VCallRow, String> colCalleeMember = new TableColumn<VCallRow, String>("Method");
 		colCalleeMember.setCellValueFactory(new PropertyValueFactory<VCallRow, String>("calleeMember"));
 
-		TableColumn<VCallRow, Integer> colCalleeLine = new TableColumn<VCallRow, Integer>("Source Line");
-		colCalleeLine.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("calleeSourceLine"));
-
-		TableColumn<VCallRow, Integer> colCalleeBytecode = new TableColumn<VCallRow, Integer>("BCI");
-		colCalleeBytecode.setCellValueFactory(new PropertyValueFactory<VCallRow, Integer>("calleeBCI"));
-
 		tableView.getColumns().add(colCalleeClass);
 		tableView.getColumns().add(colCalleeMember);
-		tableView.getColumns().add(colCalleeLine);
-		tableView.getColumns().add(colCalleeBytecode);
 
 		tableView.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
@@ -73,21 +65,26 @@ public class VCallTableBuilder
 
 				if (selected != null)
 				{
-					IMetaMember callingMember = selected.getCallingMember();
+					IMetaMember callingMember = selected.getCaller();
 
 					ITriView triView = proxy.openTriView(callingMember, true);
 
-					triView.highlightSourceLine(selected.getCallerSourceLine());
+					triView.highlightSourceLine(selected.getCallerSourceLine(), ITriView.MASK_UPDATE_ASSEMBLY);
+					triView.highlightBytecodeOffset(selected.getCallerBCI(), ITriView.MASK_UPDATE_ASSEMBLY);
+
 				}
 			}
 		});
 
 		List<VCallRow> rowList = new ArrayList<>();
 
-		for (OptimizedVirtualCall vCall : vCalls)
+		if (vCalls != null)
 		{
-			VCallRow row = new VCallRow(vCall);
-			rowList.add(row);
+			for (OptimizedVirtualCall vCall : vCalls)
+			{
+				VCallRow row = new VCallRow(vCall);
+				rowList.add(row);
+			}
 		}
 
 		tableView.setItems(FXCollections.observableArrayList(rowList));

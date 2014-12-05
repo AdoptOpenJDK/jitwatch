@@ -5,39 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OBJECT_REF;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ARRAY_BRACKET_PAIR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLASS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PACKAGE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -56,6 +24,7 @@ import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +38,6 @@ public final class ParseUtil
 
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP
 			+ " (\\(.*\\))(.*)");
-
-	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(.*)'\\sin\\s'(.*)'");
 
 	public static final String SQUARE_BRACKET_PAIR = "[]";
 	public static final String CONSTRUCTOR_INIT = "<init>";
@@ -323,6 +290,11 @@ public final class ParseUtil
 				}
 				else
 				{
+					if (param.endsWith(S_CLOSE_ANGLE))
+					{
+						param = stripGenerics(param);
+					}
+
 					builder.append(param);
 				}
 			}
@@ -359,8 +331,41 @@ public final class ParseUtil
 		}
 	}
 
+	public static String stripGenerics(String param)
+	{
+		String result = param;
+
+		if (param != null && param.endsWith(S_CLOSE_ANGLE))
+		{
+			int length = param.length();
+			int angleCount = 0;
+			
+			for (int i = length - 1; i >= 0; i--)
+			{
+				char c = param.charAt(i);
+
+				if (c == C_CLOSE_ANGLE)
+				{
+					angleCount++;
+				}
+				else if (c == C_OPEN_ANGLE)
+				{
+					angleCount--;
+
+					if (angleCount == 0)
+					{
+						result = param.substring(0, i);
+						break;
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
 	public static boolean paramClassesMatch(boolean memberHasVarArgs, List<Class<?>> memberParamClasses,
-			List<Class<?>> signatureParamClasses)
+			List<Class<?>> signatureParamClasses, boolean matchTypesExactly)
 	{
 		boolean result = true;
 
@@ -369,10 +374,15 @@ public final class ParseUtil
 
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
-			logger.debug("M Count: {} S Count: {}", memberParamCount, signatureParamCount);
+			logger.debug("MemberParamCount:{} SignatureParamCount:{} varArgs:{}", memberParamCount, signatureParamCount,
+					memberHasVarArgs);
 		}
 
-		if (memberParamCount > 0 && signatureParamCount > 0)
+		if (!memberHasVarArgs && memberParamCount != signatureParamCount)
+		{
+			result = false;
+		}
+		else if (memberParamCount > 0 && signatureParamCount > 0)
 		{
 			int memPos = memberParamCount - 1;
 
@@ -391,11 +401,22 @@ public final class ParseUtil
 					memberParamCouldBeVarArgs = true;
 				}
 
-				if (memParamClass.isAssignableFrom(sigParamClass))
+				boolean classMatch = false;
+
+				if (matchTypesExactly)
+				{
+					classMatch = memParamClass.equals(sigParamClass);
+				}
+				else
+				{
+					classMatch = memParamClass.isAssignableFrom(sigParamClass);
+				}
+
+				if (classMatch)
 				{
 					if (DEBUG_LOGGING_SIG_MATCH)
 					{
-						logger.debug("{} isAssignableFrom {}", memParamClass, sigParamClass);
+						logger.debug("{} equals/isAssignableFrom {}", memParamClass, sigParamClass);
 					}
 
 					if (memPos > 0)
@@ -432,8 +453,10 @@ public final class ParseUtil
 						result = false;
 						break;
 					}
-				}
-			}
+
+				} // if classMatch
+
+			} // for
 
 			boolean unusedMemberParams = (memPos > 0);
 
@@ -554,18 +577,21 @@ public final class ParseUtil
 	/*
 	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
 	 */
-	private static void findClassesForTypeString(String typesString, List<Class<?>> classes) throws ClassNotFoundException
+	private static void findClassesForTypeString(final String typesString, List<Class<?>> classes) throws ClassNotFoundException
 	{
+		// logger.debug("Parsing: {}", typesString);
+
+		String toParse = typesString.replace(C_SLASH, C_DOT);
 
 		int pos = 0;
 
 		StringBuilder builder = new StringBuilder();
 
-		final int stringLen = typesString.length();
+		final int stringLen = toParse.length();
 
 		while (pos < stringLen)
 		{
-			char c = typesString.charAt(pos);
+			char c = toParse.charAt(pos);
 
 			switch (c)
 			{
@@ -578,13 +604,13 @@ public final class ParseUtil
 				builder.delete(0, builder.length());
 				builder.append(c);
 				pos++;
-				c = typesString.charAt(pos);
+				c = toParse.charAt(pos);
 
 				while (c == C_OPEN_SQUARE_BRACKET)
 				{
 					builder.append(c);
 					pos++;
-					c = typesString.charAt(pos);
+					c = toParse.charAt(pos);
 				}
 
 				if (c == C_OBJECT_REF)
@@ -592,7 +618,7 @@ public final class ParseUtil
 					// array of ref type
 					while (pos < stringLen)
 					{
-						c = typesString.charAt(pos++);
+						c = toParse.charAt(pos++);
 						builder.append(c);
 
 						if (c == C_SEMICOLON)
@@ -617,7 +643,7 @@ public final class ParseUtil
 				while (pos < stringLen - 1)
 				{
 					pos++;
-					c = typesString.charAt(pos);
+					c = toParse.charAt(pos);
 
 					if (c == C_SEMICOLON)
 					{
@@ -682,7 +708,10 @@ public final class ParseUtil
 
 				if (line.contains(memberName))
 				{
-					logger.debug("Comparing {} with {}", line, member);
+					if (DEBUG_LOGGING_SIG_MATCH)
+					{
+						logger.debug("Comparing {} with {}", line, member);
+					}
 
 					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass()
 							.getFullyQualifiedName(), line);
@@ -836,7 +865,10 @@ public final class ParseUtil
 
 			if (metaClass == null)
 			{
-				logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
+				}
 
 				// Possible that TraceClassLoading did not log this class
 				// try to classload and add to model
@@ -866,7 +898,7 @@ public final class ParseUtil
 			{
 				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName,
 						returnType, argumentTypes);
-				result = metaClass.getMemberFromSignature(msp);
+				result = metaClass.getMemberForSignature(msp);
 			}
 			else
 			{
@@ -880,27 +912,27 @@ public final class ParseUtil
 	public static String lookupType(String typeOrKlassID, IParseDictionary parseDictionary)
 	{
 		String result = null;
-		
-		logger.debug("Looking up type: {}", typeOrKlassID);
+
+		// logger.debug("Looking up type: {}", typeOrKlassID);
 
 		if (typeOrKlassID != null)
 		{
 			Tag typeTag = parseDictionary.getType(typeOrKlassID);
-			
-			logger.debug("Type? {}", typeTag);
+
+			// logger.debug("Type? {}", typeTag);
 
 			if (typeTag == null)
 			{
 				typeTag = parseDictionary.getKlass(typeOrKlassID);
-				
-				logger.debug("Klass? {}", typeTag);
+
+				// logger.debug("Klass? {}", typeTag);
 			}
 
 			if (typeTag != null)
 			{
 				String typeAttrName = typeTag.getAttribute(ATTR_NAME);
-				
-				logger.debug("Name {}", typeAttrName);
+
+				// logger.debug("Name {}", typeAttrName);
 
 				if (typeAttrName != null)
 				{
@@ -909,31 +941,6 @@ public final class ParseUtil
 					result = ParseUtil.expandParameterType(result);
 				}
 			}
-		}
-
-		return result;
-	}
-
-	public static String convertNativeCodeMethodName(String inLine)
-	{
-		String line = inLine.replace(S_ENTITY_APOS, S_QUOTE);
-
-		Matcher matcher = PATTERN_ASSEMBLY_SIGNATURE.matcher(line);
-
-		String result = null;
-
-		if (matcher.find())
-		{
-			String memberName = matcher.group(2);
-			String params = matcher.group(3).replace(S_SLASH, S_DOT);
-			String className = matcher.group(4).replace(S_SLASH, S_DOT);
-
-			StringBuilder builder = new StringBuilder();
-			builder.append(className).append(C_SPACE);
-			builder.append(memberName).append(C_SPACE);
-			builder.append(params);
-
-			result = builder.toString();
 		}
 
 		return result;
@@ -991,15 +998,47 @@ public final class ParseUtil
 		return result;
 	}
 
-	public static IMetaMember getMemberFromComment(IReadOnlyJITDataModel model, final String comment) throws LogParseException
+	private static boolean commentMethodHasNoClassPrefix(String comment)
 	{
-		// java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+		return (comment.indexOf(C_DOT) == -1);
+	}
 
-		String replace1 = comment.replace(C_DOT, C_SPACE);
-		String replace2 = replace1.replace(C_COLON, C_SPACE);
-		String replace3 = replace2.replace(C_SLASH, C_DOT);
-		String replace4 = replace3.replace(S_DOUBLE_QUOTE, S_EMPTY);
+	private static String prependCurrentMember(String comment, IMetaMember member)
+	{
+		String currentClass = member.getMetaClass().getFullyQualifiedName();
 
-		return ParseUtil.findMemberWithSignature(model, replace4);
+		currentClass = currentClass.replace(C_DOT, C_SLASH);
+
+		return currentClass + C_DOT + comment;
+	}
+
+	public static IMetaMember getMemberFromBytecodeComment(IReadOnlyJITDataModel model, IMetaMember currentMember,
+			BytecodeInstruction instruction) throws LogParseException
+	{
+		IMetaMember result = null;
+		
+		if (DEBUG_LOGGING_OVC)
+		{
+			logger.debug("Looking for member in {} using {}", currentMember, instruction);
+		}
+
+		if (instruction != null)
+		{
+			String comment = instruction.getCommentWithMemberPrefixStripped();
+
+			if (comment != null)
+			{
+				if (commentMethodHasNoClassPrefix(comment))
+				{
+					comment = prependCurrentMember(comment, currentMember);
+				}
+
+				MemberSignatureParts msp = MemberSignatureParts.fromBytecodeComment(comment);
+
+				result = model.findMetaMember(msp);
+			}
+		}
+
+		return result;
 	}
 }
