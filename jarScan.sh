@@ -21,7 +21,7 @@ fi
 
 # make jarScan.sh runnable from any directory (only works on Linux where readlink -f returns canonical path)
 if [ "$unamestr" = 'Darwin' ]; then
-  export JITWATCH=.
+  export JITWATCH=`dirname $0`
 else
   export JARSCAN=`readlink -f $0`
   export JITWATCH=`dirname $JARSCAN`
