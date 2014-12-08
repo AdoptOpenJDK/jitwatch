@@ -80,5 +80,5 @@ CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 
-$JAVA_HOME/bin/java $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp $CLASSPATH org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
+"$JAVA_HOME/bin/java" $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
 echo "Done"

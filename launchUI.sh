@@ -26,4 +26,4 @@ CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
 CLASSPATH=$CLASSPATH:target/jitwatch-1.0.0-SNAPSHOT.jar
 
-$JAVA_HOME/bin/java -cp $CLASSPATH org.adoptopenjdk.jitwatch.launch.LaunchUI
+"$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.launch.LaunchUI
