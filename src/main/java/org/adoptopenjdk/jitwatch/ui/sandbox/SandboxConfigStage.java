@@ -19,6 +19,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -42,6 +43,7 @@ public class SandboxConfigStage extends Stage
 	private TextField txtFreqInline;
 	private TextField txtMaxInline;
 	private TextField txtCompilerThreshold;
+	private TextField txtExtraSwitches;
 
 	private CheckBox checkBoxPrintAssembly;
 	private CheckBox checkBoxDisableInlining;
@@ -50,6 +52,8 @@ public class SandboxConfigStage extends Stage
 	private JITWatchConfig config;
 	private FileChooserList chooserClasses;
 	private VMLanguageList vmLanguageList;
+
+	private Scene scene;
 
 	private static final int labelWidth = 150;
 
@@ -63,6 +67,10 @@ public class SandboxConfigStage extends Stage
 		initStyle(StageStyle.UTILITY);
 
 		VBox vbox = new VBox();
+
+		scene = new Scene(vbox, 620, 520);
+
+		setScene(scene);
 
 		vbox.setPadding(new Insets(15));
 		vbox.setSpacing(15);
@@ -85,15 +93,13 @@ public class SandboxConfigStage extends Stage
 
 		vbox.getChildren().add(buildHBoxInliningSettings());
 
-		vbox.getChildren().add(buildHBoxCompilationThresholds());
+		vbox.getChildren().add(buildHBoxCompilationThreshold());
+
+		vbox.getChildren().add(buildHBoxExtraSwitches());
 
 		vbox.getChildren().add(buildHBoxButtons());
 
 		setTitle("Sandbox Configuration");
-
-		Scene scene = new Scene(vbox, 720, 520);
-
-		setScene(scene);
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
@@ -133,6 +139,8 @@ public class SandboxConfigStage extends Stage
 
 				setCompilerThreshold(config);
 
+				setExtraVMSwitches(config);
+
 				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
 				config.setDisableInlining(checkBoxDisableInlining.isSelected());
 
@@ -148,12 +156,17 @@ public class SandboxConfigStage extends Stage
 	{
 		try
 		{
-			config.setCompilerThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
+			config.setCompileThreshold(Integer.parseInt(txtCompilerThreshold.getText()));
 		}
 		catch (NumberFormatException nfe)
 		{
 			logger.error("Bad CompilerThreshold value", nfe);
 		}
+	}
+
+	private void setExtraVMSwitches(JITWatchConfig config)
+	{
+		config.setExtraVMSwitches(txtExtraSwitches.getText().trim());
 	}
 
 	private void setMaximumInlineSize(JITWatchConfig config)
@@ -234,8 +247,12 @@ public class SandboxConfigStage extends Stage
 	private HBox buildHBoxTieredCompilation()
 	{
 		final RadioButton rbVMDefault = new RadioButton("VM Default");
-		final RadioButton rbForceTiered = new RadioButton("-XX:+TieredCompilation");
-		final RadioButton rbForceNoTiered = new RadioButton("-XX:-TieredCompilation");
+
+		final RadioButton rbForceTiered = new RadioButton("Always");
+		rbForceTiered.setTooltip(new Tooltip("-XX:+TieredCompilation"));
+
+		final RadioButton rbForceNoTiered = new RadioButton("Never");
+		rbForceNoTiered.setTooltip(new Tooltip("-XX:-TieredCompilation"));
 
 		final ToggleGroup groupTiered = new ToggleGroup();
 
@@ -316,8 +333,12 @@ public class SandboxConfigStage extends Stage
 	private HBox buildHBoxCompressedOops()
 	{
 		final RadioButton rbVMDefault = new RadioButton("VM Default");
-		final RadioButton rbForceCompressed = new RadioButton("-XX:+UseCompressedOops");
-		final RadioButton rbForceNoCompressed = new RadioButton("-XX:-UseCompressedOops");
+
+		final RadioButton rbForceCompressed = new RadioButton("Always");
+		rbForceCompressed.setTooltip(new Tooltip("-XX:+UseCompressedOops"));
+
+		final RadioButton rbForceNoCompressed = new RadioButton("Never");
+		rbForceNoCompressed.setTooltip(new Tooltip("-XX:-UseCompressedOops"));
 
 		final ToggleGroup groupOops = new ToggleGroup();
 
@@ -379,22 +400,43 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-	private HBox buildHBoxCompilationThresholds()
+	private HBox buildHBoxCompilationThreshold()
 	{
 		HBox hbox = new HBox();
 
 		hbox.setSpacing(20);
 
-		txtCompilerThreshold = new TextField(Integer.toString(config.getCompilerThreshold()));
-		txtCompilerThreshold.setMaxWidth(70);
+		Label labelThreshold = new Label("Compile Threshold:");
+		labelThreshold.setTooltip(new Tooltip("-XX:CompileThreshold"));
+		labelThreshold.setMinWidth(140);
+
+		txtCompilerThreshold = new TextField(Integer.toString(config.getCompileThreshold()));
+		txtCompilerThreshold.setMaxWidth(60);
 		txtCompilerThreshold.setAlignment(Pos.BASELINE_RIGHT);
 
-		Label label = new Label("-XX:CompilationThreshold:");
-
-		hbox.getChildren().add(label);
+		hbox.getChildren().add(labelThreshold);
 		hbox.getChildren().add(txtCompilerThreshold);
-		return hbox;
 
+		return hbox;
+	}
+
+	private HBox buildHBoxExtraSwitches()
+	{
+		HBox hbox = new HBox();
+
+		hbox.setSpacing(20);
+
+		Label labelExtra = new Label("Extra VM switches:");
+		labelExtra.setMinWidth(140);
+
+		txtExtraSwitches = new TextField(config.getExtraVMSwitches());
+		txtExtraSwitches.prefWidthProperty().bind(scene.widthProperty());
+		txtExtraSwitches.setAlignment(Pos.BASELINE_LEFT);
+
+		hbox.getChildren().add(labelExtra);
+		hbox.getChildren().add(txtExtraSwitches);
+
+		return hbox;
 	}
 
 	private ChangeListener<Toggle> getChangeListenerForGroupOops(final RadioButton rbVMDefault,
@@ -433,7 +475,8 @@ public class SandboxConfigStage extends Stage
 		txtFreqInline.setAlignment(Pos.BASELINE_RIGHT);
 		txtFreqInline.setDisable(config.isDisableInlining());
 
-		Label label = new Label("-XX:FreqInlineSize:");
+		Label label = new Label("FreqInlineSize:");
+		label.setTooltip(new Tooltip("-XX:FreqInlineSize"));
 
 		hbCompilerSettings.getChildren().add(label);
 		hbCompilerSettings.getChildren().add(txtFreqInline);
@@ -446,7 +489,8 @@ public class SandboxConfigStage extends Stage
 		txtMaxInline.setAlignment(Pos.BASELINE_RIGHT);
 		txtMaxInline.setDisable(config.isDisableInlining());
 
-		Label label = new Label("-XX:MaxInlineSize:");
+		Label label = new Label("MaxInlineSize:");
+		label.setTooltip(new Tooltip("-XX:MaxInlineSize"));
 
 		hbCompilerSettings.getChildren().add(label);
 		hbCompilerSettings.getChildren().add(txtMaxInline);
@@ -477,7 +521,8 @@ public class SandboxConfigStage extends Stage
 
 	private CheckBox buildCheckBoxDisableInlining()
 	{
-		checkBoxDisableInlining = new CheckBox("Disable Inlining (-XX:-Inline)");
+		checkBoxDisableInlining = new CheckBox("Disable Inlining");
+		checkBoxDisableInlining.setTooltip(new Tooltip("-XX:-Inline"));
 
 		checkBoxDisableInlining.setSelected(config.isDisableInlining());
 
@@ -498,7 +543,7 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 		hbox.setSpacing(20);
-		hbox.setPadding(new Insets(0,10,0,10));
+		hbox.setPadding(new Insets(0, 10, 0, 10));
 		hbox.setAlignment(Pos.CENTER);
 
 		Button btnSave = StyleUtil.buildButton("Save");

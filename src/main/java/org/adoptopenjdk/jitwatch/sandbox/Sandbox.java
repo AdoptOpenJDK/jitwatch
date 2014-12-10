@@ -5,7 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.sandbox;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +20,9 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
@@ -182,8 +186,8 @@ public class Sandbox
 
 		logListener.log("Compiling: " + StringUtil.listToString(compileList));
 
-		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getConfiguredClassLocations(), SANDBOX_CLASS_DIR.toFile(),
-				logListener);
+		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getConfiguredClassLocations(),
+				SANDBOX_CLASS_DIR.toFile(), logListener);
 
 		logListener.log("Compilation success: " + compiledOK);
 
@@ -280,9 +284,20 @@ public class Sandbox
 			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
 		}
 
-		if (logParser.getConfig().getCompilerThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
+		if (logParser.getConfig().getCompileThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
 		{
-			options.add("-XX:CompilerThreshold=" + logParser.getConfig().getCompilerThreshold());
+			options.add("-XX:CompileThreshold=" + logParser.getConfig().getCompileThreshold());
+		}
+
+		if (logParser.getConfig().getExtraVMSwitches().length() > 0)
+		{
+			String extraSwitchString = logParser.getConfig().getExtraVMSwitches();
+			String[] switches = extraSwitchString.split(S_SPACE);
+
+			for (String sw : switches)
+			{
+				options.add(sw);
+			}
 		}
 
 		logListener.log("Executing: " + fqClassName);

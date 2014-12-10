@@ -21,6 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class FileChooserList extends VBox
 		});
 
 		vboxButtons = new VBox();
-		vboxButtons.setPadding(new Insets(10));
+		vboxButtons.setPadding(new Insets(0,10,10,10));
 		vboxButtons.setSpacing(10);
 
 		vboxButtons.getChildren().add(btnOpenFileDialog);

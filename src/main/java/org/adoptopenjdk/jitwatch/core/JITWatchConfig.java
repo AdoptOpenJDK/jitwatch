@@ -68,7 +68,7 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = SANDBOX_PREFIX + ".print.assembly";
 	private static final String KEY_SANDBOX_DISABLE_INLINING = SANDBOX_PREFIX + ".disable.inlining";
 	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
-
+	private static final String KEY_SANDBOX_EXTRA_VM_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches";
 	private static final String KEY_LAST_PROFILE = "last.profile";
 
 	private List<String> sourceLocations = new ArrayList<>();
@@ -89,7 +89,8 @@ public class JITWatchConfig
 	private boolean printAssembly;
 	private boolean disableInlining = false;
 
-	private int compilerThreshold;
+	private int compileThreshold;
+	private String extraVMSwitches;
 
 	private String profileName = S_PROFILE_DEFAULT;
 
@@ -278,7 +279,7 @@ public class JITWatchConfig
 			{
 				logger.debug("Resetting last used profile to Default from Sandbox");
 			}
-			
+
 			profileName = S_PROFILE_DEFAULT;
 		}
 
@@ -342,8 +343,11 @@ public class JITWatchConfig
 		printAssembly = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, true);
 		disableInlining = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, false);
 
-		compilerThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
+		compileThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
+
+		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES,
+				JITWatchConstants.S_EMPTY);
 	}
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
@@ -482,7 +486,10 @@ public class JITWatchConfig
 
 		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
 
-		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compilerThreshold));
+		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compileThreshold));
+
+		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, extraVMSwitches);
+
 	}
 
 	public void savePropertiesToFile()
@@ -701,14 +708,24 @@ public class JITWatchConfig
 		this.disableInlining = disableInlining;
 	}
 
-	public int getCompilerThreshold()
+	public int getCompileThreshold()
 	{
-		return compilerThreshold;
+		return compileThreshold;
 	}
 
-	public void setCompilerThreshold(int compilationThreshold)
+	public void setCompileThreshold(int compileThreshold)
 	{
-		this.compilerThreshold = compilationThreshold;
+		this.compileThreshold = compileThreshold;
+	}
+
+	public String getExtraVMSwitches()
+	{
+		return extraVMSwitches;
+	}
+
+	public void setExtraVMSwitches(String extraVMSwitches)
+	{
+		this.extraVMSwitches = extraVMSwitches;
 	}
 
 	public CompressedOops getCompressedOopsMode()

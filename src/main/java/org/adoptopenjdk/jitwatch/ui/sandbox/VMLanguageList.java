@@ -54,7 +54,7 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 		});
 
 		vboxButtons = new VBox();
-		vboxButtons.setPadding(new Insets(10));
+		vboxButtons.setPadding(new Insets(0,10,10,10));
 		vboxButtons.setSpacing(10);
 
 		vboxButtons.getChildren().add(btnConfigureLanguage);
