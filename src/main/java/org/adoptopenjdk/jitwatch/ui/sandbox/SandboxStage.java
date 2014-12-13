@@ -5,12 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASTERISK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +27,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -29,10 +35,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -41,6 +50,7 @@ import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
@@ -58,15 +68,13 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
-	private List<EditorPane> editorPanes = new ArrayList<>();
-
 	private TextArea taLog;
 
 	private IStageAccessProxy accessProxy;
 
 	private Sandbox sandbox;
 
-	private SplitPane splitEditorPanes;
+	private TabPane tabPane;
 
 	private Button btnSandboxConfig;
 
@@ -92,8 +100,23 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		setTitle("Sandbox - Edit, Compile, Execute, and Analyse JIT");
 
-		splitEditorPanes = new SplitPane();
-		splitEditorPanes.setOrientation(Orientation.HORIZONTAL);
+		tabPane = new TabPane();
+
+		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Tab> ov, Tab t, Tab t1)
+			{
+				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+
+				if (selectedTab != null)
+				{
+					EditorPane pane = (EditorPane) selectedTab.getContent();
+
+					setVMLanguage(pane);
+				}
+			}
+		});
 
 		SplitPane splitVertical = new SplitPane();
 		splitVertical.setOrientation(Orientation.VERTICAL);
@@ -111,6 +134,61 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			public void handle(ActionEvent e)
 			{
 				addEditor(null);
+			}
+		});
+
+		Button btnOpen = StyleUtil.buildButton("Open");
+		btnOpen.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+
+				if (selectedTab != null)
+				{
+					EditorPane pane = (EditorPane) selectedTab.getContent();
+
+					if (pane.isModified())
+					{
+						pane.promptSave();
+					}
+
+					FileChooser fc = new FileChooser();
+
+					fc.setTitle("Choose source file");
+
+					fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
+
+					File result = fc.showOpenDialog(getStageForChooser());
+
+					if (result != null)
+					{
+						pane.loadSource(result);
+						selectedTab.setText(pane.getName());
+
+						setVMLanguage(pane);
+					}
+				}
+			}
+		});
+
+		Button btnSave = StyleUtil.buildButton("Save");
+		btnSave.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+
+				if (selectedTab != null)
+				{
+					EditorPane pane = (EditorPane) selectedTab.getContent();
+
+					pane.saveFile();
+
+					setVMLanguage(pane);
+				}
 			}
 		});
 
@@ -158,17 +236,55 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
+		Button btnRun = StyleUtil.buildButton("Run");
+		btnRun.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+
+				if (selectedTab != null)
+				{
+					EditorPane pane = (EditorPane) selectedTab.getContent();
+
+					if (pane.isModified())
+					{
+						pane.promptSave();
+					}
+
+					setVMLanguage(pane);
+
+					runFile(pane);
+				}
+			}
+		});
+		
+		Button btnOutput = StyleUtil.buildButton("View Output");
+		btnOutput.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				showOutput(AbstractProcess.getOutputStream());
+			}
+		});
+
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(10);
 		hBoxTools.setPadding(new Insets(10));
 
 		hBoxTools.getChildren().add(btnNewEditor);
+		hBoxTools.getChildren().add(btnOpen);
+		hBoxTools.getChildren().add(btnSave);
 		hBoxTools.getChildren().add(btnSandboxConfig);
 		hBoxTools.getChildren().add(btnResetSandbox);
 		hBoxTools.getChildren().add(comboBoxVMLanguage);
+		hBoxTools.getChildren().add(btnRun);
+		hBoxTools.getChildren().add(btnOutput);
 
-		splitVertical.getItems().add(splitEditorPanes);
+		splitVertical.getItems().add(tabPane);
 		splitVertical.getItems().add(taLog);
 
 		splitVertical.setDividerPositions(0.75, 0.25);
@@ -203,6 +319,52 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	}
 
 	@Override
+	public void setModified(EditorPane pane, boolean isModified)
+	{
+		for (Tab tab : tabPane.getTabs())
+		{
+			EditorPane currentPane = (EditorPane) tab.getContent();
+
+			if (currentPane == pane)
+			{
+				String tabText = tab.getText();
+
+				if (isModified)
+				{
+					if (!tabText.endsWith(S_ASTERISK))
+					{
+						tab.setText(tabText + S_ASTERISK);
+					}
+				}
+				else
+				{
+					if (tabText.endsWith(S_ASTERISK))
+					{
+						tab.setText(tabText.substring(0, tabText.length() - 1));
+					}
+				}
+			}
+		}
+	}
+
+	private void setVMLanguage(EditorPane pane)
+	{
+		if (pane != null && pane.getSourceFile() != null)
+		{
+			String sourceFileName = pane.getSourceFile().getName();
+
+			int lastDotPos = sourceFileName.lastIndexOf(C_DOT);
+
+			if (lastDotPos != -1)
+			{
+				String fileExtension = sourceFileName.substring(lastDotPos + 1);
+
+				setVMLanguageFromFileExtension(fileExtension);
+			}
+		}
+	}
+
+	@Override
 	public void runFile(final EditorPane pane)
 	{
 		saveUnsavedEditors();
@@ -234,8 +396,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 		else
 		{
-			editorPanes.clear();
-			splitEditorPanes.getItems().clear();
+			tabPane.getTabs().clear();
 
 			for (String panePath : panes)
 			{
@@ -246,8 +407,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private void loadDefaultEditors()
 	{
-		editorPanes.clear();
-		splitEditorPanes.getItems().clear();
+		tabPane.getTabs().clear();
 
 		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTest.java"));
 		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTestLoad.java"));
@@ -257,68 +417,88 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private void addEditor(File filename)
 	{
-		EditorPane editor = new EditorPane(this);
-
-		logger.debug("Add editor: {}", filename);
+		final EditorPane pane = new EditorPane(this);
 
 		if (filename != null)
 		{
-			editor.loadSource(filename);
+			pane.loadSource(filename);
 		}
 
-		editorPanes.add(editor);
-		splitEditorPanes.getItems().add(editor);
-		setEditorDividers();
-	}
+		final Tab tab = new Tab();
+		tab.setContent(pane);
+		tab.setText(pane.getName());
 
-	private void setEditorDividers()
-	{
-		Platform.runLater(new Runnable()
+		EventHandler<Event> closeHandler = new EventHandler<Event>()
 		{
 			@Override
-			public void run()
+			public void handle(Event e)
 			{
-				int editorCount = editorPanes.size();
-
-				double widthFraction = 1.0 / editorCount;
-				double dividerPos = widthFraction;
-
-				for (int i = 0; i < editorCount - 1; i++)
+				if (pane.isModified())
 				{
-					splitEditorPanes.setDividerPosition(i, dividerPos);
-					dividerPos += widthFraction;
+					pane.promptSave();
 				}
+
+				tabPane.getTabs().remove(tab);
 			}
-		});
+		};
+
+		// JavaFX 2.2 (from Java 7) has no onCloseRequestProperty
+		if (JITWatchUI.IS_JAVA_FX2)
+		{
+			tab.setOnClosed(closeHandler);
+		}
+		else
+		{
+			// Use reflection to call setOnCloseRequestProperty for Java 8
+			try
+			{
+				MethodType mt = MethodType.methodType(void.class, EventHandler.class);
+
+				MethodHandle mh = MethodHandles.lookup().findVirtual(Tab.class, "setOnCloseRequest", mt);
+
+				// fails with invokeExact due to generic type erasure?
+				mh.invoke(tab, closeHandler);
+
+			}
+			catch (Throwable t)
+			{
+				logger.error("Exception: {}", t.getMessage(), t);
+			}
+		}
+
+		tabPane.getTabs().add(tab);
+
+		pane.requestFocus();
+
+		setVMLanguage(pane);
 	}
 
 	private void saveEditorPaneConfig()
 	{
 		List<String> editorPanePaths = new ArrayList<>();
 
-		for (EditorPane pane : editorPanes)
+		for (Tab tab : tabPane.getTabs())
 		{
-			logger.debug("maybe adding pane: {}", pane);
+			EditorPane pane = (EditorPane) tab.getContent();
 
-			if (pane.getSourceFile() != null)
+			if (pane != null && pane.getSourceFile() != null)
 			{
 				String editorPanePath = pane.getSourceFile().getAbsolutePath();
 				editorPanePaths.add(editorPanePath);
-
-				logger.debug("Added: {}", editorPanePath);
 			}
 		}
 
 		config.setLastEditorPaneList(editorPanePaths);
-
 		config.saveConfig();
 	}
 
 	private void saveUnsavedEditors()
 	{
-		for (EditorPane editor : editorPanes)
+		for (Tab tab : tabPane.getTabs())
 		{
-			editor.promptSave();
+			EditorPane pane = (EditorPane) tab.getContent();
+
+			pane.promptSave();
 		}
 	}
 
@@ -341,9 +521,11 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				List<File> compileList = new ArrayList<>();
 
-				for (EditorPane editor : editorPanes)
+				for (Tab tab : tabPane.getTabs())
 				{
-					File sourceFile = editor.getSourceFile();
+					EditorPane pane = (EditorPane) tab.getContent();
+
+					File sourceFile = pane.getSourceFile();
 
 					if (sourceFile != null)
 					{
@@ -371,26 +553,12 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	}
 
 	@Override
-	public void editorClosed(EditorPane editor)
-	{
-		editorPanes.remove(editor);
-		splitEditorPanes.getItems().remove(editor);
-		setEditorDividers();
-	}
-
-	public void editorGotFocus(EditorPane editor)
-	{
-
-	}
-
-	@Override
 	public void addSourceFolder(File sourceFolder)
 	{
 		config.addSourceFolder(sourceFolder);
 	}
 
-	@Override
-	public void setVMLanguageFromFileExtension(String vmLanguage)
+	private void setVMLanguageFromFileExtension(String vmLanguage)
 	{
 		if (vmLanguage != null)
 		{
@@ -429,6 +597,19 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			public void run()
 			{
 				accessProxy.openTriView(member, true);
+			}
+		});
+	}
+	
+	@Override
+	public void showOutput(final String output)
+	{
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				accessProxy.openTextViewer("Sandbox Output", output, false, false);
 			}
 		});
 	}

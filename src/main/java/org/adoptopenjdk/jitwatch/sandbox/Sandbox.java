@@ -212,12 +212,12 @@ public class Sandbox
 			}
 			else
 			{
-				sandboxStage.showError(runtime.getErrorStream());
+				sandboxStage.showError(AbstractProcess.getErrorStream());
 			}
 		}
 		else
 		{
-			sandboxStage.showError(compiler.getErrorStream());
+			sandboxStage.showError(AbstractProcess.getErrorStream());
 		}
 	}
 

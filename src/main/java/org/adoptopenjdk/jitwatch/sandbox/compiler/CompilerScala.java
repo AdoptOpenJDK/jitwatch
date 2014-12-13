@@ -11,9 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class CompilerScala extends AbstractCompiler
+public class CompilerScala extends AbstractProcess implements ICompiler
 {
 	private String compilerPath;
 	

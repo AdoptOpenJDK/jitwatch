@@ -12,9 +12,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class RuntimeScala extends AbstractRuntime
+public class RuntimeScala extends AbstractProcess implements IRuntime
 {
 	private String runtimePath;
 

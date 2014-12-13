@@ -13,9 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class CompilerJava extends AbstractCompiler
+public class CompilerJava extends AbstractProcess implements ICompiler
 {
 	private String compilerPath;
 

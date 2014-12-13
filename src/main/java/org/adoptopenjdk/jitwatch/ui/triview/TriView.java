@@ -276,9 +276,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 					{
 						listCell.setText(item.toStringUnqualifiedMethodName(false));
 
-						if (item.isCompiled() && UserInterfaceUtil.getTick() != null)
+						if (item.isCompiled() && UserInterfaceUtil.IMAGE_TICK != null)
 						{
-							listCell.setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+							listCell.setGraphic(new ImageView(UserInterfaceUtil.IMAGE_TICK));
 						}
 						else
 						{

@@ -8,10 +8,9 @@ package org.adoptopenjdk.jitwatch.sandbox.runtime;
 import java.io.File;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.sandbox.IExternalProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public interface IRuntime extends IExternalProcess
+public interface IRuntime
 {
 	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ISandboxLogListener logListener);
 	

@@ -15,18 +15,18 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 public interface ISandboxStage extends ILogParseErrorListener
 {
 	void openTriView(IMetaMember member);
-	
+
+	void showOutput(String output);
+
 	void showError(String error);
-	
-	void editorClosed(EditorPane editor);
-		
+
 	void runFile(EditorPane editor);
-	
+
 	void addSourceFolder(File dir);
-	
-	void setVMLanguageFromFileExtension(String extension);
-	
+
 	Stage getStageForChooser();
-	
+
 	void log(String msg);
+
+	void setModified(EditorPane pane, boolean isModified);
 }

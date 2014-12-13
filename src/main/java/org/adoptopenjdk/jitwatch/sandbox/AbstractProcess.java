@@ -18,15 +18,14 @@ import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractProcess implements IExternalProcess
+public abstract class AbstractProcess
 {
 	protected static final Logger logger = LoggerFactory.getLogger(RuntimeJava.class);
 
-	private static final Path PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
-	private static final Path PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
+	public static final Path PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
+	public static final Path PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
 
-	@Override
-	public String getOutputStream()
+	public static String getOutputStream()
 	{
 		String result = null;
 
@@ -45,8 +44,7 @@ public abstract class AbstractProcess implements IExternalProcess
 		return result;
 	}
 
-	@Override
-	public String getErrorStream()
+	public static String getErrorStream()
 	{
 		String result = null;
 

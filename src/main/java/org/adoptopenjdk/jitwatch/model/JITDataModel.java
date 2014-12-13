@@ -129,7 +129,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			{
 				// use Java7 MethodHandle on JITStats object to increment
 				// correct counter
-				// probably slower than a set of 'if' statements but more
+				// maybe slower than a set of 'if' statements but more
 				// elegant :)
 
 				String incMethodName = "incCount" + modifier.substring(0, 1).toUpperCase() + modifier.substring(1);

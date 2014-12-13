@@ -186,6 +186,7 @@ public final class JITWatchConstants
 	public static final String S_VARARGS_DOTS = "...";
 	public static final String S_OBJECT_ARRAY_DEF = "[L";
 	public static final String S_DOT = ".";
+	public static final String S_ASTERISK = "*";
 	public static final String S_COMMA = ",";
 	public static final String S_SLASH = "/";
 	public static final String S_DOUBLE_SLASH = "//";

@@ -352,9 +352,9 @@ public class ClassMemberList extends VBox
 			{
 				setText(item.toStringUnqualifiedMethodName(false));
 
-				if (item.isCompiled())
+				if (UserInterfaceUtil.IMAGE_TICK != null && item.isCompiled())
 				{
-					setGraphic(new ImageView(UserInterfaceUtil.getTick()));
+					setGraphic(new ImageView(UserInterfaceUtil.IMAGE_TICK));
 				}
 				else
 				{

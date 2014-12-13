@@ -9,11 +9,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
-public class RuntimeJava extends AbstractRuntime
+public class RuntimeJava extends AbstractProcess implements IRuntime
 {	
 	private String runtimePath;
 	
