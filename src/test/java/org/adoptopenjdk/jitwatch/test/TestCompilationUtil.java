@@ -70,8 +70,15 @@ public class TestCompilationUtil
 
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
+			
+			File javacFile = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toFile();
+			
+			if (!javacFile.exists())
+			{
+				javacFile = Paths.get(System.getProperty("java.home"), "bin", "javac").toFile();
+			}
 
-			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toString();
+			String javaCompiler = javacFile.toString();
 						
 			CompilerJava compiler = new CompilerJava(javaCompiler);
 			
