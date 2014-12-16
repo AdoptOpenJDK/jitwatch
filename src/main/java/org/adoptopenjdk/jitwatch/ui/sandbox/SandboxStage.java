@@ -644,8 +644,9 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVA))
 		{
-			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toString();
-			String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java").toString();
+			String suffix = System.getProperty("os.name").contains("Windows") ? ".exe" : "";
+			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac" + suffix).toString();
+			String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java" + suffix).toString();
 
 			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVA, javaCompiler, javaRuntime);
 			config.saveConfig();
