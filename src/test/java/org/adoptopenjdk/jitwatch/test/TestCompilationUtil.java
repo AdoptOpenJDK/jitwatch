@@ -70,12 +70,13 @@ public class TestCompilationUtil
 
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
-			
-			File javacFile = Paths.get(System.getProperty("java.home"), "..", "bin", "javac").toFile();
+
+			String javac = System.getProperty("os.name").contains("Windows") ? "javac.exe" : "javac";
+			File javacFile = Paths.get(System.getProperty("java.home"), "..", "bin", javac).toFile();
 			
 			if (!javacFile.exists())
 			{
-				javacFile = Paths.get(System.getProperty("java.home"), "bin", "javac").toFile();
+				javacFile = Paths.get(System.getProperty("java.home"), "bin", javac).toFile();
 			}
 
 			String javaCompiler = javacFile.toString();
