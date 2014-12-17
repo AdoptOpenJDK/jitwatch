@@ -53,6 +53,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -470,8 +471,29 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 			if (asmMethod == null)
 			{
-				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
-				viewerAssembly.setContent(msg, false);
+                String msg;
+				if(DisassemblyUtil.isDisassemblerAvailable())
+                {
+                    msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+                }
+                else
+                {
+                    msg = String.format("There is no disassembler available.%nPlease make sure that your JRE has %s " +
+                                    "is installed.%n", DisassemblyUtil.getDisassemblerFilePath());
+                    if(System.getProperty("os.name").contains("Windows"))
+                    {
+                        msg += String.format("The OpenJDK project does not supply a disassembler for Windows. In order to install it:%n" +
+                                " 1. Install 'cygwin' (cygwin.com, required modules: 'make' and '%s')%n" +
+                                " 2. Get the latest copy of 'binutils' (http://gnuftp.uib.no/binutils/)%n" +
+                                " 3. Get the 'hsdis' directory for your JDK version (http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/tags, select version, " +
+                                        "select 'bz2' from left menu, download and extract from 'src/share/tools' folder)" +
+                                " 5. Copy both folders into your cygwin installation's home folder%n" +
+                                " 4. From cygwin, run (substitute XXX with your binutils version): " +
+                                        "'make OS=Linux MINGW=%s 'AR=$(MINGW)-ar' BINUTILS=~/binutils-XXX'%n",
+                                DisassemblyUtil.getGcc(), DisassemblyUtil.getMingw());
+                    }
+                }
+                viewerAssembly.setContent(msg, false);
 			}
 			else
 			{
