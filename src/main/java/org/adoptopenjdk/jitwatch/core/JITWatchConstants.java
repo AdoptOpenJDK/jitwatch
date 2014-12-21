@@ -266,4 +266,11 @@ public final class JITWatchConstants
 
 	public static final String VM_LANGUAGE_JAVA = "Java";
 	public static final String VM_LANGUAGE_SCALA = "Scala";
+	public static final String VM_LANGUAGE_JRUBY = "JRuby";
+	public static final String VM_LANGUAGE_GROOVY = "Groovy";
+	public static final String VM_LANGUAGE_KOTLIN = "Kotlin";
+	public static final String VM_LANGUAGE_JAVASCRIPT = "JavaScript";
+	public static final String VM_LANGUAGE_CLOJURE = "Clojure";
+
+
 }

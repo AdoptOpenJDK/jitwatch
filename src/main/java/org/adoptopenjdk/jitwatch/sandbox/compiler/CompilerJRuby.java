@@ -5,25 +5,31 @@
  */
 package org.adoptopenjdk.jitwatch.sandbox.compiler;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class CompilerScala extends AbstractProcess implements ICompiler
+public class CompilerJRuby extends AbstractProcess implements ICompiler
 {
+	// TODO this is broken. Not sure if possible with ProcessBuilder
+	// http://blog.headius.com/2013/06/the-pain-of-broken-subprocess.html
+
 	private Path compilerPath;
 
-	private final String COMPILER_NAME = "scalac";
+	private final String COMPILER_NAME = "jrubyc" + (isWindows() ? ".bat" : S_EMPTY);
 
-	public CompilerScala(String languageHomeDir) throws FileNotFoundException
+	public CompilerJRuby(String languageHomeDir) throws FileNotFoundException
 	{
 		compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
 
@@ -41,20 +47,22 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 	{
 		List<String> commands = new ArrayList<>();
 
-		commands.add(compilerPath.toString());
-
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
-		List<String> compileOptions = Arrays.asList(new String[] { "-g:vars", "-d", outputDirPath });
+		Set<String> uniqueCPSet = new HashSet<>(classpathEntries);
+		uniqueCPSet.add(outputDirPath);
 
-		commands.addAll(compileOptions);
+		commands.add(compilerPath.toString());
 
-		if (classpathEntries.size() > 0)
-		{
-			commands.add("-classpath");
+		// List<String> compileOptions = Arrays.asList(new String[] { "-g",
+		// "-d", outputDirPath });
+		//
+		// commands.addAll(compileOptions);
+		//
 
-			commands.add(makeClassPath(classpathEntries));
-		}
+		commands.add("-cp");
+
+		commands.add(makeClassPath(classpathEntries));
 
 		for (File sourceFile : sourceFiles)
 		{

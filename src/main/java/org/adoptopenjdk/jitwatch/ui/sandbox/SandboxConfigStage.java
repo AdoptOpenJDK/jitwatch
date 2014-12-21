@@ -68,7 +68,7 @@ public class SandboxConfigStage extends Stage
 
 		VBox vbox = new VBox();
 
-		scene = new Scene(vbox, 620, 570);
+		scene = new Scene(vbox, 620, 520);
 
 		setScene(scene);
 
@@ -78,11 +78,13 @@ public class SandboxConfigStage extends Stage
 		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getConfiguredClassLocations());
 		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
 
-		vmLanguageList = new VMLanguageList("VM Languages", config);
-		vmLanguageList.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
+		Label lblConfigLangs = new Label("Configure VM Languages");
+
+		vmLanguageList = new VMLanguageList(config);
 
 		vbox.getChildren().add(chooserClasses);
 
+		vbox.getChildren().add(lblConfigLangs);
 		vbox.getChildren().add(vmLanguageList);
 
 		vbox.getChildren().add(buildHBoxAssemblySyntax());
@@ -102,32 +104,32 @@ public class SandboxConfigStage extends Stage
 		setTitle("Sandbox Configuration");
 
 		setOnCloseRequest(new EventHandler<WindowEvent>()
-				{
+		{
 			@Override
 			public void handle(WindowEvent arg0)
 			{
 				parent.handleStageClosed(SandboxConfigStage.this);
 			}
-				});
+		});
 	}
 
 	private EventHandler<ActionEvent> getEventHandlerForCancelButton()
 	{
 		return new EventHandler<ActionEvent>()
-				{
+		{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				parent.handleStageClosed(SandboxConfigStage.this);
 				close();
 			}
-				};
+		};
 	}
 
 	private EventHandler<ActionEvent> getEventHandlerForSaveButton()
 	{
 		return new EventHandler<ActionEvent>()
-				{
+		{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -149,7 +151,7 @@ public class SandboxConfigStage extends Stage
 				parent.handleStageClosed(SandboxConfigStage.this);
 				close();
 			}
-				};
+		};
 	}
 
 	private void setCompilerThreshold(JITWatchConfig config)
@@ -228,9 +230,9 @@ public class SandboxConfigStage extends Stage
 
 	private ChangeListener<Toggle> getChangeListenerForGroupAssemblySyntax(final RadioButton rbIntel,
 			final ToggleGroup groupAssemblySyntax)
-			{
+	{
 		return new ChangeListener<Toggle>()
-				{
+		{
 			@Override
 			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
 			{
@@ -241,8 +243,8 @@ public class SandboxConfigStage extends Stage
 					config.setSandboxIntelMode(nextIntelMode);
 				}
 			}
-				};
-			}
+		};
+	}
 
 	private HBox buildHBoxTieredCompilation()
 	{
@@ -303,9 +305,9 @@ public class SandboxConfigStage extends Stage
 
 	private ChangeListener<Toggle> getChangeListenerForGroupTiered(final RadioButton rbVMDefault, final RadioButton rbForceTiered,
 			final RadioButton rbForceNoTiered, final ToggleGroup groupTiered)
-			{
+	{
 		return new ChangeListener<Toggle>()
-				{
+		{
 			@Override
 			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
 			{
@@ -327,8 +329,8 @@ public class SandboxConfigStage extends Stage
 					}
 				}
 			}
-				};
-			}
+		};
+	}
 
 	private HBox buildHBoxCompressedOops()
 	{
@@ -441,9 +443,9 @@ public class SandboxConfigStage extends Stage
 
 	private ChangeListener<Toggle> getChangeListenerForGroupOops(final RadioButton rbVMDefault,
 			final RadioButton rbForceCompressed, final RadioButton rbForceNoCompressed, final ToggleGroup groupOops)
-			{
+	{
 		return new ChangeListener<Toggle>()
-				{
+		{
 			@Override
 			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
 			{
@@ -465,8 +467,8 @@ public class SandboxConfigStage extends Stage
 					}
 				}
 			}
-				};
-			}
+		};
+	}
 
 	private void buildHBoxFreqInline(HBox hbCompilerSettings)
 	{
@@ -527,14 +529,14 @@ public class SandboxConfigStage extends Stage
 		checkBoxDisableInlining.setSelected(config.isDisableInlining());
 
 		checkBoxDisableInlining.selectedProperty().addListener(new ChangeListener<Boolean>()
-				{
+		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
 			{
 				txtFreqInline.setDisable(newVal);
 				txtMaxInline.setDisable(newVal);
 			}
-				});
+		});
 
 		return checkBoxDisableInlining;
 	}

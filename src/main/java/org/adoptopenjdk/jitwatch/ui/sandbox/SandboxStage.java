@@ -5,18 +5,21 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASTERISK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_CLOJURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_GROOVY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVASCRIPT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JRUBY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_KOTLIN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +55,7 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
@@ -98,7 +102,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		sandbox = new Sandbox(parser, this, this);
 
-		setTitle("Sandbox - Edit, Compile, Execute, and Analyse JIT");
+		setTitle("Sandbox - Code, Compile, Execute, and Analyse JIT logs");
 
 		tabPane = new TabPane();
 
@@ -143,32 +147,34 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void handle(ActionEvent e)
 			{
+				if (tabPane.getSelectionModel().getSelectedItem() == null)
+				{
+					addEditor(null);
+				}
+
 				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
 
-				if (selectedTab != null)
+				EditorPane pane = (EditorPane) selectedTab.getContent();
+
+				if (pane.isModified())
 				{
-					EditorPane pane = (EditorPane) selectedTab.getContent();
+					pane.promptSave();
+				}
 
-					if (pane.isModified())
-					{
-						pane.promptSave();
-					}
+				FileChooser fc = new FileChooser();
 
-					FileChooser fc = new FileChooser();
+				fc.setTitle("Choose source file");
 
-					fc.setTitle("Choose source file");
+				fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
 
-					fc.setInitialDirectory(Sandbox.SANDBOX_SOURCE_DIR.toFile());
+				File result = fc.showOpenDialog(getStageForChooser());
 
-					File result = fc.showOpenDialog(getStageForChooser());
+				if (result != null)
+				{
+					pane.loadSource(result);
+					selectedTab.setText(pane.getName());
 
-					if (result != null)
-					{
-						pane.loadSource(result);
-						selectedTab.setText(pane.getName());
-
-						setVMLanguage(pane);
-					}
+					setVMLanguage(pane);
 				}
 			}
 		});
@@ -186,6 +192,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 					EditorPane pane = (EditorPane) selectedTab.getContent();
 
 					pane.saveFile();
+
+					selectedTab.setText(pane.getName());
 
 					setVMLanguage(pane);
 				}
@@ -259,7 +267,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				}
 			}
 		});
-		
+
 		Button btnOutput = StyleUtil.buildButton("View Output");
 		btnOutput.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -349,18 +357,9 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private void setVMLanguage(EditorPane pane)
 	{
-		if (pane != null && pane.getSourceFile() != null)
+		if (pane != null)
 		{
-			String sourceFileName = pane.getSourceFile().getName();
-
-			int lastDotPos = sourceFileName.lastIndexOf(C_DOT);
-
-			if (lastDotPos != -1)
-			{
-				String fileExtension = sourceFileName.substring(lastDotPos + 1);
-
-				setVMLanguageFromFileExtension(fileExtension);
-			}
+			setVMLanguageFromFile(pane.getSourceFile());
 		}
 	}
 
@@ -471,6 +470,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		pane.requestFocus();
 
 		setVMLanguage(pane);
+		config.saveConfig();
 	}
 
 	private void saveEditorPaneConfig()
@@ -529,7 +529,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 					if (sourceFile != null)
 					{
-						if (sourceFile.getName().toLowerCase().endsWith(language.toLowerCase()))
+						if (LanguageManager.isCompilable(language, sourceFile))
 						{
 							compileList.add(sourceFile);
 						}
@@ -542,7 +542,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				}
 				else
 				{
-					log("All editors are empty");
+					log("Nothing to compile?");
 				}
 			}
 		}
@@ -558,18 +558,13 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		config.addSourceFolder(sourceFolder);
 	}
 
-	private void setVMLanguageFromFileExtension(String vmLanguage)
+	private void setVMLanguageFromFile(File sourceFile)
 	{
-		if (vmLanguage != null)
+		String language = LanguageManager.getLanguageFromFile(sourceFile);
+
+		if (language != null)
 		{
-			for (String knownLang : languageList)
-			{
-				if (knownLang.toLowerCase().equals(vmLanguage.toLowerCase()))
-				{
-					comboBoxVMLanguage.getSelectionModel().select(knownLang);
-					break;
-				}
-			}
+			comboBoxVMLanguage.getSelectionModel().select(language);
 		}
 	}
 
@@ -600,7 +595,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 	}
-	
+
 	@Override
 	public void showOutput(final String output)
 	{
@@ -642,21 +637,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	{
 		List<String> vmLanguageList = config.getVMLanguageList();
 
-		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVA))
-		{
-			String suffix = System.getProperty("os.name").contains("Windows") ? ".exe" : "";
-			String javaCompiler = Paths.get(System.getProperty("java.home"), "..", "bin", "javac" + suffix).toString();
-			String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java" + suffix).toString();
-
-			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVA, javaCompiler, javaRuntime);
-			config.saveConfig();
-		}
-
-		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_SCALA))
-		{
-			config.addOrUpdateVMLanguage(VM_LANGUAGE_SCALA, S_EMPTY, S_EMPTY);
-			config.saveConfig();
-		}
+		addVMLanguages(config);
 
 		vmLanguageList = config.getVMLanguageList();
 
@@ -665,6 +646,42 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		languageList.addAll(vmLanguageList);
 
 		comboBoxVMLanguage.getSelectionModel().select(VM_LANGUAGE_JAVA);
+	}
+
+	private void addVMLanguages(JITWatchConfig config)
+	{
+		List<String> vmLanguageList = config.getVMLanguageList();
+
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVA))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVA, System.getProperty("java.home"));
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_SCALA))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_SCALA, S_EMPTY);
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JRUBY))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_JRUBY, S_EMPTY);
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_GROOVY))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_GROOVY, S_EMPTY);
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_KOTLIN))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_KOTLIN, S_EMPTY);
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVASCRIPT))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVASCRIPT, S_EMPTY);
+		}
+		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_CLOJURE))
+		{
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_CLOJURE, S_EMPTY);
+		}
+
+		config.saveConfig();
 	}
 
 	@Override

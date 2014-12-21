@@ -6,9 +6,7 @@
 package org.adoptopenjdk.jitwatch.sandbox;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
@@ -26,12 +24,8 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerScala;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeScala;
 import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -54,6 +48,8 @@ public class Sandbox
 	private File sandboxLogFile = new File(SANDBOX_DIR.toFile(), SANDBOX_LOGFILE);
 
 	private ILogParser logParser;
+
+	private LanguageManager languageManager;
 
 	static
 	{
@@ -99,7 +95,6 @@ public class Sandbox
 
 	private static void copyExamples()
 	{
-
 		File srcDir = new File("src/main/resources/examples");
 		File dstDir = SANDBOX_SOURCE_DIR.toFile();
 
@@ -113,54 +108,8 @@ public class Sandbox
 		this.logParser = parser;
 		this.logListener = logger;
 		this.sandboxStage = sandboxStage;
-	}
 
-	private ICompiler getCompiler(String language, ISandboxLogListener logger)
-	{
-		ICompiler compiler = null;
-
-		String compilerPath = logParser.getConfig().getVMLanguageCompilerPath(language);
-
-		if (compilerPath != null && !S_EMPTY.equals(compilerPath))
-		{
-			logListener.log("Compiler path: " + compilerPath);
-
-			switch (language)
-			{
-			case VM_LANGUAGE_JAVA:
-				compiler = new CompilerJava(compilerPath);
-				break;
-			case VM_LANGUAGE_SCALA:
-				compiler = new CompilerScala(compilerPath);
-				break;
-			}
-		}
-
-		return compiler;
-	}
-
-	private IRuntime getRuntime(String language, ISandboxLogListener logger)
-	{
-		IRuntime runtime = null;
-
-		String runtimePath = logParser.getConfig().getVMLanguageRuntimePath(language);
-
-		if (runtimePath != null && !S_EMPTY.equals(runtimePath))
-		{
-			logListener.log("Runtime path: " + runtimePath);
-
-			switch (language)
-			{
-			case VM_LANGUAGE_JAVA:
-				runtime = new RuntimeJava(runtimePath);
-				break;
-			case VM_LANGUAGE_SCALA:
-				runtime = new RuntimeScala(runtimePath);
-				break;
-			}
-		}
-
-		return runtime;
+		languageManager = new LanguageManager(logParser.getConfig(), logListener);
 	}
 
 	public void runSandbox(String language, List<File> compileList, File fileToRun) throws Exception
@@ -168,7 +117,11 @@ public class Sandbox
 		logListener.log("Running Sandbox");
 		logListener.log("Language is " + language);
 
-		ICompiler compiler = getCompiler(language, logListener);
+		String languagePath = logParser.getConfig().getVMLanguagePath(language);
+
+		logListener.log(language + " home dir: " + languagePath);
+
+		ICompiler compiler = languageManager.getCompiler(language);
 
 		if (compiler == null)
 		{
@@ -176,7 +129,7 @@ public class Sandbox
 			return;
 		}
 
-		IRuntime runtime = getRuntime(language, logListener);
+		IRuntime runtime = languageManager.getRuntime(language);
 
 		if (runtime == null)
 		{
@@ -186,8 +139,8 @@ public class Sandbox
 
 		logListener.log("Compiling: " + StringUtil.listToString(compileList));
 
-		boolean compiledOK = compiler.compile(compileList, logParser.getConfig().getConfiguredClassLocations(),
-				SANDBOX_CLASS_DIR.toFile(), logListener);
+		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
+				logListener);
 
 		logListener.log("Compilation success: " + compiledOK);
 
@@ -221,13 +174,26 @@ public class Sandbox
 		}
 	}
 
-	private boolean executeClass(String fqClassName, IRuntime runtime, boolean intelMode) throws Exception
+	private List<String> buildUniqueClasspath(JITWatchConfig config)
 	{
 		List<String> classpath = new ArrayList<>();
 
 		classpath.add(SANDBOX_CLASS_DIR.toString());
 
-		classpath.addAll(logParser.getConfig().getConfiguredClassLocations());
+		for (String path : config.getConfiguredClassLocations())
+		{
+			if (!classpath.contains(path))
+			{
+				classpath.add(path);
+			}
+		}
+
+		return classpath;
+	}
+
+	private boolean executeClass(String fqClassName, IRuntime runtime, boolean intelMode) throws Exception
+	{
+		List<String> classpath = buildUniqueClasspath(logParser.getConfig());
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");

@@ -12,81 +12,33 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
 import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 
-public class VMLanguageList extends VBox implements IStageCloseListener
+public class VMLanguageList extends FlowPane implements IStageCloseListener
 {
-	private ListView<Label> languageList;
-
-	private VBox vboxButtons;
-
 	private JITWatchConfig config;
 
 	private VMLanguageConfigStage openVMLCStage = null;
 
-	public VMLanguageList(String title, final JITWatchConfig config)
+	public VMLanguageList(final JITWatchConfig config)
 	{
 		this.config = config;
 
-		HBox hbox = new HBox();
+		setVgap(10);
+		setHgap(20);
 
-		languageList = new ListView<Label>();
+		setMaxWidth(600);
+
+		setPadding(new Insets(0,0,5,0));
 
 		updateList();
-
-		Button btnConfigureLanguage = StyleUtil.buildButton("Configure");
-		btnConfigureLanguage.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				configureLanguage();
-			}
-		});
-
-		vboxButtons = new VBox();
-		vboxButtons.setPadding(new Insets(0,10,10,10));
-		vboxButtons.setSpacing(10);
-
-		vboxButtons.getChildren().add(btnConfigureLanguage);
-
-		hbox.getChildren().add(languageList);
-		hbox.getChildren().add(vboxButtons);
-
-		languageList.prefWidthProperty().bind(this.widthProperty().multiply(0.8));
-		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.2));
-
-		Label titleLabel = new Label(title);
-
-		getChildren().add(titleLabel);
-		getChildren().add(hbox);
-
-		setSpacing(10);
-	}
-
-	private void configureLanguage()
-	{
-		Label selected = languageList.getSelectionModel().getSelectedItem();
-
-		if (selected != null)
-		{
-			String language = selected.getText();
-
-			if (openVMLCStage == null)
-			{
-				openVMLCStage = new VMLanguageConfigStage(this, config, language);
-				StageManager.addAndShow(openVMLCStage);
-			}
-		}
 	}
 
 	@Override
@@ -102,11 +54,32 @@ public class VMLanguageList extends VBox implements IStageCloseListener
 
 		Collections.sort(vmLanguageList);
 
-		languageList.getItems().clear();
+		getChildren().clear();
 
-		for (String lang : vmLanguageList)
+		for (final String lang : vmLanguageList)
 		{
-			languageList.getItems().add(new Label(lang));
+			Button button = StyleUtil.buildButton(lang);
+			button.setPrefWidth(120);
+
+			if (!LanguageManager.isLanguageEnabled(lang))
+			{
+				button.setDisable(true);
+			}
+
+			button.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent e)
+				{
+					if (openVMLCStage == null)
+					{
+						openVMLCStage = new VMLanguageConfigStage(VMLanguageList.this, config, lang);
+						StageManager.addAndShow(openVMLCStage);
+					}
+				}
+			});
+
+			getChildren().add(button);
 		}
 	}
 }

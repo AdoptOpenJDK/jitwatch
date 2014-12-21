@@ -5,11 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +19,12 @@ import org.junit.Test;
 
 public class TestExecutionUtil
 {
-
 	@Test
 	public void testExecuteDemo()
 	{
 		List<String> cp = new ArrayList<>();
-		
-		cp.add("target"+File.separatorChar+"classes");
+
+		cp.add("target" + File.separatorChar + "classes");
 
 		File libDir = new File("lib");
 
@@ -47,19 +46,27 @@ public class TestExecutionUtil
 		}
 
 		List<String> options = new ArrayList<>();
-		
-		String javaRuntime = Paths.get(System.getProperty("java.home"), "bin", "java").toString();
 
-		RuntimeJava executor = new RuntimeJava(javaRuntime);
-		
-		boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options, new ISandboxLogListener()
+		try
 		{
-			@Override
-			public void log(String msg)
-			{			
-			}
-		});
+			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-		assertTrue(success);
+			boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options,
+					new ISandboxLogListener()
+					{
+						@Override
+						public void log(String msg)
+						{
+						}
+					});
+
+			assertTrue(success);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+
+			fail();
+		}
 	}
 }

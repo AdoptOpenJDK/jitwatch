@@ -17,13 +17,13 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class CompilerScala extends AbstractProcess implements ICompiler
+public class CompilerGroovy extends AbstractProcess implements ICompiler
 {
 	private Path compilerPath;
 
-	private final String COMPILER_NAME = "scalac";
+	private final String COMPILER_NAME = "groovyc";
 
-	public CompilerScala(String languageHomeDir) throws FileNotFoundException
+	public CompilerGroovy(String languageHomeDir) throws FileNotFoundException
 	{
 		compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
 
@@ -45,7 +45,7 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
-		List<String> compileOptions = Arrays.asList(new String[] { "-g:vars", "-d", outputDirPath });
+		List<String> compileOptions = Arrays.asList(new String[] { "-d", outputDirPath });
 
 		commands.addAll(compileOptions);
 

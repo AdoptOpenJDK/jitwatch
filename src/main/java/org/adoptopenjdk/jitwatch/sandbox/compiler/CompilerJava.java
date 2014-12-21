@@ -6,23 +6,38 @@
 package org.adoptopenjdk.jitwatch.sandbox.compiler;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
 public class CompilerJava extends AbstractProcess implements ICompiler
 {
-	private String compilerPath;
+	private Path compilerPath;
 
-	public CompilerJava(String compilerPath)
+	private final String COMPILER_NAME = "javac" + getExecutableSuffix();
+
+	public CompilerJava(String languageHomeDir) throws FileNotFoundException
 	{
-		this.compilerPath = compilerPath;
+		compilerPath = Paths.get(languageHomeDir, "..", "bin", COMPILER_NAME);
+
+		if (!compilerPath.toFile().exists())
+		{
+			compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
+
+			if (!compilerPath.toFile().exists())
+			{
+				throw new FileNotFoundException("Could not find " + COMPILER_NAME);
+			}
+		}
+
+		compilerPath = compilerPath.normalize();
 	}
 
 	@Override
@@ -31,14 +46,9 @@ public class CompilerJava extends AbstractProcess implements ICompiler
 	{
 		List<String> commands = new ArrayList<>();
 
-		File javaCompiler = new File(compilerPath);
-
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
-		Set<String> uniqueCPSet = new HashSet<>(classpathEntries);
-		uniqueCPSet.add(outputDirPath);
-
-		commands.add(javaCompiler.getAbsolutePath());
+		commands.add(compilerPath.toString());
 
 		List<String> compileOptions = Arrays.asList(new String[] { "-g", "-d", outputDirPath });
 
@@ -46,14 +56,7 @@ public class CompilerJava extends AbstractProcess implements ICompiler
 
 		commands.add("-cp");
 
-		StringBuilder cpBuilder = new StringBuilder();
-
-		for (String cp : uniqueCPSet)
-		{
-			cpBuilder.append(cp).append(File.pathSeparatorChar);
-		}
-
-		commands.add(cpBuilder.toString());
+		commands.add(makeClassPath(classpathEntries));
 
 		for (File sourceFile : sourceFiles)
 		{

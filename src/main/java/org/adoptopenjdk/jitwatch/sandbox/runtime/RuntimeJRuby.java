@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.sandbox.runtime;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
 
 import java.io.File;
@@ -17,24 +18,19 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
-public class RuntimeJava extends AbstractProcess implements IRuntime
+public class RuntimeJRuby extends AbstractProcess implements IRuntime
 {
 	private Path runtimePath;
 
-	private final String RUNTIME_NAME = "java" + getExecutableSuffix();
+	private final String RUNTIME_NAME = "jruby" + (isWindows() ? ".bat" : S_EMPTY);
 
-	public RuntimeJava(String languageHomeDir) throws FileNotFoundException
+	public RuntimeJRuby(String languageHomeDir) throws FileNotFoundException
 	{
-		runtimePath = Paths.get(languageHomeDir, "..", "bin", RUNTIME_NAME);
+		runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
 
 		if (!runtimePath.toFile().exists())
 		{
-			runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
-
-			if (!runtimePath.toFile().exists())
-			{
-				throw new FileNotFoundException("Could not find " + RUNTIME_NAME);
-			}
+			throw new FileNotFoundException("Could not find " + RUNTIME_NAME);
 		}
 
 		runtimePath = runtimePath.normalize();

@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.sandbox;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.slf4j.Logger;
@@ -24,6 +26,21 @@ public abstract class AbstractProcess
 
 	public static final Path PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
 	public static final Path PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
+
+	public String getExecutableSuffix()
+	{
+		return isWindows() ? ".exe" : "";
+	}
+
+	public String getLaunchScriptSuffix()
+	{
+		return isWindows() ? ".bat" : ".sh";
+	}
+
+	public boolean isWindows()
+	{
+		return System.getProperty("os.name", S_EMPTY).contains("Windows");
+	}
 
 	public static String getOutputStream()
 	{
@@ -63,7 +80,30 @@ public abstract class AbstractProcess
 		return result;
 	}
 
+	protected String makeClassPath(List<String> classpathEntries)
+	{
+		StringBuilder cpBuilder = new StringBuilder();
+
+		for (String cp : classpathEntries)
+		{
+			cpBuilder.append(cp).append(File.pathSeparatorChar);
+		}
+
+		if (cpBuilder.length() > 0)
+		{
+			cpBuilder.deleteCharAt(cpBuilder.length() - 1);
+		}
+
+		return cpBuilder.toString();
+	}
+
 	protected boolean runCommands(List<String> commands, ISandboxLogListener logListener)
+	{
+		return runCommands(commands, null, null, logListener);
+	}
+
+	protected boolean runCommands(List<String> commands, File workingDirectory, Map<String, String> environment,
+			ISandboxLogListener logListener)
 	{
 		StringBuilder cmdBuilder = new StringBuilder();
 
@@ -72,13 +112,28 @@ public abstract class AbstractProcess
 			cmdBuilder.append(part).append(C_SPACE);
 		}
 
-		logListener.log("Executing: " + cmdBuilder.toString());
+		logListener.log("Running: " + cmdBuilder.toString());
 
 		int result = -1;
 
 		try
 		{
 			ProcessBuilder pb = new ProcessBuilder(commands);
+
+			if (environment != null)
+			{
+				Map<String, String> processEnvironment = pb.environment();
+
+				for (Map.Entry<String, String> entry : environment.entrySet())
+				{
+					processEnvironment.put(entry.getKey(), entry.getValue());
+				}
+			}
+
+			if (workingDirectory != null)
+			{
+				pb.directory(workingDirectory);
+			}
 
 			pb.redirectError(PATH_STD_ERR.toFile());
 			pb.redirectOutput(PATH_STD_OUT.toFile());
@@ -89,8 +144,8 @@ public abstract class AbstractProcess
 		}
 		catch (Exception e)
 		{
-			logListener.log("Could not run compiler:" + e);
-			logger.error("Could not run compiler:", e);
+			logListener.log("Could not run external process:" + e);
+			logger.error("Could not run external process:", e);
 		}
 
 		return result == 0; // normal completion

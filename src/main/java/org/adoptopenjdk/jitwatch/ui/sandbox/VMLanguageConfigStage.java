@@ -17,7 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -30,9 +30,7 @@ public class VMLanguageConfigStage extends Stage
 {
 	private File lastFolder = null;
 
-	private TextField tfLanguage;
-	private TextField tfCompilerPath;
-	private TextField tfRuntimePath;
+	private TextField tfLanguagePath;
 
 	private IStageCloseListener parent;
 	private JITWatchConfig config;
@@ -47,26 +45,20 @@ public class VMLanguageConfigStage extends Stage
 		VBox vbox = new VBox();
 
 		vbox.setPadding(new Insets(15));
-		vbox.setSpacing(20);
+		vbox.setSpacing(10);
 
-		vbox.getChildren().add(getVBoxLanguage());
-		vbox.getChildren().add(getVBoxCompilerPath());
-		vbox.getChildren().add(getVBoxRuntimePath());
+		vbox.getChildren().add(getVBoxLanguagePath(language));
 
 		if (language != null)
 		{
-			tfLanguage.setText(language);
-			tfLanguage.setEditable(false);
-
-			tfCompilerPath.setText(config.getVMLanguageCompilerPath(language));
-			tfRuntimePath.setText(config.getVMLanguageRuntimePath(language));
+			tfLanguagePath.setText(config.getVMLanguagePath(language));
 		}
 
-		vbox.getChildren().add(getHBoxButtons());
+		vbox.getChildren().add(getHBoxButtons(language));
 
 		setTitle("VM Language Configuration");
 
-		Scene scene = new Scene(vbox, 480, 250);
+		Scene scene = new Scene(vbox, 480, 120);
 
 		setScene(scene);
 
@@ -80,35 +72,24 @@ public class VMLanguageConfigStage extends Stage
 		});
 	}
 
-	private VBox getVBoxLanguage()
+
+	private VBox getVBoxLanguagePath(final String language)
 	{
 		VBox vbox = new VBox();
 
-		tfLanguage = new TextField();
+		tfLanguagePath = new TextField();
 
-		vbox.getChildren().add(new Label("Language Name"));
-		vbox.getChildren().add(tfLanguage);
-
-		return vbox;
-	}
-
-	private VBox getVBoxCompilerPath()
-	{
-		VBox vbox = new VBox();
-
-		tfCompilerPath = new TextField();
-
-		Button btnChooseCompilerPath = StyleUtil.buildButton("Choose");
-		btnChooseCompilerPath.setOnAction(new EventHandler<ActionEvent>()
+		Button btnChoosePath = StyleUtil.buildButton("Choose");
+		btnChoosePath.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				File compilerPath = chooseFile("Compiler");
+				File languagePath = chooseFile(language + " Home Directory");
 
-				if (compilerPath != null)
+				if (languagePath != null)
 				{
-					tfCompilerPath.setText(compilerPath.getAbsolutePath());
+					tfLanguagePath.setText(languagePath.getAbsolutePath());
 				}
 			}
 		});
@@ -116,64 +97,28 @@ public class VMLanguageConfigStage extends Stage
 		HBox hboxCompiler = new HBox();
 		hboxCompiler.setSpacing(10);
 
-		hboxCompiler.getChildren().add(tfCompilerPath);
-		hboxCompiler.getChildren().add(btnChooseCompilerPath);
+		hboxCompiler.getChildren().add(tfLanguagePath);
+		hboxCompiler.getChildren().add(btnChoosePath);
 
-		tfCompilerPath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.8));
-		btnChooseCompilerPath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.2));
+		tfLanguagePath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.8));
+		btnChoosePath.prefWidthProperty().bind(hboxCompiler.widthProperty().multiply(0.2));
 
-		vbox.getChildren().add(new Label("Compiler Path"));
+		vbox.getChildren().add(new Label(language + " Home Directory"));
 		vbox.getChildren().add(hboxCompiler);
 
 		return vbox;
 	}
 
-	private VBox getVBoxRuntimePath()
-	{
-		VBox vbox = new VBox();
-
-		tfRuntimePath = new TextField();
-
-		Button btnChooseRuntimePath = StyleUtil.buildButton("Choose");
-		btnChooseRuntimePath.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				File runtimePath = chooseFile("Runtime");
-
-				if (runtimePath != null)
-				{
-					tfRuntimePath.setText(runtimePath.getAbsolutePath());
-				}
-			}
-		});
-
-		HBox hboxRuntime = new HBox();
-		hboxRuntime.setSpacing(10);
-		hboxRuntime.getChildren().add(tfRuntimePath);
-		hboxRuntime.getChildren().add(btnChooseRuntimePath);
-
-		tfRuntimePath.prefWidthProperty().bind(hboxRuntime.widthProperty().multiply(0.8));
-		btnChooseRuntimePath.prefWidthProperty().bind(hboxRuntime.widthProperty().multiply(0.2));
-
-		vbox.getChildren().add(new Label("Runtime Path"));
-		vbox.getChildren().add(hboxRuntime);
-
-		return vbox;
-	}
-
-	private HBox getHBoxButtons()
+	private HBox getHBoxButtons(String language)
 	{
 		HBox hbox = new HBox();
 		hbox.setSpacing(20);
-		hbox.setPadding(new Insets(10));
 		hbox.setAlignment(Pos.CENTER);
 
 		Button btnSave = StyleUtil.buildButton("Save");
 		Button btnCancel = StyleUtil.buildButton("Cancel");
 
-		btnSave.setOnAction(getEventHandlerForSaveButton(parent, config));
+		btnSave.setOnAction(getEventHandlerForSaveButton(language, parent, config));
 
 		btnCancel.setOnAction(getEventHandlerForCancelButton(parent));
 
@@ -185,8 +130,8 @@ public class VMLanguageConfigStage extends Stage
 
 	private File chooseFile(String name)
 	{
-		FileChooser fc = new FileChooser();
-		fc.setTitle("Choose " + name);
+		DirectoryChooser dc = new DirectoryChooser();
+		dc.setTitle("Choose " + name + " folder");
 
 		File dirFile = null;
 
@@ -199,13 +144,13 @@ public class VMLanguageConfigStage extends Stage
 			dirFile = lastFolder;
 		}
 
-		fc.setInitialDirectory(dirFile);
+		dc.setInitialDirectory(dirFile);
 
-		File result = fc.showOpenDialog(null);
+		File result = dc.showDialog(null);
 
 		if (result != null)
 		{
-			lastFolder = result.getParentFile();
+			lastFolder = result;
 		}
 
 		return result;
@@ -224,20 +169,18 @@ public class VMLanguageConfigStage extends Stage
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerForSaveButton(final IStageCloseListener parent, final JITWatchConfig config)
+	private EventHandler<ActionEvent> getEventHandlerForSaveButton(final String language, final IStageCloseListener parent, final JITWatchConfig config)
 	{
 		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				String language = tfLanguage.getText();
-				String compilerPath = tfCompilerPath.getText();
-				String runtimePath = tfRuntimePath.getText();
+				String languagePath = tfLanguagePath.getText();
 
-				if (language != null && language.length() > 0)
+				if (languagePath != null && languagePath.length() > 0)
 				{
-					config.addOrUpdateVMLanguage(language, compilerPath, runtimePath);
+					config.addOrUpdateVMLanguage(language, languagePath);
 					config.saveConfig();
 				}
 

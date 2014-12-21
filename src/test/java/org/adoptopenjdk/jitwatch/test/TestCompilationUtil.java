@@ -5,10 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,14 +34,14 @@ public class TestCompilationUtil
 		deleteFile(TEST_SOURCE_FILE);
 		deleteFile(TEST_CLASS_FILE);
 	}
-	
+
 	@After
 	public void tearDown()
 	{
 		deleteFile(TEST_SOURCE_FILE);
 		deleteFile(TEST_CLASS_FILE);
 	}
-	
+
 	private void deleteFile(File file)
 	{
 		if (file.exists() && file.isFile())
@@ -49,7 +49,7 @@ public class TestCompilationUtil
 			file.delete();
 		}
 	}
-	
+
 	@Test
 	public void testCompileSimple()
 	{
@@ -71,25 +71,15 @@ public class TestCompilationUtil
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
 
-			String javac = System.getProperty("os.name").contains("Windows") ? "javac.exe" : "javac";
-			File javacFile = Paths.get(System.getProperty("java.home"), "..", "bin", javac).toFile();
-			
-			if (!javacFile.exists())
-			{
-				javacFile = Paths.get(System.getProperty("java.home"), "bin", javac).toFile();
-			}
+			CompilerJava compiler = new CompilerJava(System.getProperty("java.home"));
 
-			String javaCompiler = javacFile.toString();
-						
-			CompilerJava compiler = new CompilerJava(javaCompiler);
-			
 			List<String> compileClasspath = new ArrayList<>();
-			
+
 			boolean success = compiler.compile(sources, compileClasspath, Sandbox.SANDBOX_CLASS_DIR.toFile(), new ISandboxLogListener()
-			{				
+			{
 				@Override
 				public void log(String msg)
-				{		
+				{
 				}
 			});
 

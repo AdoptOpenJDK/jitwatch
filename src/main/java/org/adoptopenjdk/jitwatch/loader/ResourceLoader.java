@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
@@ -19,6 +20,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,34 +28,41 @@ public final class ResourceLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(ResourceLoader.class);
 
-	public static String SUFFIX_SRC_JAVA = "java";
-	public static String SUFFIX_SRC_SCALA = "scala";
-
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private ResourceLoader()
 	{
 	}
 
-	public static String getSourceFilename(MetaClass metaClass, final String suffix)
+	public static String getSource(MetaClass metaClass, List<String> sourceLocations)
 	{
 		String fqName = metaClass.getFullyQualifiedName();
 
-		int dollarPos = fqName.indexOf('$');
+		int dollarPos = fqName.indexOf(C_DOLLAR);
 
 		if (dollarPos != -1)
 		{
 			fqName = fqName.substring(0, dollarPos);
 		}
 
-		fqName = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
+		List<String> fileExtensions = LanguageManager.getKnownFilenameExtensions();
 
-		return fqName;
+		String result = null;
+
+		for (String suffix : fileExtensions)
+		{
+			String filename = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
+
+			result = getSource(filename, sourceLocations);
+
+			if (result != null)
+			{
+				break;
+			}
+		}
+
+		return result;
 	}
 
-	public static String getSource(List<String> locations, String fileName)
+	private static String getSource(String fileName, List<String> locations)
 	{
 		String source = null;
 
@@ -133,6 +142,7 @@ public final class ResourceLoader
 					StringBuilder sb = new StringBuilder();
 
 					String line = reader.readLine();
+
 					while (line != null)
 					{
 						sb.append(line).append(S_NEWLINE);

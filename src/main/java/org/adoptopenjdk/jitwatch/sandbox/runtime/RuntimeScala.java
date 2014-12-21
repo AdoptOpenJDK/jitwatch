@@ -9,6 +9,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +20,20 @@ import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 
 public class RuntimeScala extends AbstractProcess implements IRuntime
 {
-	private String runtimePath;
+	private Path runtimePath;
 
-	public RuntimeScala(String runtimePath)
+	private final String RUNTIME_NAME = "scala";
+
+	public RuntimeScala(String languageHomeDir) throws FileNotFoundException
 	{
-		this.runtimePath = runtimePath;
+		runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
+
+		if (!runtimePath.toFile().exists())
+		{
+			throw new FileNotFoundException("Could not find " + RUNTIME_NAME);
+		}
+
+		runtimePath = runtimePath.normalize();
 	}
 
 	@Override
@@ -29,9 +41,7 @@ public class RuntimeScala extends AbstractProcess implements IRuntime
 	{
 		List<String> commands = new ArrayList<>();
 
-		File javaExecutable = new File(runtimePath);
-
-		commands.add(javaExecutable.getAbsolutePath());
+		commands.add(runtimePath.toString());
 
 		for (String vmOption : vmOptions)
 		{
@@ -42,14 +52,7 @@ public class RuntimeScala extends AbstractProcess implements IRuntime
 		{
 			commands.add("-cp");
 
-			StringBuilder cpBuilder = new StringBuilder();
-
-			for (String cp : classpathEntries)
-			{
-				cpBuilder.append(cp).append(File.pathSeparatorChar);
-			}
-
-			commands.add(cpBuilder.toString());
+			commands.add(makeClassPath(classpathEntries));
 		}
 
 		commands.add(className);

@@ -49,8 +49,7 @@ public class JITWatchConfig
 	private static final String KEY_SOURCE_LOCATIONS = "Sources";
 	private static final String KEY_CLASS_LOCATIONS = "Classes";
 
-	private static final String KEY_VM_LANGUAGE_COMPILER = "vm.language.compiler";
-	private static final String KEY_VM_LANGUAGE_RUNTIME = "vm.language.runtime";
+	private static final String KEY_VM_LANGUAGE_PATH = "vm.language.path";
 
 	private static final String KEY_SHOW_JIT_ONLY_MEMBERS = "JitOnly";
 	private static final String KEY_SHOW_JIT_ONLY_CLASSES = "JitOnlyClasses";
@@ -738,50 +737,25 @@ public class JITWatchConfig
 		this.compressedOopsMode = compressedOopsMode;
 	}
 
-	public void addOrUpdateVMLanguage(String language, String compilerPath, String runtimePath)
+	public void addOrUpdateVMLanguage(String language, String path)
 	{
-		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
-		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
+		String pathKey = KEY_VM_LANGUAGE_PATH + C_DOT + language;
 
-		loadedProps.setProperty(compilerKey, compilerPath);
-		loadedProps.setProperty(runtimeKey, runtimePath);
+		loadedProps.setProperty(pathKey, path);
 	}
 
-	public String getVMLanguageCompilerPath(String language)
+	public String getVMLanguagePath(String language)
 	{
 		String result = S_EMPTY;
 
-		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
+		String pathKey = KEY_VM_LANGUAGE_PATH + C_DOT + language;
 
-		if (loadedProps.containsKey(compilerKey))
+		if (loadedProps.containsKey(pathKey))
 		{
-			result = loadedProps.getProperty(compilerKey);
+			result = loadedProps.getProperty(pathKey);
 		}
 
 		return result;
-	}
-
-	public String getVMLanguageRuntimePath(String language)
-	{
-		String result = S_EMPTY;
-
-		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
-
-		if (loadedProps.containsKey(runtimeKey))
-		{
-			result = loadedProps.getProperty(runtimeKey);
-		}
-
-		return result;
-	}
-
-	public void removeVMLanguage(String language)
-	{
-		String compilerKey = KEY_VM_LANGUAGE_COMPILER + C_DOT + language;
-		String runtimeKey = KEY_VM_LANGUAGE_RUNTIME + C_DOT + language;
-
-		loadedProps.remove(compilerKey);
-		loadedProps.remove(runtimeKey);
 	}
 
 	public List<String> getVMLanguageList()
@@ -792,11 +766,11 @@ public class JITWatchConfig
 		{
 			String keyString = key.toString();
 
-			if (keyString.startsWith(KEY_VM_LANGUAGE_COMPILER))
+			if (keyString.startsWith(KEY_VM_LANGUAGE_PATH))
 			{
-				if (keyString.length() > KEY_VM_LANGUAGE_COMPILER.length())
+				if (keyString.length() > KEY_VM_LANGUAGE_PATH.length())
 				{
-					String language = keyString.substring(1 + KEY_VM_LANGUAGE_COMPILER.length());
+					String language = keyString.substring(1 + KEY_VM_LANGUAGE_PATH.length());
 
 					languageList.add(language);
 				}

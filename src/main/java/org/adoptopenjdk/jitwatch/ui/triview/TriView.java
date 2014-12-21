@@ -5,7 +5,16 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.List;
 
@@ -99,7 +108,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		this.config = config;
 
-		setTitle("JITWatch TriView: Source, Bytecode, Assembly Viewer");
+		setTitle("TriView - Source, Bytecode, Assembly Viewer - JITWatch");
 
 		VBox vBox = new VBox();
 
@@ -382,15 +391,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (!sameClass)
 		{
-			String sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_JAVA);
-			String source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-
-			// TODO Ughhh!
-			if (source == null)
-			{
-				sourceFileName = ResourceLoader.getSourceFilename(memberClass, ResourceLoader.SUFFIX_SRC_SCALA);
-				source = ResourceLoader.getSource(config.getSourceLocations(), sourceFileName);
-			}
+			String source = ResourceLoader.getSource(memberClass, config.getSourceLocations());
 
 			viewerSource.setContent(source, true);
 		}
