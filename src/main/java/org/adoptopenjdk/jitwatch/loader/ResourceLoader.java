@@ -121,7 +121,7 @@ public final class ResourceLoader
 		}
 		else
 		{
-			logger.warn("File {} not found", sourceFile);
+			logger.debug("File {} not found", sourceFile);
 		}
 
 		return result;

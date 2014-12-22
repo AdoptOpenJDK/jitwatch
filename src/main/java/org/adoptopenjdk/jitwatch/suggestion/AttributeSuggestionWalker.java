@@ -58,16 +58,20 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	private static final String REASON_CALL_SITE_NOT_REACHED = "call site not reached";
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
 	private static final String REASON_NATIVE_METHOD = "native method";
-
+	
+	private static final String REASON_CALLEE_IS_TOO_LARGE = "callee is too large";
+	private static final String REASON_NO_STATIC_BINDING = "no static binding";
 
 	static
 	{
 		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
+		scoreMap.put(REASON_CALLEE_IS_TOO_LARGE, 0.5);
 		scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
 		scoreMap.put(REASON_TOO_BIG, 0.5);
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
 		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
+		scoreMap.put(REASON_NO_STATIC_BINDING, 0.2);
 
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
@@ -81,6 +85,14 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
 				"The callee method is not 'hot' but is too big to be inlined into the caller method.");
 		explanationMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
+	
+		explanationMap
+		.put(REASON_CALLEE_IS_TOO_LARGE,
+				"The callee method is greater than the max inlining size at the C1 compiler level.");
+
+		explanationMap
+		.put(REASON_NO_STATIC_BINDING,
+				"The callee is known but there is no static binding so could not be inlined.");
 	}
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;
