@@ -39,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCParamConstant;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCParamNumeric;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCParamString;
@@ -83,6 +84,15 @@ public final class BytecodeLoader
 
 	private BytecodeLoader()
 	{
+	}
+
+	/*
+	 * Builds a meta class from bytecode where JITDataModel.buildAndGetMetaClass
+	 * fails due to NoClassDefFoundError
+	 */
+	public static MetaClass buildMetaClassFromClass(String fqClassName)
+	{
+		return null;
 	}
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
