@@ -90,7 +90,7 @@ public final class JournalUtil
 		{
 			List<Tag> entryList = journal.getEntryList();
 
-			if (entryList.size() == 1)
+			if (entryList.size() >= 1)
 			{
 				Tag tag = entryList.get(0);
 

@@ -218,7 +218,7 @@ public final class ParseUtil
 			return new String[] { className, methodName, paramTypes, returnType };
 		}
 
-		throw new LogParseException("Could not split signature with regex: " + logSignature);
+		throw new LogParseException("Could not split signature with regex: '" + logSignature + C_QUOTE);
 	}
 
 	public static IMetaMember findMemberWithSignature(IReadOnlyJITDataModel model, String logSignature) throws LogParseException
@@ -1028,7 +1028,7 @@ public final class ParseUtil
 
 			if (comment != null)
 			{
-				if (commentMethodHasNoClassPrefix(comment))
+				if (commentMethodHasNoClassPrefix(comment) && currentMember != null)
 				{
 					comment = prependCurrentMember(comment, currentMember);
 				}

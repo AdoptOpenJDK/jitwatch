@@ -43,7 +43,7 @@ public class TestMetaClass
 
 	public String objectReturnObjectParam(String foo)
 	{
-		return "When the daylight weighs a ton";
+		return "When the daylight weighs a tonne";
 	}
 
 	public String[] arrayReturnArrayParam(int[] foo)
@@ -51,6 +51,11 @@ public class TestMetaClass
 		return new String[]{"and all my friends are gone"};
 	}
 
+	public static <T extends java.lang.Object> T genericReturnAndParams(T object, java.lang.String string)
+	{
+		return null;
+	}
+	
 	// test constructor
 	public TestMetaClass()
 	{
@@ -219,5 +224,28 @@ public class TestMetaClass
 
     	assertNotNull(result);
     	assertEquals(testConstructor.toString(), result.toString());
+    }
+    
+    @Test
+    public void testGetMemberFromSignature7() throws NoSuchMethodException, SecurityException
+    {
+    	String thisClassName = getClass().getName();
+
+    	MetaPackage metaPackage = new MetaPackage(StringUtil.getPackageName(thisClassName));
+
+    	MetaClass metaClass = new MetaClass(metaPackage, StringUtil.getUnqualifiedClassName(thisClassName));
+
+    	String testMethodName = "genericReturnAndParams";
+
+    	Method method = getClass().getDeclaredMethod(testMethodName, new Class[]{Object.class, String.class});
+
+    	MetaMethod testMethod = new MetaMethod(method, metaClass);
+
+    	metaClass.addMetaMethod(testMethod);
+
+    	IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromBytecodeSignature(metaClass.getFullyQualifiedName(), "public static <T extends java.lang.Object> T genericReturnAndParams(T, java.lang.String);"));
+
+    	assertNotNull(result);
+    	assertEquals(testMethod.toString(), result.toString());
     }
 }

@@ -452,6 +452,18 @@ public class MemberSignatureParts
 	{
 		return returnType;
 	}
+	
+	public String applyGenericSubstitutions(final String typeName)
+	{
+		String result = typeName;
+		
+		if (typeName != null && genericsMap.containsKey(typeName))
+		{
+			result = genericsMap.get(typeName);
+		}
+		
+		return result;
+	}
 
 	public String getMemberName()
 	{
