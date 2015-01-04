@@ -223,6 +223,35 @@ public class TestMemberSignatureParts
 		assertEquals("int", paramTypes.get(1));
 		assertEquals("java.lang.Class<? extends T[]>", paramTypes.get(2));
 	}
+	
+	@Test
+	public void testSignatureWithGenericRegressionReturnTypeHasGenerics()
+	{
+		String sig = "public static <T extends java.lang.Object> java.lang.Class<T> asWrapperType(java.lang.Class<T>)";
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("sun.invoke.util.Wrapper", sig);
+		
+		List<String> modList = msp.getModifiers();
+
+		assertEquals(2, modList.size());
+		assertEquals("public", modList.get(0));
+		assertEquals("static", modList.get(1));
+
+		Map<String, String> genMap = msp.getGenerics();
+
+		assertEquals(1, genMap.size());
+		assertEquals(true, genMap.containsKey("T"));
+		assertEquals("java.lang.Object", genMap.get("T"));
+
+		assertEquals("java.lang.Class<T>", msp.getReturnType());
+
+		assertEquals("asWrapperType", msp.getMemberName());
+
+		List<String> paramTypes = msp.getParamTypes();
+
+		assertEquals(1, paramTypes.size());
+		assertEquals("java.lang.Class<T>", paramTypes.get(0));
+	}
 
 	@Test
 	public void testSignatureWithGenericNoExtends()

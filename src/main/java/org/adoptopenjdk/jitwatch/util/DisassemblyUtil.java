@@ -44,7 +44,7 @@ public final class DisassemblyUtil
 
 			hsdisFile = new File(jreDir, binaryPath);
 
-			logger.info("looking for hsdis binary: {}", hsdisFile);
+			logger.debug("looking for hsdis binary: {}", hsdisFile);
 
 			if (hsdisFile.exists() && hsdisFile.isFile())
 			{

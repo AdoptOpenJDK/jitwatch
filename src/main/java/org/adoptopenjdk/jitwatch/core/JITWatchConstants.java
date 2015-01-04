@@ -203,6 +203,7 @@ public final class JITWatchConstants
 	public static final String S_DEFAULT = "default";
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";
+	public static final String S_GENERICS_WILDCARD = "<?>";
 
 	public static final String S_OPTIMIZED_VIRTUAL_CALL = "{optimized virtual_call}";
 
@@ -235,6 +236,7 @@ public final class JITWatchConstants
 
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+	public static final String S_BYTECODE_SIGNATURE = "Signature:";
 
 	public static final String S_POLYMORPHIC_SIGNATURE = "PolymorphicSignature";
 

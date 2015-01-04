@@ -470,7 +470,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		pane.requestFocus();
 
 		setVMLanguage(pane);
-		config.saveConfig();
+		saveEditorPaneConfig();
 	}
 
 	private void saveEditorPaneConfig()

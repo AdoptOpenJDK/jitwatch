@@ -636,6 +636,7 @@ public class TestParseUtil
 	@Test
 	public void testFindClassForLogCompilationParameterRegressionForGenerics() throws Exception
 	{
+		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<?>"));		
 		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<T>"));		
 	}
 	
@@ -647,6 +648,9 @@ public class TestParseUtil
 		assertEquals("java.util.List", ParseUtil.stripGenerics("java.util.List<T>"));
 		assertEquals("java.util.List", ParseUtil.stripGenerics("java.util.List<Class<T>>"));
 		assertEquals("java.util.List", ParseUtil.stripGenerics("java.util.List<? super T>"));
+		assertEquals("java.util.List[]", ParseUtil.stripGenerics("java.util.List<? super T>[]"));
+		assertEquals("java.util.List[]", ParseUtil.stripGenerics("java.util.List<?>[]"));
+
 	}
 
 	@Test
@@ -832,6 +836,5 @@ public class TestParseUtil
 		
 		assertEquals(1, memberToUpperCaseLocale.getParamTypeNames().length);
 		assertEquals("java.util.Locale", memberToUpperCaseLocale.getParamTypeNames()[0]);
-
 	}
 }

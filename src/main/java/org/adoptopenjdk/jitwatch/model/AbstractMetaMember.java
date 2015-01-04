@@ -125,9 +125,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		boolean matched = false;
 
-		if (msp.getReturnType() != null)
+		String returnTypeClassName = msp.applyGenericSubstitutionsForClassLoading(msp.getReturnType());
+		
+		if (returnTypeClassName != null)
 		{
-			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(msp.getReturnType());
+			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(returnTypeClassName);
 			matched = returnType.equals(sigReturnType);
 
 			if (DEBUG_LOGGING_SIG_MATCH)
@@ -177,7 +179,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				{
 					if (returnTypeMatches(msp))
 					{
-						List<Class<?>> mspClassTypes = getClassesForParamTypes(msp.getParamTypes());
+						List<Class<?>> mspClassTypes = getClassesForParamTypes(msp);
 
 						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypes, mspClassTypes, matchTypesExactly))
 						{
@@ -200,13 +202,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	private List<Class<?>> getClassesForParamTypes(List<String> paramTypes) throws ClassNotFoundException
+	private List<Class<?>> getClassesForParamTypes(MemberSignatureParts msp) throws ClassNotFoundException
 	{
 		List<Class<?>> result = new ArrayList<>();
 
-		for (String param : paramTypes)
+		for (String param : msp.getParamTypes())
 		{
-			Class<?> clazz = ParseUtil.findClassForLogCompilationParameter(param);
+			String paramClassName = msp.applyGenericSubstitutionsForClassLoading(param);
+
+			Class<?> clazz = ParseUtil.findClassForLogCompilationParameter(paramClassName);
 
 			result.add(clazz);
 		}

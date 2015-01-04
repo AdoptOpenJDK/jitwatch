@@ -24,12 +24,14 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerGroovy;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJRuby;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJavaScript;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerScala;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeGroovy;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJRuby;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJavaScript;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeScala;
 
 public class LanguageManager
@@ -64,6 +66,7 @@ public class LanguageManager
 					result = new CompilerJava(languageHomeDir);
 					break;
 				case VM_LANGUAGE_JAVASCRIPT:
+					result = new CompilerJavaScript(languageHomeDir);
 					break;
 				case VM_LANGUAGE_JRUBY:
 					result = new CompilerJRuby(languageHomeDir);
@@ -105,6 +108,7 @@ public class LanguageManager
 					result = new RuntimeJava(languageHomeDir);
 					break;
 				case VM_LANGUAGE_JAVASCRIPT:
+					result = new RuntimeJavaScript(languageHomeDir);
 					break;
 				case VM_LANGUAGE_JRUBY:
 					result = new RuntimeJRuby(languageHomeDir);

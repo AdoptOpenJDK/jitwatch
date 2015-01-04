@@ -12,7 +12,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
@@ -27,6 +29,8 @@ public class ClassBC
 	private int minorVersion;
 	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
+	private Map<String, String> classGenericsMap = new LinkedHashMap<>();
+	
 	private LineTable compositeLineTable = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
@@ -73,7 +77,17 @@ public class ClassBC
 
 		return compositeLineTable.getEntryForSourceLine(sourceLine);
 	}
+	
+	public void addGenericsMapping(String key, String value)
+	{
+		classGenericsMap.put(key, value);
+	}
 
+	public Map<String, String> getGenericsMap()
+	{
+		return Collections.unmodifiableMap(classGenericsMap);
+	}
+	
 	private void buildCompositeLineTable()
 	{
 		compositeLineTable = new LineTable();

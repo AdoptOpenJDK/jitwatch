@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class MemberSignatureParts
 	private String returnType;
 	private String memberName;
 	private List<String> paramTypeList;
+	private ClassBC classBytecode;
 
 	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(\\(.*\\))(.*)'\\sin\\s'(.*)'");
 
@@ -77,9 +79,14 @@ public class MemberSignatureParts
 	private MemberSignatureParts()
 	{
 		modifierList = new ArrayList<>();
-		genericsMap = new LinkedHashMap<>();
+		genericsMap = new LinkedHashMap<>(); // preserve order
 		paramTypeList = new ArrayList<>();
 		modifier = 0;
+	}
+	
+	public void setClassBC(ClassBC classBytecode)
+	{
+		this.classBytecode = classBytecode;
 	}
 
 	private static void completeSignature(String origSig, MemberSignatureParts msp)
@@ -185,7 +192,7 @@ public class MemberSignatureParts
 			builder.append(S_OPEN_PARENTHESES).append(mod).append(S_SPACE).append(S_CLOSE_PARENTHESES).append(C_QUESTION);
 		}
 
-		String regexGenerics = "(<.*> )?";
+		String regexGenerics = "(<[\\p{L}0-9_\\.\\$\\ ,/]+> )?";
 		String regexReturnType = "(.* )?"; // optional could be constructor
 		String regexMethodName = ParseUtil.METHOD_NAME_REGEX_GROUP;
 		String regexParams = "(\\(.*\\))";
@@ -197,6 +204,8 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
+		//logger.info("\n{}\n{}", toParse, builder);
+		
 		final Pattern patternBytecodeSignature = Pattern.compile(builder.toString());
 
 		Matcher matcher = patternBytecodeSignature.matcher(toParse);
@@ -451,6 +460,25 @@ public class MemberSignatureParts
 	public String getReturnType()
 	{
 		return returnType;
+	}
+
+	public String applyGenericSubstitutionsForClassLoading(final String typeName)
+	{
+		String result = typeName;
+
+		if (typeName != null)
+		{
+			if (genericsMap.containsKey(typeName))
+			{
+				result = genericsMap.get(typeName);
+			}
+			else if (classBytecode != null && classBytecode.getGenericsMap().containsKey(typeName))
+			{
+				result = classBytecode.getGenericsMap().get(typeName);
+			}
+		}
+		
+		return result;
 	}
 
 	public String getMemberName()

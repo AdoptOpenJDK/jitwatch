@@ -218,7 +218,7 @@ public final class ParseUtil
 			return new String[] { className, methodName, paramTypes, returnType };
 		}
 
-		throw new LogParseException("Could not split signature with regex: " + logSignature);
+		throw new LogParseException("Could not split signature with regex: '" + logSignature + C_QUOTE);
 	}
 
 	public static IMetaMember findMemberWithSignature(IReadOnlyJITDataModel model, String logSignature) throws LogParseException
@@ -272,6 +272,11 @@ public final class ParseUtil
 		{
 			int arrayBracketCount = getArrayBracketCount(param);
 
+			if (param.contains(S_CLOSE_ANGLE))
+			{
+				param = stripGenerics(param);
+			}
+			
 			if (arrayBracketCount == 0)
 			{
 				if (param.endsWith(S_VARARGS_DOTS))
@@ -290,11 +295,6 @@ public final class ParseUtil
 				}
 				else
 				{
-					if (param.endsWith(S_CLOSE_ANGLE))
-					{
-						param = stripGenerics(param);
-					}
-
 					builder.append(param);
 				}
 			}
@@ -335,29 +335,14 @@ public final class ParseUtil
 	{
 		String result = param;
 
-		if (param != null && param.endsWith(S_CLOSE_ANGLE))
+		if (param != null)
 		{
-			int length = param.length();
-			int angleCount = 0;
-			
-			for (int i = length - 1; i >= 0; i--)
+			int firstOpenAngle = param.indexOf(C_OPEN_ANGLE);
+			int lastCloseAngle = param.lastIndexOf(C_CLOSE_ANGLE);
+
+			if (firstOpenAngle != -1 && lastCloseAngle != -1 && firstOpenAngle < lastCloseAngle)
 			{
-				char c = param.charAt(i);
-
-				if (c == C_CLOSE_ANGLE)
-				{
-					angleCount++;
-				}
-				else if (c == C_OPEN_ANGLE)
-				{
-					angleCount--;
-
-					if (angleCount == 0)
-					{
-						result = param.substring(0, i);
-						break;
-					}
-				}
+				result = param.substring(0, firstOpenAngle) + param.substring(lastCloseAngle + 1);
 			}
 		}
 
@@ -1016,7 +1001,7 @@ public final class ParseUtil
 			BytecodeInstruction instruction) throws LogParseException
 	{
 		IMetaMember result = null;
-		
+
 		if (DEBUG_LOGGING_OVC)
 		{
 			logger.debug("Looking for member in {} using {}", currentMember, instruction);
@@ -1028,7 +1013,7 @@ public final class ParseUtil
 
 			if (comment != null)
 			{
-				if (commentMethodHasNoClassPrefix(comment))
+				if (commentMethodHasNoClassPrefix(comment) && currentMember != null)
 				{
 					comment = prependCurrentMember(comment, currentMember);
 				}

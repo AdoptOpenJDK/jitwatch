@@ -67,34 +67,37 @@ public class ViewerBytecode extends Viewer
 		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
 
 		BytecodeLabel labelAtIndex = (BytecodeLabel) getLabelAtIndex(index);
-		
-		StringBuilder ttBuilder = new StringBuilder();
 
-		Tooltip tooltip = labelAtIndex.getTooltip();
-
-		if (tooltip != null)
+		if (labelAtIndex != null)
 		{
-			ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
-			Tooltip.uninstall(labelAtIndex, tooltip);
+			StringBuilder ttBuilder = new StringBuilder();
+
+			Tooltip tooltip = labelAtIndex.getTooltip();
+
+			if (tooltip != null)
+			{
+				ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
+				Tooltip.uninstall(labelAtIndex, tooltip);
+			}
+
+			ttBuilder.append("Suggestion:\n");
+
+			String text = suggestion.getText();
+
+			if (suggestion.getType() == SuggestionType.BRANCH)
+			{
+				text = StringUtil.wordWrap(text, 50);
+			}
+
+			ttBuilder.append(text);
+
+			tooltip = new Tooltip(ttBuilder.toString());
+			labelAtIndex.setTooltip(tooltip);
 		}
 
-		ttBuilder.append("Suggestion:\n");
-
-		String text = suggestion.getText();
-
-		if (suggestion.getType() == SuggestionType.BRANCH)
-		{
-			text = StringUtil.wordWrap(text, 50);
-		}
-
-		ttBuilder.append(text);
-
-		tooltip = new Tooltip(ttBuilder.toString());
-		labelAtIndex.setTooltip(tooltip);
-		
 		highlightLine(index);
 	}
-	
+
 	public void highlightBytecodeOffset(int bci)
 	{
 		int index = getLineIndexForBytecodeOffset(bci);
@@ -280,9 +283,9 @@ public class ViewerBytecode extends Viewer
 				break;
 			}
 
-			pos+= instruction.getLabelLines();
+			pos += instruction.getLabelLines();
 		}
-	
+
 		return result;
 	}
 
