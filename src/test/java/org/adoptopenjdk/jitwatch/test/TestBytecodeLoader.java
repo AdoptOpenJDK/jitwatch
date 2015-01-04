@@ -269,7 +269,6 @@ public class TestBytecodeLoader
 		assertEquals(false, i76.hasParameters());
 	}
 
-
 	@Test
 	public void testParseBytecodeRegressionLookupSwitch()
 	{
@@ -307,7 +306,7 @@ public class TestBytecodeLoader
 
 	public int add(int x, int y)
 	{
-		return x+y;
+		return x + y;
 	}
 
 	@Test
@@ -315,8 +314,7 @@ public class TestBytecodeLoader
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("Classfile TestBytecodeLoader.class")
-				.append(S_NEWLINE);
+		builder.append("Classfile TestBytecodeLoader.class").append(S_NEWLINE);
 		builder.append("  Last modified 18-May-2014; size 426 bytes").append(S_NEWLINE);
 		builder.append("  MD5 checksum d8d0af7620175f82d2c5c753b493196f").append(S_NEWLINE);
 		builder.append("  Compiled from \"TestBytecodeLoader.java\"").append(S_NEWLINE);
@@ -327,7 +325,8 @@ public class TestBytecodeLoader
 		builder.append("  flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
 		builder.append("Constant pool:").append(S_NEWLINE);
 		builder.append("   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V").append(S_NEWLINE);
-		builder.append("   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader").append(S_NEWLINE);
+		builder.append("   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader").append(
+				S_NEWLINE);
 		builder.append("   #3 = Class              #20            //  java/lang/Object").append(S_NEWLINE);
 		builder.append("   #4 = Utf8               <init>").append(S_NEWLINE);
 		builder.append("   #5 = Utf8               ()V").append(S_NEWLINE);
@@ -358,7 +357,8 @@ public class TestBytecodeLoader
 		builder.append("        line 3: 0").append(S_NEWLINE);
 		builder.append("      LocalVariableTable:").append(S_NEWLINE);
 		builder.append("        Start  Length  Slot  Name   Signature").append(S_NEWLINE);
-		builder.append("               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(S_NEWLINE);
+		builder.append("               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(
+				S_NEWLINE);
 		builder.append("").append(S_NEWLINE);
 		builder.append("  public int add(int, int);").append(S_NEWLINE);
 		builder.append("    flags: ACC_PUBLIC").append(S_NEWLINE);
@@ -372,12 +372,14 @@ public class TestBytecodeLoader
 		builder.append("        line 7: 0").append(S_NEWLINE);
 		builder.append("      LocalVariableTable:").append(S_NEWLINE);
 		builder.append("        Start  Length  Slot  Name   Signature").append(S_NEWLINE);
-		builder.append("               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(S_NEWLINE);
+		builder.append("               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(
+				S_NEWLINE);
 		builder.append("               0       4     1     a   I").append(S_NEWLINE);
 		builder.append("               0       4     2     b   I").append(S_NEWLINE);
 		builder.append("}").append(S_NEWLINE);
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(getClass().getName(), "add", new Class<?>[]{int.class, int.class});
+		IMetaMember member = UnitTestUtil
+				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class });
 
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
 
@@ -560,7 +562,7 @@ public class TestBytecodeLoader
 	@Test
 	public void testStaticInitialiserRegression()
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 				"  static {};",
 				"                        descriptor: ()V",
 				"                        flags: ACC_STATIC",
@@ -607,17 +609,11 @@ public class TestBytecodeLoader
 				"                           105: ldc           #163                // String StackMapTable:",
 				"                           107: getstatic     #164                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.STACKMAPTABLE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
 				"                           110: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-				"                           115: pop",
-				"                           116: return",
-				"                          LineNumberTable:",
-				"                            line 30: 0",
-				"                            line 37: 8",
-				"                            line 41: 18",
-				"                            line 42: 32",
-				"                            line 43: 46",
-				"                            line 44: 60",
-				"                            line 45: 74"
-		};
+				"                           115: pop", "                           116: return",
+				"                          LineNumberTable:", "                            line 30: 0",
+				"                            line 37: 8", "                            line 41: 18",
+				"                            line 42: 32", "                            line 43: 46",
+				"                            line 44: 60", "                            line 45: 74" };
 
 		StringBuilder builder = new StringBuilder();
 
@@ -628,7 +624,8 @@ public class TestBytecodeLoader
 
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
 
-		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), ParseUtil.STATIC_BYTECODE_SIGNATURE);
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(),
+				ParseUtil.STATIC_BYTECODE_SIGNATURE);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecodeForSignature(msp);
 
@@ -679,5 +676,23 @@ public class TestBytecodeLoader
 		assertNotNull(instructions);
 
 		assertEquals(5, instructions.size());
+	}
+
+	@Test
+	public void testSignatureGenericsParser()
+	{
+		String line = "Signature: #259                         // <K:Ljava/lang/Integer;V:Ljava/lang/String;>Ljava/util/AbstractMap<TK;TV;>;Ljava/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;";
+		
+		ClassBC classBytecode = new ClassBC();
+		
+		BytecodeLoader.buildClassGenerics(line, classBytecode);
+		
+		System.out.println(classBytecode.getGenericsMap().entrySet());
+		
+		assertEquals(2, classBytecode.getGenericsMap().size());
+		assertTrue(classBytecode.getGenericsMap().containsKey("K"));
+		assertEquals("java.lang.Integer", classBytecode.getGenericsMap().get("K"));
+		assertTrue(classBytecode.getGenericsMap().containsKey("V"));
+		assertEquals("java.lang.String", classBytecode.getGenericsMap().get("V"));
 	}
 }

@@ -63,7 +63,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	private static final String REASON_NO_STATIC_BINDING = "no static binding";
 	private static final String REASON_NOT_INLINEABLE = "not inlineable";
 	private static final String REASON_NOT_AN_ACCESSOR = "not an accessor";
-
+	private static final String REASON_RECURSIVE_INLINING_IS_TOO_DEEP = "recursive inlining is too deep";
 
 	static
 	{
@@ -76,6 +76,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
 		scoreMap.put(REASON_NO_STATIC_BINDING, 0.2);
 		scoreMap.put(REASON_NOT_INLINEABLE, 0.4);
+		scoreMap.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP, 0.4);
 		scoreMap.put(REASON_NOT_AN_ACCESSOR, 0.1);
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
@@ -99,7 +100,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		
 		explanationMap
 		.put(REASON_NOT_AN_ACCESSOR,
-				"The callee method is not an accessor");
+				"The callee method is not an accessor.");
+		
+		explanationMap
+		.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP,
+				"The recursive inlining is too deep.");
 	}
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;

@@ -125,7 +125,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		boolean matched = false;
 
-		String returnTypeClassName = msp.applyGenericSubstitutions(msp.getReturnType());
+		String returnTypeClassName = msp.applyGenericSubstitutionsForClassLoading(msp.getReturnType());
 		
 		if (returnTypeClassName != null)
 		{
@@ -208,7 +208,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		for (String param : msp.getParamTypes())
 		{
-			String paramClassName = msp.applyGenericSubstitutions(param);
+			String paramClassName = msp.applyGenericSubstitutionsForClassLoading(param);
 
 			Class<?> clazz = ParseUtil.findClassForLogCompilationParameter(paramClassName);
 

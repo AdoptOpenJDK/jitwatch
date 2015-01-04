@@ -5,27 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_HASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CODE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CONSTANT_POOL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTIONS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LINENUMBERTABLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LOCALVARIABLETABLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_VERSION;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STACKMAPTABLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -202,7 +182,7 @@ public final class BytecodeLoader
 		BytecodeSection section = BytecodeSection.NONE;
 
 		MemberSignatureParts msp = null;
-
+		
 		MemberBytecode memberBytecode = null;
 
 		while (pos < lines.length)
@@ -239,8 +219,10 @@ public final class BytecodeLoader
 			case NONE:
 				if (couldBeMemberSignature(line))
 				{
-					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);
-
+					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);				
+					
+					msp.setClassBC(classBytecode);
+					
 					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("New signature: {}", msp);
@@ -262,6 +244,10 @@ public final class BytecodeLoader
 				{
 					int majorVersion = getVersionPart(line);
 					classBytecode.setMajorVersion(majorVersion);
+				}
+				else if (line.startsWith(S_BYTECODE_SIGNATURE))
+				{
+					buildClassGenerics(line, classBytecode);
 				}
 				break;
 			case CODE:
@@ -304,6 +290,83 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
+	public static void buildClassGenerics(String line, ClassBC classBytecode)
+	{		
+		StringBuilder keyBuilder = new StringBuilder();
+		StringBuilder valBuilder = new StringBuilder();
+		
+		boolean inKey = false;
+		boolean inVal = false;
+		
+		for (int i = 0; i < line.length(); i++)
+		{
+			char c = line.charAt(i);
+			
+			if (c == C_OPEN_ANGLE)
+			{
+				inKey = true;
+				inVal = false;
+			}
+			else if (c == C_COLON)
+			{
+				if (inKey && !inVal)
+				{
+					inKey = false;
+					inVal = true;
+				}
+			}
+			else if (c == C_SEMICOLON)
+			{
+				if (!inKey && inVal)
+				{
+					String key = keyBuilder.toString();
+					String val = valBuilder.toString();
+					
+					if (val.length() > 0)
+					{
+						val = val.substring(1); // string leading 'L'
+						val = val.replace(S_SLASH, S_DOT);
+					}
+					
+					classBytecode.addGenericsMapping(key, val);
+										
+					keyBuilder.setLength(0);
+					valBuilder.setLength(0);
+					
+					inKey = true;
+					inVal = false;
+				}
+			}
+			else if (inKey)
+			{
+				keyBuilder.append(c);
+			}
+			else if (inVal)
+			{
+				valBuilder.append(c);
+			}	
+		}
+		
+		if (!inKey && inVal)
+		{
+			String key = keyBuilder.toString();
+			String val = valBuilder.toString();
+			
+			if (val.length() > 0)
+			{
+				val = val.substring(1); // string leading 'L'
+				val = val.replace(S_SLASH, S_DOT);
+			}
+			
+			classBytecode.addGenericsMapping(key, val);
+			keyBuilder.setLength(0);
+			valBuilder.setLength(0);
+			
+			inKey = false;
+			inVal = false;
+		}		
+	}
+	
 	private static BytecodeSection performLINETABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
 			MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
 	{

@@ -119,10 +119,6 @@ public final class ResourceLoader
 				logger.error("Failed to read file: {}", sourceFile, ioe);
 			}
 		}
-		else
-		{
-			logger.debug("File {} not found", sourceFile);
-		}
 
 		return result;
 	}
