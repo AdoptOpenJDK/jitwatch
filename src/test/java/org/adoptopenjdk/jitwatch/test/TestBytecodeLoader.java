@@ -12,6 +12,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
@@ -637,6 +638,52 @@ public class TestBytecodeLoader
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 		assertEquals(43, instructions.size());
+	}
+
+	@Test
+	public void testLoadingClassWithGenericReturnTypes() throws Exception
+	{
+		String fqClassName = ClassWithGenerics.class.getName();
+		String fqRunnableName = Runnable.class.getName();
+		ClassBC classByteCode = BytecodeLoader.fetchBytecodeForClass(
+				new ArrayList<String>(), fqClassName);
+
+		MemberSignatureParts msp = MemberSignatureParts.fromParts(
+				fqClassName, "getWithGenericReturnType", fqRunnableName, new ArrayList<String>());
+
+		MemberBytecode memberBytecode = classByteCode.getMemberBytecodeForSignature(msp);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+		// 0: aconst_null
+		// 1: areturn
+		assertEquals(2, instructions.size());
+	}
+
+	@Test
+	public void testLoadingClassWithGenericParameterTypes() throws Exception {
+		String fqClassName = ClassWithGenerics.class.getName();
+		String fqRunnableName = Runnable.class.getName();
+		ClassBC classByteCode = BytecodeLoader.fetchBytecodeForClass(
+				new ArrayList<String>(), fqClassName);
+
+		MemberSignatureParts msp = MemberSignatureParts.fromParts(
+				fqClassName, "setWithGenericParameter", "V", Arrays.asList(fqRunnableName));
+
+		MemberBytecode memberBytecode = classByteCode.getMemberBytecodeForSignature(msp);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+		// 0: return
+		assertEquals(1, instructions.size());
+	}
+
+	@SuppressWarnings("unused")
+	private static class ClassWithGenerics<T extends Runnable> {
+		T getWithGenericReturnType() {
+			return null;
+		}
+
+		void setWithGenericParameter(T param) {
+		}
 	}
 
 	@Test

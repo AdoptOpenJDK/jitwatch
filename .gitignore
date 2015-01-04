@@ -11,3 +11,7 @@ jitwatch.log
 TEST-com.chrisnewland.jitwatch.test.*.txt
 JVMS.css
 JVMS.html
+jitwatch.out
+jitwatch.properties
+.idea
+jitwatch.iml
