@@ -5,21 +5,30 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javafx.event.EventHandler;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
+import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.event.EventHandler;
-import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
-import javafx.stage.WindowEvent;
 
 public class JournalViewerStage extends AbstractTextViewerStage
 {
@@ -91,6 +100,9 @@ public class JournalViewerStage extends AbstractTextViewerStage
 
 				labels.add(lblLine);
 			}
+
+			Label lblLine = new Label(S_EMPTY);
+			labels.add(lblLine);
 		}
 
 		setContent(labels, maxLineLength);

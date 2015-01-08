@@ -37,6 +37,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -84,6 +86,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private CheckBox checkSource;
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
+
+	private Button btnCompileChain;
+	private Button btnJITJournal;
 
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
 
@@ -141,8 +146,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkBytecode.selectedProperty().addListener(checkListener);
 		checkAssembly.selectedProperty().addListener(checkListener);
 
-		Button btnCallChain = StyleUtil.buildButton("View Compile Chain");
-		btnCallChain.setOnAction(new EventHandler<ActionEvent>()
+		btnCompileChain = StyleUtil.buildButton("Compile Chain");
+		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
@@ -154,18 +159,39 @@ public class TriView extends Stage implements ITriView, ILineListener
 			}
 		});
 
+		btnJITJournal = StyleUtil.buildButton("JIT Journal");
+		btnJITJournal.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					parent.openJournalViewer("JIT Journal for " + currentMember.toString(), currentMember);
+				}
+			}
+		});
+
 		memberInfo = new MemberInfo();
-		memberInfo.setStyle("-fx-padding:0px 0px 0px 110px;");
+		memberInfo.setStyle("-fx-padding:0px 0px 0px 90px;");
+
+		Region spacerTop = new Region();
+		HBox.setHgrow(spacerTop, Priority.ALWAYS);
+
+		Region spacerBottom = new Region();
+		HBox.setHgrow(spacerBottom, Priority.ALWAYS);
 
 		hBoxToolBarButtons.getChildren().add(checkSource);
 		hBoxToolBarButtons.getChildren().add(checkBytecode);
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
-		hBoxToolBarButtons.getChildren().add(btnCallChain);
+		hBoxToolBarButtons.getChildren().add(btnCompileChain);
+		hBoxToolBarButtons.getChildren().add(btnJITJournal);
+		hBoxToolBarButtons.getChildren().add(spacerTop);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
 
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
-		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.4));
+		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.42));
 
 		Label lblMember = new Label("Member:");
 
@@ -206,6 +232,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		hBoxToolBarClass.getChildren().add(lblClass);
 		hBoxToolBarClass.getChildren().add(classSearch);
+
+		hBoxToolBarClass.getChildren().add(spacerTop);
 
 		hBoxToolBarClass.getChildren().add(lblMember);
 		hBoxToolBarClass.getChildren().add(comboMember);
@@ -682,7 +710,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				int bytecodeOffset = instruction.getOffset();
 
 				int sourceHighlight = -1;
-				int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(metaClass.getFullyQualifiedName(), bytecodeOffset);
+				int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(metaClass.getFullyQualifiedName(), instruction);
 
 				if (classBytecode != null)
 				{

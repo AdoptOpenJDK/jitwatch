@@ -30,7 +30,6 @@ import javafx.util.Callback;
 import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -200,9 +199,7 @@ public class ClassMemberList extends VBox
 			{
 				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
 
-				Journal journal = member.getJournal();
-
-				parent.openJournalViewer("JIT Journal for " + member.toString(), journal);
+				parent.openJournalViewer("JIT Journal for " + member.toString(), member);
 			}
 		};
 	}

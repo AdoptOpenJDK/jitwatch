@@ -57,7 +57,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
@@ -873,10 +872,22 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	void openJournalViewer(String title, Journal journal)
+	public void openJournalViewer(String title, IMetaMember member)
 	{
-		JournalViewerStage jvs = new JournalViewerStage(this, title, journal);
-		StageManager.addAndShow(jvs);
+		if (member.isCompiled())
+		{
+			JournalViewerStage jvs = new JournalViewerStage(this, title, member.getJournal());
+			StageManager.addAndShow(jvs);
+		}
+		else
+		{
+			Dialogs.showOKDialog(
+					stage,
+					"Method is not compiled",
+					"Can only display JIT Journal if the method has been JIT-compiled.\n"
+							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+		}
+
 	}
 
 	private void chooseHotSpotFile()

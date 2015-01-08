@@ -5,23 +5,33 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_AT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PERCENT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
-import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
+import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 // https://github.com/yasm/yasm/wiki/GasSyntax
 // http://x86asm.net/articles/what-i-dislike-about-gas/
@@ -43,27 +53,27 @@ public class ViewerAssembly extends Viewer
 
 		int annoWidth = asmMethod.getMaxAnnotationWidth();
 
-		String annoPad = StringUtil.repeat(C_SPACE,  annoWidth);
-		
+		String annoPad = StringUtil.repeat(C_SPACE, annoWidth);
+
 		String header = asmMethod.getHeader();
-		
+
 		if (header != null)
 		{
 			String[] headerLines = header.split(S_NEWLINE);
-			
+
 			for (String headerLine : headerLines)
 			{
-				labels.add(createLabel(annoPad+headerLine));
+				labels.add(createLabel(annoPad + headerLine));
 			}
 		}
-		
+
 		for (AssemblyBlock block : asmMethod.getBlocks())
 		{
 			String title = block.getTitle();
 
 			if (title != null)
 			{
-				labels.add(createLabel(annoPad+title));
+				labels.add(createLabel(annoPad + title));
 			}
 
 			for (final AssemblyInstruction instr : block.getInstructions())
@@ -296,7 +306,7 @@ public class ViewerAssembly extends Viewer
 		int result = -1;
 
 		int pos = 0;
-		
+
 		for (Node node : vBoxRows.getChildren())
 		{
 			Label label = (Label) node;
@@ -316,19 +326,41 @@ public class ViewerAssembly extends Viewer
 
 			pos++;
 		}
-		
+
 		return result;
 	}
-	
-	public int getIndexForBytecodeOffset(String memberClassName, int bytecodeOffset)
+
+	public int getIndexForBytecodeOffset(String memberClassName, BytecodeInstruction bcInstruction)
 	{
 		int result = -1;
-
 		int pos = 0;
-		
+
+		boolean isInvoke = bcInstruction.isInvoke();
+		int bytecodeOffset = bcInstruction.getOffset();
+
+		boolean lastAssemblyIsCall = false;
+
+		final String CALL = "call";
+
 		for (Node node : vBoxRows.getChildren())
 		{
 			Label label = (Label) node;
+
+			if (label instanceof AssemblyLabel)
+			{
+				AssemblyInstruction lastAssemblyInstruction = ((AssemblyLabel) label).getInstruction();
+
+				String mnemonic = lastAssemblyInstruction.getMnemonic();
+
+				if (mnemonic != null && mnemonic.startsWith(CALL))
+				{
+					lastAssemblyIsCall = true;
+				}
+				else
+				{
+					lastAssemblyIsCall = false;
+				}
+			}
 
 			String className = getClassNameFromLabel(label);
 
@@ -338,14 +370,21 @@ public class ViewerAssembly extends Viewer
 
 				if (labelOffsetLine != null && labelOffsetLine.equals(Integer.toString(bytecodeOffset)))
 				{
-					result = pos;
-					break;
+					if (isInvoke && lastAssemblyIsCall)
+					{
+						result = pos;
+						break;
+					}
+					else if (result == -1)
+					{
+						result = pos;
+					}
 				}
 			}
 
 			pos++;
 		}
-		
+
 		return result;
 	}
 }
