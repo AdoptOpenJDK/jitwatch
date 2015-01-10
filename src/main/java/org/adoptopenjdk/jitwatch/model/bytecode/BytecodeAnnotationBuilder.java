@@ -107,6 +107,11 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 	private void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result,
 			List<BytecodeInstruction> instructions, CompilerName compilerName) throws AnnotationException
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("Building parse tag annotations");
+		}
+		
 		List<Tag> children = parseTag.getChildren();
 
 		int currentBytecode = -1;
@@ -128,6 +133,11 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 		{
 			String name = child.getName();
 			Map<String, String> tagAttrs = child.getAttrs();
+			
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Examining child tag {}", child);
+			}
 
 			switch (name)
 			{

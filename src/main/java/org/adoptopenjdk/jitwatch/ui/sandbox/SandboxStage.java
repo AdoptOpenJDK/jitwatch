@@ -408,8 +408,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	{
 		tabPane.getTabs().clear();
 
-		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTest.java"));
-		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SandboxTestLoad.java"));
+		addEditor(new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "SimpleInliningTest.java"));
 
 		saveEditorPaneConfig();
 	}

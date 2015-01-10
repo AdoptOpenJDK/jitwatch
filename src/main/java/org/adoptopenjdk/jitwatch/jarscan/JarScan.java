@@ -19,7 +19,6 @@ import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -75,7 +74,7 @@ public final class JarScan
 
 					MemberSignatureParts msp = memberBytecode.getMemberSignatureParts();
 
-					if (bcSize >= maxMethodBytes && !ParseUtil.STATIC_INIT.equals(msp.getMemberName()))
+					if (bcSize >= maxMethodBytes && !S_STATIC_INIT.equals(msp.getMemberName()))
 					{
 						writer.print(C_DOUBLE_QUOTE);
 						writer.print(className);

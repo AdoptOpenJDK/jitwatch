@@ -94,7 +94,7 @@ public class MemberSignatureParts
 		if (msp.memberName != null)
 		{
 			// Constructors will return void for returnType
-			if (ParseUtil.CONSTRUCTOR_INIT.equals(msp.memberName) || msp.memberName.equals(msp.fullyQualifiedClassName))
+			if (S_CONSTRUCTOR_INIT.equals(msp.memberName) || msp.memberName.equals(msp.fullyQualifiedClassName))
 			{
 				msp.memberName = msp.fullyQualifiedClassName;
 				msp.returnType = Void.TYPE.getName();
@@ -150,7 +150,7 @@ public class MemberSignatureParts
 	{
 		boolean isClinit = false;
 
-		if (bytecodeSignature != null && bytecodeSignature.startsWith(ParseUtil.STATIC_BYTECODE_SIGNATURE))
+		if (bytecodeSignature != null && bytecodeSignature.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE))
 		{
 			isClinit = true;
 		}
@@ -177,7 +177,7 @@ public class MemberSignatureParts
 
 		if (isStaticInitialiser(toParse))
 		{
-			msp.memberName = ParseUtil.STATIC_INIT;
+			msp.memberName = S_STATIC_INIT;
 			msp.returnType = Void.TYPE.getName();
 
 			return msp;

@@ -248,6 +248,8 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
 	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
 
+	public static final String S_CONSTRUCTOR_INIT = "<init>";
+	public static final String S_STATIC_INIT = "<clinit>";
 	public static final String S_BYTECODE_STATIC_INITIALISER_SIGNATURE = "static {}";
 
 	public static final String PUBLIC = "public";

@@ -5,19 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.journal;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BUILDIR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PARSE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 
 import java.util.List;
 
@@ -73,6 +62,11 @@ public final class JournalUtil
 			if (parsePhase != null)
 			{
 				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("About to visit {} parse tags in last <task> of Journal", parseTags.size());
+				}
 
 				for (Tag parseTag : parseTags)
 				{
@@ -141,8 +135,8 @@ public final class JournalUtil
 				}
 
 				String klassAttrName = klassTag.getAttribute(ATTR_NAME);
-				String methodAttrName = methodTag.getAttribute(ATTR_NAME);
-
+				String methodAttrName = methodTag.getAttribute(ATTR_NAME).replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);		
+				
 				if (klassAttrName != null)
 				{
 					klassAttrName = klassAttrName.replace(C_SLASH, C_DOT);
@@ -153,13 +147,24 @@ public final class JournalUtil
 
 				if (DEBUG_LOGGING)
 				{
-					logger.debug("memberName: {}", member.getMemberName());
-					logger.debug("metaClass : {}", member.getMetaClass().getFullyQualifiedName());
+					logger.debug("memberName: {}/{}", member.getMemberName(), methodAttrName);
+					logger.debug("metaClass : {}/{}", member.getMetaClass().getFullyQualifiedName(), klassAttrName);
 					logger.debug("return    : {}/{}", member.getReturnTypeName(), returnType);
-					logger.debug("params    : {}/{}", StringUtil.arrayToString(member.getParamTypeNames()), StringUtil.listToString(paramTypes));
+					logger.debug("params    : {}/{}", StringUtil.arrayToString(member.getParamTypeNames()),
+							StringUtil.listToString(paramTypes));
 				}
 
-				boolean nameMatches = member.getMemberName().equals(methodAttrName);
+				boolean nameMatches;
+							
+				if (S_CONSTRUCTOR_INIT.equals(methodAttrName))
+				{
+					nameMatches = member.getMemberName().equals(klassAttrName);
+				}
+				else
+				{
+					nameMatches = member.getMemberName().equals(methodAttrName);
+				}
+				
 				boolean klassMatches = member.getMetaClass().getFullyQualifiedName().equals(klassAttrName);
 				boolean returnMatches = member.getReturnTypeName().equals(returnType);
 
@@ -172,7 +177,8 @@ public final class JournalUtil
 						String memberParamType = member.getParamTypeNames()[pos];
 						String tagParamType = paramTypes.get(pos);
 
-						//logger.debug("checking: {}/{}", memberParamType, tagParamType);
+						// logger.debug("checking: {}/{}", memberParamType,
+						// tagParamType);
 
 						if (!memberParamType.equals(tagParamType))
 						{
@@ -188,7 +194,13 @@ public final class JournalUtil
 
 				result = nameMatches && klassMatches && returnMatches && paramsMatch;
 
-				//logger.debug("result: {}", result);
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Matched name: {} klass: {} return: {} params: {}", nameMatches, klassMatches, returnMatches,
+							paramsMatch);
+
+					logger.debug("Matches member:{} = {}", member, result);
+				}
 			}
 		}
 

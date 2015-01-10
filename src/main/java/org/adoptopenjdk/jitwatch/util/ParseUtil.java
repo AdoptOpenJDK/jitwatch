@@ -39,11 +39,6 @@ public final class ParseUtil
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP
 			+ " (\\(.*\\))(.*)");
 
-	public static final String SQUARE_BRACKET_PAIR = "[]";
-	public static final String CONSTRUCTOR_INIT = "<init>";
-	public static final String STATIC_INIT = "<clinit>";
-	public static final String STATIC_BYTECODE_SIGNATURE = "static {}";
-
 	public static final String NAME_SHORT = "short";
 	public static final String NAME_CHARACTER = "char";
 	public static final String NAME_BYTE = "byte";
@@ -193,7 +188,7 @@ public final class ParseUtil
 
 		for (int i = 0; i < arrayDepth; i++)
 		{
-			builder.append(SQUARE_BRACKET_PAIR);
+			builder.append(S_ARRAY_BRACKET_PAIR);
 		}
 
 		return builder.toString();
@@ -782,7 +777,7 @@ public final class ParseUtil
 
 	public static String getParamTypeWithoutArrayBrackets(String paramType)
 	{
-		int bracketsIndex = paramType.indexOf(SQUARE_BRACKET_PAIR);
+		int bracketsIndex = paramType.indexOf(S_ARRAY_BRACKET_PAIR);
 
 		if (bracketsIndex != -1)
 		{

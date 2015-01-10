@@ -305,7 +305,10 @@ public class JITWatchConfig
 
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0"));
+		// TODO I'm forcing no tiered compilation in sandbox until this fix for the LogCompilation output goes live
+		// http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8049532
+		// http://mail.openjdk.java.net/pipermail/hotspot-compiler-dev/2014-June/014911.html
+		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2"));
 
 		switch (tieredMode)
 		{
