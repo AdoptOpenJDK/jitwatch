@@ -107,10 +107,10 @@ public class TagProcessor
 
 			if (DEBUG_LOGGING_TAGPROCESSOR)
 			{
-				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName, currentTag.getName(), topTag.getName());
+				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName, currentTag == null ? "null" : currentTag.getName(), topTag == null ? "null" : topTag.getName());
 			}
 
-			if (closeName.equals(currentTag.getName()))
+			if (currentTag != null && closeName.equals(currentTag.getName()))
 			{
 				if (currentTag.getParent() == null)
 				{

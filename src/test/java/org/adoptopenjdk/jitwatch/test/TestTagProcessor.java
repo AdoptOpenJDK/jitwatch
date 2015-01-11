@@ -432,6 +432,32 @@ public class TestTagProcessor
 		Tag firstChildD = tag.getFirstNamedChild("d");
 		assertEquals(1, firstChildD.getAttrs().size());
 		assertEquals("eee", firstChildD.getAttribute("attr5"));
+	}
+	
+	@Test
+	public void testRegressionFragmentTagNotBroken()
+	{
+		List<String> lines = new ArrayList<>();
 
+		lines.add("<fragment>");
+		// lines.add("<![CDATA["); - stripped by log splitter
+		lines.add("<z attr0='zzz'/>");
+		// lines.add("]]>"); - stripped by log splitter
+		lines.add("</fragment>");
+
+		TagProcessor tp = new TagProcessor();
+
+		Tag tag = null;
+
+		tag = tp.processLine(lines.get(0)); // <fragment>
+		tag = tp.processLine(lines.get(1)); // <a attr1='aaa'>
+
+		assertEquals("z", tag.getName());
+		assertEquals(1, tag.getAttrs().size());
+		assertEquals("zzz", tag.getAttribute("attr0"));
+		assertEquals(0, tag.getChildren().size());
+
+		tag = tp.processLine(lines.get(2)); // <a attr1='aaa'>
+		assertNull(tag);
 	}
 }
