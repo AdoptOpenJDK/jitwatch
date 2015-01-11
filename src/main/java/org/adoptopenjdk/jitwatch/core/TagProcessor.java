@@ -72,23 +72,43 @@ public class TagProcessor
 			}
 		}
 
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("returning tag: {}", result);
+		}
+
 		if (result != null)
 		{
-			currentTag = null;
-			topTag = null;
+			resetState();
 		}
 
 		return result;
+	}
+
+	private void resetState()
+	{
+		currentTag = null;
+		topTag = null;
 	}
 
 	private Tag handleTag(String line)
 	{
 		Tag result = null;
 
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("Handling line: {}", line);
+		}
+
 		// closing tag
 		if (line.charAt(1) == C_SLASH)
 		{
 			String closeName = line.substring(2, line.length() - 1);
+
+			if (DEBUG_LOGGING_TAGPROCESSOR)
+			{
+				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName, currentTag.getName(), topTag.getName());
+			}
 
 			if (closeName.equals(currentTag.getName()))
 			{
@@ -100,6 +120,10 @@ public class TagProcessor
 				{
 					currentTag = currentTag.getParent();
 				}
+			}
+			else if (S_FRAGMENT.equals(closeName))
+			{
+				result = topTag;
 			}
 		}
 		else
@@ -132,6 +156,11 @@ public class TagProcessor
 
 	private Tag processValidLine(String line, int indexEndName, boolean selfClosing)
 	{
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("processValidLine(line:{}, indexEndName:{}, selfClosing:{})", line, indexEndName, selfClosing);
+		}
+
 		Tag result = null;
 
 		String name = line.substring(1, indexEndName);
@@ -151,11 +180,34 @@ public class TagProcessor
 			t = new Tag(name, attrs, selfClosing);
 		}
 
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("top: {}", topTag);
+		}
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("currentTag: {}", currentTag);
+		}
+		if (DEBUG_LOGGING_TAGPROCESSOR)
+		{
+			logger.debug("t: {}", t);
+		}
+
 		if (currentTag == null)
 		{
-			// new tag at top level
-			currentTag = t;
-			topTag = t;
+			if (name.equals(S_FRAGMENT))
+			{
+				logger.warn(
+						"Found a {} in the HotSpot log. The VM exited before the hotspot log was fully written. JIT information may have been lost.",
+						TAG_OPEN_FRAGMENT);
+				return null;
+			}
+			else
+			{
+				// new tag at top level
+				currentTag = t;
+				topTag = t;
+			}
 		}
 		else
 		{

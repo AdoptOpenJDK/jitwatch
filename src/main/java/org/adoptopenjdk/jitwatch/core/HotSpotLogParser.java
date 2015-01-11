@@ -5,42 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_AT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_BODY_TAGS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_HEADER_TAGS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_AT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_FILE_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMAND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_START_COMPILE_THREAD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -480,7 +445,11 @@ public class HotSpotLogParser implements ILogParser
 		}
 		else
 		{
-			if (currentLine.startsWith(S_OPEN_ANGLE))
+			if (currentLine.startsWith(TAG_OPEN_CDATA) || currentLine.startsWith(TAG_CLOSE_CDATA) || currentLine.startsWith(TAG_OPEN_CLOSE_CDATA))
+			{
+				// ignore, TagProcessor will recognise from <fragment> tag
+			}
+			else if (currentLine.startsWith(S_OPEN_ANGLE))
 			{
 				// After the header, XML nodes do not have text nodes
 				splitLog.addLogCompilationLine(numberedLine);

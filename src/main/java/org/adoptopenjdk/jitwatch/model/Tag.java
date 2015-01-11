@@ -25,6 +25,7 @@ public class Tag
 	private List<Tag> children = new ArrayList<>();
 	private Tag parent = null;
 	private boolean selfClosing = false;
+	private boolean isFragment = false;
 	private String textContent = null;
 
 	private static final String INDENT = "  ";
@@ -274,4 +275,14 @@ public class Tag
         result = 31 * result + (textContent != null ? textContent.hashCode() : 0);
         return result;
     }
+
+	public boolean isFragment()
+	{
+		return isFragment;
+	}
+
+	public void setFragment(boolean isFragment)
+	{
+		this.isFragment = isFragment;
+	}
 }

@@ -12,7 +12,8 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 import org.junit.Test;
 
 public class TestMemberSignatureParts
@@ -297,7 +298,7 @@ public class TestMemberSignatureParts
 		assertEquals(0, modListBC.size());
 		assertEquals(0, mspBC.getGenerics().size());
 		assertEquals("void", mspBC.getReturnType());
-		assertEquals(ParseUtil.STATIC_INIT, mspBC.getMemberName());
+		assertEquals(S_STATIC_INIT, mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 	}
 

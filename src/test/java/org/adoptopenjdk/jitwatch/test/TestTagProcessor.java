@@ -9,6 +9,8 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
@@ -221,17 +223,17 @@ public class TestTagProcessor
 		assertNotNull(tag);
 
 		assertEquals(TAG_VM_VERSION, tag.getName());
-		
+
 		List<Tag> children = tag.getChildren();
-		
+
 		assertEquals(3, children.size());
 
 		Tag tagRelease = children.get(1);
-		
-		assertEquals(TAG_RELEASE, tagRelease.getName());	
+
+		assertEquals(TAG_RELEASE, tagRelease.getName());
 		assertEquals(line5, tagRelease.getTextContent());
 	}
-	
+
 	@Test
 	public void testTweakSelfClosingTag()
 	{
@@ -269,115 +271,167 @@ public class TestTagProcessor
 		assertNotNull(tag);
 
 		assertEquals(TAG_VM_VERSION, tag.getName());
-		
+
 		List<Tag> children = tag.getChildren();
-		
+
 		assertEquals(4, children.size());
-		
+
 		Tag tagTweakVM = children.get(0);
-		
-		assertEquals(TAG_TWEAK_VM, tagTweakVM.getName());	
+
+		assertEquals(TAG_TWEAK_VM, tagTweakVM.getName());
 		assertEquals(null, tagTweakVM.getTextContent());
 
 		Tag tagRelease = children.get(2);
-		
-		assertEquals(TAG_RELEASE, tagRelease.getName());	
+
+		assertEquals(TAG_RELEASE, tagRelease.getName());
 		assertEquals(line6, tagRelease.getTextContent());
 	}
 
+	/*
+	 * Scenario: Parsing an undefined line Given an undefined line is available
+	 * When the tag processor parses such a line Then no tag objects are
+	 * returned
+	 */
+	@Test
+	public void givenAnUndefinedLineIsAvailable_WhenTheTagProcessorProcessesIt_ThenNoTagsAreReturned()
+	{
+		// Given
+		Tag expectedParseResult = null;
+		String line = null;
 
-    /*
-        Scenario: Parsing an undefined line
-            Given an undefined line is available
-            When the tag processor parses such a line
-            Then no tag objects are returned
-     */
-    @Test
-    public void givenAnUndefinedLineIsAvailable_WhenTheTagProcessorProcessesIt_ThenNoTagsAreReturned() {
-        // Given
-        Tag expectedParseResult = null;
-        String line = null;
+		// When
+		TagProcessor tagProcessor = new TagProcessor();
+		Tag actualParseResult = tagProcessor.processLine(line);
 
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        Tag actualParseResult = tagProcessor.processLine(line);
+		// Then
+		assertThat("No tags should have been returned.", actualParseResult, is(equalTo(expectedParseResult)));
+	}
 
-        // Then
-        assertThat("No tags should have been returned.",
-                actualParseResult,
-                is(equalTo(expectedParseResult)));
-    }
+	/*
+	 * Scenario: Parsing a line containing partially completed tag Given a line
+	 * containing a partially completed tag is available When the tag processor
+	 * parses such a line Then no tag objects are returned
+	 */
+	@Test
+	public void givenAThreeCharatersLineStartingWithOpenBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned()
+	{
+		// Given
+		Tag expectedParseResult = null;
+		String lineWith3LettersStartingWithOpenAngleBracket = JITWatchConstants.C_OPEN_ANGLE + "12";
 
-    /*
-        Scenario: Parsing a line containing partially completed tag
-            Given a line containing a partially completed tag is available
-            When the tag processor parses such a line
-            Then no tag objects are returned
-     */
-    @Test
-    public void givenAThreeCharatersLineStartingWithOpenBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
-        // Given
-        Tag expectedParseResult = null;
-        String lineWith3LettersStartingWithOpenAngleBracket =
-                JITWatchConstants.C_OPEN_ANGLE + "12";
+		// When
+		TagProcessor tagProcessor = new TagProcessor();
+		Tag actualParseResult = tagProcessor.processLine(lineWith3LettersStartingWithOpenAngleBracket);
 
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        Tag actualParseResult = tagProcessor.processLine(lineWith3LettersStartingWithOpenAngleBracket);
+		// Then
+		assertThat("No tags should have been returned.", actualParseResult, is(equalTo(expectedParseResult)));
+	}
 
-        // Then
-        assertThat("No tags should have been returned.",
-                actualParseResult,
-                is(equalTo(expectedParseResult)));
-    }
+	/*
+	 * Scenario: Parsing a line containing different open and close tags Given a
+	 * line containing an open tag of type 'task' And another closing tag of
+	 * type 'tag' When the tag processor parses such a line Then no tags should
+	 * be returned
+	 */
+	@Test
+	public void givenALineWithTwoDifferentOpenCloseTags_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned()
+	{
+		// Given
+		Tag expectedParseResult = null;
+		String aLineWithOpeningTag = "<loop idx='1012' inner_loop='1' >";
+		String aLineWithClosingTag = "</line>";
 
+		// When
+		TagProcessor tagProcessor = new TagProcessor();
+		tagProcessor.processLine(aLineWithOpeningTag);
+		Tag actualTag = tagProcessor.processLine(aLineWithClosingTag);
 
-    /*
-        Scenario: Parsing a line containing different open and close tags
-            Given a line containing an open tag of type 'task'
-            And another closing tag of type 'tag'
-            When the tag processor parses such a line
-            Then no tags should be returned
-    */
-    @Test
-    public void givenALineWithTwoDifferentOpenCloseTags_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
-        // Given
-        Tag expectedParseResult = null;
-        String aLineWithOpeningTag = "<loop idx='1012' inner_loop='1' >";
-        String aLineWithClosingTag = "</line>";
+		// Then
+		assertThat("No tags should have been returned.", actualTag, is(equalTo(expectedParseResult)));
+	}
 
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        tagProcessor.processLine(aLineWithOpeningTag);
-        Tag actualTag = tagProcessor.processLine(aLineWithClosingTag);
+	/*
+	 * Scenario: Parsing a line containing an opening tag without a closing
+	 * angle bracket (invalid) Given a line containing an open tag And the
+	 * closing angle bracket of the tag is missing When the tag processor parses
+	 * such a line Then no tags should be returned
+	 */
+	@Test
+	public void givenALineWithAnOpenTagWithNoCloseAngleBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned()
+	{
+		// Given
+		Tag expectedParseResult = null;
+		String aLineWithOpeningTagWithoutClosingAngleBracket = "<loop";
 
-        // Then
-        assertThat("No tags should have been returned.",
-                actualTag,
-                is(equalTo(expectedParseResult)));
-    }
+		// When
+		TagProcessor tagProcessor = new TagProcessor();
+		Tag actualTag = tagProcessor.processLine(aLineWithOpeningTagWithoutClosingAngleBracket);
 
+		// Then
+		assertThat("No tags should have been returned.", actualTag, is(equalTo(expectedParseResult)));
+	}
 
-    /*
-        Scenario: Parsing a line containing an opening tag without a closing angle bracket (invalid)
-            Given a line containing an open tag
-            And the closing angle bracket of the tag is missing
-            When the tag processor parses such a line
-            Then no tags should be returned
-    */
-    @Test
-    public void givenALineWithAnOpenTagWithNoCloseAngleBracket_WhenTheTagProcessorActionsIt_ThenNoTagsAreReturned() {
-        // Given
-        Tag expectedParseResult = null;
-        String aLineWithOpeningTagWithoutClosingAngleBracket = "<loop";
+	@Test
+	public void testRegressionFragmentTag()
+	{
+		List<String> lines = new ArrayList<>();
 
-        // When
-        TagProcessor tagProcessor = new TagProcessor();
-        Tag actualTag = tagProcessor.processLine(aLineWithOpeningTagWithoutClosingAngleBracket);
+		lines.add("<fragment>");
+		// lines.add("<![CDATA["); - stripped by log splitter
+		lines.add("<z attr0='zzz'/>");
+		lines.add("<a attr1='aaa'>");
+		lines.add("<b attr2='bbb' attr3='ccc'/>");
+		lines.add("<c attr4='ddd'/>");
+		lines.add("<d attr5='eee'>");
+		// lines.add("]]>"); - stripped by log splitter
+		lines.add("</fragment>");
 
-        // Then
-        assertThat("No tags should have been returned.",
-                actualTag,
-                is(equalTo(expectedParseResult)));
-    }
+		TagProcessor tp = new TagProcessor();
+
+		Tag tag = null;
+
+		tag = tp.processLine(lines.get(0)); // <fragment>
+		tag = tp.processLine(lines.get(1)); // <a attr1='aaa'>
+
+		assertEquals("z", tag.getName());
+		assertEquals(1, tag.getAttrs().size());
+		assertEquals("zzz", tag.getAttribute("attr0"));
+		assertEquals(0, tag.getChildren().size());
+
+		tag = tp.processLine(lines.get(2)); // <a attr1='aaa'>
+		assertNull(tag);
+
+		tag = tp.processLine(lines.get(3)); // <b attr2='bbb' attr3='ccc'/>
+		assertNull(tag);
+		
+		tag = tp.processLine(lines.get(4)); // <c attr4='ddd'/>
+		assertNull(tag);
+		
+		tag = tp.processLine(lines.get(5)); // <d attr5='eee'>
+		assertNull(tag);
+
+		tag = tp.processLine(lines.get(6)); // </fragment>
+		assertNotNull(tag);
+
+		assertEquals("a", tag.getName());
+		assertEquals("aaa", tag.getAttribute("attr1"));
+		assertEquals(3, tag.getChildren().size());
+
+		List<Tag> childrenB = tag.getNamedChildren("b");
+		assertEquals(1, childrenB.size());
+
+		Tag firstChildB = tag.getFirstNamedChild("b");
+		assertEquals(2, firstChildB.getAttrs().size());
+		assertEquals("bbb", firstChildB.getAttribute("attr2"));
+		assertEquals("ccc", firstChildB.getAttribute("attr3"));
+
+		Tag firstChildC = tag.getFirstNamedChild("c");
+		assertEquals(1, firstChildC.getAttrs().size());
+		assertEquals("ddd", firstChildC.getAttribute("attr4"));
+
+		Tag firstChildD = tag.getFirstNamedChild("d");
+		assertEquals(1, firstChildD.getAttrs().size());
+		assertEquals("eee", firstChildD.getAttribute("attr5"));
+
+	}
 }

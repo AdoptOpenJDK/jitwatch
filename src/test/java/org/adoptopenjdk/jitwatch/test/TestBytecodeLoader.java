@@ -5,8 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +29,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.junit.Test;
 
 public class TestBytecodeLoader
@@ -625,7 +623,7 @@ public class TestBytecodeLoader
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(),
-				ParseUtil.STATIC_BYTECODE_SIGNATURE);
+				S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecodeForSignature(msp);
 
@@ -686,9 +684,7 @@ public class TestBytecodeLoader
 		ClassBC classBytecode = new ClassBC();
 		
 		BytecodeLoader.buildClassGenerics(line, classBytecode);
-		
-		System.out.println(classBytecode.getGenericsMap().entrySet());
-		
+				
 		assertEquals(2, classBytecode.getGenericsMap().size());
 		assertTrue(classBytecode.getGenericsMap().containsKey("K"));
 		assertEquals("java.lang.Integer", classBytecode.getGenericsMap().get("K"));
