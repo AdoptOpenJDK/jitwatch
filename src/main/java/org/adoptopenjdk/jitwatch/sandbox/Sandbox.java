@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
@@ -217,7 +218,7 @@ public class Sandbox
 		{
 			options.add("-XX:-Inline");
 		}
-
+		
 		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
 
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
@@ -240,6 +241,17 @@ public class Sandbox
 			options.add("-XX:-UseCompressedOops");
 		}
 
+		BackgroundCompilation backgroundCompilationMode = logParser.getConfig().getBackgroundCompilationMode();
+
+		if (backgroundCompilationMode == BackgroundCompilation.FORCE_BACKGROUND_COMPILATION)
+		{
+			options.add("-XX:+BackgroundCompilation");
+		}
+		else if (backgroundCompilationMode == BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION)
+		{
+			options.add("-XX:-BackgroundCompilation");
+		}
+		
 		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
 			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());

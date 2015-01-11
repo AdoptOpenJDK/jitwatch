@@ -27,6 +27,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.FileChooserList;
@@ -68,11 +69,11 @@ public class SandboxConfigStage extends Stage
 
 		VBox vbox = new VBox();
 
-		scene = new Scene(vbox, 620, 520);
+		scene = new Scene(vbox, 620, 550);
 
 		setScene(scene);
 
-		vbox.setPadding(new Insets(15));
+		vbox.setPadding(new Insets(5, 15, 5, 15));
 		vbox.setSpacing(15);
 
 		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getConfiguredClassLocations());
@@ -92,6 +93,8 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(buildHBoxTieredCompilation());
 
 		vbox.getChildren().add(buildHBoxCompressedOops());
+
+		vbox.getChildren().add(buildHBoxBackgroundCompilation());
 
 		vbox.getChildren().add(buildHBoxInliningSettings());
 
@@ -218,8 +221,6 @@ public class SandboxConfigStage extends Stage
 				getChangeListenerForGroupAssemblySyntax(rbIntel, groupAssemblySyntax));
 
 		HBox hbox = new HBox();
-
-		hbox.setSpacing(20);
 
 		hbox.getChildren().add(buildCheckBoxPrintAssembly());
 		hbox.getChildren().add(rbATT);
@@ -389,6 +390,64 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
+	private HBox buildHBoxBackgroundCompilation()
+	{
+		final RadioButton rbVMDefault = new RadioButton("VM Default");
+
+		final RadioButton rbForceBackgroundCompilation = new RadioButton("Always");
+		rbForceBackgroundCompilation.setTooltip(new Tooltip("-XX:+BackgroundCompilation"));
+
+		final RadioButton rbForceNoBackgroundCompilation = new RadioButton("Never");
+		rbForceNoBackgroundCompilation.setTooltip(new Tooltip("-XX:-BackgroundCompilation"));
+
+		final ToggleGroup groupBackgroundCompilation = new ToggleGroup();
+
+		rbVMDefault.setStyle(DEFAULT_DISPLAY_STYLE);
+		rbForceBackgroundCompilation.setStyle(DEFAULT_DISPLAY_STYLE);
+
+		BackgroundCompilation backgroundCompilationMode = config.getBackgroundCompilationMode();
+
+		switch (backgroundCompilationMode)
+		{
+		case VM_DEFAULT:
+			rbVMDefault.setSelected(true);
+			rbForceBackgroundCompilation.setSelected(false);
+			rbForceNoBackgroundCompilation.setSelected(false);
+			break;
+		case FORCE_BACKGROUND_COMPILATION:
+			rbVMDefault.setSelected(false);
+			rbForceBackgroundCompilation.setSelected(true);
+			rbForceNoBackgroundCompilation.setSelected(false);
+			break;
+		case FORCE_NO_BACKGROUND_COMPILATION:
+			rbVMDefault.setSelected(false);
+			rbForceBackgroundCompilation.setSelected(false);
+			rbForceNoBackgroundCompilation.setSelected(true);
+			break;
+		}
+
+		rbVMDefault.setToggleGroup(groupBackgroundCompilation);
+		rbForceBackgroundCompilation.setToggleGroup(groupBackgroundCompilation);
+		rbForceNoBackgroundCompilation.setToggleGroup(groupBackgroundCompilation);
+
+		groupBackgroundCompilation.selectedToggleProperty().addListener(
+				getChangeListenerForBackgroundCompilation(rbVMDefault, rbForceBackgroundCompilation,
+						rbForceNoBackgroundCompilation, groupBackgroundCompilation));
+
+		HBox hbox = new HBox();
+
+		Label lblMode = new Label("Background JIT:");
+		lblMode.setMinWidth(labelWidth);
+
+		hbox.getChildren().add(lblMode);
+
+		hbox.getChildren().add(rbVMDefault);
+		hbox.getChildren().add(rbForceBackgroundCompilation);
+		hbox.getChildren().add(rbForceNoBackgroundCompilation);
+
+		return hbox;
+	}
+
 	private HBox buildHBoxInliningSettings()
 	{
 		HBox hbox = new HBox();
@@ -406,11 +465,9 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		hbox.setSpacing(20);
-
 		Label labelThreshold = new Label("Compile Threshold:");
 		labelThreshold.setTooltip(new Tooltip("-XX:CompileThreshold"));
-		labelThreshold.setMinWidth(140);
+		labelThreshold.setMinWidth(labelWidth);
 
 		txtCompilerThreshold = new TextField(Integer.toString(config.getCompileThreshold()));
 		txtCompilerThreshold.setMaxWidth(60);
@@ -426,10 +483,8 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		hbox.setSpacing(20);
-
 		Label labelExtra = new Label("Extra VM switches:");
-		labelExtra.setMinWidth(140);
+		labelExtra.setMinWidth(labelWidth);
 
 		txtExtraSwitches = new TextField(config.getExtraVMSwitches());
 		txtExtraSwitches.prefWidthProperty().bind(scene.widthProperty());
@@ -470,6 +525,36 @@ public class SandboxConfigStage extends Stage
 		};
 	}
 
+	private ChangeListener<Toggle> getChangeListenerForBackgroundCompilation(final RadioButton rbVMDefault,
+			final RadioButton rbForceBackgroundCompilation, final RadioButton rbForceNoBackgroundCompilation,
+			final ToggleGroup groupBackgroundCompilation)
+	{
+		return new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				Toggle selectedToggle = groupBackgroundCompilation.getSelectedToggle();
+
+				if (selectedToggle != null)
+				{
+					if (selectedToggle.equals(rbForceBackgroundCompilation))
+					{
+						config.setBackgroundCompilationMode(BackgroundCompilation.FORCE_BACKGROUND_COMPILATION);
+					}
+					else if (selectedToggle.equals(rbForceNoBackgroundCompilation))
+					{
+						config.setBackgroundCompilationMode(BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION);
+					}
+					else if (selectedToggle.equals(rbVMDefault))
+					{
+						config.setBackgroundCompilationMode(BackgroundCompilation.VM_DEFAULT);
+					}
+				}
+			}
+		};
+	}
+
 	private void buildHBoxFreqInline(HBox hbCompilerSettings)
 	{
 		txtFreqInline = new TextField(Integer.toString(config.getFreqInlineSize()));
@@ -500,7 +585,8 @@ public class SandboxConfigStage extends Stage
 
 	private CheckBox buildCheckBoxPrintAssembly()
 	{
-		checkBoxPrintAssembly = new CheckBox("Disassemble native code");
+		checkBoxPrintAssembly = new CheckBox("Show Disassembly");
+		checkBoxPrintAssembly.setMinWidth(labelWidth);
 
 		boolean checked = false;
 
@@ -525,6 +611,8 @@ public class SandboxConfigStage extends Stage
 	{
 		checkBoxDisableInlining = new CheckBox("Disable Inlining");
 		checkBoxDisableInlining.setTooltip(new Tooltip("-XX:-Inline"));
+
+		checkBoxDisableInlining.setMinWidth(labelWidth - 20);
 
 		checkBoxDisableInlining.setSelected(config.isDisableInlining());
 

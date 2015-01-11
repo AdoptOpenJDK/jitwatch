@@ -41,6 +41,11 @@ public class JITWatchConfig
 	{
 		VM_DEFAULT, FORCE_COMPRESSED, FORCE_NO_COMPRESSED;
 	}
+	
+	public enum BackgroundCompilation
+	{
+		VM_DEFAULT, FORCE_BACKGROUND_COMPILATION, FORCE_NO_BACKGROUND_COMPILATION;
+	}
 
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchConfig.class);
 
@@ -68,6 +73,8 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_DISABLE_INLINING = SANDBOX_PREFIX + ".disable.inlining";
 	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
 	private static final String KEY_SANDBOX_EXTRA_VM_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches";
+	private static final String KEY_SANDBOX_BACKGROUND_COMPILATION = SANDBOX_PREFIX + ".background.compilation";
+
 	private static final String KEY_LAST_PROFILE = "last.profile";
 
 	private List<String> sourceLocations = new ArrayList<>();
@@ -82,6 +89,7 @@ public class JITWatchConfig
 	private boolean intelMode = false;
 	private TieredCompilation tieredCompilationMode;
 	private CompressedOops compressedOopsMode;
+	private BackgroundCompilation backgroundCompilation;
 
 	private int freqInlineSize;
 	private int maxInlineSize;
@@ -337,7 +345,22 @@ public class JITWatchConfig
 			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
 			break;
 		}
+		
+		int backgroundCompilationMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2"));
 
+		switch (backgroundCompilationMode)
+		{
+		case 0:
+			backgroundCompilation = BackgroundCompilation.VM_DEFAULT;
+			break;
+		case 1:
+			backgroundCompilation = BackgroundCompilation.FORCE_BACKGROUND_COMPILATION;
+			break;
+		case 2:
+			backgroundCompilation = BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION;
+			break;
+		}
+		
 		freqInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
 
 		maxInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
@@ -474,6 +497,19 @@ public class JITWatchConfig
 			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
 		}
+		
+		switch (backgroundCompilation)
+		{
+		case VM_DEFAULT:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "0");
+			break;
+		case FORCE_BACKGROUND_COMPILATION:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "1");
+			break;
+		case FORCE_NO_BACKGROUND_COMPILATION:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2");
+			break;
+		}	
 
 		if (lastLogDir != null)
 		{
@@ -487,6 +523,7 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
 
 		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
+		
 
 		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compileThreshold));
 
@@ -709,7 +746,7 @@ public class JITWatchConfig
 	{
 		this.disableInlining = disableInlining;
 	}
-
+	
 	public int getCompileThreshold()
 	{
 		return compileThreshold;
@@ -738,6 +775,16 @@ public class JITWatchConfig
 	public void setCompressedOopsMode(CompressedOops compressedOopsMode)
 	{
 		this.compressedOopsMode = compressedOopsMode;
+	}
+	
+	public BackgroundCompilation getBackgroundCompilationMode()
+	{
+		return backgroundCompilation;
+	}
+
+	public void setBackgroundCompilationMode(BackgroundCompilation backgroundCompilation)
+	{
+		this.backgroundCompilation = backgroundCompilation;
 	}
 
 	public void addOrUpdateVMLanguage(String language, String path)

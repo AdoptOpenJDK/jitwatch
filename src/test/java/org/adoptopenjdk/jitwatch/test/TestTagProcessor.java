@@ -450,14 +450,14 @@ public class TestTagProcessor
 		Tag tag = null;
 
 		tag = tp.processLine(lines.get(0)); // <fragment>
-		tag = tp.processLine(lines.get(1)); // <a attr1='aaa'>
+		tag = tp.processLine(lines.get(1)); // <z attr0='zzz'>
 
 		assertEquals("z", tag.getName());
 		assertEquals(1, tag.getAttrs().size());
 		assertEquals("zzz", tag.getAttribute("attr0"));
 		assertEquals(0, tag.getChildren().size());
 
-		tag = tp.processLine(lines.get(2)); // <a attr1='aaa'>
+		tag = tp.processLine(lines.get(2)); // </fragment>
 		assertNull(tag);
 	}
 }
