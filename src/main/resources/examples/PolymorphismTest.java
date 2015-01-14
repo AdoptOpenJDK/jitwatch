@@ -5,21 +5,20 @@ public class PolymorphismTest
     void speak();
   }
 
+  public static int woofs = 0, miaows = 0, moos = 0;
+
   public class Dog implements Animal
   {
-    public int woofs = 0;
     public void speak() { woofs++; }
   }
 
   public class Cat implements Animal
   {
-    public int miaows = 0;
     public void speak() { miaows++; }
   }
 
   public class Cow implements Animal
   {
-    public int moos = 0;
     public void speak() { moos++; }
   }
 
@@ -31,12 +30,9 @@ public class PolymorphismTest
 
     Animal creature = null;
 
-    // Run with -XX:-TieredCompilation and -XX:-Inline
-    // to see the effect of HotSpot optimising the virtual call
-
-    // 1 = monomorphic dispatch - virtual call will be optimised
-    // 2 = bimorphic dispatch   - virtual call will be optimised
-    // 3 = polymorphic dispatch - virtual call will not be optimised
+    // change the variable maxImplementations to control the inlining behaviour
+    // 2 = bimorphic dispatch   - the method call will be inlined
+    // 3 = polymorphic dispatch - the method call will not be inlined
 
     final int maxImplementations = 2;
 
@@ -51,11 +47,12 @@ public class PolymorphismTest
 
        creature.speak();
     }
+
+    System.out.println("Woofs:" + woofs + " Miaows:" + miaows + " Moos:" + moos);
   }
 
   public static void main(String[] args)
   {
     new PolymorphismTest();
   }
-
 }
