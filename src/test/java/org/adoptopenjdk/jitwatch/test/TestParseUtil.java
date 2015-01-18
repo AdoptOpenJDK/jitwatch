@@ -632,14 +632,14 @@ public class TestParseUtil
 
 		assertEquals(Class.forName("[[I"), ParseUtil.findClassForLogCompilationParameter("int[][]"));
 	}
-	
+
 	@Test
 	public void testFindClassForLogCompilationParameterRegressionForGenerics() throws Exception
 	{
-		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<?>"));		
-		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<T>"));		
+		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<?>"));
+		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<T>"));
 	}
-	
+
 	@Test
 	public void testStripGenerics()
 	{
@@ -650,7 +650,6 @@ public class TestParseUtil
 		assertEquals("java.util.List", ParseUtil.stripGenerics("java.util.List<? super T>"));
 		assertEquals("java.util.List[]", ParseUtil.stripGenerics("java.util.List<? super T>[]"));
 		assertEquals("java.util.List[]", ParseUtil.stripGenerics("java.util.List<?>[]"));
-
 	}
 
 	@Test
@@ -817,10 +816,10 @@ public class TestParseUtil
 		IMetaMember memberToUpperCase = model.findMetaMember(mspToUpperCase);
 
 		assertNotNull(memberToUpperCase);
-		
+
 		assertEquals(0, memberToUpperCase.getParamTypeNames().length);
 	}
-	
+
 	@Test
 	public void testRegressionStringToUpperLocale() throws Exception
 	{
@@ -833,8 +832,22 @@ public class TestParseUtil
 		IMetaMember memberToUpperCaseLocale = model.findMetaMember(mspToUpperCaseLocale);
 
 		assertNotNull(memberToUpperCaseLocale);
-		
+
 		assertEquals(1, memberToUpperCaseLocale.getParamTypeNames().length);
 		assertEquals("java.util.Locale", memberToUpperCaseLocale.getParamTypeNames()[0]);
+	}
+
+	@Test
+	public void testValhallaRegressionBytecodeNameContainsCharacterNotValidAsJavaName() throws Exception
+	{
+		String sig = "ArrayList${0=I} ensureCapacity (I)V";
+
+		String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
+
+		assertNotNull(parts);
+		assertEquals("ArrayList${0=I}", parts[0]);
+		assertEquals("ensureCapacity", parts[1]);
+		assertEquals("I", parts[2]);
+		assertEquals("V", parts[3]);
 	}
 }
