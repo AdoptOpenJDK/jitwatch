@@ -5,7 +5,39 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OBJECT_REF;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_OVC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ARRAY_BRACKET_PAIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PACKAGE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -34,10 +66,15 @@ public final class ParseUtil
 
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 
-	public static String METHOD_NAME_REGEX_GROUP = "([\\p{L}0-9_<>\\.\\$]+)";
+	//http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2
+	public static String CLASS_NAME_REGEX_GROUP = "([^;\\[/<>]+)";
+	public static String METHOD_NAME_REGEX_GROUP = "([^;\\[/]+)";
 
-	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^([0-9\\p{L}\\.\\$_]+) " + METHOD_NAME_REGEX_GROUP
-			+ " (\\(.*\\))(.*)");
+	public static String PARAM_REGEX_GROUP = "(\\(.*\\))";
+	public static String RETURN_REGEX_GROUP = "(.*)";
+
+	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^" + CLASS_NAME_REGEX_GROUP + " "
+			+ METHOD_NAME_REGEX_GROUP + " " + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
 
 	public static final String NAME_SHORT = "short";
 	public static final String NAME_CHARACTER = "char";
@@ -271,7 +308,7 @@ public final class ParseUtil
 			{
 				param = stripGenerics(param);
 			}
-			
+
 			if (arrayBracketCount == 0)
 			{
 				if (param.endsWith(S_VARARGS_DOTS))
