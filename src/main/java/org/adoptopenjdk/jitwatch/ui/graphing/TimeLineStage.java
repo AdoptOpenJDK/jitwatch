@@ -5,9 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.StageStyle;
 
 import org.adoptopenjdk.jitwatch.model.EventType;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -16,14 +27,6 @@ import org.adoptopenjdk.jitwatch.model.JITStats;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.stage.StageStyle;
 
 public class TimeLineStage extends AbstractGraphStage
 {
@@ -43,7 +46,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 		root.getChildren().add(canvas);
 
-		setTitle("JITWatch Compilations Timeline");
+		setTitle("Compilations Timeline");
 
 		setScene(scene);
 		show();
@@ -113,14 +116,20 @@ public class TimeLineStage extends AbstractGraphStage
 
 			for (JITEvent event : events)
 			{
+				System.out.println("EVENT: " + event);
+
 				if (event.getEventType() != EventType.QUEUE)
 				{
 					long stamp = event.getStamp();
 
+					System.out.println("TIME: " + stamp);
+
 					cumC++;
 
 					double x = graphGapLeft + normaliseX(stamp);
+
 					double y = graphGapTop + normaliseY(cumC);
+
 
 					gc.setLineWidth(2);
 					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
@@ -129,10 +138,10 @@ public class TimeLineStage extends AbstractGraphStage
 					lastCX = x;
 					lastCY = y;
 
-					if (compiledStampTime != -1 && stamp > compiledStampTime)
+					if (compiledStampTime != -1 && stamp == compiledStampTime)
 					{
 						double smX = graphGapLeft + normaliseX(compiledStampTime);
-						
+
 						double blobX = fix(smX - markerDiameter / 2);
 						double blobY = fix(y - markerDiameter / 2);
 
@@ -166,9 +175,9 @@ public class TimeLineStage extends AbstractGraphStage
 						}
 
 						double approxWidth = selectedItemBuilder.length() * 5.5;
-						
+
 						double selectedLabelX;
-						
+
 						if (blobX + approxWidth > chartWidth)
 						{
 							selectedLabelX = blobX - approxWidth - 16;
@@ -177,7 +186,7 @@ public class TimeLineStage extends AbstractGraphStage
 						{
 							selectedLabelX = blobX + 32;
 						}
-						
+
 						double selectedLabelY = Math.min(blobY+8, graphGapTop + chartHeight - 32);
 
 			            gc.setFill(Color.WHITE);
@@ -189,7 +198,7 @@ public class TimeLineStage extends AbstractGraphStage
 						gc.strokeText(selectedItemBuilder.toString(), fix(selectedLabelX), fix(selectedLabelY));
 
 						compiledStampTime = -1;
-						
+
 			            gc.setStroke(Color.BLUE);
 
 					}
