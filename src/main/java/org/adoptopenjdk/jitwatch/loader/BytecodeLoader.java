@@ -5,7 +5,35 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_HASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CONSTANT_POOL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTIONS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_INNERCLASSES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LINENUMBERTABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LOCALVARIABLETABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STACKMAPTABLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,7 +74,7 @@ public final class BytecodeLoader
 
 	enum BytecodeSection
 	{
-		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE
+		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE, INNERCLASSES
 	}
 
 	private static final Map<String, BytecodeSection> sectionLabelMap = new HashMap<>();
@@ -60,6 +88,7 @@ public final class BytecodeLoader
 		sectionLabelMap.put(S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS, BytecodeSection.RUNTIMEVISIBLEANNOTATIONS);
 		sectionLabelMap.put(S_BYTECODE_EXCEPTIONS, BytecodeSection.EXCEPTIONS);
 		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
+		sectionLabelMap.put(S_BYTECODE_INNERCLASSES, BytecodeSection.INNERCLASSES);
 	}
 
 	private BytecodeLoader()
@@ -75,6 +104,7 @@ public final class BytecodeLoader
 		return null;
 	}
 
+	//TODO return list? or combine? (latter)
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
@@ -96,7 +126,16 @@ public final class BytecodeLoader
 
 		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
 
-		return parsedByteCodeFrom(fqClassName, byteCodeString);
+		ClassBC classBytecode = parsedByteCodeFrom(fqClassName, byteCodeString);
+
+		List<String> innerClassNames = classBytecode.getInnerClassNames();
+
+		for (String innerClassName : innerClassNames)
+		{
+			System.out.println("innerClassName:" + innerClassName);
+		}
+
+		return classBytecode;
 	}
 
 	private static ClassBC parsedByteCodeFrom(String fqClassName, String byteCodeString)
@@ -182,7 +221,7 @@ public final class BytecodeLoader
 		BytecodeSection section = BytecodeSection.NONE;
 
 		MemberSignatureParts msp = null;
-		
+
 		MemberBytecode memberBytecode = null;
 
 		while (pos < lines.length)
@@ -191,7 +230,7 @@ public final class BytecodeLoader
 
 			if (DEBUG_LOGGING_BYTECODE)
 			{
-				logger.debug("Line: {}", line);
+				logger.debug("Line: '{}'", line);
 			}
 
 			BytecodeSection nextSection = getNextSection(line);
@@ -219,10 +258,10 @@ public final class BytecodeLoader
 			case NONE:
 				if (couldBeMemberSignature(line))
 				{
-					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);				
-					
+					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);
+
 					msp.setClassBC(classBytecode);
-					
+
 					if (DEBUG_LOGGING_BYTECODE)
 					{
 						logger.debug("New signature: {}", msp);
@@ -235,19 +274,42 @@ public final class BytecodeLoader
 						logger.debug("Initialised new MemberBytecode");
 					}
 				}
+				else if (line.startsWith(S_BYTECODE_SIGNATURE))
+				{
+					buildClassGenerics(line, classBytecode);
+				}
 				else if (line.startsWith(S_BYTECODE_MINOR_VERSION))
 				{
 					int minorVersion = getVersionPart(line);
-					classBytecode.setMinorVersion(minorVersion);
+
+					if (minorVersion != -1)
+					{
+						classBytecode.setMinorVersion(minorVersion);
+					}
 				}
 				else if (line.startsWith(S_BYTECODE_MAJOR_VERSION))
 				{
 					int majorVersion = getVersionPart(line);
-					classBytecode.setMajorVersion(majorVersion);
+
+					if (majorVersion != -1)
+					{
+						classBytecode.setMajorVersion(majorVersion);
+					}
 				}
-				else if (line.startsWith(S_BYTECODE_SIGNATURE))
+				break;
+			case INNERCLASSES:
+				System.out.println("INNER? : " + line);
+				String innerClassName = getInnerClassNameOrNull(line);
+				if (innerClassName != null)
 				{
-					buildClassGenerics(line, classBytecode);
+					System.out.println("YES : " + innerClassName);
+
+					classBytecode.addInnerClassName(innerClassName);
+				}
+				else
+				{
+					section = changeSection(BytecodeSection.NONE);
+					pos--;
 				}
 				break;
 			case CODE:
@@ -290,18 +352,41 @@ public final class BytecodeLoader
 		return classBytecode;
 	}
 
+	public static String getInnerClassNameOrNull(String innerClassLine)
+	{
+		String result = null;
+
+		if (innerClassLine != null)
+		{
+			String tempResult = StringUtil.getSubstringBetween(innerClassLine, S_DOUBLE_SLASH, " of class");
+
+			if (tempResult != null)
+			{
+				int startIndex = tempResult.indexOf(S_SPACE);
+
+				if (startIndex != -1)
+				{
+					result = tempResult.substring(startIndex + 1);
+				}
+
+			}
+		}
+
+		return result;
+	}
+
 	public static void buildClassGenerics(String line, ClassBC classBytecode)
-	{		
+	{
 		StringBuilder keyBuilder = new StringBuilder();
 		StringBuilder valBuilder = new StringBuilder();
-		
+
 		boolean inKey = false;
 		boolean inVal = false;
-		
+
 		for (int i = 0; i < line.length(); i++)
 		{
 			char c = line.charAt(i);
-			
+
 			if (c == C_OPEN_ANGLE)
 			{
 				inKey = true;
@@ -321,18 +406,18 @@ public final class BytecodeLoader
 				{
 					String key = keyBuilder.toString();
 					String val = valBuilder.toString();
-					
+
 					if (val.length() > 0)
 					{
 						val = val.substring(1); // string leading 'L'
 						val = val.replace(S_SLASH, S_DOT);
 					}
-					
+
 					classBytecode.addGenericsMapping(key, val);
-										
+
 					keyBuilder.setLength(0);
 					valBuilder.setLength(0);
-					
+
 					inKey = true;
 					inVal = false;
 				}
@@ -344,31 +429,31 @@ public final class BytecodeLoader
 			else if (inVal)
 			{
 				valBuilder.append(c);
-			}	
+			}
 		}
-		
+
 		if (!inKey && inVal)
 		{
 			String key = keyBuilder.toString();
 			String val = valBuilder.toString();
-			
+
 			if (val.length() > 0)
 			{
 				val = val.substring(1); // string leading 'L'
 				val = val.replace(S_SLASH, S_DOT);
 			}
-			
+
 			classBytecode.addGenericsMapping(key, val);
 			keyBuilder.setLength(0);
 			valBuilder.setLength(0);
-			
+
 			inKey = false;
 			inVal = false;
-		}		
+		}
 	}
-	
-	private static BytecodeSection performLINETABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
+
+	private static BytecodeSection performLINETABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder,
+			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
 	{
 		if (line.startsWith("line "))
 		{
@@ -383,8 +468,8 @@ public final class BytecodeLoader
 		return section;
 	}
 
-	private static BytecodeSection performConstantPool(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
+	private static BytecodeSection performConstantPool(String fqClassName, ClassBC classBytecode, StringBuilder builder,
+			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
 	{
 		if (!line.startsWith(S_HASH))
 		{
@@ -395,8 +480,8 @@ public final class BytecodeLoader
 		return section;
 	}
 
-	private static BytecodeSection performCODE(String fqClassName, ClassBC classBytecode, StringBuilder builder, BytecodeSection section,
-			MemberSignatureParts msp, MemberBytecode memberBytecode, final String line)
+	private static BytecodeSection performCODE(String fqClassName, ClassBC classBytecode, StringBuilder builder,
+			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, final String line)
 	{
 		int firstColonIndex = line.indexOf(C_COLON);
 
@@ -413,7 +498,7 @@ public final class BytecodeLoader
 			}
 			catch (NumberFormatException nfe)
 			{
-				if ( S_DEFAULT.equals(beforeColon))
+				if (S_DEFAULT.equals(beforeColon))
 				{
 					// possibly inside a tableswitch or lookupswitch
 					builder.append(line).append(C_NEWLINE);
@@ -456,8 +541,8 @@ public final class BytecodeLoader
 				|| line.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 	}
 
-	private static void sectionFinished(String fqClassName, BytecodeSection lastSection, MemberSignatureParts msp, StringBuilder builder,
-			MemberBytecode memberBytecode, ClassBC classBytecode)
+	private static void sectionFinished(String fqClassName, BytecodeSection lastSection, MemberSignatureParts msp,
+			StringBuilder builder, MemberBytecode memberBytecode, ClassBC classBytecode)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -525,7 +610,7 @@ public final class BytecodeLoader
 
 			for (Map.Entry<String, BytecodeSection> entry : sectionLabelMap.entrySet())
 			{
-				if (entry.getKey().startsWith(line.trim()))
+				if (line.trim().startsWith(entry.getKey()))
 				{
 					nextSection = entry.getValue();
 					break;
@@ -538,7 +623,7 @@ public final class BytecodeLoader
 
 	private static int getVersionPart(final String line)
 	{
-		int version = 0;
+		int version = -1;
 
 		int colonPos = line.indexOf(C_COLON);
 
@@ -552,7 +637,6 @@ public final class BytecodeLoader
 			}
 			catch (NumberFormatException nfe)
 			{
-				logger.error("Could not parse version part {}", versionPart, nfe);
 			}
 		}
 
@@ -668,7 +752,8 @@ public final class BytecodeLoader
 		return bytecodeInstructions;
 	}
 
-	private static void storeLineNumberTable(String fqClassName, MemberBytecode memberBytecode, String tableLines, MemberSignatureParts msp)
+	private static void storeLineNumberTable(String fqClassName, MemberBytecode memberBytecode, String tableLines,
+			MemberSignatureParts msp)
 	{
 		String[] lines = tableLines.split(S_NEWLINE);
 

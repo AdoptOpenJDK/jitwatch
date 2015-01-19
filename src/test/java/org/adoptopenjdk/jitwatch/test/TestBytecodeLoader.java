@@ -5,7 +5,9 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -607,11 +609,16 @@ public class TestBytecodeLoader
 				"                           105: ldc           #163                // String StackMapTable:",
 				"                           107: getstatic     #164                // Field org/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection.STACKMAPTABLE:Lorg/adoptopenjdk/jitwatch/loader/BytecodeLoader$BytecodeSection;",
 				"                           110: invokeinterface #154,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-				"                           115: pop", "                           116: return",
-				"                          LineNumberTable:", "                            line 30: 0",
-				"                            line 37: 8", "                            line 41: 18",
-				"                            line 42: 32", "                            line 43: 46",
-				"                            line 44: 60", "                            line 45: 74" };
+				"                           115: pop",
+				"                           116: return",
+				"                          LineNumberTable:",
+				"                            line 30: 0",
+				"                            line 37: 8",
+				"                            line 41: 18",
+				"                            line 42: 32",
+				"                            line 43: 46",
+				"                            line 44: 60",
+				"                            line 45: 74" };
 
 		StringBuilder builder = new StringBuilder();
 
@@ -680,15 +687,56 @@ public class TestBytecodeLoader
 	public void testSignatureGenericsParser()
 	{
 		String line = "Signature: #259                         // <K:Ljava/lang/Integer;V:Ljava/lang/String;>Ljava/util/AbstractMap<TK;TV;>;Ljava/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;";
-		
+
 		ClassBC classBytecode = new ClassBC();
-		
+
 		BytecodeLoader.buildClassGenerics(line, classBytecode);
-				
+
 		assertEquals(2, classBytecode.getGenericsMap().size());
 		assertTrue(classBytecode.getGenericsMap().containsKey("K"));
 		assertEquals("java.lang.Integer", classBytecode.getGenericsMap().get("K"));
 		assertTrue(classBytecode.getGenericsMap().containsKey("V"));
 		assertEquals("java.lang.String", classBytecode.getGenericsMap().get("V"));
+	}
+
+	@Test
+	public void testInnerClassNameFinder()
+	{
+		String line1 = "public #13= #6 of #10; //Cow=class PolymorphismTest$Cow of class PolymorphismTest";
+		String line2 = "public #15= #4 of #10; //Cat=class PolymorphismTest$Cat of class PolymorphismTest";
+		String line3 = "public #16= #2 of #10; //Dog=class PolymorphismTest$Dog of class PolymorphismTest";
+		String line4 = "public static #18= #17 of #10; //Animal=class PolymorphismTest$Animal of class PolymorphismTest";
+		String line5 = "foo";
+
+		assertEquals("PolymorphismTest$Cow", BytecodeLoader.getInnerClassNameOrNull(line1));
+		assertEquals("PolymorphismTest$Cat", BytecodeLoader.getInnerClassNameOrNull(line2));
+		assertEquals("PolymorphismTest$Dog", BytecodeLoader.getInnerClassNameOrNull(line3));
+		assertEquals("PolymorphismTest$Animal", BytecodeLoader.getInnerClassNameOrNull(line4));
+		assertEquals(null, BytecodeLoader.getInnerClassNameOrNull(line5));
+	}
+
+	@Test
+	public void testClassFileVersionWithInnerClasses()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog").append(S_NEWLINE);
+		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append(S_NEWLINE);
+		builder.append("InnerClasses:").append(S_NEWLINE);
+		builder.append("public #13= #6 of #10; //Cow=class PolymorphismTest$Cow of class PolymorphismTest").append(S_NEWLINE);
+		builder.append("public #15= #4 of #10; //Cat=class PolymorphismTest$Cat of class PolymorphismTest").append(S_NEWLINE);
+		builder.append("public #16= #2 of #10; //Dog=class PolymorphismTest$Dog of class PolymorphismTest").append(S_NEWLINE);
+		builder.append("public static #18= #17 of #10; //Animal=class PolymorphismTest$Animal of class PolymorphismTest").append(
+				S_NEWLINE);
+
+		builder.append("minor version: 1").append(S_NEWLINE);
+		builder.append("major version: 51").append(S_NEWLINE);
+		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
+
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", builder.toString());
+		assertEquals(1, classBytecode.getMinorVersion());
+		assertEquals(51, classBytecode.getMajorVersion());
+
+		assertEquals(4, classBytecode.getInnerClassNames().size());
 	}
 }

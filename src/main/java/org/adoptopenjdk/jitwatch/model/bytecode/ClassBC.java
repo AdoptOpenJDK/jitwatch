@@ -21,17 +21,21 @@ import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// 1 ClassBC -> n MemberBytecode -> 1 LineNumberTable
 public class ClassBC
 {
 	private ConstantPool constantPool;
+
 	private String sourceFile;
+
 	private int majorVersion;
 	private int minorVersion;
+
 	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
+	private List<String> innerClassNames = new ArrayList<>();
+
 	private Map<String, String> classGenericsMap = new LinkedHashMap<>();
-	
-	private LineTable compositeLineTable = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
 
@@ -68,16 +72,6 @@ public class ClassBC
 		return result;
 	}
 
-	public LineTableEntry findLineTableEntryForSourceLine(int sourceLine)
-	{
-		if (compositeLineTable == null)
-		{
-			buildCompositeLineTable();
-		}
-
-		return compositeLineTable.getEntryForSourceLine(sourceLine);
-	}
-	
 	public void addGenericsMapping(String key, String value)
 	{
 		classGenericsMap.put(key, value);
@@ -87,17 +81,15 @@ public class ClassBC
 	{
 		return Collections.unmodifiableMap(classGenericsMap);
 	}
-	
-	private void buildCompositeLineTable()
+
+	public void addInnerClassName(String name)
 	{
-		compositeLineTable = new LineTable();
+		innerClassNames.add(name);
+	}
 
-		for (MemberBytecode memberBytecode : memberBytecodeList)
-		{
-			LineTable lineTable = memberBytecode.getLineTable();
-
-			compositeLineTable.add(lineTable);
-		}
+	public List<String> getInnerClassNames()
+	{
+		return Collections.unmodifiableList(innerClassNames);
 	}
 
 	public MemberBytecode getMemberBytecode(IMetaMember member)

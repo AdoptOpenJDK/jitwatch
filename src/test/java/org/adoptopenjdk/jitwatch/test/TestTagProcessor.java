@@ -5,18 +5,24 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.model.Tag;
-import org.junit.Test;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.core.TagProcessor;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.junit.Test;
 
 public class TestTagProcessor
 {
@@ -37,6 +43,8 @@ public class TestTagProcessor
 		assertEquals("java/lang/String", tag.getAttribute("name"));
 
 		assertEquals("17", tag.getAttribute("flags"));
+
+		assertTrue(!tp.wasFragmentSeen());
 	}
 
 	@Test
@@ -403,10 +411,10 @@ public class TestTagProcessor
 
 		tag = tp.processLine(lines.get(3)); // <b attr2='bbb' attr3='ccc'/>
 		assertNull(tag);
-		
+
 		tag = tp.processLine(lines.get(4)); // <c attr4='ddd'/>
 		assertNull(tag);
-		
+
 		tag = tp.processLine(lines.get(5)); // <d attr5='eee'>
 		assertNull(tag);
 
@@ -432,8 +440,10 @@ public class TestTagProcessor
 		Tag firstChildD = tag.getFirstNamedChild("d");
 		assertEquals(1, firstChildD.getAttrs().size());
 		assertEquals("eee", firstChildD.getAttribute("attr5"));
+
+		assertTrue(tp.wasFragmentSeen());
 	}
-	
+
 	@Test
 	public void testRegressionFragmentTagNotBroken()
 	{
@@ -459,5 +469,7 @@ public class TestTagProcessor
 
 		tag = tp.processLine(lines.get(2)); // </fragment>
 		assertNull(tag);
+
+		assertTrue(tp.wasFragmentSeen());
 	}
 }

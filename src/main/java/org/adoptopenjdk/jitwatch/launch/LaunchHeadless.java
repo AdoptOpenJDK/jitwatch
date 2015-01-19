@@ -5,6 +5,9 @@
  */
 package org.adoptopenjdk.jitwatch.launch;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
@@ -12,9 +15,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
 
 public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 {
@@ -36,7 +36,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	@Override
 	public void handleLogEntry(String entry)
 	{
-		logger.error(entry);
+		logger.info(entry);
 	}
 
 	@Override
@@ -58,23 +58,18 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	{
 		if (args.length < 1)
 		{
-			logger.error("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
+			System.err.println("Usage: LaunchHeadless <hotspot log file> [logErrors (true|false)]");
 			System.exit(-1);
 		}
 
-		final boolean showErrors = twoParametersArePassedIn(args) && firstParameterIsABooleanExpression(args[1]);
+		final boolean showErrors = showErrors(args);
 
 		new LaunchHeadless(args[0], showErrors);
 	}
 
-	private static boolean firstParameterIsABooleanExpression(String arg)
+	private static boolean showErrors(String[] args)
 	{
-		return Boolean.valueOf(arg);
-	}
-
-	private static boolean twoParametersArePassedIn(String[] args)
-	{
-		return args.length == 2;
+		return args.length == 2 && Boolean.valueOf(args[1]);
 	}
 
 	@Override

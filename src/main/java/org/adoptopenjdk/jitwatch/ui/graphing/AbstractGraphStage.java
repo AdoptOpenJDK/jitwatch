@@ -5,9 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -17,6 +14,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public abstract class AbstractGraphStage extends Stage
 {
@@ -39,7 +39,7 @@ public abstract class AbstractGraphStage extends Stage
 	protected long maxX;
 	protected long minY;
 	protected long maxY;
-	
+
 	protected long minXQ;
 	protected long maxXQ;
 	protected long minYQ;
@@ -115,7 +115,7 @@ public abstract class AbstractGraphStage extends Stage
 	}
 
 	protected void drawAxes()
-	{		
+	{
 		if (xAxisTime)
 		{
 			drawXAxisTime();
@@ -127,11 +127,11 @@ public abstract class AbstractGraphStage extends Stage
 
 		drawYAxis();
 	}
-	
+
 	private void drawXAxisTime()
 	{
 		long xInc = getXStepTime();
-		
+
 		minXQ = (minX / xInc) * xInc;
 
 		maxXQ =  (1 + (maxX / xInc)) * xInc;
@@ -144,7 +144,7 @@ public abstract class AbstractGraphStage extends Stage
 			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
 
 			boolean showMillis = maxX  < 5000;
-			
+
 			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(graphGapTop + chartHeight + 12));
 
 			gridX += xInc;
@@ -158,7 +158,7 @@ public abstract class AbstractGraphStage extends Stage
 		minXQ = (minX / xInc) * xInc;
 
 		maxXQ =  (1 + (maxX / xInc)) * xInc;
-		
+
 		long gridX = minXQ;
 
 		while (gridX <= maxX)
@@ -178,13 +178,13 @@ public abstract class AbstractGraphStage extends Stage
 		minYQ = (minY / yInc) * yInc;
 
 		maxYQ =  (1 + (maxY / yInc)) * yInc;
-		
+
 		long gridY = minYQ;
 
 		int maxYLabelWidth = StringUtil.formatThousands(Long.toString(maxYQ)).length();
 
 		graphGapLeft = Math.max(40.5, maxYLabelWidth*7);
-		
+
 		double yLabelX = graphGapLeft - (1 + maxYLabelWidth) * 6;
 
 		while (gridY <= maxYQ)
@@ -203,7 +203,7 @@ public abstract class AbstractGraphStage extends Stage
 	private long getXStepTime()
 	{
 		long rangeMillis = maxX - minX;
-		
+
 		int requiredLines = 5;
 
 		long[] gapMillis = new long[] { 30 * 24 * 60 * 60000, 14 * 24 * 60 * 60000, 7 * 24 * 60 * 60000, 4 * 24 * 60 * 60000,
@@ -242,6 +242,8 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected double normaliseX(double value)
 	{
+		System.out.println("normaliseX: " + value + " in " + minXQ + " to " + maxXQ);
+
 		return normalise(value, minXQ, maxXQ, chartWidth, false);
 	}
 

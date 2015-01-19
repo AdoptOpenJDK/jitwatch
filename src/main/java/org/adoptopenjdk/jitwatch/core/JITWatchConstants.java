@@ -29,7 +29,6 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING_TRIVIEW = false;
 	public static final boolean DEBUG_LOGGING_TAGPROCESSOR = false;
 
-
 	public static final boolean DEBUG_MEMBER_CREATION = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
@@ -43,14 +42,14 @@ public final class JITWatchConstants
 	public static final String TAG_COMPILATION_LOG_CLOSE = "</compilation_log>";
 	public static final String TAG_HOTSPOT_LOG = "<hotspot_log ";
 	public static final String TAG_HOTSPOT_LOG_CLOSE = "</hotspot_log>";
-	
+
 	public static final String S_FRAGMENT = "fragment";
 	public static final String TAG_OPEN_FRAGMENT = "<fragment>";
 	public static final String TAG_CLOSE_FRAGMENT = "</fragment>";
 	public static final String TAG_OPEN_CDATA = "<![CDATA[";
 	public static final String TAG_CLOSE_CDATA = "]]>";
 	public static final String TAG_OPEN_CLOSE_CDATA = TAG_CLOSE_CDATA + TAG_OPEN_CDATA;
-	
+
 	public static final Set<String> SKIP_HEADER_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_XML, TAG_HOTSPOT_LOG }));
 
 	public static final Set<String> SKIP_BODY_TAGS = new HashSet<>(Arrays.asList(new String[] { TAG_TTY_CLOSE, TAG_COMPILATION_LOG,
@@ -256,6 +255,7 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";
 	public static final String S_BYTECODE_STACKMAPTABLE = "StackMapTable:";
+	public static final String S_BYTECODE_INNERCLASSES = "InnerClasses:";
 
 	public static final String S_CONSTRUCTOR_INIT = "<init>";
 	public static final String S_STATIC_INIT = "<clinit>";

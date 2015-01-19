@@ -5,16 +5,23 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TAGPROCESSOR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_FRAGMENT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_FRAGMENT;
+
+import java.util.Map;
+
 import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class TagProcessor
 {
@@ -24,6 +31,7 @@ public class TagProcessor
 	private Tag currentTag;
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
+	private boolean fragmentSeen;
 
 	// TODO write own mini XPath?
 
@@ -83,6 +91,11 @@ public class TagProcessor
 		}
 
 		return result;
+	}
+
+	public boolean wasFragmentSeen()
+	{
+		return fragmentSeen;
 	}
 
 	private void resetState()
@@ -197,9 +210,12 @@ public class TagProcessor
 		{
 			if (name.equals(S_FRAGMENT))
 			{
-				logger.warn(
+				logger.debug(
 						"Found a {} in the HotSpot log. The VM exited before the hotspot log was fully written. JIT information may have been lost.",
 						TAG_OPEN_FRAGMENT);
+
+				fragmentSeen = true;
+
 				return null;
 			}
 			else
