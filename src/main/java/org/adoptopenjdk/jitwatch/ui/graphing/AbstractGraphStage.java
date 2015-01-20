@@ -242,8 +242,6 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected double normaliseX(double value)
 	{
-		System.out.println("normaliseX: " + value + " in " + minXQ + " to " + maxXQ);
-
 		return normalise(value, minXQ, maxXQ, chartWidth, false);
 	}
 

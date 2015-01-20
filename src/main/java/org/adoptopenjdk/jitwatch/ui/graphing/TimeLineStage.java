@@ -116,13 +116,9 @@ public class TimeLineStage extends AbstractGraphStage
 
 			for (JITEvent event : events)
 			{
-				System.out.println("EVENT: " + event);
-
 				if (event.getEventType() != EventType.QUEUE)
 				{
 					long stamp = event.getStamp();
-
-					System.out.println("TIME: " + stamp);
 
 					cumC++;
 
