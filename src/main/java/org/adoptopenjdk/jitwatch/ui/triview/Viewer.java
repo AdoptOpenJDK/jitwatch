@@ -152,8 +152,9 @@ public class Viewer extends VBox
 					handleKeyPageDown();
 					break;
 				default:
-					break;
+					return;
 				}
+				event.consume();
 			}
 		};
 
@@ -541,14 +542,17 @@ public class Viewer extends VBox
 		{
 			double scrollMin = scrollPane.getVmin();
 			double scrollMax = scrollPane.getVmax();
+			double scrollPaneHeight = scrollPane.getHeight();
+			double lineHeight = vBoxRows.getChildren().get(0).getBoundsInParent().getHeight();
+			double visibleLines = scrollPaneHeight / lineHeight;
 
-			double count = vBoxRows.getChildren().size() - 1;
+			double count = vBoxRows.getChildren().size() - visibleLines;
 
 			double scrollPercent = 0;
 
 			if (count > 0)
 			{
-				scrollPercent = scrollIndex / count;
+				scrollPercent = Math.max(scrollIndex - (visibleLines / 2), 0) / count;
 			}
 
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
