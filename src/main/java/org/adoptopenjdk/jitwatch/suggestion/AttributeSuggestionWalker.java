@@ -97,11 +97,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		explanationMap
 		.put(REASON_NO_STATIC_BINDING,
 				"The callee is known but there is no static binding so could not be inlined.");
-		
+
 		explanationMap
 		.put(REASON_NOT_AN_ACCESSOR,
 				"The callee method is not an accessor.");
-		
+
 		explanationMap
 		.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP,
 				"The recursive inlining is too deep.");
@@ -228,7 +228,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 					}
 
 					reasonBuilder.append("Invocations: ").append(invocationCount).append(C_NEWLINE);
-					reasonBuilder.append("Size of callee bytecode: ").append(methodBytecodes).append(C_NEWLINE);
+					reasonBuilder.append("Size of callee bytecode: ").append(methodBytecodes);
 
 					score *= invocationCount;
 
@@ -314,7 +314,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			reasonBuilder.append(" times and is taken with probability ");
 			reasonBuilder.append(probability);
 			reasonBuilder
-					.append(". It may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
+					.append(".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
 			Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
 					(int) Math.ceil(score));

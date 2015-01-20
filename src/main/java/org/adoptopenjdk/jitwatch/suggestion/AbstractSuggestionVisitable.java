@@ -18,32 +18,32 @@ public abstract class AbstractSuggestionVisitable implements ITreeVisitable
 {
     protected IReadOnlyJITDataModel model;
     protected List<Suggestion> suggestionList;
-	
+
 	public AbstractSuggestionVisitable(IReadOnlyJITDataModel model)
 	{
 		this.model = model;
 		suggestionList = new ArrayList<>();
 	}
-	
+
 	public List<Suggestion> getSuggestionList()
-	{				
+	{
 		TreeVisitor.walkTree(model, this);
-		
+
 		Collections.sort(suggestionList, new Comparator<Suggestion>()
 		{
 			@Override
 			public int compare(Suggestion s1, Suggestion s2)
 			{
-				return Integer.compare(s1.getScore(), s2.getScore());
+				return Integer.compare(s2.getScore(), s1.getScore());
 			}
 		});
-		
+
 		return suggestionList;
 	}
-	
+
 	@Override
 	public void reset()
-	{		
+	{
 		suggestionList.clear();
 	}
 }

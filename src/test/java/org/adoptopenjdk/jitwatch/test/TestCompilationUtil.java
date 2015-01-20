@@ -80,7 +80,7 @@ public class TestCompilationUtil
 				@Override
 				public void log(String msg)
 				{
-					System.out.println(msg);
+
 				}
 			});
 

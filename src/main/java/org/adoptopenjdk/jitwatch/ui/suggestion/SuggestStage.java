@@ -6,8 +6,6 @@
 package org.adoptopenjdk.jitwatch.ui.suggestion;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,15 +91,6 @@ public class SuggestStage extends Stage
 		}
 		else
 		{
-			Collections.sort(suggestions, new Comparator<Suggestion>()
-			{
-				@Override
-				public int compare(Suggestion s1, Suggestion s2)
-				{
-					return Integer.compare(s2.getScore(), s1.getScore());
-				}
-			});
-
 			for (Suggestion suggestion : suggestions)
 			{
 				boolean show = false;
