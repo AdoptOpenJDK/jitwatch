@@ -185,7 +185,7 @@ public final class JITWatchConstants
 	public static final String S_HASH = "#";
 	public static final String S_SPACE = " ";
 	public static final String S_NEWLINE = "\n";
-	public static final String S_NEWLINE_CR = "\n";
+	public static final String S_NEWLINE_CR = "\r";
 	public static final String S_TAB = "\t";
 	public static final String S_DOUBLE_SPACE = "  ";
 	public static final String S_EMPTY = "";
@@ -272,7 +272,7 @@ public final class JITWatchConstants
 	public static final String ABSTRACT = "abstract";
 
 	public static final String[] MODIFIERS = new String[] { PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, SYNCHRONIZED, STRICTFP,
-			NATIVE, ABSTRACT };
+		NATIVE, ABSTRACT };
 
 	public static final Pattern PATTERN_LOG_SIGNATURE = Pattern
 			.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");

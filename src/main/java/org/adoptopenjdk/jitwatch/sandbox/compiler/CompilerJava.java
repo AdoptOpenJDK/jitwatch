@@ -54,9 +54,12 @@ public class CompilerJava extends AbstractProcess implements ICompiler
 
 		commands.addAll(compileOptions);
 
-		commands.add("-cp");
+		if (classpathEntries.size() > 0)
+		{
+			commands.add("-cp");
 
-		commands.add(makeClassPath(classpathEntries));
+			commands.add(makeClassPath(classpathEntries));
+		}
 
 		for (File sourceFile : sourceFiles)
 		{

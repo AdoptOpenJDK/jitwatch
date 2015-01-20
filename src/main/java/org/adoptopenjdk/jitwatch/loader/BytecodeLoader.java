@@ -128,13 +128,6 @@ public final class BytecodeLoader
 
 		ClassBC classBytecode = parsedByteCodeFrom(fqClassName, byteCodeString);
 
-		List<String> innerClassNames = classBytecode.getInnerClassNames();
-
-		for (String innerClassName : innerClassNames)
-		{
-			System.out.println("innerClassName:" + innerClassName);
-		}
-
 		return classBytecode;
 	}
 
@@ -298,12 +291,10 @@ public final class BytecodeLoader
 				}
 				break;
 			case INNERCLASSES:
-				System.out.println("INNER? : " + line);
 				String innerClassName = getInnerClassNameOrNull(line);
+
 				if (innerClassName != null)
 				{
-					System.out.println("YES : " + innerClassName);
-
 					classBytecode.addInnerClassName(innerClassName);
 				}
 				else

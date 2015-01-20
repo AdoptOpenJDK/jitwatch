@@ -80,10 +80,15 @@ public class TestCompilationUtil
 				@Override
 				public void log(String msg)
 				{
+					System.out.println(msg);
 				}
 			});
 
-			assertTrue(success);
+			if (!success)
+			{
+				System.err.println(CompilerJava.getErrorStream());
+				fail();
+			}
 
 			assertTrue(TEST_CLASS_FILE.exists());
 		}
