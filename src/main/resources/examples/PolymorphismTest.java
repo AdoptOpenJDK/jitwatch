@@ -1,58 +1,42 @@
 public class PolymorphismTest
 {
-  public interface Animal
-  {
-    void speak();
-  }
+  public interface Coin { void deposit(); }
 
-  public static int woofs = 0, miaows = 0, moos = 0;
+  public static int moneyBox = 0;
 
-  public class Dog implements Animal
-  {
-    public void speak() { woofs++; }
-  }
+  public class Nickel implements Coin { public void deposit() { moneyBox += 5; } }
 
-  public class Cat implements Animal
-  {
-    public void speak() { miaows++; }
-  }
+  public class Dime implements Coin { public void deposit() { moneyBox += 10; } }
 
-  public class Cow implements Animal
-  {
-    public void speak() { moos++; }
-  }
+  public class Quarter implements Coin { public void deposit() { moneyBox += 25; } }
 
-  public PolymorphismTest()
-  {
-    Animal dog = new Dog();
-    Animal cat = new Cat();
-    Animal cow = new Cow();
+  public PolymorphismTest() {
+    Coin nickel = new Nickel();
+    Coin dime = new Dime();
+    Coin quarter = new Quarter();
 
-    Animal creature = null;
+    Coin coin = null;
 
     // change the variable maxImplementations to control the inlining behaviour
     // 2 = bimorphic dispatch   - the method call will be inlined
-    // 3 = polymorphic dispatch - the method call will not be inlined
+    // 3 = megamorphic dispatch - the method call will not be inlined
 
     final int maxImplementations = 2;
 
-    for (int i = 0; i < 100000; i++)
-    {
-       switch(i % maxImplementations)
-       {
-         case 0: creature = dog; break;
-         case 1: creature = cat; break;
-         case 2: creature = cow; break;
+    for (int i = 0; i < 100000; i++) {
+       switch(i % maxImplementations) {
+         case 0: coin = nickel; break;
+         case 1: coin = dime; break;
+         case 2: coin = quarter; break;
        }
 
-       creature.speak();
+       coin.deposit();
     }
 
-    System.out.println("Woofs:" + woofs + " Miaows:" + miaows + " Moos:" + moos);
+    System.out.println("moneyBox:" + moneyBox);
   }
 
-  public static void main(String[] args)
-  {
+  public static void main(String[] args) {
     new PolymorphismTest();
   }
 }
