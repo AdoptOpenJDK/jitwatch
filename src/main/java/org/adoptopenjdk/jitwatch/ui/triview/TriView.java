@@ -10,11 +10,13 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 
 import java.util.List;
 
@@ -637,7 +639,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 					if ((updateMask & MASK_UPDATE_BYTECODE) == MASK_UPDATE_BYTECODE)
 					{
-
 						LineTableEntry lineTableEntry = lineTable.getEntryForSourceLine(sourceLine);
 
 						if (DEBUG_LOGGING_TRIVIEW)
@@ -654,7 +655,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 						}
 					}
 				}
-				else
+				else if (msp != null && !msp.getMemberName().equals(S_STATIC_INIT))
 				{
 					logger.warn("Could not find member for bytecode signature: {}", msp);
 				}
@@ -751,7 +752,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		{
 			String className = viewerAssembly.getClassNameFromLabel(label);
 
-			if (className != null && className.equals(currentMember.getMetaClass().getFullyQualifiedName()))
+			if (isClassNameEqualsCurrentMemberClassName(className) || isClassNameAnInnerClassOfCurrentMember(className))
 			{
 				String sourceLine = viewerAssembly.getSourceLineFromLabel(label);
 
@@ -769,7 +770,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 					}
 				}
 
-				if (bytecodeLine != null)
+				//TODO cache bytecode for inner classes and switch bytecode panel when BCI is for inner class
+				if (bytecodeLine != null && !isClassNameAnInnerClassOfCurrentMember(className))
 				{
 					try
 					{
@@ -786,6 +788,44 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		viewerSource.highlightLine(sourceHighlight);
 		viewerBytecode.highlightLine(bytecodeHighlight);
+	}
+
+	private boolean isClassNameEqualsCurrentMemberClassName(String className)
+	{
+		boolean result = false;
+
+		if (currentMember != null && className != null)
+		{
+			String currentFQClassName = currentMember.getMetaClass().getFullyQualifiedName();
+
+			result = className.equals(currentFQClassName);
+		}
+		
+		return result;
+	}
+	
+	private boolean isClassNameAnInnerClassOfCurrentMember(String className)
+	{
+		boolean result = false;
+		
+		if (currentMember != null && className != null)
+		{		
+			int dollarPos = className.indexOf(C_DOLLAR);
+			
+			if (dollarPos != -1)
+			{
+				String currentFQClassName = currentMember.getMetaClass().getFullyQualifiedName();
+				
+				String baseClassName = className.substring(0, dollarPos);
+				
+				if (currentFQClassName.equals(baseClassName))
+				{
+					result = true;
+				}
+			}
+		}
+
+		return result;
 	}
 
 	@Override
