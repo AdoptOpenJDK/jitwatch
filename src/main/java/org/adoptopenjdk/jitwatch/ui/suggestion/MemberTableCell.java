@@ -52,7 +52,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 	@Override
 	protected void updateItem(final Suggestion suggestion, boolean empty)
 	{
-		if (suggestion != null)
+		if (suggestion != null && suggestion.getCaller() != null)
 		{
 			final IMetaMember member = suggestion.getCaller();
 
