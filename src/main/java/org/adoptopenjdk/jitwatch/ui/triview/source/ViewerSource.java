@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.source;
 
+import javafx.scene.control.CheckBox;
+
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
@@ -12,8 +14,8 @@ import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 
 public class ViewerSource extends Viewer
 {
-	public ViewerSource(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+	public ViewerSource(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType, CheckBox forceKeyboardMode)
 	{
-		super(stageAccessProxy, lineListener, lineType, true);
+		super(stageAccessProxy, lineListener, lineType, true, forceKeyboardMode);
 	}
 }

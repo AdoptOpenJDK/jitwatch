@@ -25,6 +25,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -61,6 +62,7 @@ public class Viewer extends VBox
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
 
+	private CheckBox forceKeyboardMode; // May be null.
 	private boolean keyboardMode = false;
 
 	private static final String FONT_STYLE = "-fx-font-family:monospace; -fx-font-size:12px;";
@@ -82,26 +84,18 @@ public class Viewer extends VBox
 
 	public Viewer(IStageAccessProxy stageAccessProxy, boolean highlighting)
 	{
-		this.stageAccessProxy = stageAccessProxy;
-		this.isHighlighting = highlighting;
-
-		lineListener = new NoOpLineListener();
-
-		setup();
+	    this(stageAccessProxy, new NoOpLineListener(), null, highlighting, null);
 	}
 
-	public Viewer(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType, boolean highlighting)
+	public Viewer(IStageAccessProxy stageAccessProxy, final ILineListener lineListener,
+	    final LineType lineType, boolean highlighting, CheckBox forceKeyboardMode)
 	{
 		this.stageAccessProxy = stageAccessProxy;
 		this.lineListener = lineListener;
 		this.lineType = lineType;
 		this.isHighlighting = highlighting;
+		this.forceKeyboardMode = forceKeyboardMode;
 
-		setup();
-	}
-
-	private void setup()
-	{
 		vBoxRows = new VBox();
 
 		vBoxRows.heightProperty().addListener(new ChangeListener<Number>()
@@ -188,7 +182,7 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				lineListener.handleFocusSelf(lineType);
+                            lineListener.handleFocusSelf(lineType);
 			}
 		});
 
@@ -199,6 +193,10 @@ public class Viewer extends VBox
 		setUpContextMenu();
 	}
 
+	private void resetKeyboardMode() {
+	    keyboardMode = forceKeyboardMode != null && forceKeyboardMode.isSelected();
+	}
+	
 	public void setContent(String inSource, boolean showLineNumbers)
 	{
 		String source = inSource;
@@ -290,7 +288,21 @@ public class Viewer extends VBox
 					@Override
 					public void handle(MouseEvent arg0)
 					{
-						keyboardMode = false;
+					    resetKeyboardMode();
+					}
+				});
+
+				label.setOnMouseClicked(new EventHandler<MouseEvent>()
+				{
+					@Override
+					public void handle(MouseEvent arg0)
+					{
+						if (keyboardMode)
+						{
+							scrollIndex = checkBounds(finalPos);
+							lineListener.lineHighlighted(scrollIndex, lineType);
+							highlightLine(scrollIndex);
+						}
 					}
 				});
 			}
