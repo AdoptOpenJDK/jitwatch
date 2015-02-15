@@ -8,8 +8,6 @@ package org.adoptopenjdk.jitwatch.model.assembly;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
@@ -32,19 +30,21 @@ public class AssemblyInstruction
 	private String mnemonic;
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
+	private final AssemblyLabels labels;
 
 	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyInstruction.class);
 
 	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands,
-			String firstComment)
+			String firstComment, AssemblyLabels labels)
 	{
 		this.annotation = annotation;
 		this.address = address;
 		this.modifier = modifier;
 		this.mnemonic = mnemonic;
 		this.operands = operands;
+		this.labels = labels;
 
 		if (firstComment != null)
 		{
@@ -177,7 +177,7 @@ public class AssemblyInstruction
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		labels.formatAddress(address, builder);
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -188,17 +188,7 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		if (operands.size() > 0)
-		{
-			builder.append(C_SPACE);
-
-			for (String op : operands)
-			{
-				builder.append(op).append(S_COMMA);
-			}
-
-			builder.deleteCharAt(builder.length() - 1);
-		}
+		labels.formatOperands(this, builder);
 
 		int lineLength = builder.length();
 
@@ -229,14 +219,13 @@ public class AssemblyInstruction
 	}
 
 	// Allow splitting an instruction with a multi-line comment across multiple
-	// labels
-	// which all contain the instruction
+	// labels which all contain the instruction
 	public String toString(int annoWidth, int line)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		labels.formatAddress(address, builder);
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -247,17 +236,7 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		if (operands.size() > 0)
-		{
-			builder.append(C_SPACE);
-
-			for (String op : operands)
-			{
-				builder.append(op).append(S_COMMA);
-			}
-
-			builder.deleteCharAt(builder.length() - 1);
-		}
+		labels.formatOperands(this, builder);
 
 		int lineLength = builder.length();
 
