@@ -23,6 +23,7 @@ import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyLabels;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
@@ -45,7 +46,7 @@ public class TestFindOptimizedVirtualCall
 		operands.add("%rax");
 		String firstComment = S_EMPTY;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -74,7 +75,7 @@ public class TestFindOptimizedVirtualCall
 		operands.add("%rax");
 		String firstComment = null;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -103,7 +104,7 @@ public class TestFindOptimizedVirtualCall
 		operands.add("%rax");
 		String firstComment = "; Every day sends future a past.";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -132,7 +133,7 @@ public class TestFindOptimizedVirtualCall
 		operands.add("%rax");
 		String firstComment = "; - FooClass::fooMethod@1 (line 42)";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -160,7 +161,7 @@ public class TestFindOptimizedVirtualCall
 		operands.add("%rax");
 		String firstComment = C_SEMICOLON + S_OPTIMIZED_VIRTUAL_CALL;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -189,7 +190,7 @@ public class TestFindOptimizedVirtualCall
 
 		String comment0 = " ; OopMap{rbp=Oop off=940}";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0);
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0, new AssemblyLabels());
 		ins.addCommentLine(";*invokevirtual toString");
 		ins.addCommentLine(callSiteComment);
 		ins.addCommentLine("; " + S_OPTIMIZED_VIRTUAL_CALL);
@@ -275,7 +276,7 @@ public class TestFindOptimizedVirtualCall
 				.getOptimizedVirtualCallSiteOrNull());
 	}
 
-	private static final int sourceLine = 282; // update if call to test2() changes line!
+	private static final int sourceLine = 283; // update if call to test2() changes line!
 
 	public void test1()
 	{
@@ -310,7 +311,7 @@ public class TestFindOptimizedVirtualCall
 		String comment2 = "; - " + fqClassName + "::" + callerMethod + "@" + vCallBCI + " (line " + sourceLine + ")";
 		String comment3 = ";  " + JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
 
-		AssemblyInstruction instruction = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0);
+		AssemblyInstruction instruction = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0, new AssemblyLabels());
 		instruction.addCommentLine(comment1);
 		instruction.addCommentLine(comment2);
 		instruction.addCommentLine(comment3);

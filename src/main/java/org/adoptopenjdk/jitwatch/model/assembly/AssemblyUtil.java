@@ -30,6 +30,7 @@ public final class AssemblyUtil
 	public static AssemblyMethod parseAssembly(final String asm)
 	{
 		AssemblyMethod method = new AssemblyMethod();
+		final AssemblyLabels labels = new AssemblyLabels();
 
 		String[] lines = asm.split(S_NEWLINE);
 
@@ -85,7 +86,7 @@ public final class AssemblyUtil
 			}
 			else
 			{
-				AssemblyInstruction instr = createInstruction(trimmedLine);
+				AssemblyInstruction instr = createInstruction(labels, trimmedLine);
 
 				if (instr != null)
 				{
@@ -100,10 +101,13 @@ public final class AssemblyUtil
 
 		method.setHeader(headerBuilder.toString());
 
+		labels.buildLabels();
+
 		return method;
 	}
 
-	public static AssemblyInstruction createInstruction(final String inLine)
+	public static AssemblyInstruction createInstruction(
+		final AssemblyLabels labels, final String inLine)
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
@@ -179,7 +183,8 @@ public final class AssemblyUtil
 
 				addValidOperandsToList(operands, opString);
 
-				instr = new AssemblyInstruction(annotation, addressValue, modifier, mnemonic, operands, comment);
+				instr = new AssemblyInstruction(annotation, addressValue, modifier, mnemonic, operands, comment, labels);
+				labels.newInstruction(instr);
 			}
 		}
 		else
@@ -190,7 +195,7 @@ public final class AssemblyUtil
 		return instr;
 	}
 
-	private static long getValueFromAddress(final String address)
+	static long getValueFromAddress(final String address)
 	{
 		long addressValue = 0;
 
