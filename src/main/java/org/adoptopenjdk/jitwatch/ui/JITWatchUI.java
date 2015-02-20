@@ -48,6 +48,7 @@ import javafx.util.Duration;
 
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.core.ErrorLog;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
@@ -163,7 +164,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	// synchronized as buffer is drained async on GUI thread
 	private StringBuffer logBuffer = new StringBuffer();
 
-	private StringBuilder errorLog = new StringBuilder();
+	private ErrorLog errorLog = new ErrorLog();
 	private int errorCount = 0;
 
 	private boolean repaintTree = false;
@@ -213,7 +214,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		selectedMember = null;
 
 		errorCount = 0;
-		errorLog.delete(0, errorLog.length());
+		errorLog.clear();
 
 		isReadingLogFile = true;
 
@@ -305,7 +306,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		this.stage = stage;
 
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
+				{
 			@Override
 			public void handle(WindowEvent arg0)
 			{
@@ -313,7 +314,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				stopParsing();
 			}
-		});
+				});
 
 		BorderPane borderPane = new BorderPane();
 
@@ -321,18 +322,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Button btnChooseWatchFile = StyleUtil.buildButton("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				stopParsing();
 				chooseHotSpotFile();
 			}
-		});
+				});
 
 		btnStart = StyleUtil.buildButton("Start");
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -359,31 +360,31 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 					readLogFile();
 				}
 			}
-		});
+				});
 
 		btnStop = StyleUtil.buildButton("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				stopParsing();
 			}
-		});
+				});
 
 		btnConfigure = StyleUtil.buildButton("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				openConfigStage();
 			}
-		});
+				});
 
 		btnTimeLine = StyleUtil.buildButton("Chart");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -393,11 +394,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnTimeLine.setDisable(true);
 			}
-		});
+				});
 
 		btnStats = StyleUtil.buildButton("Stats");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -407,11 +408,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnStats.setDisable(true);
 			}
-		});
+				});
 
 		btnHisto = StyleUtil.buildButton("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -421,11 +422,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnHisto.setDisable(true);
 			}
-		});
+				});
 
 		btnTopList = StyleUtil.buildButton("TopList");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -435,11 +436,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnTopList.setDisable(true);
 			}
-		});
+				});
 
 		btnCodeCache = StyleUtil.buildButton("Code Cache");
 		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -449,11 +450,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnCodeCache.setDisable(true);
 			}
-		});
+				});
 
 		btnTriView = StyleUtil.buildButton("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -464,11 +465,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				openTriView(selectedMember, false);
 			}
-		});
+				});
 
 		btnSuggest = StyleUtil.buildButton("Suggest");
 		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -478,11 +479,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnSuggest.setDisable(true);
 			}
-		});
+				});
 
 		btnOptimizedVirtualCalls = StyleUtil.buildButton("OVCs");
 		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
@@ -496,27 +497,27 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				btnOptimizedVirtualCalls.setDisable(true);
 			}
-		});
+				});
 
 		btnSandbox = StyleUtil.buildButton("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				openSandbox();
 			}
-		});
+				});
 
 		btnErrorLog = new Button("Errors (0)");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent e)
 			{
 				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
-		});
+				});
 
 		btnErrorLog.setStyle("-fx-padding: 2 6;");
 
@@ -642,13 +643,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		final Duration oneFrameAmt = Duration.millis(refreshMillis);
 
 		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
-		{
+				{
 			@Override
 			public void handle(ActionEvent arg0)
 			{
 				refresh();
 			}
-		});
+				});
 
 		TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
 
@@ -1194,7 +1195,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	@Override
 	public void handleErrorEntry(String entry)
 	{
-		errorLog.append(entry).append(S_NEWLINE);
+		errorLog.addEntry(entry);
 		errorCount++;
 	}
 
