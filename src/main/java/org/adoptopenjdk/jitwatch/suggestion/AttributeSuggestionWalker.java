@@ -16,6 +16,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
@@ -48,7 +53,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	// see
 	// https://wikis.oracle.com/display/HotSpotInternals/Server+Compiler+Inlining+Messages
 
-	// TODO update for Java8
 	private static final String REASON_HOT_METHOD_TOO_BIG = "hot method too big";
 	private static final String REASON_TOO_BIG = "too big";
 	private static final String REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD = "already compiled into a big method";
@@ -63,21 +67,45 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	private static final String REASON_NO_STATIC_BINDING = "no static binding";
 	private static final String REASON_NOT_INLINEABLE = "not inlineable";
 	private static final String REASON_NOT_AN_ACCESSOR = "not an accessor";
-	private static final String REASON_RECURSIVE_INLINING_IS_TOO_DEEP = "recursive inlining is too deep";
+
+	private static final String REASON_RECURSIVE_INLINING_TOO_DEEP = "recursive inlining too deep"; // 7
+	private static final String REASON_RECURSIVE_INLINING_IS_TOO_DEEP = "recursive inlining is too deep"; // 8
+	private static final String REASON_RECURSIVELY_INLINING_TOO_DEEP = "recursively inlining too deep"; // 7
+	private static final String REASON_INLINING_IS_TOO_DEEP = "inlining too deep";
+	private static final String REASON_INLINING_PROHIBITED_BY_POLICY = "inlining prohibited by policy";
+
+	private static final String REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT = "size > DesiredMethodLimit";
+	private static final String REASON_NODE_COUNT_INLINING_CUTOFF = "NodeCountInliningCutoff";
+	private static final String REASON_UNLOADED_SIGNATURE_CLASSES = "unloaded signature classes";
 
 	static
 	{
 		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
+
+		scoreMap.put(REASON_INLINING_IS_TOO_DEEP, 0.8);
+
 		scoreMap.put(REASON_CALLEE_IS_TOO_LARGE, 0.5);
 		scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
 		scoreMap.put(REASON_TOO_BIG, 0.5);
+
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
+		scoreMap.put(REASON_NOT_INLINEABLE, 0.4);
+		scoreMap.put(REASON_RECURSIVE_INLINING_TOO_DEEP, 0.4);
+		scoreMap.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP, 0.4);
+		scoreMap.put(REASON_RECURSIVELY_INLINING_TOO_DEEP, 0.4);
+
+		scoreMap.put(REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT, 0.4);
+
+		scoreMap.put(REASON_INLINING_PROHIBITED_BY_POLICY, 0.3);
+
 		scoreMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, 0.2);
 		scoreMap.put(REASON_NO_STATIC_BINDING, 0.2);
-		scoreMap.put(REASON_NOT_INLINEABLE, 0.4);
-		scoreMap.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP, 0.4);
+		scoreMap.put(REASON_NODE_COUNT_INLINING_CUTOFF, 0.2);
+
+		scoreMap.put(REASON_UNLOADED_SIGNATURE_CLASSES, 0.1);
 		scoreMap.put(REASON_NOT_AN_ACCESSOR, 0.1);
+
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
@@ -90,21 +118,24 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 				"The callee method is not 'hot' but is too big to be inlined into the caller method.");
 		explanationMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
 
-		explanationMap
-		.put(REASON_CALLEE_IS_TOO_LARGE,
+		explanationMap.put(REASON_CALLEE_IS_TOO_LARGE,
 				"The callee method is greater than the max inlining size at the C1 compiler level.");
 
-		explanationMap
-		.put(REASON_NO_STATIC_BINDING,
-				"The callee is known but there is no static binding so could not be inlined.");
+		explanationMap.put(REASON_NO_STATIC_BINDING, "The callee is known but there is no static binding so could not be inlined.");
 
-		explanationMap
-		.put(REASON_NOT_AN_ACCESSOR,
-				"The callee method is not an accessor.");
+		explanationMap.put(REASON_NOT_AN_ACCESSOR, "The callee method is not an accessor.");
 
-		explanationMap
-		.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP,
-				"The recursive inlining is too deep.");
+		final String explanationInliningTooDeep = "Inlining could not continue as the inlining depth exceeded the limit.";
+
+		explanationMap.put(REASON_RECURSIVE_INLINING_TOO_DEEP, explanationInliningTooDeep);
+		explanationMap.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP, explanationInliningTooDeep);
+		explanationMap.put(REASON_RECURSIVELY_INLINING_TOO_DEEP, explanationInliningTooDeep);
+
+
+		explanationMap.put(REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT, S_EMPTY);
+		explanationMap.put(REASON_NODE_COUNT_INLINING_CUTOFF, S_EMPTY);
+		explanationMap.put(REASON_UNLOADED_SIGNATURE_CLASSES, S_EMPTY);
+
 	}
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;
@@ -185,7 +216,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		}
 	}
 
-	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode, IParseDictionary parseDictionary)
+	private void handleInlineFailTag(Map<String, String> attrs, String methodID, IMetaMember caller, int currentBytecode,
+			IParseDictionary parseDictionary)
 	{
 		IMetaMember callee = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
@@ -203,6 +235,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 				if (invocationCount >= MIN_INLINING_INVOCATIONS)
 				{
 					String reason = attrs.get(ATTR_REASON);
+					reason = reason.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);
 
 					double score = 0;
 
