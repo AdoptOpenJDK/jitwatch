@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.stage.WindowEvent;

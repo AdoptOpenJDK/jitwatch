@@ -88,6 +88,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private CheckBox checkSource;
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
+	private CheckBox forceKeyboardMode;
 
 	private Button btnCompileChain;
 	private Button btnJITJournal;
@@ -134,6 +135,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkSource.setSelected(true);
 		checkBytecode.setSelected(true);
 		checkAssembly.setSelected(true);
+
+                forceKeyboardMode = new CheckBox("Keyboard mode");
 
 		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
 		{
@@ -188,6 +191,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
+                hBoxToolBarButtons.getChildren().add(forceKeyboardMode);
 		hBoxToolBarButtons.getChildren().add(spacerTop);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
 
@@ -246,9 +250,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 		navigationStack = new TriViewNavigationStack(this, scene);
 
-		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
-		viewerBytecode = new ViewerBytecode(parent, navigationStack, parent.getJITDataModel(), this, LineType.BYTECODE);
-		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
+		viewerSource = new ViewerSource(parent, this, LineType.SOURCE, forceKeyboardMode);
+		viewerBytecode = new ViewerBytecode(parent, navigationStack, parent.getJITDataModel(), this, LineType.BYTECODE, forceKeyboardMode);
+		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY, forceKeyboardMode);
 
 		paneSource = new TriViewPane("Source", viewerSource);
 		paneBytecode = new TriViewPane("Bytecode (double click for JVM spec)", viewerBytecode);

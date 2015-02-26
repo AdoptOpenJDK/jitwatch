@@ -12,6 +12,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;

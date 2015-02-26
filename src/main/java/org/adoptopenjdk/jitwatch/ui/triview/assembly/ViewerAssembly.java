@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
@@ -40,9 +41,9 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class ViewerAssembly extends Viewer
 {
-	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
+	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType, CheckBox forceKeyboardMode)
 	{
-		super(stageAccessProxy, lineListener, lineType, true);
+		super(stageAccessProxy, lineListener, lineType, true, forceKeyboardMode);
 	}
 
 	public void setAssemblyMethod(AssemblyMethod asmMethod)

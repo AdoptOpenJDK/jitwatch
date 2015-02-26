@@ -6,7 +6,6 @@
 package org.adoptopenjdk.jitwatch.ui.triview.bytecode;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import java.util.Map;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
@@ -51,9 +51,9 @@ public class ViewerBytecode extends Viewer
 	private Suggestion lastSuggestion = null;
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model,
-			ILineListener lineListener, LineType lineType)
+			ILineListener lineListener, LineType lineType, CheckBox forceKeyboardMode)
 	{
-		super(stageAccessProxy, lineListener, lineType, true);
+		super(stageAccessProxy, lineListener, lineType, true, forceKeyboardMode);
 		this.model = model;
 		this.navigationStack = navigationStack;
 	}

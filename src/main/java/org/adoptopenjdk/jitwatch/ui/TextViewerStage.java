@@ -12,6 +12,7 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.stage.WindowEvent;
 
