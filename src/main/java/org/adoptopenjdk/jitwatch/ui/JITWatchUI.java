@@ -20,7 +20,7 @@ import java.util.List;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
-import javafx.animation.TimelineBuilder;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -651,7 +651,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 				});
 
-		TimelineBuilder.create().cycleCount(Animation.INDEFINITE).keyFrames(oneFrame).build().play();
+		Timeline timeline = new Timeline();
+		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.getKeyFrames().add(oneFrame);
+		timeline.play();
 
 		updateButtons();
 	}
