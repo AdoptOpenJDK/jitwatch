@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyLabels;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.junit.Test;
@@ -127,7 +128,7 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f4475904140: mov  0x8(%rsi),%r10d ;comment";
 		
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(line);
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
 		
 		assertNotNull(instr);
 		
@@ -150,7 +151,7 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f447590414d: data32 xchg %ax,%ax";
 		
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(line);
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(),line);
 		
 		assertNotNull(instr);
 		
@@ -175,7 +176,7 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f447590416e: hlt";
 		
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(line);
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
 		
 		assertNotNull(instr);
 		
@@ -197,7 +198,7 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007fbbc41082e5: data32 data32 nopw 0x0(%rax,%rax,1)";
 		
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(line);
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
 		
 		assertNotNull(instr);
 		
@@ -219,7 +220,7 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f54f9bfd2f0: mov    %eax,-0x14000(%rsp)";
 		
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(line);
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
 		
 		assertNotNull(instr);
 		
