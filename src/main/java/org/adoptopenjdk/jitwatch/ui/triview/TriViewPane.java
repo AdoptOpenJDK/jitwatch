@@ -8,30 +8,44 @@ package org.adoptopenjdk.jitwatch.ui.triview;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class TriViewPane extends VBox
 {
-	private Label lblTitle;
 	private boolean isFocussed = false;
+	private HBox titleComponents;
 
 	private static final String STYLE_UNFOCUSSED = "-fx-background-color:#dddddd; -fx-padding:4px;";
 	private static final String STYLE_FOCUSSED = "-fx-background-color:#ffffaa; -fx-padding:4px;";
 
 	public TriViewPane(String title, Viewer viewer)
 	{
-		lblTitle = new Label(title);
+		construct(title, viewer, new HBox());
+	}
 
-		lblTitle.setStyle(STYLE_UNFOCUSSED);
-		lblTitle.prefWidthProperty().bind(widthProperty());
+	public TriViewPane(String title, Viewer viewer, HBox titleComponents)
+	{
+		construct(title, viewer, titleComponents);
+	}
+
+	private void construct(String title, Viewer viewer, HBox titleComponents)
+	{
+		this.titleComponents = titleComponents;
+
+		titleComponents.setStyle(STYLE_UNFOCUSSED);
+		titleComponents.prefWidthProperty().bind(widthProperty());
+
+		Label lblTitle = new Label(title);
+		titleComponents.getChildren().add(0,  lblTitle);
 
 		viewer.prefWidthProperty().bind(widthProperty());
 		viewer.prefHeightProperty().bind(heightProperty());
 
-		getChildren().add(lblTitle);
+		getChildren().add(titleComponents);
 		getChildren().add(viewer);
 
-		lblTitle.setOnMouseEntered(new EventHandler<MouseEvent>()
+		titleComponents.setOnMouseEntered(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent arg0)
@@ -40,7 +54,7 @@ public class TriViewPane extends VBox
 			}
 		});
 
-		lblTitle.setOnMouseExited(new EventHandler<MouseEvent>()
+		titleComponents.setOnMouseExited(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent arg0)
@@ -54,7 +68,7 @@ public class TriViewPane extends VBox
 	{
 		if (!isFocussed)
 		{
-			lblTitle.setStyle(STYLE_FOCUSSED);
+			titleComponents.setStyle(STYLE_FOCUSSED);
 			isFocussed = true;
 		}
 	}
@@ -63,7 +77,7 @@ public class TriViewPane extends VBox
 	{
 		if (isFocussed)
 		{
-			lblTitle.setStyle(STYLE_UNFOCUSSED);
+			titleComponents.setStyle(STYLE_UNFOCUSSED);
 			isFocussed = false;
 		}
 	}

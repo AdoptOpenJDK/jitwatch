@@ -5,7 +5,9 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE_CR;
@@ -501,9 +503,9 @@ public class Viewer extends VBox
 			result = (Label) items.get(index);
 		}
 
-		if (result == null)
+		if (result == null && DEBUG_LOGGING)
 		{
-			logger.warn("No label at index {}", index);
+			logger.debug("No label at index {}", index);
 		}
 
 		return result;

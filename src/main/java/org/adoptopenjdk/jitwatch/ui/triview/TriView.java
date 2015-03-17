@@ -9,8 +9,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
@@ -37,6 +37,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -148,7 +149,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkBytecode.selectedProperty().addListener(checkListener);
 		checkAssembly.selectedProperty().addListener(checkListener);
 
-		btnCompileChain = StyleUtil.buildButton("Compile Chain");
+		btnCompileChain = StyleUtil.buildButton("Chain");
 		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -160,8 +161,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 				}
 			}
 		});
+		btnCompileChain.setTooltip(new Tooltip("Show chain of compiled and inlined children"));
 
-		btnJITJournal = StyleUtil.buildButton("JIT Journal");
+		btnJITJournal = StyleUtil.buildButton("Journal");
 		btnJITJournal.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -173,6 +175,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				}
 			}
 		});
+		btnJITJournal.setTooltip(new Tooltip("Show journal of JIT events for this member"));
 
 		memberInfo = new MemberInfo();
 		memberInfo.setStyle("-fx-padding:0px 0px 0px 90px;");
@@ -188,7 +191,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
-		hBoxToolBarButtons.getChildren().add(spacerTop);
+
+		hBoxToolBarButtons.getChildren().add(getTriLinkCheckBox());
+
+		hBoxToolBarButtons.getChildren().add(spacerBottom);
+
 		hBoxToolBarButtons.getChildren().add(memberInfo);
 
 		Label lblClass = new Label("Class:");
@@ -252,7 +259,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		paneSource = new TriViewPane("Source", viewerSource);
 		paneBytecode = new TriViewPane("Bytecode (double click for JVM spec)", viewerBytecode);
-		paneAssembly = new TriViewPane("Assembly", viewerAssembly);
+
+		paneAssembly = new TriViewPane("Assembly", viewerAssembly, getAssemblyTitleComponents());
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
@@ -284,6 +292,49 @@ public class TriView extends Stage implements ITriView, ILineListener
 				focusSource();
 			}
 		});
+	}
+
+	private HBox getAssemblyTitleComponents()
+	{
+		HBox hbox = new HBox();
+		hbox.setSpacing(16);
+
+		CheckBox cb = new CheckBox("Local labels");
+
+		cb.setSelected(config.isLocalAsmLabels());
+
+		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				config.setLocalAsmLabels(newVal);
+				config.saveConfig();
+			}
+		});
+
+		hbox.getChildren().add(cb);
+
+		return hbox;
+	}
+
+	private CheckBox getTriLinkCheckBox()
+	{
+		CheckBox cb = new CheckBox("TriLink");
+
+		cb.setSelected(config.isTriLink());
+
+		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				config.setTriLink(newVal);
+				config.saveConfig();
+			}
+		});
+
+		return cb;
 	}
 
 	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()
@@ -770,7 +821,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 					}
 				}
 
-				//TODO cache bytecode for inner classes and switch bytecode panel when BCI is for inner class
+				// TODO cache bytecode for inner classes and switch bytecode
+				// panel when BCI is for inner class
 				if (bytecodeLine != null && !isClassNameAnInnerClassOfCurrentMember(className))
 				{
 					try
@@ -800,24 +852,24 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 			result = className.equals(currentFQClassName);
 		}
-		
+
 		return result;
 	}
-	
+
 	private boolean isClassNameAnInnerClassOfCurrentMember(String className)
 	{
 		boolean result = false;
-		
+
 		if (currentMember != null && className != null)
-		{		
+		{
 			int dollarPos = className.indexOf(C_DOLLAR);
-			
+
 			if (dollarPos != -1)
 			{
 				String currentFQClassName = currentMember.getMetaClass().getFullyQualifiedName();
-				
+
 				String baseClassName = className.substring(0, dollarPos);
-				
+
 				if (currentFQClassName.equals(baseClassName))
 				{
 					result = true;

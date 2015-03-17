@@ -41,7 +41,7 @@ public class JITWatchConfig
 	{
 		VM_DEFAULT, FORCE_COMPRESSED, FORCE_NO_COMPRESSED;
 	}
-	
+
 	public enum BackgroundCompilation
 	{
 		VM_DEFAULT, FORCE_BACKGROUND_COMPILATION, FORCE_NO_BACKGROUND_COMPILATION;
@@ -62,6 +62,9 @@ public class JITWatchConfig
 	private static final String KEY_SHOW_NOTHING_MOUNTED = "ShowNothingMounted";
 	private static final String KEY_LAST_LOG_DIR = "LastLogDir";
 	private static final String KEY_LAST_SANDBOX_EDITOR_PANES = "LastSandboxEditorPanes";
+
+	private static final String KEY_TRIVIEW_TRILINK = "triview.trilink";
+	private static final String KEY_TRIVIEW_LOCAL_ASM_LABELS = "triview.local_asm_labels";
 
 	private static final String SANDBOX_PREFIX = "sandbox";
 	private static final String KEY_SANDBOX_INTEL_MODE = SANDBOX_PREFIX + ".intel.mode";
@@ -87,6 +90,10 @@ public class JITWatchConfig
 	private boolean showNothingMounted = true;
 	private String lastLogDir = null;
 	private boolean intelMode = false;
+
+	private boolean triLink = false;
+	private boolean localAsmLabels = false;
+
 	private TieredCompilation tieredCompilationMode;
 	private CompressedOops compressedOopsMode;
 	private BackgroundCompilation backgroundCompilation;
@@ -313,7 +320,11 @@ public class JITWatchConfig
 
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		// TODO I'm forcing no tiered compilation in sandbox until this fix for the LogCompilation output goes live
+		triLink = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK, false);
+		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, false);
+
+		// TODO I'm forcing no tiered compilation in sandbox until this fix for
+		// the LogCompilation output goes live
 		// http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8049532
 		// http://mail.openjdk.java.net/pipermail/hotspot-compiler-dev/2014-June/014911.html
 		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2"));
@@ -345,7 +356,7 @@ public class JITWatchConfig
 			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
 			break;
 		}
-		
+
 		int backgroundCompilationMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2"));
 
 		switch (backgroundCompilationMode)
@@ -360,7 +371,7 @@ public class JITWatchConfig
 			backgroundCompilation = BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION;
 			break;
 		}
-		
+
 		freqInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
 
 		maxInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_MAX_INLINE_SIZE, JITWatchConstants.DEFAULT_MAX_INLINE_SIZE);
@@ -371,8 +382,7 @@ public class JITWatchConfig
 		compileThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 
-		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES,
-				JITWatchConstants.S_EMPTY);
+		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, JITWatchConstants.S_EMPTY);
 	}
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
@@ -471,6 +481,8 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
 		putProperty(loadedProps, KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
 		putProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, Boolean.toString(intelMode));
+		putProperty(loadedProps, KEY_TRIVIEW_TRILINK, Boolean.toString(triLink));
+		putProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, Boolean.toString(localAsmLabels));
 
 		switch (tieredCompilationMode)
 		{
@@ -497,7 +509,7 @@ public class JITWatchConfig
 			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
 			break;
 		}
-		
+
 		switch (backgroundCompilation)
 		{
 		case VM_DEFAULT:
@@ -509,7 +521,7 @@ public class JITWatchConfig
 		case FORCE_NO_BACKGROUND_COMPILATION:
 			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2");
 			break;
-		}	
+		}
 
 		if (lastLogDir != null)
 		{
@@ -523,7 +535,6 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SANDBOX_PRINT_ASSEMBLY, Boolean.toString(printAssembly));
 
 		putProperty(loadedProps, KEY_SANDBOX_DISABLE_INLINING, Boolean.toString(disableInlining));
-		
 
 		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compileThreshold));
 
@@ -746,7 +757,7 @@ public class JITWatchConfig
 	{
 		this.disableInlining = disableInlining;
 	}
-	
+
 	public int getCompileThreshold()
 	{
 		return compileThreshold;
@@ -776,7 +787,7 @@ public class JITWatchConfig
 	{
 		this.compressedOopsMode = compressedOopsMode;
 	}
-	
+
 	public BackgroundCompilation getBackgroundCompilationMode()
 	{
 		return backgroundCompilation;
@@ -828,5 +839,25 @@ public class JITWatchConfig
 		}
 
 		return languageList;
+	}
+
+	public boolean isTriLink()
+	{
+		return triLink;
+	}
+
+	public void setTriLink(boolean triLink)
+	{
+		this.triLink = triLink;
+	}
+
+	public boolean isLocalAsmLabels()
+	{
+		return localAsmLabels;
+	}
+
+	public void setLocalAsmLabels(boolean localAsmLabels)
+	{
+		this.localAsmLabels = localAsmLabels;
 	}
 }
