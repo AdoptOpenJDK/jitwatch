@@ -6,9 +6,8 @@
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
 import java.util.HashMap;
@@ -35,20 +34,21 @@ public final class AssemblyLabels
 {
 	private SortedSet<Long> addresses = new TreeSet<>();
 	private final Map<Long, Short> labels = new HashMap<>();
-	
+
 	private long lowest = Long.MAX_VALUE;
 	private long highest;
 
 	public void newInstruction(AssemblyInstruction instruction)
 	{
 		final long address = instruction.getAddress();
-		
-		lowest = min(lowest, address);
-		highest = max(highest, address);
-		
+
+		lowest = Math.min(lowest, address);
+		highest = Math.max(highest, address);
+
 		final Long l = instructionToLabel(instruction);
-		
-		if (l != null) {
+
+		if (l != null)
+		{
 			addresses.add(l);
 		}
 	}
@@ -56,20 +56,20 @@ public final class AssemblyLabels
 	private Long instructionToLabel(AssemblyInstruction instruction)
 	{
 		final List<String> operands = instruction.getOperands();
-	
-		if (instruction.getMnemonic().startsWith("j") &&
-			operands.size() == 1) {
-			
+
+		if (instruction.getMnemonic().startsWith("j") && operands.size() == 1)
+		{
+
 			return AssemblyUtil.getValueFromAddress(operands.get(0));
 		}
-		
+
 		return null;
 	}
 
 	public void buildLabels()
 	{
 		short next = 0;
-		
+
 		if (lowest != Long.MAX_VALUE)
 		{
 			for (Long a : addresses.subSet(lowest, highest + 1))
@@ -77,31 +77,31 @@ public final class AssemblyLabels
 				labels.put(a, next++);
 			}
 		}
-		
+
 		addresses = null;
 	}
-	
+
 	public void formatAddress(long address, StringBuilder builder)
 	{
 		final Short label = labels.get(address);
-		
+
 		if (label != null)
 		{
-			builder.append(StringUtil.pad(String.format("L%04x", label), 18, ' ', true));
+			builder.append(StringUtil.pad(String.format("L%04x", label), 18, C_SPACE, true));
 		}
-		else 
+		else
 		{
 			builder.append(S_ASSEMBLY_ADDRESS);
 			builder.append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		}
 	}
 
-	public void formatOperands(
-		AssemblyInstruction instruction, StringBuilder builder) {
-		
+	public void formatOperands(AssemblyInstruction instruction, StringBuilder builder)
+	{
 		final Long address = instructionToLabel(instruction);
-		final Short label = labels.get(address);
 		
+		final Short label = labels.get(address);
+
 		if (label != null)
 		{
 			builder.append(C_SPACE);

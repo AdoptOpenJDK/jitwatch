@@ -60,7 +60,7 @@ public class AssemblyBlock
 
 		for (AssemblyInstruction instruction : instructions)
 		{
-			builder.append(instruction.toString(maxAnnotationWidth)).append(S_NEWLINE);
+			builder.append(instruction.toString(maxAnnotationWidth, false)).append(S_NEWLINE);
 		}
 
 		return builder.toString();

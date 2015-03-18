@@ -8,6 +8,8 @@ package org.adoptopenjdk.jitwatch.model.assembly;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
@@ -169,15 +171,24 @@ public class AssemblyInstruction
 	@Override
 	public String toString()
 	{
-		return toString(0);
+		return toString(0, false);
 	}
 
-	public String toString(int annoWidth)
+	public String toString(int annoWidth, boolean useLocalLabels)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		labels.formatAddress(address, builder);
+
+		if (useLocalLabels)
+		{
+			labels.formatAddress(address, builder);
+		}
+		else
+		{
+			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		}
+
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -188,7 +199,24 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		labels.formatOperands(this, builder);
+		if (useLocalLabels)
+		{
+			labels.formatOperands(this, builder);
+		}
+		else
+		{
+			if (operands.size() > 0)
+			{
+				builder.append(C_SPACE);
+
+				for (String op : operands)
+				{
+					builder.append(op).append(S_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
+		}
 
 		int lineLength = builder.length();
 
@@ -220,12 +248,21 @@ public class AssemblyInstruction
 
 	// Allow splitting an instruction with a multi-line comment across multiple
 	// labels which all contain the instruction
-	public String toString(int annoWidth, int line)
+	public String toString(int annoWidth, int line, boolean useLocalLabels)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		labels.formatAddress(address, builder);
+
+		if (useLocalLabels)
+		{
+			labels.formatAddress(address, builder);
+		}
+		else
+		{
+			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		}
+
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -236,7 +273,24 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		labels.formatOperands(this, builder);
+		if (useLocalLabels)
+		{
+			labels.formatOperands(this, builder);
+		}
+		else
+		{
+			if (operands.size() > 0)
+			{
+				builder.append(C_SPACE);
+
+				for (String op : operands)
+				{
+					builder.append(op).append(S_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
+		}
 
 		int lineLength = builder.length();
 
