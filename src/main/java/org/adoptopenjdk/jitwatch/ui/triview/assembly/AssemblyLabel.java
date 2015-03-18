@@ -5,17 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
-
 import javafx.scene.control.Label;
+
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 
 public class AssemblyLabel extends Label
 {
 	private AssemblyInstruction instruction;
 	
-	public AssemblyLabel(AssemblyInstruction instr, int annoWidth, int line)
+	public AssemblyLabel(AssemblyInstruction instr, int annoWidth, int line, boolean showLocalLabels)
 	{
-		super(instr.toString(annoWidth, line));
+		super(instr.toString(annoWidth, line, showLocalLabels));
 		instruction = instr;		
 	}
 	

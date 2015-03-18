@@ -45,7 +45,7 @@ public class ViewerAssembly extends Viewer
 		super(stageAccessProxy, lineListener, lineType, true);
 	}
 
-	public void setAssemblyMethod(AssemblyMethod asmMethod)
+	public void setAssemblyMethod(AssemblyMethod asmMethod, boolean showLocalLabels)
 	{
 		lastScrollIndex = -1;
 
@@ -82,7 +82,7 @@ public class ViewerAssembly extends Viewer
 
 				if (commentLines.size() == 0)
 				{
-					Label lblLine = createLabel(instr, annoWidth, 0);
+					Label lblLine = createLabel(instr, annoWidth, 0, showLocalLabels);
 					lblLine.setTooltip(new Tooltip(getToolTip(instr)));
 					labels.add(lblLine);
 				}
@@ -90,7 +90,7 @@ public class ViewerAssembly extends Viewer
 				{
 					for (int i = 0; i < commentLines.size(); i++)
 					{
-						Label lblLine = createLabel(instr, annoWidth, i);
+						Label lblLine = createLabel(instr, annoWidth, i, showLocalLabels);
 						lblLine.setTooltip(new Tooltip(getToolTip(instr)));
 						labels.add(lblLine);
 					}
@@ -250,9 +250,9 @@ public class ViewerAssembly extends Viewer
 		return lbl;
 	}
 
-	private AssemblyLabel createLabel(AssemblyInstruction instruction, int annoWidth, int line)
+	private AssemblyLabel createLabel(AssemblyInstruction instruction, int annoWidth, int line, boolean showLocalLabels)
 	{
-		AssemblyLabel lbl = new AssemblyLabel(instruction, annoWidth, line);
+		AssemblyLabel lbl = new AssemblyLabel(instruction, annoWidth, line, showLocalLabels);
 
 		lbl.setStyle(STYLE_UNHIGHLIGHTED);
 

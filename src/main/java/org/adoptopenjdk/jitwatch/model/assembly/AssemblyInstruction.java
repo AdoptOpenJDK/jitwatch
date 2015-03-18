@@ -32,19 +32,21 @@ public class AssemblyInstruction
 	private String mnemonic;
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
+	private final AssemblyLabels labels;
 
 	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyInstruction.class);
 
 	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands,
-			String firstComment)
+			String firstComment, AssemblyLabels labels)
 	{
 		this.annotation = annotation;
 		this.address = address;
 		this.modifier = modifier;
 		this.mnemonic = mnemonic;
 		this.operands = operands;
+		this.labels = labels;
 
 		if (firstComment != null)
 		{
@@ -169,15 +171,24 @@ public class AssemblyInstruction
 	@Override
 	public String toString()
 	{
-		return toString(0);
+		return toString(0, false);
 	}
 
-	public String toString(int annoWidth)
+	public String toString(int annoWidth, boolean useLocalLabels)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+
+		if (useLocalLabels)
+		{
+			labels.formatAddress(address, builder);
+		}
+		else
+		{
+			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		}
+
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -188,16 +199,23 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		if (operands.size() > 0)
+		if (useLocalLabels)
 		{
-			builder.append(C_SPACE);
-
-			for (String op : operands)
+			labels.formatOperands(this, builder);
+		}
+		else
+		{
+			if (operands.size() > 0)
 			{
-				builder.append(op).append(S_COMMA);
-			}
+				builder.append(C_SPACE);
 
-			builder.deleteCharAt(builder.length() - 1);
+				for (String op : operands)
+				{
+					builder.append(op).append(S_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
 		}
 
 		int lineLength = builder.length();
@@ -229,14 +247,22 @@ public class AssemblyInstruction
 	}
 
 	// Allow splitting an instruction with a multi-line comment across multiple
-	// labels
-	// which all contain the instruction
-	public String toString(int annoWidth, int line)
+	// labels which all contain the instruction
+	public String toString(int annoWidth, int line, boolean useLocalLabels)
 	{
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(StringUtil.alignLeft(annotation, annoWidth));
-		builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+
+		if (useLocalLabels)
+		{
+			labels.formatAddress(address, builder);
+		}
+		else
+		{
+			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+		}
+
 		builder.append(C_COLON).append(C_SPACE);
 
 		if (modifier != null)
@@ -247,16 +273,23 @@ public class AssemblyInstruction
 
 		builder.append(mnemonic);
 
-		if (operands.size() > 0)
+		if (useLocalLabels)
 		{
-			builder.append(C_SPACE);
-
-			for (String op : operands)
+			labels.formatOperands(this, builder);
+		}
+		else
+		{
+			if (operands.size() > 0)
 			{
-				builder.append(op).append(S_COMMA);
-			}
+				builder.append(C_SPACE);
 
-			builder.deleteCharAt(builder.length() - 1);
+				for (String op : operands)
+				{
+					builder.append(op).append(S_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
 		}
 
 		int lineLength = builder.length();

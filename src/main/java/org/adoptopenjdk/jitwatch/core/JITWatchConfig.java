@@ -320,7 +320,7 @@ public class JITWatchConfig
 
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		triLink = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK, false);
+		triLink = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK, true);
 		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, false);
 
 		// TODO I'm forcing no tiered compilation in sandbox until this fix for

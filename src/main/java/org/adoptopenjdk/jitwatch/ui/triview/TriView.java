@@ -310,6 +310,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				config.setLocalAsmLabels(newVal);
 				config.saveConfig();
+				setAssemblyPaneContent();
 			}
 		});
 
@@ -323,6 +324,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		CheckBox cb = new CheckBox("TriLink");
 
 		cb.setSelected(config.isTriLink());
+		cb.setDisable(true);
 
 		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
@@ -490,12 +492,12 @@ public class TriView extends Stage implements ITriView, ILineListener
 		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
 
 		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
+		updateStatusBarIfCompiled(statusBarBuilder);
+		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
 		viewerBytecode.setContent(currentMember, classBytecode, allClassLocations);
 
-		processIfCurrentMemberIsCompiled(statusBarBuilder);
-
-		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
+		setAssemblyPaneContent();
 
 		lblMemberInfo.setText(statusBarBuilder.toString());
 	}
@@ -525,14 +527,38 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void processIfCurrentMemberIsCompiled(StringBuilder statusBarBuilder)
+	private void setAssemblyPaneContent()
 	{
 		AssemblyMethod asmMethod = null;
+		
+		if (currentMember.isCompiled())
+		{
+			asmMethod = currentMember.getAssembly();
+
+			if (asmMethod == null)
+			{
+				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				viewerAssembly.setContent(msg, false);
+			}
+			else
+			{
+				viewerAssembly.setAssemblyMethod(asmMethod, config.isLocalAsmLabels());
+			}
+		}
+		else
+		{
+			String msg = "Not JIT-compiled";
+			viewerAssembly.setContent(msg, false);
+
+			lblMemberInfo.setText(S_EMPTY);
+		}
+	}	
+	
+	private void updateStatusBarIfCompiled(StringBuilder statusBarBuilder)
+	{
 		if (currentMember.isCompiled())
 		{
 			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
-
-			asmMethod = currentMember.getAssembly();
 
 			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
 
@@ -549,26 +575,10 @@ public class TriView extends Stage implements ITriView, ILineListener
 					statusBarBuilder.append(" compiled native wrapper");
 				}
 			}
-
-			if (asmMethod == null)
-			{
-				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
-				viewerAssembly.setContent(msg, false);
-			}
-			else
-			{
-				viewerAssembly.setAssemblyMethod(asmMethod);
-			}
-		}
-		else
-		{
-			String msg = "Not JIT-compiled";
-			viewerAssembly.setContent(msg, false);
-
-			lblMemberInfo.setText(S_EMPTY);
 		}
 	}
-
+	
+	
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
