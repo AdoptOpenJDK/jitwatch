@@ -80,7 +80,7 @@ public class MemberInfo extends HBox
 
 		getChildren().add(vBoxBytecode);
 		getChildren().add(vBoxAssembly);
-		getChildren().add(vBoxCompileTime);
+		getChildren().add(vBoxCompileTime);		
 	}
 
 	public void setMember(IMetaMember member)

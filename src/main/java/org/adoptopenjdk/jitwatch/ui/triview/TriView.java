@@ -178,7 +178,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 		btnJITJournal.setTooltip(new Tooltip("Show journal of JIT events for this member"));
 
 		memberInfo = new MemberInfo();
-		memberInfo.setStyle("-fx-padding:0px 0px 0px 90px;");
 
 		Region spacerTop = new Region();
 		HBox.setHgrow(spacerTop, Priority.ALWAYS);
@@ -191,13 +190,10 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
-
-		hBoxToolBarButtons.getChildren().add(getTriLinkCheckBox());
-
+		hBoxToolBarButtons.getChildren().add(getMouseFollowCheckBox());
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
-
 		hBoxToolBarButtons.getChildren().add(memberInfo);
-
+		
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
 		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.42));
@@ -319,19 +315,18 @@ public class TriView extends Stage implements ITriView, ILineListener
 		return hbox;
 	}
 
-	private CheckBox getTriLinkCheckBox()
+	private CheckBox getMouseFollowCheckBox()
 	{
-		CheckBox cb = new CheckBox("TriLink");
+		CheckBox cb = new CheckBox("Mouse Follow");
 
-		cb.setSelected(config.isTriLink());
-		cb.setDisable(true);
+		cb.setSelected(config.isTriViewMouseFollow());
 
 		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
 			{
-				config.setTriLink(newVal);
+				config.setTriViewMouseFollow(newVal);
 				config.saveConfig();
 			}
 		});

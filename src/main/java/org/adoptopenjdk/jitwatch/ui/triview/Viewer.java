@@ -39,6 +39,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
@@ -62,8 +63,6 @@ public class Viewer extends VBox
 	private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
-
-	private boolean keyboardMode = false;
 
 	private static final String FONT_STYLE = "-fx-font-family:monospace; -fx-font-size:12px;";
 
@@ -102,6 +101,11 @@ public class Viewer extends VBox
 		setup();
 	}
 
+	public JITWatchConfig getConfig()
+	{
+		return stageAccessProxy.getConfig();
+	}
+
 	private void setup()
 	{
 		vBoxRows = new VBox();
@@ -130,7 +134,6 @@ public class Viewer extends VBox
 			{
 				KeyCode code = event.getCode();
 
-				keyboardMode = true;
 				clearAllHighlighting();
 
 				switch (code)
@@ -156,6 +159,7 @@ public class Viewer extends VBox
 				default:
 					return;
 				}
+
 				event.consume();
 			}
 		};
@@ -186,6 +190,18 @@ public class Viewer extends VBox
 		});
 
 		scrollPane.setOnMouseEntered(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent arg0)
+			{
+				if (getConfig().isTriViewMouseFollow())
+				{
+					lineListener.handleFocusSelf(lineType);
+				}
+			}
+		});
+
+		scrollPane.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent arg0)
@@ -263,36 +279,36 @@ public class Viewer extends VBox
 				label.setOnMouseEntered(new EventHandler<MouseEvent>()
 				{
 					@Override
-					public void handle(MouseEvent arg0)
+					public void handle(MouseEvent mouseEvent)
 					{
-						if (!keyboardMode)
+						if (getConfig().isTriViewMouseFollow())
 						{
-							unhighlightPrevious();
-
-							label.setStyle(STYLE_HIGHLIGHTED);
-							lineListener.lineHighlighted(finalPos, lineType);
+							handleLabelClicked(mouseEvent, finalPos);
 						}
 					}
 				});
+
+				if (label.getOnMouseClicked() == null)
+				{
+					label.setOnMouseClicked(new EventHandler<MouseEvent>()
+					{
+						@Override
+						public void handle(MouseEvent mouseEvent)
+						{
+							handleLabelClicked(mouseEvent, finalPos);
+						}
+					});
+				}
 
 				label.setOnMouseExited(new EventHandler<MouseEvent>()
 				{
 					@Override
 					public void handle(MouseEvent arg0)
 					{
-						if (!keyboardMode)
+						if (getConfig().isTriViewMouseFollow())
 						{
 							unhighlightLabel(label);
 						}
-					}
-				});
-
-				label.setOnMouseMoved(new EventHandler<MouseEvent>()
-				{
-					@Override
-					public void handle(MouseEvent arg0)
-					{
-						keyboardMode = false;
 					}
 				});
 			}
@@ -300,6 +316,14 @@ public class Viewer extends VBox
 			label.minWidthProperty().bind(scrollPane.widthProperty());
 			pos++;
 		}
+	}
+
+	protected void handleLabelClicked(MouseEvent mouseEvent, int index)
+	{
+		clearAllHighlighting();
+
+		lineListener.lineHighlighted(index, lineType);
+		highlightLine(index);
 	}
 
 	private int checkBounds(int scrollIndex)
@@ -478,7 +502,7 @@ public class Viewer extends VBox
 			// leave source position unchanged if not a known source line
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
-			
+
 			if (DEBUG_LOGGING_TRIVIEW)
 			{
 				logger.debug("highlighting line {} in {}", index, getClass().getName());

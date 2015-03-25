@@ -5,10 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import javafx.stage.Stage;
+
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
-
-import javafx.stage.Stage;
 
 public interface IStageAccessProxy
 {
@@ -19,4 +20,6 @@ public interface IStageAccessProxy
 	void openTextViewer(String title, String contents, boolean lineNumbers, boolean highlighting);
 
 	Stage getStageForDialog();
+	
+	JITWatchConfig getConfig();
 }

@@ -50,17 +50,7 @@ public class TriViewNavigationStack
 				{
 					isCtrlPressed = false;
 				}
-			}
-		});
-
-		scene.setOnKeyReleased(new EventHandler<KeyEvent>()
-		{
-			@Override
-			public void handle(KeyEvent event)
-			{
-				KeyCode code = event.getCode();
-
-				if (code == KeyCode.BACK_SPACE)
+				else if (code == KeyCode.BACK_SPACE)
 				{
 					if (!navigationStack.isEmpty())
 					{

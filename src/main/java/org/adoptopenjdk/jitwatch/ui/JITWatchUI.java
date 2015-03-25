@@ -295,7 +295,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	private JITWatchConfig getConfig()
+	@Override
+	public JITWatchConfig getConfig()
 	{
 		return logParser.getConfig();
 	}

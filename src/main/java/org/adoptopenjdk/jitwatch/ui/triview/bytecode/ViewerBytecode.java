@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.bytecode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
@@ -140,20 +140,22 @@ public class ViewerBytecode extends Viewer
 
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
+			int lineIndex = 0;
+			
 			for (final BytecodeInstruction instruction : instructions)
 			{
 				int labelLines = instruction.getLabelLines();
 
 				if (labelLines == 0)
 				{
-					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member);
+					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member, lineIndex++);
 					labels.add(lblLine);
 				}
 				else
 				{
 					for (int i = 0; i < labelLines; i++)
 					{
-						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, annotations, member);
+						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, annotations, member, lineIndex++);
 						labels.add(lblLine);
 					}
 				}
@@ -174,7 +176,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line,
-			final Map<Integer, LineAnnotation> annotations, final IMetaMember member)
+			final Map<Integer, LineAnnotation> annotations, final IMetaMember member, final int lineIndex)
 	{
 		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
 
@@ -231,7 +233,7 @@ public class ViewerBytecode extends Viewer
 					}
 					else if (mouseEvent.getClickCount() == 1)
 					{
-						handleNavigate(member, instruction);
+						handleNavigate(member, instruction, lineIndex);
 					}
 				}
 			}
@@ -240,7 +242,7 @@ public class ViewerBytecode extends Viewer
 		return lblLine;
 	}
 
-	private void handleNavigate(IMetaMember currentMember, BytecodeInstruction instruction)
+	private void handleNavigate(IMetaMember currentMember, BytecodeInstruction instruction, int lineIndex)
 	{
 		if (navigationStack.isCtrlPressed())
 		{
@@ -259,8 +261,14 @@ public class ViewerBytecode extends Viewer
 				{
 					logger.error("Could not calculate member for instruction: {}", instruction, ex);
 				}
-
 			}
+		}
+		else
+		{
+			clearAllHighlighting();
+
+			lineListener.lineHighlighted(lineIndex, lineType);
+			highlightLine(lineIndex);
 		}
 	}
 

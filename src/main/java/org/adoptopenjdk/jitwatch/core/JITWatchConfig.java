@@ -63,7 +63,7 @@ public class JITWatchConfig
 	private static final String KEY_LAST_LOG_DIR = "LastLogDir";
 	private static final String KEY_LAST_SANDBOX_EDITOR_PANES = "LastSandboxEditorPanes";
 
-	private static final String KEY_TRIVIEW_TRILINK = "triview.trilink";
+	private static final String KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW = "triview.mouse_follow";
 	private static final String KEY_TRIVIEW_LOCAL_ASM_LABELS = "triview.local_asm_labels";
 
 	private static final String SANDBOX_PREFIX = "sandbox";
@@ -91,7 +91,7 @@ public class JITWatchConfig
 	private String lastLogDir = null;
 	private boolean intelMode = false;
 
-	private boolean triLink = false;
+	private boolean mouseFollow = false;
 	private boolean localAsmLabels = false;
 
 	private TieredCompilation tieredCompilationMode;
@@ -320,7 +320,7 @@ public class JITWatchConfig
 
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		triLink = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK, true);
+		mouseFollow = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, true);
 		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, false);
 
 		// TODO I'm forcing no tiered compilation in sandbox until this fix for
@@ -481,7 +481,7 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SHOW_HIDE_INTERFACES, Boolean.toString(hideInterfaces));
 		putProperty(loadedProps, KEY_SHOW_NOTHING_MOUNTED, Boolean.toString(showNothingMounted));
 		putProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, Boolean.toString(intelMode));
-		putProperty(loadedProps, KEY_TRIVIEW_TRILINK, Boolean.toString(triLink));
+		putProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, Boolean.toString(mouseFollow));
 		putProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, Boolean.toString(localAsmLabels));
 
 		switch (tieredCompilationMode)
@@ -841,14 +841,14 @@ public class JITWatchConfig
 		return languageList;
 	}
 
-	public boolean isTriLink()
+	public boolean isTriViewMouseFollow()
 	{
-		return triLink;
+		return mouseFollow;
 	}
 
-	public void setTriLink(boolean triLink)
+	public void setTriViewMouseFollow(boolean mouseFollow)
 	{
-		this.triLink = triLink;
+		this.mouseFollow = mouseFollow;
 	}
 
 	public boolean isLocalAsmLabels()

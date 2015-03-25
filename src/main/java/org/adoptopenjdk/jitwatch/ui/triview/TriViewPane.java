@@ -29,7 +29,7 @@ public class TriViewPane extends VBox
 		construct(title, viewer, titleComponents);
 	}
 
-	private void construct(String title, Viewer viewer, HBox titleComponents)
+	private void construct(String title, final Viewer viewer, HBox titleComponents)
 	{
 		this.titleComponents = titleComponents;
 
@@ -37,7 +37,7 @@ public class TriViewPane extends VBox
 		titleComponents.prefWidthProperty().bind(widthProperty());
 
 		Label lblTitle = new Label(title);
-		titleComponents.getChildren().add(0,  lblTitle);
+		titleComponents.getChildren().add(0, lblTitle);
 
 		viewer.prefWidthProperty().bind(widthProperty());
 		viewer.prefHeightProperty().bind(heightProperty());
@@ -50,7 +50,10 @@ public class TriViewPane extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				focus();
+				if (viewer.getConfig().isTriViewMouseFollow())
+				{
+					focus();
+				}
 			}
 		});
 
@@ -59,7 +62,19 @@ public class TriViewPane extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				unFocus();
+				if (viewer.getConfig().isTriViewMouseFollow())
+				{
+					unFocus();
+				}
+			}
+		});
+
+		titleComponents.setOnMouseClicked(new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent arg0)
+			{
+				focus();
 			}
 		});
 	}
