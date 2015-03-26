@@ -128,26 +128,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.setSpacing(10);
 		hBoxToolBarButtons.setPadding(new Insets(0, 10, 10, 10));
 
-		checkSource = new CheckBox("Source");
-		checkBytecode = new CheckBox("Bytecode");
-		checkAssembly = new CheckBox("Assembly");
-
-		checkSource.setSelected(true);
-		checkBytecode.setSelected(true);
-		checkAssembly.setSelected(true);
-
-		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
-			{
-				checkColumns();
-			}
-		};
-
-		checkSource.selectedProperty().addListener(checkListener);
-		checkBytecode.selectedProperty().addListener(checkListener);
-		checkAssembly.selectedProperty().addListener(checkListener);
+		setupCheckBoxes();
 
 		btnCompileChain = StyleUtil.buildButton("Chain");
 		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
@@ -193,7 +174,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(getMouseFollowCheckBox());
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
-		
+
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
 		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.42));
@@ -255,7 +236,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		paneSource = new TriViewPane("Source", viewerSource);
 		paneBytecode = new TriViewPane("Bytecode (double click for JVM spec)", viewerBytecode);
-
 		paneAssembly = new TriViewPane("Assembly", viewerAssembly, getAssemblyTitleComponents());
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
@@ -288,6 +268,52 @@ public class TriView extends Stage implements ITriView, ILineListener
 				focusSource();
 			}
 		});
+	}
+
+	private void setupCheckBoxes()
+	{
+		checkSource = new CheckBox("_Source");
+		checkBytecode = new CheckBox("_Bytecode");
+		checkAssembly = new CheckBox("_Assembly");
+
+		checkSource.setSelected(true);
+		checkBytecode.setSelected(true);
+		checkAssembly.setSelected(true);
+
+		addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, new EventHandler<javafx.scene.input.KeyEvent>()
+		{
+			@Override
+			public void handle(javafx.scene.input.KeyEvent event)
+			{
+				switch (event.getCode())
+				{
+				case S:
+					checkSource.setSelected(!checkSource.isSelected());
+					break;
+				case B:
+					checkBytecode.setSelected(!checkBytecode.isSelected());
+					break;
+				case A:
+					checkAssembly.setSelected(!checkAssembly.isSelected());
+					break;
+				default:
+					break;
+				}
+			}
+		});
+
+		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			{
+				checkColumns();
+			}
+		};
+
+		checkSource.selectedProperty().addListener(checkListener);
+		checkBytecode.selectedProperty().addListener(checkListener);
+		checkAssembly.selectedProperty().addListener(checkListener);
 	}
 
 	private HBox getAssemblyTitleComponents()
@@ -525,7 +551,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private void setAssemblyPaneContent()
 	{
 		AssemblyMethod asmMethod = null;
-		
+
 		if (currentMember.isCompiled())
 		{
 			asmMethod = currentMember.getAssembly();
@@ -547,8 +573,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 			lblMemberInfo.setText(S_EMPTY);
 		}
-	}	
-	
+	}
+
 	private void updateStatusBarIfCompiled(StringBuilder statusBarBuilder)
 	{
 		if (currentMember.isCompiled())
@@ -572,8 +598,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			}
 		}
 	}
-	
-	
+
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);

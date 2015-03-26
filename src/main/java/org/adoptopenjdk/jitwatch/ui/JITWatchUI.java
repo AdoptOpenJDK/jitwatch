@@ -74,6 +74,7 @@ import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -320,6 +321,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		BorderPane borderPane = new BorderPane();
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+		
+		scene.getStylesheets().add(UserInterfaceUtil.getStyleSheet());
 
 		Button btnChooseWatchFile = StyleUtil.buildButton("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
