@@ -89,6 +89,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
 	private CheckBox checkMouseFollow;
+	private CheckBox checkLocalLabels;
 
 	private Button btnCompileChain;
 	private Button btnJITJournal;
@@ -275,7 +276,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkSource = new CheckBox("_Source");
 		checkBytecode = new CheckBox("_Bytecode");
 		checkAssembly = new CheckBox("_Assembly");
-		
+
 		createCheckBoxMouseFollow();
 
 		checkSource.setSelected(true);
@@ -287,22 +288,28 @@ public class TriView extends Stage implements ITriView, ILineListener
 			@Override
 			public void handle(javafx.scene.input.KeyEvent event)
 			{
-				switch (event.getCode())
+				if (event.isAltDown())
 				{
-				case S:
-					checkSource.setSelected(!checkSource.isSelected());
-					break;
-				case B:
-					checkBytecode.setSelected(!checkBytecode.isSelected());
-					break;
-				case A:
-					checkAssembly.setSelected(!checkAssembly.isSelected());
-					break;
-				case F:
-					checkMouseFollow.setSelected(!checkMouseFollow.isSelected());
-					break;					
-				default:
-					break;
+					switch (event.getCode())
+					{
+					case S:
+						checkSource.setSelected(!checkSource.isSelected());
+						break;
+					case B:
+						checkBytecode.setSelected(!checkBytecode.isSelected());
+						break;
+					case A:
+						checkAssembly.setSelected(!checkAssembly.isSelected());
+						break;
+					case M:
+						checkMouseFollow.setSelected(!checkMouseFollow.isSelected());
+						break;
+					case L:
+						checkLocalLabels.setSelected(!checkLocalLabels.isSelected());
+						break;
+					default:
+						break;
+					}
 				}
 			}
 		});
@@ -326,11 +333,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 		HBox hbox = new HBox();
 		hbox.setSpacing(16);
 
-		CheckBox cb = new CheckBox("Local labels");
+		checkLocalLabels = new CheckBox("_Local labels");
 
-		cb.setSelected(config.isLocalAsmLabels());
+		checkLocalLabels.setSelected(config.isLocalAsmLabels());
 
-		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
+		checkLocalLabels.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
@@ -341,14 +348,14 @@ public class TriView extends Stage implements ITriView, ILineListener
 			}
 		});
 
-		hbox.getChildren().add(cb);
+		hbox.getChildren().add(checkLocalLabels);
 
 		return hbox;
 	}
 
 	private void createCheckBoxMouseFollow()
 	{
-		checkMouseFollow = new CheckBox("Mouse _Follow");
+		checkMouseFollow = new CheckBox("_Mouse Follow");
 
 		checkMouseFollow.setSelected(config.isTriViewMouseFollow());
 
