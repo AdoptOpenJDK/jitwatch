@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
 public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
@@ -38,7 +37,7 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 
 		lblMetaClass = new Label();
 		lblMetaMember = new Label();
-		btnTriView = StyleUtil.buildButton("View");
+		btnTriView = new Button("View");
 
 		vb.getChildren().add(lblMetaClass);
 		vb.getChildren().add(lblMetaMember);

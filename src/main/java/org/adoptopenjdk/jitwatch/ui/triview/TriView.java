@@ -62,7 +62,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
@@ -89,6 +88,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private CheckBox checkSource;
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
+	private CheckBox checkMouseFollow;
 
 	private Button btnCompileChain;
 	private Button btnJITJournal;
@@ -130,7 +130,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		setupCheckBoxes();
 
-		btnCompileChain = StyleUtil.buildButton("Chain");
+		btnCompileChain = new Button("Chain");
 		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -144,7 +144,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		});
 		btnCompileChain.setTooltip(new Tooltip("Show chain of compiled and inlined children"));
 
-		btnJITJournal = StyleUtil.buildButton("Journal");
+		btnJITJournal = new Button("Journal");
 		btnJITJournal.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -171,7 +171,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
-		hBoxToolBarButtons.getChildren().add(getMouseFollowCheckBox());
+		hBoxToolBarButtons.getChildren().add(checkMouseFollow);
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
 
@@ -275,6 +275,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 		checkSource = new CheckBox("_Source");
 		checkBytecode = new CheckBox("_Bytecode");
 		checkAssembly = new CheckBox("_Assembly");
+		
+		createCheckBoxMouseFollow();
 
 		checkSource.setSelected(true);
 		checkBytecode.setSelected(true);
@@ -296,6 +298,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 				case A:
 					checkAssembly.setSelected(!checkAssembly.isSelected());
 					break;
+				case F:
+					checkMouseFollow.setSelected(!checkMouseFollow.isSelected());
+					break;					
 				default:
 					break;
 				}
@@ -341,13 +346,13 @@ public class TriView extends Stage implements ITriView, ILineListener
 		return hbox;
 	}
 
-	private CheckBox getMouseFollowCheckBox()
+	private void createCheckBoxMouseFollow()
 	{
-		CheckBox cb = new CheckBox("Mouse Follow");
+		checkMouseFollow = new CheckBox("Mouse _Follow");
 
-		cb.setSelected(config.isTriViewMouseFollow());
+		checkMouseFollow.setSelected(config.isTriViewMouseFollow());
 
-		cb.selectedProperty().addListener(new ChangeListener<Boolean>()
+		checkMouseFollow.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
@@ -356,8 +361,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 				config.saveConfig();
 			}
 		});
-
-		return cb;
 	}
 
 	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()

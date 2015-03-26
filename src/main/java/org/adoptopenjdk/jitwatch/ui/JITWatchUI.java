@@ -324,7 +324,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		
 		scene.getStylesheets().add(UserInterfaceUtil.getStyleSheet());
 
-		Button btnChooseWatchFile = StyleUtil.buildButton("Open Log");
+		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -335,7 +335,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStart = StyleUtil.buildButton("Start");
+		btnStart = new Button("Start");
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -366,7 +366,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStop = StyleUtil.buildButton("Stop");
+		btnStop = new Button("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -376,7 +376,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnConfigure = StyleUtil.buildButton("Config");
+		btnConfigure = new Button("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -386,7 +386,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTimeLine = StyleUtil.buildButton("Chart");
+		btnTimeLine = new Button("Chart");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -400,7 +400,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStats = StyleUtil.buildButton("Stats");
+		btnStats = new Button("Stats");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -414,7 +414,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnHisto = StyleUtil.buildButton("Histo");
+		btnHisto = new Button("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -428,7 +428,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTopList = StyleUtil.buildButton("TopList");
+		btnTopList = new Button("TopList");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -442,7 +442,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnCodeCache = StyleUtil.buildButton("Code Cache");
+		btnCodeCache = new Button("Code Cache");
 		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -456,7 +456,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTriView = StyleUtil.buildButton("TriView");
+		btnTriView = new Button("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -471,7 +471,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSuggest = StyleUtil.buildButton("Suggest");
+		btnSuggest = new Button("Suggest");
 		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -485,7 +485,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnOptimizedVirtualCalls = StyleUtil.buildButton("OVCs");
+		btnOptimizedVirtualCalls = new Button("OVCs");
 		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -504,7 +504,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSandbox = StyleUtil.buildButton("Sandbox");
+		btnSandbox = new Button("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

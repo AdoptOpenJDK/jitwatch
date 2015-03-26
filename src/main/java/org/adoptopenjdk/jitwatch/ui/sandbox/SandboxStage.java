@@ -63,7 +63,6 @@ import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +130,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		taLog.setStyle(style);
 
-		Button btnNewEditor = StyleUtil.buildButton("New Editor");
+		Button btnNewEditor = new Button("New Editor");
 		btnNewEditor.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -141,7 +140,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnOpen = StyleUtil.buildButton("Open");
+		Button btnOpen = new Button("Open");
 		btnOpen.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -179,7 +178,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnSave = StyleUtil.buildButton("Save");
+		Button btnSave = new Button("Save");
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -200,7 +199,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		btnSandboxConfig = StyleUtil.buildButton("Configure Sandbox");
+		btnSandboxConfig = new Button("Configure Sandbox");
 		btnSandboxConfig.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -214,7 +213,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnResetSandbox = StyleUtil.buildButton("Reset Sandbox");
+		Button btnResetSandbox = new Button("Reset Sandbox");
 		btnResetSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -244,7 +243,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnRun = StyleUtil.buildButton("Run");
+		Button btnRun = new Button("Run");
 		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -268,7 +267,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnOutput = StyleUtil.buildButton("View Output");
+		Button btnOutput = new Button("View Output");
 		btnOutput.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

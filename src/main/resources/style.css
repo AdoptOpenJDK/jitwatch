@@ -1,0 +1,9 @@
+.mnemonic-underline {
+    -fx-stroke: -fx-text-base-color;
+}
+
+Button {
+	-fx-font: 12 Arial;
+	-fx-base: #eeeeff;
+	-fx-padding: 3 9 4 9;
+}

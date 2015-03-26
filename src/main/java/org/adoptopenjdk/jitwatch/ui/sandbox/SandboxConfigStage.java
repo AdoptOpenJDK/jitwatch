@@ -32,7 +32,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.FileChooserList;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -636,8 +635,8 @@ public class SandboxConfigStage extends Stage
 		hbox.setPadding(new Insets(0, 10, 0, 10));
 		hbox.setAlignment(Pos.CENTER);
 
-		Button btnSave = StyleUtil.buildButton("Save");
-		Button btnCancel = StyleUtil.buildButton("Cancel");
+		Button btnSave = new Button("Save");
+		Button btnCancel = new Button("Cancel");
 
 		btnSave.setOnAction(getEventHandlerForSaveButton());
 

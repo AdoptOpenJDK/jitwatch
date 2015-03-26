@@ -26,7 +26,7 @@ public class FileChooserListSrcZip extends FileChooserList
 	{
 		super(stage, title, items);
 
-		Button btnAddSrcZip = StyleUtil.buildButton("Add JDK src");
+		Button btnAddSrcZip = new Button("Add JDK src");
 		btnAddSrcZip.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

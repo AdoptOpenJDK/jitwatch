@@ -60,8 +60,8 @@ public class NothingMountedStage extends Stage
         hboxButtons.setPadding(new Insets(10));
         hboxButtons.setAlignment(Pos.CENTER);
 
-        Button btnOpenConfig = StyleUtil.buildButton("Open Config");
-        Button btnDismiss = StyleUtil.buildButton("Dismiss");
+        Button btnOpenConfig = new Button("Open Config");
+        Button btnDismiss = new Button("Dismiss");
         
         btnOpenConfig.setOnAction(new EventHandler<ActionEvent>()
         {

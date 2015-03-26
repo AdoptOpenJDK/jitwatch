@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.util;
 import java.io.InputStream;
 
 import javafx.scene.image.Image;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,5 +44,10 @@ public final class UserInterfaceUtil
 		}
 
 		return result;
+	}
+	
+	public static String getStyleSheet()
+	{
+		return UserInterfaceUtil.class.getResource("/style.css").toExternalForm();
 	}
 }

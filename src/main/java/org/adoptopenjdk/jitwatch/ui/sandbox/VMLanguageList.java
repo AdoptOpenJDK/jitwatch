@@ -19,7 +19,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 
 public class VMLanguageList extends FlowPane implements IStageCloseListener
 {
@@ -58,7 +57,7 @@ public class VMLanguageList extends FlowPane implements IStageCloseListener
 
 		for (final String lang : vmLanguageList)
 		{
-			Button button = StyleUtil.buildButton(lang);
+			Button button = new Button(lang);
 			button.setPrefWidth(120);
 
 			if (!LanguageManager.isLanguageEnabled(lang))

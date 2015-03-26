@@ -24,7 +24,6 @@ import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.ui.StyleUtil;
 
 public class VMLanguageConfigStage extends Stage
 {
@@ -79,7 +78,7 @@ public class VMLanguageConfigStage extends Stage
 
 		tfLanguagePath = new TextField();
 
-		Button btnChoosePath = StyleUtil.buildButton("Choose");
+		Button btnChoosePath = new Button("Choose");
 		btnChoosePath.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -115,8 +114,8 @@ public class VMLanguageConfigStage extends Stage
 		hbox.setSpacing(20);
 		hbox.setAlignment(Pos.CENTER);
 
-		Button btnSave = StyleUtil.buildButton("Save");
-		Button btnCancel = StyleUtil.buildButton("Cancel");
+		Button btnSave = new Button("Save");
+		Button btnCancel = new Button("Cancel");
 
 		btnSave.setOnAction(getEventHandlerForSaveButton(language, parent, config));
 

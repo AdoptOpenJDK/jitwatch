@@ -88,7 +88,7 @@ public final class Dialogs
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
-		Button btnYes = StyleUtil.buildButton("Yes");
+		Button btnYes = new Button("Yes");
 
 		btnYes.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -100,7 +100,7 @@ public final class Dialogs
 			}
 		});
 
-		Button btnNo = StyleUtil.buildButton("No");
+		Button btnNo = new Button("No");
 
 		btnNo.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -159,7 +159,7 @@ public final class Dialogs
 
 		});
 
-		Button btnOK = StyleUtil.buildButton("OK");
+		Button btnOK = new Button("OK");
 
 		btnOK.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -172,7 +172,7 @@ public final class Dialogs
 			}
 		});
 
-		Button btnCancel = StyleUtil.buildButton("Cancel");
+		Button btnCancel = new Button("Cancel");
 
 		btnCancel.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -232,7 +232,7 @@ public final class Dialogs
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
-		Button btnOK = StyleUtil.buildButton("OK");
+		Button btnOK = new Button("OK");
 
 		btnOK.setOnAction(new EventHandler<ActionEvent>()
 		{

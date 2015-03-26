@@ -47,7 +47,7 @@ public class FileChooserList extends VBox
 
 		setItems(items);
 
-		Button btnOpenFileDialog = StyleUtil.buildButton("Add File(s)");
+		Button btnOpenFileDialog = new Button("Add File(s)");
 		btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -57,7 +57,7 @@ public class FileChooserList extends VBox
 			}
 		});
 
-		Button btnOpenFolderDialog = StyleUtil.buildButton("Add Folder");
+		Button btnOpenFolderDialog = new Button("Add Folder");
 		btnOpenFolderDialog.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -67,7 +67,7 @@ public class FileChooserList extends VBox
 			}
 		});
 
-		Button btnRemove = StyleUtil.buildButton("Remove");
+		Button btnRemove = new Button("Remove");
 		btnRemove.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

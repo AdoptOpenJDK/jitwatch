@@ -321,7 +321,7 @@ public class JITWatchConfig
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
 		mouseFollow = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, true);
-		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, false);
+		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, true);
 
 		// TODO I'm forcing no tiered compilation in sandbox until this fix for
 		// the LogCompilation output goes live
