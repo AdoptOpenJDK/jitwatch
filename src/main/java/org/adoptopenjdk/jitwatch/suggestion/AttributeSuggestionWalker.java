@@ -207,7 +207,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			{
 				String callerID = attrs.get(ATTR_METHOD);
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
-				processParseTag(child, nestedCaller, parseDictionary);
+				if (nestedCaller != null) {
+					processParseTag(child, nestedCaller, parseDictionary);
+				}
 			}
 
 			default:
