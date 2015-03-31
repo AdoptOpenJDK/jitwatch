@@ -40,61 +40,119 @@ public final class AssemblyUtil
 
 		AssemblyInstruction lastInstruction = null;
 
-		for (String line : lines)
+		String lastLine = null;
+		for (int i = 0; i < lines.length; i++)
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
-				logger.debug("line: '{}'", line);
+				logger.debug("line: '{}'", lines[i]);
 			}
 
-			String trimmedLine = line.replace(S_ENTITY_APOS, S_QUOTE).trim();
+			String line = lines[i].replace(S_ENTITY_APOS, S_QUOTE);
+			line = line.replaceFirst("^ +", "");
 
-			if (trimmedLine.startsWith(S_HASH))
+			if (line.startsWith(S_HASH))
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Assembly header: {}", trimmedLine);
+					logger.debug("Assembly header: {}", line);
 				}
 
-				headerBuilder.append(trimmedLine).append(S_NEWLINE);
+				headerBuilder.append(line).append(S_NEWLINE);
 			}
-			else if (trimmedLine.startsWith(S_OPEN_SQUARE))
+			else if (line.startsWith(S_OPEN_SQUARE))
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("new AssemblyBlock: {}", trimmedLine);
+					logger.debug("new AssemblyBlock: {}", line);
 				}
 
 				method.addBlock(currentBlock);
 				currentBlock = new AssemblyBlock();
-				currentBlock.setTitle(trimmedLine);
+				currentBlock.setTitle(line);
 			}
-			else if (trimmedLine.startsWith(S_SEMICOLON))
+			else if (line.startsWith(S_SEMICOLON))
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Extended comment? '{}'", trimmedLine);
+					logger.debug("Extended comment? '{}'", line);
 				}
 
 				if (lastInstruction != null)
 				{
-					if (trimmedLine.length() > 0)
-					{
-						lastInstruction.addCommentLine(trimmedLine);
-					}
+					lastInstruction.addCommentLine(line);
 				}
 			}
 			else
 			{
-				AssemblyInstruction instr = createInstruction(labels, trimmedLine);
+				AssemblyInstruction instr = createInstruction(labels, line);
 
-				if (instr != null)
+				if (instr == null
+						&& lastLine.trim().startsWith(S_HASH)
+						&& !line.startsWith(S_ASSEMBLY_ADDRESS)
+						&& !line.contains(' ' + S_ASSEMBLY_ADDRESS))
 				{
-					currentBlock.addInstruction(instr);
-					
-					lastInstruction = instr;
+					// remove last newline
+					headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
+
+					headerBuilder.append(line).append(S_NEWLINE);
+
+					// update untrimmedLine since it is used to update lastUntrimmedLine at end of loop
+					line = lastLine + line;
+				}
+				else if (instr == null
+						&& lastLine.trim().startsWith(S_SEMICOLON)
+						&& lastInstruction != null)
+				{
+					lastInstruction.appendToLastCommentLine(line);
+
+					// update untrimmedLine since it is used to update lastUntrimmedLine at end of loop
+					line = lastLine + line;
+				}
+				else
+				{
+					boolean replaceLast = false;
+					if (instr == null && i < lines.length - 1)
+					{
+						// try appending current and next lines together
+						String nextUntrimmedLine = lines[i + 1].replace(S_ENTITY_APOS, S_QUOTE);
+
+						instr = createInstruction(labels, line + nextUntrimmedLine);
+						if (instr != null) {
+							i++;
+						}
+					}
+
+					if (instr == null && lastInstruction != null)
+					{
+						// try appending last and current lines together
+						instr = createInstruction(labels, lastLine + line);
+						if (instr != null)
+						{
+							replaceLast = true;
+						}
+					}
+
+					if (instr != null)
+					{
+						if (replaceLast)
+						{
+							currentBlock.replaceLastInstruction(instr);
+						}
+						else
+						{
+							currentBlock.addInstruction(instr);
+						}
+
+						lastInstruction = instr;
+					}
+					else
+					{
+						logger.error("Could not parse assembly: {}", line);
+					}
 				}
 			}
+			lastLine = line;
 		}
 
 		method.addBlock(currentBlock);
@@ -120,12 +178,15 @@ public final class AssemblyUtil
 
 		String annotation = S_EMPTY;
 
-		int addressIndex = line.indexOf(S_ASSEMBLY_ADDRESS);
-
-		if (addressIndex != -1)
+		if (!line.startsWith(S_ASSEMBLY_ADDRESS))
 		{
-			annotation = line.substring(0, addressIndex);
-			line = line.substring(addressIndex);
+			int addressIndex = line.indexOf(' ' + S_ASSEMBLY_ADDRESS);
+
+			if (addressIndex != -1)
+			{
+				annotation = line.substring(0, addressIndex) + ' ';
+				line = line.substring(addressIndex + 1);
+			}
 		}
 
 		Matcher matcher = PATTERN_ASSEMBLY_INSTRUCTION.matcher(line);
@@ -186,10 +247,6 @@ public final class AssemblyUtil
 				instr = new AssemblyInstruction(annotation, addressValue, modifier, mnemonic, operands, comment, labels);
 				labels.newInstruction(instr);
 			}
-		}
-		else
-		{
-			logger.error("Could not parse assembly: {}", line);
 		}
 
 		return instr;

@@ -50,7 +50,7 @@ public class AssemblyProcessor
 
 	public void handleLine(final String inLine)
 	{
-		String line = inLine.trim();
+		String line = inLine.replaceFirst("^ +", "");
 
 		line = line.replace(S_ENTITY_LT, S_OPEN_ANGLE);
 		line = line.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
