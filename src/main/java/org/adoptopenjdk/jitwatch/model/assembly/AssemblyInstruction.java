@@ -105,7 +105,16 @@ public class AssemblyInstruction
 	{
 		if (comment != null)
 		{
-			commentLines.add(comment.trim());
+			commentLines.add(comment);
+		}
+	}
+
+	public void appendToLastCommentLine(String comment)
+	{
+		if (comment != null)
+		{
+			String lastCommentLine = commentLines.get(commentLines.size() - 1);
+			commentLines.set(commentLines.size() - 1, lastCommentLine + comment);
 		}
 	}
 

@@ -37,6 +37,11 @@ public class AssemblyBlock
 		instructions.add(instr);
 	}
 
+	public void replaceLastInstruction(AssemblyInstruction instr)
+	{
+		instructions.set(instructions.size() - 1, instr);
+	}
+
 	public List<AssemblyInstruction> getInstructions()
 	{
 		return instructions;
