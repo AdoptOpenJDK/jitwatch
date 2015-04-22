@@ -245,6 +245,7 @@ public final class JITWatchConstants
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
 	public static final String S_BYTECODE_SIGNATURE = "Signature:";
+	public static final String S_BYTECODE_SOURCE_FILE= "SourceFile:";
 
 	public static final String S_POLYMORPHIC_SIGNATURE = "PolymorphicSignature";
 

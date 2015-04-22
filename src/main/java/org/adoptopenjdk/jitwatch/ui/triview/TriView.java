@@ -503,10 +503,26 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		memberInfo.setMember(member);
 
+		List<String> allClassLocations = config.getAllClassLocations();
+
+		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
+		
 		if (!sameClass)
 		{
 			String source = ResourceLoader.getSource(memberClass, config.getSourceLocations());
 
+			if (source == null)
+			{
+				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute", memberClass);;
+			
+				String sourceFileName = classBytecode.getSourceFile();
+								
+				if (sourceFileName != null)
+				{
+					source = ResourceLoader.getSource(sourceFileName, config.getSourceLocations());
+				}
+			}
+			
 			viewerSource.setContent(source, true);
 		}
 
@@ -518,9 +534,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		StringBuilder statusBarBuilder = new StringBuilder();
 
-		List<String> allClassLocations = config.getAllClassLocations();
 
-		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
 
 		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
 		updateStatusBarIfCompiled(statusBarBuilder);

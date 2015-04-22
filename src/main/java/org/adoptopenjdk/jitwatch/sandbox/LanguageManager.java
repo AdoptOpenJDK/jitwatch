@@ -25,6 +25,7 @@ import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerGroovy;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJRuby;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJavaScript;
+import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerKotlin;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerScala;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
@@ -32,6 +33,7 @@ import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeGroovy;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJRuby;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJavaScript;
+import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeKotlin;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeScala;
 
 public class LanguageManager
@@ -72,6 +74,7 @@ public class LanguageManager
 					result = new CompilerJRuby(languageHomeDir);
 					break;
 				case VM_LANGUAGE_KOTLIN:
+					result = new CompilerKotlin(languageHomeDir);
 					break;
 				case VM_LANGUAGE_SCALA:
 					result = new CompilerScala(languageHomeDir);
@@ -114,6 +117,7 @@ public class LanguageManager
 					result = new RuntimeJRuby(languageHomeDir);
 					break;
 				case VM_LANGUAGE_KOTLIN:
+					result = new RuntimeKotlin(languageHomeDir);
 					break;
 				case VM_LANGUAGE_SCALA:
 					result = new RuntimeScala(languageHomeDir);
@@ -226,7 +230,7 @@ public class LanguageManager
 		case VM_LANGUAGE_JRUBY:
 			return false;
 		case VM_LANGUAGE_KOTLIN:
-			return false;
+			return true;
 		case VM_LANGUAGE_SCALA:
 			return true;
 		default:

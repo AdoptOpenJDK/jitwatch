@@ -21,6 +21,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MAJOR_
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_MINOR_VERSION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_SOURCE_FILE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STACKMAPTABLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
@@ -28,7 +29,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
@@ -288,6 +291,10 @@ public final class BytecodeLoader
 					{
 						classBytecode.setMajorVersion(majorVersion);
 					}
+				}
+				else if (line.startsWith(S_BYTECODE_SOURCE_FILE))
+				{
+					classBytecode.setSourceFile(getSourceFile(line));
 				}
 				break;
 			case INNERCLASSES:
@@ -632,6 +639,22 @@ public final class BytecodeLoader
 		}
 
 		return version;
+	}
+	
+	private static String getSourceFile(final String line)
+	{
+		String result = null;
+
+		int colonPos = line.indexOf(C_COLON);
+
+		if (colonPos != -1 && colonPos != line.length() - 1)
+		{
+			result = line.substring(colonPos + 1);
+			
+			result = result.replace(S_DOUBLE_QUOTE, S_EMPTY).trim();
+		}
+
+		return result;
 	}
 
 	public static List<BytecodeInstruction> parseInstructions(final String bytecode)

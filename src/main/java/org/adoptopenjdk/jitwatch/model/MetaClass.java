@@ -111,7 +111,7 @@ public class MetaClass implements Comparable<MetaClass>
 		return classBytecode;
 	}
 
-	public String toString2()
+	public String toStringDetailed()
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append(classPackage.getName()).append(S_DOT).append(className).append(C_SPACE).append(compiledMethodCount)

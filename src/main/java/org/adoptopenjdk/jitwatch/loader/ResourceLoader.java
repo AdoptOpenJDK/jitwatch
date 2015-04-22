@@ -13,9 +13,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -62,7 +64,7 @@ public final class ResourceLoader
 		return result;
 	}
 
-	private static String getSource(String fileName, List<String> locations)
+	public static String getSource(String fileName, List<String> locations)
 	{
 		String source = null;
 
@@ -76,6 +78,8 @@ public final class ResourceLoader
 				{
 					source = readFileInDirectory(lf, fileName);
 
+					System.out.println(fileName + " found: " + source);
+
 					if (source != null)
 					{
 						break;
@@ -83,7 +87,7 @@ public final class ResourceLoader
 				}
 				else
 				{
-					source = searchFileInZip(lf, fileName);
+					source = readFileFromZip(lf, fileName);
 
 					if (source != null)
 					{
@@ -123,7 +127,27 @@ public final class ResourceLoader
 		return result;
 	}
 
-	public static String searchFileInZip(File zipFile, String fileName)
+	public static Properties readManifestFromZip(File zipFile)
+	{
+		Properties result = new Properties();
+
+		String manifestSource = readFileFromZip(zipFile, "META-INF/MANIFEST.MF");
+
+		if (manifestSource != null)
+		{
+			try
+			{
+				result.load(new StringReader(manifestSource));
+			}
+			catch (IOException e)
+			{
+				logger.error("Couldn't read manifest from {}", zipFile, e);
+			}
+		}
+		return result;
+	}
+
+	public static String readFileFromZip(File zipFile, String fileName)
 	{
 		String result = null;
 

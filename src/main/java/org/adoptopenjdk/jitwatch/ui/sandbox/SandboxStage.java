@@ -174,6 +174,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 					selectedTab.setText(pane.getName());
 
 					setVMLanguage(pane);
+					
+					saveEditorPaneConfig();
 				}
 			}
 		});
