@@ -19,6 +19,10 @@ public final class UserInterfaceUtil
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
+	public static final String FONT_MONOSPACE_FAMILY;
+	public static final String FONT_MONOSPACE_SIZE;
+
+	
 	private UserInterfaceUtil()
 	{
 	}
@@ -26,6 +30,9 @@ public final class UserInterfaceUtil
 	static
 	{
 		IMAGE_TICK = loadResource("/images/tick.png");
+		
+		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", "monospace");
+		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
 	}
 
 	private static Image loadResource(String path)

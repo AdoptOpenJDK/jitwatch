@@ -6,6 +6,8 @@
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -55,7 +57,8 @@ public class EditorPane extends VBox
 
 		taSource = new TextArea();
 
-		String styleSource = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+		String styleSource = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
+				+ "px; -fx-background-color:white;";
 
 		taSource.setStyle(styleSource);
 
@@ -70,7 +73,8 @@ public class EditorPane extends VBox
 
 		setTextAreaSaveCombo(taSource);
 
-		String styleLineNumber = "-fx-padding:0; -fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:#eeeeee;";
+		String styleLineNumber = "-fx-padding:0; -fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:"
+				+ FONT_MONOSPACE_FAMILY + "px; -fx-background-color:#eeeeee;";
 
 		taLineNumbers = new TextArea();
 		taLineNumbers.setStyle(styleLineNumber);

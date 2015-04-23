@@ -78,8 +78,6 @@ public final class ResourceLoader
 				{
 					source = readFileInDirectory(lf, fileName);
 
-					System.out.println(fileName + " found: " + source);
-
 					if (source != null)
 					{
 						break;

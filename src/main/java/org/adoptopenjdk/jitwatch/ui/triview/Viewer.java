@@ -12,6 +12,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE_CR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TAB;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +66,7 @@ public class Viewer extends VBox
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
 
-	private static final String FONT_STYLE = "-fx-font-family:monospace; -fx-font-size:12px;";
+	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE + "px;";
 
 	protected static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
