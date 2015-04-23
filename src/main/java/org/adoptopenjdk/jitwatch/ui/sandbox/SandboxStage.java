@@ -15,6 +15,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVAS
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JRUBY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_KOTLIN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
 
 import java.io.File;
 import java.lang.invoke.MethodHandle;
@@ -126,7 +128,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		taLog = new TextArea();
 
-		String style = "-fx-font-family:monospace; -fx-font-size:12px; -fx-background-color:white;";
+		String style = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
+				+ "px; -fx-background-color:white;";
 
 		taLog.setStyle(style);
 
@@ -174,7 +177,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 					selectedTab.setText(pane.getName());
 
 					setVMLanguage(pane);
-					
+
 					saveEditorPaneConfig();
 				}
 			}

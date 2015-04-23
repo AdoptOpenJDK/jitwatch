@@ -14,6 +14,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +66,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 					maxLineLength = rowLen;
 				}
 
-				String style = "-fx-font-family: monospace; -fx-font-size:12px;";
+				String style = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE + "px;";
 
 				String colour = Viewer.COLOUR_BLACK;
 

@@ -12,6 +12,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHES
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
 
 import java.io.File;
 import java.io.IOException;
@@ -321,7 +323,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		BorderPane borderPane = new BorderPane();
 
 		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
-		
+
 		scene.getStylesheets().add(UserInterfaceUtil.getStyleSheet());
 
 		Button btnChooseWatchFile = new Button("Open Log");
@@ -591,7 +593,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		spCentre.setDividerPositions(0.33, 0.67);
 
 		textAreaLog = new TextArea();
-		textAreaLog.setStyle("-fx-font-family:monospace;-fx-font-size:12px");
+		textAreaLog.setStyle("-fx-font-family:" + FONT_MONOSPACE_FAMILY + ";-fx-font-size:" + FONT_MONOSPACE_SIZE + "px");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
 		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
