@@ -74,7 +74,7 @@ public class EditorPane extends VBox
 		setTextAreaSaveCombo(taSource);
 
 		String styleLineNumber = "-fx-padding:0; -fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:"
-				+ FONT_MONOSPACE_FAMILY + "px; -fx-background-color:#eeeeee;";
+				+ FONT_MONOSPACE_SIZE + "px; -fx-background-color:#eeeeee;";
 
 		taLineNumbers = new TextArea();
 		taLineNumbers.setStyle(styleLineNumber);
