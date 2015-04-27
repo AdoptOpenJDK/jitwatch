@@ -1486,7 +1486,7 @@ Should I add this comment?
 	<syntax><mnem>JE</mnem><src><a>J</a><t>bs</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>z</test_f>
-	<note><brief>Jump short if zero/equal (ZF=0)</brief></note>
+	<note><brief>Jump short if zero/equal (ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -1496,7 +1496,7 @@ Should I add this comment?
 	<syntax><mnem>JNE</mnem><src><a>J</a><t>bs</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>z</test_f>
-	<note><brief>Jump short if not zero/not equal (ZF=1)</brief></note>
+	<note><brief>Jump short if not zero/not equal (ZF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -1507,7 +1507,7 @@ Should I add this comment?
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<!-- 1.02 <test_f>cz</test_f>-->
 	<test_f>zc</test_f>
-	<note><brief>Jump short if below or equal/not above (CF=1 AND ZF=1)</brief></note>
+	<note><brief>Jump short if below or equal/not above (CF=1 OR ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
