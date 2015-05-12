@@ -108,7 +108,9 @@ public class JITWatchConfig
 
 	private String profileName = S_PROFILE_DEFAULT;
 
-	private File propertiesFile = new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
+	private final String CONFIG_OVERRIDE = System.getProperty("jitwatch.config.file", null);
+	
+	private File propertiesFile = (CONFIG_OVERRIDE != null) ? new File(CONFIG_OVERRIDE) : new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 
 	private Properties loadedProps;
 
