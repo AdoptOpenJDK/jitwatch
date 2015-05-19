@@ -5,9 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +19,6 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +31,8 @@ public final class ResourceLoader
 	{
 	}
 
-	public static String getSource(MetaClass metaClass, List<String> sourceLocations)
-	{
-		String fqName = metaClass.getFullyQualifiedName();
-
+	public static String getSourceForClassName(String fqName, List<String> sourceLocations)
+	{		
 		int dollarPos = fqName.indexOf(C_DOLLAR);
 
 		if (dollarPos != -1)
@@ -53,7 +48,7 @@ public final class ResourceLoader
 		{
 			String filename = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
 
-			result = getSource(filename, sourceLocations);
+			result = getSourceForFilename(filename, sourceLocations);
 
 			if (result != null)
 			{
@@ -64,14 +59,14 @@ public final class ResourceLoader
 		return result;
 	}
 
-	public static String getSource(String fileName, List<String> locations)
+	public static String getSourceForFilename(String fileName, List<String> locations)
 	{
 		String source = null;
 
 		for (String location : locations)
 		{
 			File lf = new File(location);
-
+			
 			if (lf.exists())
 			{
 				if (lf.isDirectory())
@@ -84,7 +79,7 @@ public final class ResourceLoader
 					}
 				}
 				else
-				{
+				{				
 					source = readFileFromZip(lf, fileName);
 
 					if (source != null)
@@ -149,12 +144,14 @@ public final class ResourceLoader
 	{
 		String result = null;
 
+		fileName = fileName.replace(S_BACKSLASH, S_SLASH);
+		
 		try (ZipFile zf = new ZipFile(zipFile))
 		{
 			ZipEntry entry = zf.getEntry(fileName);
 
 			if (entry != null)
-			{
+			{				
 				try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry))))
 				{
 					StringBuilder sb = new StringBuilder();

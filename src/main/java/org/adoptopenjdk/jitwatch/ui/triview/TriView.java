@@ -509,7 +509,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		
 		if (!sameClass)
 		{
-			String source = ResourceLoader.getSource(memberClass, config.getSourceLocations());
+			String source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(), config.getSourceLocations());
 
 			if (source == null)
 			{
@@ -519,7 +519,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 								
 				if (sourceFileName != null)
 				{
-					source = ResourceLoader.getSource(sourceFileName, config.getSourceLocations());
+					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
 				}
 			}
 			
@@ -710,6 +710,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (metaClass != null)
 		{
+			//TODO possibly different class file if inner class
 			MemberBytecode memberBytecode = getMemberBytecodeForSourceLine(metaClass, sourceLine);
 
 			if (memberBytecode != null)
