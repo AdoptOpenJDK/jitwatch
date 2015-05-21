@@ -30,13 +30,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DEFAULT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -58,9 +56,11 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BCParamSwitch;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.IBytecodeParam;
+import org.adoptopenjdk.jitwatch.model.bytecode.InnerClassRelationship;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,9 +107,8 @@ public final class BytecodeLoader
 		return null;
 	}
 
-	//TODO return list? or combine? (latter)
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
-	{
+	{		
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
@@ -206,7 +205,7 @@ public final class BytecodeLoader
 	// TODO refactor this class - better stateful than all statics
 	public static ClassBC parse(String fqClassName, String bytecode)
 	{
-		ClassBC classBytecode = new ClassBC();
+		ClassBC classBytecode = new ClassBC(fqClassName);
 
 		String[] lines = bytecode.split(S_NEWLINE);
 
@@ -263,7 +262,7 @@ public final class BytecodeLoader
 						logger.debug("New signature: {}", msp);
 					}
 
-					memberBytecode = new MemberBytecode(msp);
+					memberBytecode = new MemberBytecode(classBytecode, msp);
 
 					if (DEBUG_LOGGING_BYTECODE)
 					{
@@ -295,14 +294,19 @@ public final class BytecodeLoader
 				else if (line.startsWith(S_BYTECODE_SOURCE_FILE))
 				{
 					classBytecode.setSourceFile(getSourceFile(line));
+
+					SourceMapper.addSourceClassMapping(classBytecode);
 				}
 				break;
 			case INNERCLASSES:
-				String innerClassName = getInnerClassNameOrNull(line);
+				InnerClassRelationship icr = InnerClassRelationship.parse(line);
 
-				if (innerClassName != null)
+				if (icr != null)
 				{
-					classBytecode.addInnerClassName(innerClassName);
+					if (fqClassName.equals(icr.getParentClass()))
+					{
+						classBytecode.addInnerClassName(icr.getChildClass());
+					}
 				}
 				else
 				{
@@ -348,29 +352,6 @@ public final class BytecodeLoader
 		}
 
 		return classBytecode;
-	}
-
-	public static String getInnerClassNameOrNull(String innerClassLine)
-	{
-		String result = null;
-
-		if (innerClassLine != null)
-		{
-			String tempResult = StringUtil.getSubstringBetween(innerClassLine, S_DOUBLE_SLASH, " of class");
-
-			if (tempResult != null)
-			{
-				int startIndex = tempResult.indexOf(S_SPACE);
-
-				if (startIndex != -1)
-				{
-					result = tempResult.substring(startIndex + 1);
-				}
-
-			}
-		}
-
-		return result;
 	}
 
 	public static void buildClassGenerics(String line, ClassBC classBytecode)
@@ -640,7 +621,7 @@ public final class BytecodeLoader
 
 		return version;
 	}
-	
+
 	private static String getSourceFile(final String line)
 	{
 		String result = null;
@@ -650,7 +631,7 @@ public final class BytecodeLoader
 		if (colonPos != -1 && colonPos != line.length() - 1)
 		{
 			result = line.substring(colonPos + 1);
-			
+
 			result = result.replace(S_DOUBLE_QUOTE, S_EMPTY).trim();
 		}
 

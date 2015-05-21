@@ -96,7 +96,7 @@ public class MetaClass implements Comparable<MetaClass>
 		this.missingDef = missingDef;
 	}
 
-	public ClassBC getClassBytecode(List<String> classLocations)
+	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -106,9 +106,34 @@ public class MetaClass implements Comparable<MetaClass>
 		if (classBytecode == null)
 		{
 			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
+
+			if (classBytecode != null)
+			{
+				loadInnerClasses(classBytecode.getInnerClassNames(), model, classLocations);
+			}
 		}
 
 		return classBytecode;
+	}
+
+	private void loadInnerClasses(List<String> innerClassNames, IReadOnlyJITDataModel model, List<String> classLocations)
+	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.info("innerClasses to load {}", innerClassNames.size());
+		}
+
+		for (String innerClassName : innerClassNames)
+		{
+			if (DEBUG_LOGGING_BYTECODE)
+			{
+				logger.info("innerClass {}", innerClassName);
+			}
+
+			MetaClass metaClassForInner = model.getPackageManager().getMetaClass(innerClassName);
+
+			metaClassForInner.getClassBytecode(model, classLocations);
+		}
 	}
 
 	public String toStringDetailed()
@@ -215,7 +240,6 @@ public class MetaClass implements Comparable<MetaClass>
 
 		return result;
 	}
-
 
 	public List<String> getTreePath()
 	{

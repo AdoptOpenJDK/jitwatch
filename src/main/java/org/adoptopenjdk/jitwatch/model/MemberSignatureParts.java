@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
@@ -16,8 +16,10 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
@@ -26,6 +28,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESE
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -37,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +88,7 @@ public class MemberSignatureParts
 		modifier = 0;
 	}
 	
+	//TODO really???
 	public void setClassBC(ClassBC classBytecode)
 	{
 		this.classBytecode = classBytecode;
@@ -494,6 +499,11 @@ public class MemberSignatureParts
 	public String getFullyQualifiedClassName()
 	{
 		return fullyQualifiedClassName;
+	}
+	
+	public String getPackageName()
+	{
+		return StringUtil.getAbbreviatedFQName(getFullyQualifiedClassName());
 	}
 
 	@Override

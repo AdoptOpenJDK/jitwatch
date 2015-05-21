@@ -51,6 +51,7 @@ import javafx.util.StringConverter;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
@@ -59,6 +60,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
@@ -113,9 +115,12 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private TriViewNavigationStack navigationStack;
 
+	private IReadOnlyJITDataModel model;
+
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.config = config;
+		this.model = parent.getJITDataModel();
 
 		setTitle("TriView - Source, Bytecode, Assembly Viewer - JITWatch");
 
@@ -232,7 +237,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		navigationStack = new TriViewNavigationStack(this, scene);
 
 		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
-		viewerBytecode = new ViewerBytecode(parent, navigationStack, parent.getJITDataModel(), this, LineType.BYTECODE);
+		viewerBytecode = new ViewerBytecode(parent, navigationStack, model, this, LineType.BYTECODE);
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
 		paneSource = new TriViewPane("Source", viewerSource);
@@ -506,23 +511,24 @@ public class TriView extends Stage implements ITriView, ILineListener
 		List<String> allClassLocations = config.getAllClassLocations();
 
 		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
-		
+
 		if (!sameClass)
 		{
 			String source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(), config.getSourceLocations());
 
 			if (source == null)
 			{
-				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute", memberClass);;
-			
+				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute", memberClass);
+				;
+
 				String sourceFileName = classBytecode.getSourceFile();
-								
+
 				if (sourceFileName != null)
 				{
 					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
 				}
 			}
-			
+
 			viewerSource.setContent(source, true);
 		}
 
@@ -533,8 +539,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 
 		StringBuilder statusBarBuilder = new StringBuilder();
-
-
 
 		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
 		updateStatusBarIfCompiled(statusBarBuilder);
@@ -625,7 +629,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
 	{
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(classLocations);
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(model, classLocations);
 
 		return classBytecode;
 	}
@@ -693,7 +697,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	}
 
 	private void highlightFromSource(int index, int updateMask)
-	{
+	{		
 		int sourceLine = index + 1;
 
 		MetaClass metaClass = null;
@@ -710,8 +714,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (metaClass != null)
 		{
-			//TODO possibly different class file if inner class
-			MemberBytecode memberBytecode = getMemberBytecodeForSourceLine(metaClass, sourceLine);
+			MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(
+					metaClass.getClassBytecode(model, config.getConfiguredClassLocations()), sourceLine);
 
 			if (memberBytecode != null)
 			{
@@ -725,6 +729,16 @@ public class TriView extends Stage implements ITriView, ILineListener
 				if (DEBUG_LOGGING_TRIVIEW)
 				{
 					logger.debug("MemberSignatureParts:\n{}", msp);
+				}
+
+				if (!msp.getFullyQualifiedClassName().equals(metaClass.getFullyQualifiedName()))
+				{
+					if (DEBUG_LOGGING_TRIVIEW)
+					{
+						logger.debug("Different class in this source file");
+					}
+					
+					metaClass = model.getPackageManager().getMetaClass(msp.getFullyQualifiedClassName());
 				}
 
 				IMetaMember nextMember = metaClass.getMemberForSignature(msp);
@@ -741,10 +755,10 @@ public class TriView extends Stage implements ITriView, ILineListener
 						setMember(nextMember, false, false);
 					}
 
-					LineTable lineTable = memberBytecode.getLineTable();
-
 					if ((updateMask & MASK_UPDATE_BYTECODE) == MASK_UPDATE_BYTECODE)
 					{
+						LineTable lineTable = memberBytecode.getLineTable();
+
 						LineTableEntry lineTableEntry = lineTable.getEntryForSourceLine(sourceLine);
 
 						if (DEBUG_LOGGING_TRIVIEW)
@@ -772,27 +786,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 				int assemblyHighlight = -1;
 				assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
 				viewerAssembly.highlightLine(assemblyHighlight);
-			}
+			}			
 		}
-	}
-
-	private MemberBytecode getMemberBytecodeForSourceLine(MetaClass metaClass, int sourceIndex)
-	{
-		MemberBytecode result = null;
-
-		ClassBC classBytecode = metaClass.getClassBytecode(config.getConfiguredClassLocations());
-
-		if (classBytecode != null)
-		{
-			result = classBytecode.getMemberBytecodeForSourceLine(sourceIndex);
-		}
-
-		if (DEBUG_LOGGING_TRIVIEW)
-		{
-			logger.debug("source: {} result: {}", sourceIndex, result != null);
-		}
-
-		return result;
 	}
 
 	private void highlightFromBytecode(int index)
@@ -806,7 +801,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (metaClass != null)
 		{
-			ClassBC classBytecode = metaClass.getClassBytecode(config.getConfiguredClassLocations());
+			ClassBC classBytecode = metaClass.getClassBytecode(model, config.getConfiguredClassLocations());
 
 			BytecodeLabel bcLabel = (BytecodeLabel) viewerBytecode.getLabelAtIndex(index);
 
@@ -825,9 +820,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 					if (memberBytecode != null)
 					{
-						LineTable lineTable = memberBytecode.getLineTable();
-
-						sourceHighlight = lineTable.findSourceLineForBytecodeOffset(bytecodeOffset);
+						sourceHighlight = SourceMapper.getSourceLineFromBytecode(memberBytecode, bytecodeOffset);
 					}
 					else
 					{
@@ -852,7 +845,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 		Label label = viewerAssembly.getLabelAtIndex(index);
 
 		int sourceHighlight = -1;
-		int bytecodeHighlight = -1;
 
 		if (label != null)
 		{
@@ -862,39 +854,22 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				String sourceLine = viewerAssembly.getSourceLineFromLabel(label);
 
-				String bytecodeLine = viewerAssembly.getBytecodeOffsetFromLabel(label);
-
 				if (sourceLine != null)
 				{
 					try
 					{
 						sourceHighlight = Integer.parseInt(sourceLine) - 1;
+						highlightFromSource(sourceHighlight, MASK_UPDATE_BYTECODE);
+						
+						viewerSource.highlightLine(sourceHighlight);
 					}
 					catch (NumberFormatException nfe)
 					{
 						logger.error("Could not parse line number: {}", sourceLine, nfe);
 					}
 				}
-
-				// TODO cache bytecode for inner classes and switch bytecode
-				// panel when BCI is for inner class
-				if (bytecodeLine != null && !isClassNameAnInnerClassOfCurrentMember(className))
-				{
-					try
-					{
-						int offset = Integer.parseInt(bytecodeLine);
-						bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(offset);
-					}
-					catch (NumberFormatException nfe)
-					{
-						logger.error("Could not parse line number: {}", bytecodeHighlight, nfe);
-					}
-				}
 			}
 		}
-
-		viewerSource.highlightLine(sourceHighlight);
-		viewerBytecode.highlightLine(bytecodeHighlight);
 	}
 
 	private boolean isClassNameEqualsCurrentMemberClassName(String className)

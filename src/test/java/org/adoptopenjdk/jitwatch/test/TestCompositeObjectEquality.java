@@ -21,9 +21,9 @@ public class TestCompositeObjectEquality
 {
 	@Test
 	public void testLineTableEqual()
-	{
-		LineTable table1 = new LineTable();
-		LineTable table2 = new LineTable();
+	{		
+		LineTable table1 = new LineTable(null);
+		LineTable table2 = new LineTable(null);
 
 		table1.add(new LineTableEntry(1, 2));
 		table1.add(new LineTableEntry(3, 4));
@@ -36,8 +36,8 @@ public class TestCompositeObjectEquality
 	@Test
 	public void testLineTableEmptyEqual()
 	{
-		LineTable table1 = new LineTable();
-		LineTable table2 = new LineTable();
+		LineTable table1 = new LineTable(null);
+		LineTable table2 = new LineTable(null);
 
 		assertEquals(table1, table2);
 	}
@@ -45,8 +45,8 @@ public class TestCompositeObjectEquality
 	@Test
 	public void testLineTableNotEqual()
 	{
-		LineTable table1 = new LineTable();
-		LineTable table2 = new LineTable();
+		LineTable table1 = new LineTable(null);
+		LineTable table2 = new LineTable(null);
 
 		table1.add(new LineTableEntry(0, 1));
 		table1.add(new LineTableEntry(2, 3));

@@ -38,6 +38,15 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_BOOLEAN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_BYTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_CHARACTER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_DOUBLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_FLOAT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_INTEGER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_LONG;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_SHORT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -75,16 +84,6 @@ public final class ParseUtil
 
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^" + CLASS_NAME_REGEX_GROUP + " "
 			+ METHOD_NAME_REGEX_GROUP + " " + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
-
-	public static final String NAME_SHORT = "short";
-	public static final String NAME_CHARACTER = "char";
-	public static final String NAME_BYTE = "byte";
-	public static final String NAME_LONG = "long";
-	public static final String NAME_DOUBLE = "double";
-	public static final String NAME_BOOLEAN = "boolean";
-	public static final String NAME_INTEGER = "int";
-	public static final String NAME_FLOAT = "float";
-	public static final String NAME_VOID = "void";
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';
@@ -183,28 +182,28 @@ public final class ParseUtil
 				arrayDepth++;
 				break;
 			case TYPE_SHORT:
-				builder.append(NAME_SHORT);
+				builder.append(S_TYPE_NAME_SHORT);
 				break;
 			case TYPE_CHARACTER:
-				builder.append(NAME_CHARACTER);
+				builder.append(S_TYPE_NAME_CHARACTER);
 				break;
 			case TYPE_BYTE:
-				builder.append(NAME_BYTE);
+				builder.append(S_TYPE_NAME_BYTE);
 				break;
 			case TYPE_LONG:
-				builder.append(NAME_LONG);
+				builder.append(S_TYPE_NAME_LONG);
 				break;
 			case TYPE_DOUBLE:
-				builder.append(NAME_DOUBLE);
+				builder.append(S_TYPE_NAME_DOUBLE);
 				break;
 			case TYPE_BOOLEAN:
-				builder.append(NAME_BOOLEAN);
+				builder.append(S_TYPE_NAME_BOOLEAN);
 				break;
 			case TYPE_INTEGER:
-				builder.append(NAME_INTEGER);
+				builder.append(S_TYPE_NAME_INTEGER);
 				break;
 			case TYPE_FLOAT:
-				builder.append(NAME_FLOAT);
+				builder.append(S_TYPE_NAME_FLOAT);
 				break;
 			case C_SEMICOLON:
 				break;
@@ -495,23 +494,23 @@ public final class ParseUtil
 	{
 		switch (type)
 		{
-		case NAME_INTEGER:
+		case S_TYPE_NAME_INTEGER:
 			return TYPE_INTEGER;
-		case NAME_BOOLEAN:
+		case S_TYPE_NAME_BOOLEAN:
 			return TYPE_BOOLEAN;
-		case NAME_LONG:
+		case S_TYPE_NAME_LONG:
 			return TYPE_LONG;
-		case NAME_DOUBLE:
+		case S_TYPE_NAME_DOUBLE:
 			return TYPE_DOUBLE;
-		case NAME_FLOAT:
+		case S_TYPE_NAME_FLOAT:
 			return TYPE_FLOAT;
-		case NAME_SHORT:
+		case S_TYPE_NAME_SHORT:
 			return TYPE_SHORT;
-		case NAME_BYTE:
+		case S_TYPE_NAME_BYTE:
 			return TYPE_BYTE;
-		case NAME_CHARACTER:
+		case S_TYPE_NAME_CHARACTER:
 			return TYPE_CHARACTER;
-		case NAME_VOID:
+		case S_TYPE_NAME_VOID:
 			return TYPE_VOID;
 		}
 
@@ -526,15 +525,15 @@ public final class ParseUtil
 		{
 			switch (type)
 			{
-			case NAME_INTEGER:
-			case NAME_BOOLEAN:
-			case NAME_LONG:
-			case NAME_DOUBLE:
-			case NAME_FLOAT:
-			case NAME_SHORT:
-			case NAME_BYTE:
-			case NAME_CHARACTER:
-			case NAME_VOID:
+			case S_TYPE_NAME_INTEGER:
+			case S_TYPE_NAME_BOOLEAN:
+			case S_TYPE_NAME_LONG:
+			case S_TYPE_NAME_DOUBLE:
+			case S_TYPE_NAME_FLOAT:
+			case S_TYPE_NAME_SHORT:
+			case S_TYPE_NAME_BYTE:
+			case S_TYPE_NAME_CHARACTER:
+			case S_TYPE_NAME_VOID:
 				result = true;
 			}
 		}
@@ -548,23 +547,23 @@ public final class ParseUtil
 		{
 			switch (primitiveType)
 			{
-			case NAME_INTEGER:
+			case S_TYPE_NAME_INTEGER:
 				return int.class;
-			case NAME_BOOLEAN:
+			case S_TYPE_NAME_BOOLEAN:
 				return boolean.class;
-			case NAME_LONG:
+			case S_TYPE_NAME_LONG:
 				return long.class;
-			case NAME_DOUBLE:
+			case S_TYPE_NAME_DOUBLE:
 				return double.class;
-			case NAME_FLOAT:
+			case S_TYPE_NAME_FLOAT:
 				return float.class;
-			case NAME_SHORT:
+			case S_TYPE_NAME_SHORT:
 				return short.class;
-			case NAME_BYTE:
+			case S_TYPE_NAME_BYTE:
 				return byte.class;
-			case NAME_CHARACTER:
+			case S_TYPE_NAME_CHARACTER:
 				return char.class;
-			case NAME_VOID:
+			case S_TYPE_NAME_VOID:
 				return void.class;
 			}
 		}

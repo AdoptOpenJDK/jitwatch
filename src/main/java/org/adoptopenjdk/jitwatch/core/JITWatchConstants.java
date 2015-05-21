@@ -212,6 +212,16 @@ public final class JITWatchConstants
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";
 	public static final String S_GENERICS_WILDCARD = "<?>";
+	
+	public static final String S_TYPE_NAME_SHORT = "short";
+	public static final String S_TYPE_NAME_CHARACTER = "char";
+	public static final String S_TYPE_NAME_BYTE = "byte";
+	public static final String S_TYPE_NAME_LONG = "long";
+	public static final String S_TYPE_NAME_DOUBLE = "double";
+	public static final String S_TYPE_NAME_BOOLEAN = "boolean";
+	public static final String S_TYPE_NAME_INTEGER = "int";
+	public static final String S_TYPE_NAME_FLOAT = "float";
+	public static final String S_TYPE_NAME_VOID = "void";
 
 	public static final String S_OPTIMIZED_VIRTUAL_CALL = "{optimized virtual_call}";
 

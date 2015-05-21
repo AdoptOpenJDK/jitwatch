@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
-import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
@@ -486,10 +485,5 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public void addJournalEntry(Tag entry)
 	{
 		journal.addEntry(entry);
-	}
-
-	public ClassBC getClassBytecodeForMember(List<String> classLocations)
-	{
-		return getMetaClass().getClassBytecode(classLocations);
 	}
 }

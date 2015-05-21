@@ -19,15 +19,24 @@ public class MemberBytecode
 {
 	private List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 
-	private LineTable lineTable = new LineTable();
+	private LineTable lineTable;
 
 	private MemberSignatureParts msp;
 
+	private ClassBC classBytecode;
+
 	private static final Logger logger = LoggerFactory.getLogger(MemberBytecode.class);
 
-	public MemberBytecode(MemberSignatureParts msp)
+	public MemberBytecode(ClassBC classBytecode, MemberSignatureParts msp)
 	{
 		this.msp = msp;
+		this.classBytecode = classBytecode;
+		lineTable = new LineTable(this);
+	}
+
+	public ClassBC getClassBytecode()
+	{
+		return classBytecode;
 	}
 
 	public MemberSignatureParts getMemberSignatureParts()

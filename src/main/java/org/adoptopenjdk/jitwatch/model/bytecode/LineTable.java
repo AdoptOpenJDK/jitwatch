@@ -22,6 +22,18 @@ public class LineTable
 
 	private static final Logger logger = LoggerFactory.getLogger(LineTable.class);
 
+	private MemberBytecode memberBytecode;
+
+	public LineTable(MemberBytecode memberBytecode)
+	{
+		this.memberBytecode = memberBytecode;
+	}
+
+	public MemberBytecode getMemberBytecode()
+	{
+		return memberBytecode;
+	}
+
 	public void add(LineTableEntry entry)
 	{
 		lineTableEntries.add(entry);
@@ -34,6 +46,11 @@ public class LineTable
 			lineTableEntries.addAll(lineTable.lineTableEntries);
 			sort();
 		}
+	}
+
+	public int getLastSourceLine()
+	{
+		return lineTableEntries.get(lineTableEntries.size() - 1).getSourceOffset();
 	}
 
 	public boolean sourceLineInRange(int sourceLine)
@@ -94,11 +111,6 @@ public class LineTable
 	public int findSourceLineForBytecodeOffset(int offset)
 	{
 		int result = -1;
-
-		// LineNumberTable:
-		// line 7: 0
-		// line 8: 8
-		// line 9: 32
 
 		LineTableEntry previousEntry = null;
 

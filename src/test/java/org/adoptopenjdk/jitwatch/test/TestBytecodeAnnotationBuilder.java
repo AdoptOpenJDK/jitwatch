@@ -1834,7 +1834,7 @@ public class TestBytecodeAnnotationBuilder
 		String nameString = "java.lang.String";
 		
 		String idVoid = "2";
-		String nameVoid = "void";
+		String nameVoid = S_TYPE_NAME_VOID;
 
 		attrsTypeString.put(ATTR_ID, idString);
 		attrsTypeString.put(ATTR_NAME, nameString);
@@ -1892,7 +1892,7 @@ public class TestBytecodeAnnotationBuilder
 		String nameString = "java.lang.String";
 		
 		String idVoid = "2";
-		String nameVoid = "void";
+		String nameVoid = S_TYPE_NAME_VOID;
 
 		attrsTypeString.put(ATTR_ID, idString);
 		attrsTypeString.put(ATTR_NAME, nameString);

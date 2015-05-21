@@ -169,9 +169,9 @@ public class Viewer extends VBox
 		focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean hadFocus, Boolean hasFocus)
 			{
-				if (hasFocus)
+				if (hasFocus && !hadFocus)
 				{
 					scrollPane.requestFocus();
 				}
@@ -181,12 +181,12 @@ public class Viewer extends VBox
 		scrollPane.focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean hasFocus)
-			{
-				if (hasFocus)
-				{
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean hadFocus, Boolean hasFocus)
+			{				
+				if (hasFocus && !hadFocus)
+				{					
 					lineListener.lineHighlighted(scrollIndex, lineType);
-					highlightLine(scrollIndex);
+					highlightLine(scrollIndex, false);
 				}
 			}
 		});
@@ -196,6 +196,7 @@ public class Viewer extends VBox
 			@Override
 			public void handle(MouseEvent arg0)
 			{
+
 				if (getConfig().isTriViewMouseFollow())
 				{
 					lineListener.handleFocusSelf(lineType);
@@ -325,7 +326,7 @@ public class Viewer extends VBox
 		clearAllHighlighting();
 
 		lineListener.lineHighlighted(index, lineType);
-		highlightLine(index);
+		highlightLine(index, false);
 	}
 
 	private int checkBounds(int scrollIndex)
@@ -489,8 +490,13 @@ public class Viewer extends VBox
 			unhighlightLabel(label);
 		}
 	}
-
+	
 	public void highlightLine(int index)
+	{
+		highlightLine(index, true);
+	}
+
+	public void highlightLine(int index, boolean setScrollbar)
 	{
 		unhighlightPrevious();
 
@@ -513,8 +519,11 @@ public class Viewer extends VBox
 			lastScrollIndex = index;
 
 			scrollIndex = index;
-
-			setScrollBar();
+						
+			if (setScrollbar)
+			{
+				setScrollBar();
+			}
 		}
 	}
 

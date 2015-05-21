@@ -607,6 +607,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void run()
 			{
+				//TODO perhaps filter out classloading statements?
 				accessProxy.openTextViewer("Sandbox Output", output, false, false);
 			}
 		});

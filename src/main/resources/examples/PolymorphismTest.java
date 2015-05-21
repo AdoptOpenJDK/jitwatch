@@ -1,16 +1,38 @@
 public class PolymorphismTest
 {
-  public interface Coin { void deposit(); }
+  public interface Coin
+  {
+    void deposit();
+  }
 
   public static int moneyBox = 0;
 
-  public class Nickel implements Coin { public void deposit() { moneyBox += 5; } }
+  public class Nickel implements Coin
+  {
+    public void deposit()
+    {
+      moneyBox += 5;
+    }
+  }
 
-  public class Dime implements Coin { public void deposit() { moneyBox += 10; } }
+  public class Dime implements Coin
+  {
+    public void deposit()
+    {
+      moneyBox += 10;
+    }
+  }
 
-  public class Quarter implements Coin { public void deposit() { moneyBox += 25; } }
+  public class Quarter implements Coin
+  {
+    public void deposit()
+    {
+      moneyBox += 25;
+    }
+  }
 
-  public PolymorphismTest() {
+  public PolymorphismTest()
+  {
     Coin nickel = new Nickel();
     Coin dime = new Dime();
     Coin quarter = new Quarter();
@@ -23,8 +45,10 @@ public class PolymorphismTest
 
     final int maxImplementations = 2;
 
-    for (int i = 0; i < 100000; i++) {
-       switch(i % maxImplementations) {
+    for (int i = 0; i < 100000; i++)
+    {
+       switch(i % maxImplementations)
+       {
          case 0: coin = nickel; break;
          case 1: coin = dime; break;
          case 2: coin = quarter; break;
@@ -36,7 +60,8 @@ public class PolymorphismTest
     System.out.println("moneyBox:" + moneyBox);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args)
+  {
     new PolymorphismTest();
   }
 }

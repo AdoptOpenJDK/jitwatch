@@ -354,7 +354,7 @@ public class TestFindOptimizedVirtualCall
 
 		assertEquals(memberTest2, ovc.getCalleeMember());
 
-		ClassBC classBytecode = metaClass.getClassBytecode(classLocations);
+		ClassBC classBytecode = metaClass.getClassBytecode(model, classLocations);
 
 		MemberBytecode bytecodeMemberTest1 = classBytecode.getMemberBytecode(memberTest1);
 

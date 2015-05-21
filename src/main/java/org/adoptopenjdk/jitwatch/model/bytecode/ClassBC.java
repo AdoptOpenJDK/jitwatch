@@ -18,10 +18,10 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// 1 ClassBC -> n MemberBytecode -> 1 LineNumberTable
 public class ClassBC
 {
 	private ConstantPool constantPool;
@@ -30,6 +30,8 @@ public class ClassBC
 
 	private int majorVersion;
 	private int minorVersion;
+	
+	private String fqClassName;
 
 	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
@@ -38,6 +40,21 @@ public class ClassBC
 	private Map<String, String> classGenericsMap = new LinkedHashMap<>();
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
+	
+	public ClassBC(String fqClassName)
+	{
+		this.fqClassName = fqClassName;
+	}
+	
+	public String getFullyQualifiedClassName()
+	{
+		return fqClassName;
+	}
+	
+	public String getPackageName()
+	{
+		return StringUtil.getPackageName(fqClassName);
+	}
 
 	public void addMemberBytecode(MemberBytecode memberBytecode)
 	{
@@ -47,29 +64,6 @@ public class ClassBC
 	public List<MemberBytecode> getMemberBytecodeList()
 	{
 		return Collections.unmodifiableList(memberBytecodeList);
-	}
-
-	public MemberBytecode getMemberBytecodeForSourceLine(int sourceLine)
-	{
-		MemberBytecode result = null;
-
-		for (MemberBytecode memberBytecode : memberBytecodeList)
-		{
-			if (DEBUG_LOGGING_BYTECODE)
-			{
-				logger.debug("checking lineTable for member {}", memberBytecode.getMemberSignatureParts().getMemberName());
-			}
-
-			LineTable lineTable = memberBytecode.getLineTable();
-
-			if (lineTable.sourceLineInRange(sourceLine))
-			{
-				result = memberBytecode;
-				break;
-			}
-		}
-
-		return result;
 	}
 
 	public void addGenericsMapping(String key, String value)

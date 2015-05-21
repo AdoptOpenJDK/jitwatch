@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
@@ -124,7 +125,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		metaClass.addMetaMethod(testMethod);
 
-		String testRetType = "void";
+		String testRetType = S_TYPE_NAME_VOID;
 
 		List<String> paramList = new ArrayList<>();
 		paramList.add("int");
@@ -153,7 +154,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		metaClass.addMetaMethod(testMethod);
 
-		String testRetType = "void";
+		String testRetType = S_TYPE_NAME_VOID;
 		List<String> paramList = new ArrayList<>();
 
 		IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(),
@@ -293,7 +294,7 @@ public class TestMetaClass<K extends java.lang.Object>
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(metaClass.getFullyQualifiedName(),
 				"public K genericReturnDeclaredOnClass();");
 		
-		ClassBC classBytecode = new ClassBC();
+		ClassBC classBytecode = new ClassBC(getClass().getName());
 		
 		classBytecode.addGenericsMapping("K", "java.lang.Object");
 

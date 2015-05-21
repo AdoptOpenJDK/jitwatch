@@ -50,7 +50,7 @@ public class TestMemberSignatureParts
 		List<String> modListBC = mspBC.getModifiers();
 		assertEquals(0, modListBC.size());
 		assertEquals(0, mspBC.getGenerics().size());
-		assertEquals("void", mspBC.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
 		assertEquals("java.lang.String", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 
@@ -71,7 +71,7 @@ public class TestMemberSignatureParts
 		assertEquals(1, modListBC.size());
 		assertEquals("public", modListBC.get(0));
 		assertEquals(0, mspBC.getGenerics().size());
-		assertEquals("void", mspBC.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
 		assertEquals("java.lang.String", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 
@@ -92,7 +92,7 @@ public class TestMemberSignatureParts
 		assertEquals(1, modListBC.size());
 		assertEquals("public", modListBC.get(0));
 		assertEquals(0, mspBC.getGenerics().size());
-		assertEquals("void", mspBC.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
 		assertEquals("java.lang.String", mspBC.getMemberName());
 		assertEquals(2, mspBC.getParamTypes().size());
 
@@ -117,7 +117,7 @@ public class TestMemberSignatureParts
 		assertEquals(1, modListBC.size());
 		assertEquals("public", modListBC.get(0));
 		assertEquals(0, mspBC.getGenerics().size());
-		assertEquals("void", mspBC.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
 		assertEquals("gc", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 
@@ -297,7 +297,7 @@ public class TestMemberSignatureParts
 		List<String> modListBC = mspBC.getModifiers();
 		assertEquals(0, modListBC.size());
 		assertEquals(0, mspBC.getGenerics().size());
-		assertEquals("void", mspBC.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
 		assertEquals(S_STATIC_INIT, mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 	}
@@ -344,7 +344,7 @@ public class TestMemberSignatureParts
 		List<String> modList = msp.getModifiers();
 		assertEquals(0, modList.size());
 		assertEquals(0, msp.getGenerics().size());
-		assertEquals("void", msp.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
 		assertEquals("java.io.BufferedWriter", msp.getFullyQualifiedClassName());
 		assertEquals("write", msp.getMemberName());
 		assertEquals(3, msp.getParamTypes().size());

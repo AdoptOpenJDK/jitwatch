@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
+
 import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
@@ -225,7 +227,7 @@ public class TestParseUtil
 
 		assertEquals("java.lang.Object", msp.getFullyQualifiedClassName());
 		assertEquals("java.lang.Object", msp.getMemberName());
-		assertEquals("void", msp.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
 		assertEquals(0, msp.getParamTypes().size());
 	}
 
@@ -237,7 +239,7 @@ public class TestParseUtil
 
 		assertEquals("java.lang.AbstractStringBuilder", msp.getFullyQualifiedClassName());
 		assertEquals("ensureCapacityInternal", msp.getMemberName());
-		assertEquals("void", msp.getReturnType());
+		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
 		assertEquals(1, msp.getParamTypes().size());
 		assertEquals("int", msp.getParamTypes().get(0));
 	}

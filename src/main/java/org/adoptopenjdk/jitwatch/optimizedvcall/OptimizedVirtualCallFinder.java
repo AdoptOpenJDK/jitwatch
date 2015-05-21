@@ -23,6 +23,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +204,7 @@ public class OptimizedVirtualCallFinder
 
 			if (metaClass != null)
 			{
-				ClassBC classBC = metaClass.getClassBytecode(classLocations);
+				ClassBC classBC = metaClass.getClassBytecode(model, classLocations);
 
 				if (DEBUG_LOGGING_OVC)
 				{
@@ -212,7 +213,7 @@ public class OptimizedVirtualCallFinder
 
 				if (classBC != null)
 				{
-					result = classBC.getMemberBytecodeForSourceLine(callSite.getSourceLine());
+					result = SourceMapper.getMemberBytecodeForSourceLine(classBC, callSite.getSourceLine());
 				}
 			}
 		}

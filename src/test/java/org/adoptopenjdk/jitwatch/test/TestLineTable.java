@@ -18,8 +18,8 @@ public class TestLineTable
 	@Test
 	public void testCompositeLineTable()
 	{
-		LineTable table1 = new LineTable();
-		LineTable table2 = new LineTable();
+		LineTable table1 = new LineTable(null);
+		LineTable table2 = new LineTable(null);
 
 		LineTableEntry entry1 = new LineTableEntry(0, 0);
 		LineTableEntry entry2 = new LineTableEntry(5, 5);
@@ -32,7 +32,7 @@ public class TestLineTable
 		table2.add(entry3);
 		table2.add(entry4);
 
-		LineTable composite = new LineTable();
+		LineTable composite = new LineTable(null);
 		composite.add(table2);
 		composite.add(table1);
 

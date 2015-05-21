@@ -9,6 +9,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -447,7 +449,7 @@ public class TestCompileChain
 		paramList.add("long");
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
+		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, S_TYPE_NAME_VOID, paramList));
 
 		assertNotNull(testMember);
 
@@ -672,7 +674,7 @@ public class TestCompileChain
 		paramList.add("long");
 
 		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, "void", paramList));
+		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, S_TYPE_NAME_VOID, paramList));
 
 		assertNotNull(testMember);
 
