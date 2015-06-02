@@ -1,15 +1,21 @@
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SourceMapper
 {
+	private static final Logger logger = LoggerFactory.getLogger(SourceMapper.class);
+
 	private static Map<String, List<ClassBC>> sourceToClassMap = new HashMap<>();
 
 	public static void clear()
@@ -66,16 +72,28 @@ public class SourceMapper
 	public static MemberBytecode getMemberBytecodeForSourceLine(ClassBC classBytecode, int sourceLine)
 	{
 		MemberBytecode result = null;
+		
+		// TODO any line tables?
 
 		String fqName = getFullyQualifiedSourceName(classBytecode);
 
 		List<ClassBC> classBytecodeList = sourceToClassMap.get(fqName);
+		
+		if (DEBUG_LOGGING_TRIVIEW)
+		{
+			logger.debug("Found {} ClassBC for source {}", classBytecodeList.size(), fqName);
+		}
 
 		outer: for (ClassBC classBC : classBytecodeList)
 		{			
 			for (MemberBytecode tempMemberBytecode : classBC.getMemberBytecodeList())
 			{
 				LineTable lineTable = tempMemberBytecode.getLineTable();
+				
+				if (DEBUG_LOGGING_TRIVIEW)
+				{
+					logger.debug("Checking LineTable\n{}", lineTable.toString());
+				}
 
 				if (lineTable.sourceLineInRange(sourceLine))
 				{
@@ -83,6 +101,11 @@ public class SourceMapper
 					break outer;
 				}
 			}
+		}
+		
+		if (DEBUG_LOGGING_TRIVIEW)
+		{
+			logger.debug("Found bytecode offset {}", result);
 		}
 		
 		return result;

@@ -5,7 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.loader;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BACKSLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,6 +65,11 @@ public final class ResourceLoader
 
 	public static String getSourceForFilename(String fileName, List<String> locations)
 	{
+		if (fileName.startsWith(S_SLASH))
+		{
+			return readFile(new File(fileName));
+		}
+		
 		String source = null;
 
 		for (String location : locations)

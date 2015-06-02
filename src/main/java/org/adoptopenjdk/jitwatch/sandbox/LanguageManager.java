@@ -226,7 +226,7 @@ public class LanguageManager
 		case VM_LANGUAGE_JAVA:
 			return true;
 		case VM_LANGUAGE_JAVASCRIPT:
-			return false;
+			return true;
 		case VM_LANGUAGE_JRUBY:
 			return false;
 		case VM_LANGUAGE_KOTLIN:

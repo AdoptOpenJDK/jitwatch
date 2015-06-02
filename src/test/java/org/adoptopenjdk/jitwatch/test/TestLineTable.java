@@ -68,4 +68,24 @@ public class TestLineTable
 		assertFalse(composite.sourceLineInRange(-1));
 		assertFalse(composite.sourceLineInRange(25));
 	}
+	
+	@Test
+	public void testNashornLineTableRegression()
+	{
+		LineTable table = new LineTable(null);
+
+		LineTableEntry entry1 = new LineTableEntry(8, 21);
+		LineTableEntry entry2 = new LineTableEntry(1, 50);
+		LineTableEntry entry3 = new LineTableEntry(3, 57);
+		LineTableEntry entry4 = new LineTableEntry(5, 81);
+		LineTableEntry entry5 = new LineTableEntry(3, 118);
+
+		table.add(entry1);
+		table.add(entry2);
+		table.add(entry3);
+		table.add(entry4);
+		table.add(entry5);
+				
+		assertTrue(table.sourceLineInRange(1));
+	}
 }

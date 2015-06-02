@@ -34,7 +34,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.junit.Test;
 
 public class TestBytecodeLoader
-{
+{	
 	@Test
 	public void testBytecodeSignature()
 	{

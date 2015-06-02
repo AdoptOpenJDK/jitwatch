@@ -330,6 +330,8 @@ public class Sandbox
 			config.saveConfig();
 		}
 
+		logListener.log("Parsing HotSpot log: " + sandboxLogFile.toString());
+
 		logParser.processLogFile(sandboxLogFile, sandboxStage);
 
 		logListener.log("Parsing complete");

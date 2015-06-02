@@ -37,6 +37,7 @@ public class LineTable
 	public void add(LineTableEntry entry)
 	{
 		lineTableEntries.add(entry);
+		sort();
 	}
 
 	public void add(LineTable lineTable)

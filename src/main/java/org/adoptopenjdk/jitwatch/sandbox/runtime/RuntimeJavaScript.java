@@ -66,6 +66,6 @@ public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 	@Override
 	public String getClassForTriView(File fileToRun)
 	{
-		return getClassToExecute(fileToRun);
+		return "jdk.nashorn.internal.scripts.Script$run";
 	}
 }

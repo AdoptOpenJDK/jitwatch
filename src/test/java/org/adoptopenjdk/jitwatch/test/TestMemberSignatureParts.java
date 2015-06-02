@@ -6,12 +6,15 @@
 package org.adoptopenjdk.jitwatch.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import org.junit.Test;
@@ -380,4 +383,29 @@ public class TestMemberSignatureParts
 
 	}
 	*/
+	
+	@Test
+	public void testNashornSignatureWithColon()
+	{
+		String bcSig = "public static jdk.nashorn.internal.runtime.ScriptFunction :createProgramFunction(jdk.nashorn.internal.runtime.ScriptObject);";
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), bcSig);
+		
+		assertNotNull(msp);
+		
+		List<String> paramTypes = new ArrayList<>();
+		paramTypes.add("jdk.nashorn.internal.runtime.ScriptObject");
+		
+		assertEquals(paramTypes, msp.getParamTypes());
+		
+		assertEquals("jdk.nashorn.internal.runtime.ScriptFunction", msp.getReturnType());
+	
+		assertEquals(":createProgramFunction", msp.getMemberName());
+		
+		List<String> modifiers = new ArrayList<>();
+		modifiers.add("public");
+		modifiers.add("static");
+
+		assertEquals(modifiers, msp.getModifiers());
+	}
 }

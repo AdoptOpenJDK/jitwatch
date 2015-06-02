@@ -770,7 +770,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				matching = builtPath.toString();
 			}
 
-			logger.debug("part '{}'", matching);
+			logger.debug("part: {} matching '{}'", part, matching);
 
 			for (TreeItem<Object> node : curNode.getChildren())
 			{
@@ -778,7 +778,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				String nodeText = node.getValue().toString();
 
-				logger.debug("comparing '{}' with '{}'", matching, nodeText);
+				logger.debug("comparing '{}' with nodeText '{}'", matching, nodeText);
 
 				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
 				{

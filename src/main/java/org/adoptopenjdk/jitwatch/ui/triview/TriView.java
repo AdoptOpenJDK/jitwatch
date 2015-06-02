@@ -518,11 +518,10 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 			if (source == null)
 			{
-				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute", memberClass);
-				;
-
 				String sourceFileName = classBytecode.getSourceFile();
 
+				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute {}", memberClass, sourceFileName);
+				
 				if (sourceFileName != null)
 				{
 					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
@@ -699,6 +698,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private void highlightFromSource(int index, int updateMask)
 	{		
 		int sourceLine = index + 1;
+		int bytecodeHighlight = -1;
 
 		MetaClass metaClass = null;
 
@@ -710,6 +710,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		if (DEBUG_LOGGING_TRIVIEW)
 		{
 			logger.debug("highlightFromSource: {}", sourceLine);
+			logger.debug("metaClass: {}", metaClass.getFullyQualifiedName());
 		}
 
 		if (metaClass != null)
@@ -770,8 +771,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 						{
 							int bcOffset = lineTableEntry.getBytecodeOffset();
 
-							int bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
-							viewerBytecode.highlightLine(bytecodeHighlight);
+							bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
 						}
 					}
 				}
@@ -788,6 +788,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 				viewerAssembly.highlightLine(assemblyHighlight);
 			}			
 		}
+		
+		viewerBytecode.highlightLine(bytecodeHighlight);
 	}
 
 	private void highlightFromBytecode(int index)
