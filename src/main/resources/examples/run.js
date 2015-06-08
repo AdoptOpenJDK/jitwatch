@@ -2,18 +2,20 @@ var sum = 0;
 
 for (var i = 0; i < 1000000; i++)
 {
-    sum += addOne(sum);
-    sum += addNinetyNine(sum);
+    sum = addOne(sum);
+    sum = addTwo(sum);
 }
+
+print(sum);
 
 function addOne(number)
 {
     return add(number, 1);
 }
 
-function addNinetyNine(number)
+function addTwo(number)
 {
-    return add(number, 99);
+    return add(number, 2);
 }
 
 function add(x, y)
