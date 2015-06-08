@@ -22,7 +22,7 @@ public class SourceMapper
 	{
 		sourceToClassMap.clear();
 	}
-	
+
 	private static String getFullyQualifiedSourceName(ClassBC classBytecode)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -40,9 +40,9 @@ public class SourceMapper
 	}
 
 	public static void addSourceClassMapping(ClassBC classBytecode)
-	{
+	{	
 		String fqName = getFullyQualifiedSourceName(classBytecode);
-
+	
 		List<ClassBC> classBytecodeList = sourceToClassMap.get(fqName);
 
 		if (classBytecodeList == null)
@@ -50,6 +50,10 @@ public class SourceMapper
 			classBytecodeList = new ArrayList<>();
 
 			sourceToClassMap.put(fqName, classBytecodeList);
+		}
+		else
+		{
+			logger.warn("No classBytecodeList found for name {}", fqName);
 		}
 
 		classBytecodeList.add(classBytecode);
@@ -72,42 +76,47 @@ public class SourceMapper
 	public static MemberBytecode getMemberBytecodeForSourceLine(ClassBC classBytecode, int sourceLine)
 	{
 		MemberBytecode result = null;
-		
-		// TODO any line tables?
 
 		String fqName = getFullyQualifiedSourceName(classBytecode);
 
 		List<ClassBC> classBytecodeList = sourceToClassMap.get(fqName);
-		
-		if (DEBUG_LOGGING_TRIVIEW)
+
+		if (classBytecodeList != null)
 		{
-			logger.debug("Found {} ClassBC for source {}", classBytecodeList.size(), fqName);
-		}
-
-		outer: for (ClassBC classBC : classBytecodeList)
-		{			
-			for (MemberBytecode tempMemberBytecode : classBC.getMemberBytecodeList())
+			if (DEBUG_LOGGING_TRIVIEW)
 			{
-				LineTable lineTable = tempMemberBytecode.getLineTable();
-				
-				if (DEBUG_LOGGING_TRIVIEW)
-				{
-					logger.debug("Checking LineTable\n{}", lineTable.toString());
-				}
+				logger.debug("Found {} ClassBC for source {}", classBytecodeList.size(), fqName);
+			}
 
-				if (lineTable.sourceLineInRange(sourceLine))
+			outer: for (ClassBC classBC : classBytecodeList)
+			{
+				for (MemberBytecode tempMemberBytecode : classBC.getMemberBytecodeList())
 				{
-					result = tempMemberBytecode;
-					break outer;
+					LineTable lineTable = tempMemberBytecode.getLineTable();
+
+					if (DEBUG_LOGGING_TRIVIEW)
+					{
+						logger.debug("Checking LineTable\n{}", lineTable.toString());
+					}
+
+					if (lineTable.sourceLineInRange(sourceLine))
+					{
+						result = tempMemberBytecode;
+						break outer;
+					}
 				}
 			}
 		}
-		
+		else
+		{
+			logger.warn("No bytecode found for source {}", fqName);
+		}
+
 		if (DEBUG_LOGGING_TRIVIEW)
 		{
 			logger.debug("Found bytecode offset {}", result);
 		}
-		
+
 		return result;
 	}
 
