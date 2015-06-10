@@ -678,7 +678,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_JAVASCRIPT))
 		{
-			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVASCRIPT, S_EMPTY);
+			config.addOrUpdateVMLanguage(VM_LANGUAGE_JAVASCRIPT, System.getProperty("java.home"));
 		}
 		if (!vmLanguageList.contains(JITWatchConstants.VM_LANGUAGE_CLOJURE))
 		{

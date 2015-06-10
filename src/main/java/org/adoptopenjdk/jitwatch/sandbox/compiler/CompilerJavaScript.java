@@ -52,7 +52,7 @@ public class CompilerJavaScript extends AbstractProcess implements ICompiler
 
 		if (classpathEntries.size() > 0)
 		{
-			commands.add("-classpath");
+			commands.add("-cp");
 
 			commands.add(makeClassPath(classpathEntries));
 		}
