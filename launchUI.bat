@@ -16,6 +16,6 @@ set CLASSPATH=%CLASSPATH%;target\jitwatch-1.0.0-SNAPSHOT.jar
 
 echo %CLASSPATH%
 
-"%JAVA_HOME%\bin\java" -classpath "%CLASSPATH%" org.adoptopenjdk.jitwatch.launch.LaunchUI
+"%JAVA_HOME%\bin\java" -Djava.library.path=%JAVA_HOME%\lib\amd64 -classpath "%CLASSPATH%" org.adoptopenjdk.jitwatch.launch.LaunchUI
 @REM ---------------------------------------------------------------
 
