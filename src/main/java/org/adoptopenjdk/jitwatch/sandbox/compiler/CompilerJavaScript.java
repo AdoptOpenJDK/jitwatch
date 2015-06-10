@@ -45,7 +45,8 @@ public class CompilerJavaScript extends AbstractProcess implements ICompiler
 
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
-		List<String> compileOptions = Arrays.asList(new String[] { "-co", "--dump-debug-dir="+outputDirPath });
+		// TODO support optimistic typing shortcuts
+		List<String> compileOptions = Arrays.asList(new String[] { "-ot=false", "-co", "--dump-debug-dir=" + outputDirPath });
 
 		commands.addAll(compileOptions);
 

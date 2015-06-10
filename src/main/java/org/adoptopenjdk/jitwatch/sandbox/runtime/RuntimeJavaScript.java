@@ -39,6 +39,9 @@ public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 		List<String> commands = new ArrayList<>();
 
 		commands.add(runtimePath.toString());
+		
+		// TODO support optimistic typing shortcuts
+		commands.add("-ot=false"); 
 
 		for (String vmOption : vmOptions)
 		{
