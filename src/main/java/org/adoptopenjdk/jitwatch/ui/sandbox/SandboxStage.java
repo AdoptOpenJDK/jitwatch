@@ -212,7 +212,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				sandboxConfigStage = new SandboxConfigStage(SandboxStage.this, parser.getConfig());
 
-				StageManager.addAndShow(sandboxConfigStage);
+				StageManager.addAndShow(SandboxStage.this, sandboxConfigStage);
 
 				btnSandboxConfig.setDisable(true);
 			}

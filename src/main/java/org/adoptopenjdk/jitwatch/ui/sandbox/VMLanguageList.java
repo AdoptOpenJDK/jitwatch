@@ -25,10 +25,13 @@ public class VMLanguageList extends FlowPane implements IStageCloseListener
 	private JITWatchConfig config;
 
 	private VMLanguageConfigStage openVMLCStage = null;
+	
+	private Stage parent;
 
-	public VMLanguageList(final JITWatchConfig config)
+	public VMLanguageList(Stage parent, final JITWatchConfig config)
 	{
 		this.config = config;
+		this.parent = parent;
 
 		setVgap(10);
 		setHgap(20);
@@ -73,7 +76,7 @@ public class VMLanguageList extends FlowPane implements IStageCloseListener
 					if (openVMLCStage == null)
 					{
 						openVMLCStage = new VMLanguageConfigStage(VMLanguageList.this, config, lang);
-						StageManager.addAndShow(openVMLCStage);
+						StageManager.addAndShow(parent, openVMLCStage);
 					}
 				}
 			});

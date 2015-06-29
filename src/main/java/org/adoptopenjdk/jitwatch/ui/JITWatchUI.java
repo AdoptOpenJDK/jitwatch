@@ -354,7 +354,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 						{
 							nothingMountedStage = new NothingMountedStage(JITWatchUI.this, getConfig());
 
-							StageManager.addAndShow(nothingMountedStage);
+							StageManager.addAndShow(JITWatchUI.this.stage, nothingMountedStage);
 
 							startDelayedByConfig = true;
 						}
@@ -396,7 +396,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 
-				StageManager.addAndShow(timeLineStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, timeLineStage);
 
 				btnTimeLine.setDisable(true);
 			}
@@ -410,7 +410,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
 
-				StageManager.addAndShow(statsStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, statsStage);
 
 				btnStats.setDisable(true);
 			}
@@ -424,7 +424,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
 
-				StageManager.addAndShow(histoStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, histoStage);
 
 				btnHisto.setDisable(true);
 			}
@@ -438,7 +438,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				topListStage = new TopListStage(JITWatchUI.this);
 
-				StageManager.addAndShow(topListStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, topListStage);
 
 				btnTopList.setDisable(true);
 			}
@@ -452,7 +452,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
 
-				StageManager.addAndShow(codeCacheStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, codeCacheStage);
 
 				btnCodeCache.setDisable(true);
 			}
@@ -481,7 +481,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				suggestStage = new SuggestStage(JITWatchUI.this, suggestions);
 
-				StageManager.addAndShow(suggestStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, suggestStage);
 
 				btnSuggest.setDisable(true);
 			}
@@ -500,7 +500,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
 
-				StageManager.addAndShow(ovcStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, ovcStage);
 
 				btnOptimizedVirtualCalls.setDisable(true);
 			}
@@ -672,7 +672,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			configStage = new MainConfigStage(this, this, getConfig());
 
-			StageManager.addAndShow(configStage);
+			StageManager.addAndShow(this.stage, configStage);
 
 			btnConfigure.setDisable(true);
 		}
@@ -685,7 +685,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			triViewStage = new TriView(JITWatchUI.this, getConfig());
 
-			StageManager.addAndShow(triViewStage);
+			StageManager.addAndShow(this.stage, triViewStage);
 
 			btnTriView.setDisable(true);
 		}
@@ -704,7 +704,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			sandBoxStage = new SandboxStage(this, this, logParser);
 
-			StageManager.addAndShow(sandBoxStage);
+			StageManager.addAndShow(this.stage, sandBoxStage);
 
 			btnSandbox.setDisable(true);
 		}
@@ -717,7 +717,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			browserStage = new BrowserStage(JITWatchUI.this);
 
-			StageManager.addAndShow(browserStage);
+			StageManager.addAndShow(this.stage, browserStage);
 		}
 
 		browserStage.setContent(title, html, stylesheet);
@@ -823,7 +823,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
-		StageManager.addAndShow(tvs);
+		StageManager.addAndShow(this.stage, tvs);
 	}
 
 	public void openTextViewer(String title, String content)
@@ -843,7 +843,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				CompileChainStage ccs = new CompileChainStage(this, root);
 
-				StageManager.addAndShow(ccs);
+				StageManager.addAndShow(this.stage, ccs);
 			}
 			else
 			{
@@ -871,7 +871,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
 
-			StageManager.addAndShow(ovcs);
+			StageManager.addAndShow(this.stage, ovcs);
 
 		}
 		else
@@ -889,7 +889,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (member.isCompiled())
 		{
 			JournalViewerStage jvs = new JournalViewerStage(this, title, member.getJournal());
-			StageManager.addAndShow(jvs);
+			StageManager.addAndShow(this.stage, jvs);
 		}
 		else
 		{

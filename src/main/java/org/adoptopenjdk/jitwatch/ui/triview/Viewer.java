@@ -66,7 +66,8 @@ public class Viewer extends VBox
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
 
-	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE + "px;";
+	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
+			+ "px;";
 
 	protected static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
 	protected static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
@@ -182,9 +183,9 @@ public class Viewer extends VBox
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean hadFocus, Boolean hasFocus)
-			{				
+			{
 				if (hasFocus && !hadFocus)
-				{					
+				{
 					lineListener.lineHighlighted(scrollIndex, lineType);
 					highlightLine(scrollIndex, false);
 				}
@@ -490,7 +491,7 @@ public class Viewer extends VBox
 			unhighlightLabel(label);
 		}
 	}
-	
+
 	public void highlightLine(int index)
 	{
 		highlightLine(index, true);
@@ -519,7 +520,7 @@ public class Viewer extends VBox
 			lastScrollIndex = index;
 
 			scrollIndex = index;
-						
+
 			if (setScrollbar)
 			{
 				setScrollBar();
@@ -538,9 +539,12 @@ public class Viewer extends VBox
 			result = (Label) items.get(index);
 		}
 
-		if (result == null && DEBUG_LOGGING)
+		if (DEBUG_LOGGING)
 		{
-			logger.debug("No label at index {}", index);
+			if (result == null)
+			{
+				logger.debug("No label at index {}", index);
+			}
 		}
 
 		return result;

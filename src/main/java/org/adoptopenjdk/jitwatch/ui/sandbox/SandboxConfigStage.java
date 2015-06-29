@@ -80,7 +80,7 @@ public class SandboxConfigStage extends Stage
 
 		Label lblConfigLangs = new Label("Configure VM Languages");
 
-		vmLanguageList = new VMLanguageList(config);
+		vmLanguageList = new VMLanguageList(this, config);
 
 		vbox.getChildren().add(chooserClasses);
 
