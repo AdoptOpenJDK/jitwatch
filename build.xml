@@ -51,6 +51,7 @@
 			<fileset dir="${resources}">
 				<include name="images/**" />
 				<include name="*.xml" />
+				<include name="*.css" />
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.adoptopenjdk.jitwatch.launch.LaunchUI" />
