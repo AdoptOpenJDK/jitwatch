@@ -264,6 +264,11 @@ public final class AssemblyUtil
 			{
 				trimmedAddress = trimmedAddress.substring(S_ASSEMBLY_ADDRESS.length());
 			}
+			
+			if (trimmedAddress.endsWith(HEXA_POSTFIX))
+			{
+				trimmedAddress = trimmedAddress.substring(0, trimmedAddress.length() - 1);
+			}
 
 			addressValue = Long.parseLong(trimmedAddress, 16);
 		}
