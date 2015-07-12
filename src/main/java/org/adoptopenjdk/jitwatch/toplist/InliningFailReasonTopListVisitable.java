@@ -12,7 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -20,7 +20,7 @@ import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 
-public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable implements ILastTaskParseTagVisitable
+public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable implements IJournalVisitable
 {
 	private final Map<String, Integer> reasonCountMap;
 
@@ -91,7 +91,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		processParseTag(parseTag);
 	}

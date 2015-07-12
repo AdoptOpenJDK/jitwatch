@@ -127,7 +127,7 @@ public class SourceMapper
 		if (memberBytecode != null)
 		{
 			LineTable lineTable = memberBytecode.getLineTable();
-
+			
 			result = lineTable.findSourceLineForBytecodeOffset(bytecodeOffset);
 		}
 

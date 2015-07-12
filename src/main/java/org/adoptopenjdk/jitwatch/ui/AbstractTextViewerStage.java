@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -38,7 +39,7 @@ public abstract class AbstractTextViewerStage extends Stage
 
 		setTitle(title);
 
-		Scene scene = new Scene(viewer, 640, 480);
+		Scene scene = UserInterfaceUtil.getScene(viewer, 640, 480);
 
 		setScene(scene);
 	}

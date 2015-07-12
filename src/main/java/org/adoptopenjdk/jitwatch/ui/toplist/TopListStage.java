@@ -43,6 +43,7 @@ import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class TopListStage extends Stage
 {
@@ -149,7 +150,7 @@ public class TopListStage extends Stage
 			}
 		});
 
-		Scene scene = new Scene(vbox, width, height);
+		Scene scene = UserInterfaceUtil.getScene(vbox, width, height);
 
 		setTitle("JITWatch TopLists");
 

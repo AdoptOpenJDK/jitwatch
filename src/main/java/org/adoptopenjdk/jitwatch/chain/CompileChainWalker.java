@@ -19,7 +19,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -31,7 +31,7 @@ import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CompileChainWalker implements ILastTaskParseTagVisitable
+public class CompileChainWalker implements IJournalVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
 
@@ -174,7 +174,7 @@ public class CompileChainWalker implements ILastTaskParseTagVisitable
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String id = parseTag.getAttribute(ATTR_METHOD);
 

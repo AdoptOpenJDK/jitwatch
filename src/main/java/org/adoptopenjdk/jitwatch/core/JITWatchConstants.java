@@ -59,7 +59,9 @@ public final class JITWatchConstants
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 	public static final String LOADED = "[Loaded ";
 	public static final String METHOD = "method";
-	public static final String PARSE = "parse";
+	public static final String S_PARSE = "parse";
+	public static final String S_TYPE = "type";
+
 	public static final String S_CODE_COLON = "Code:";
 
 	public static final String DEFAULT_PACKAGE_NAME = "(default package)";
@@ -77,10 +79,10 @@ public final class JITWatchConstants
 	public static final String TAG_CODE_CACHE = "code_cache";
 	public static final String TAG_TASK_DONE = "task_done";
 	public static final String TAG_START_COMPILE_THREAD = "start_compile_thread";
-	public static final String TAG_PARSE = PARSE;
+	public static final String TAG_PARSE = S_PARSE;
 	public static final String TAG_PHASE = "phase";
 	public static final String TAG_KLASS = "klass";
-	public static final String TAG_TYPE = "type";
+	public static final String TAG_TYPE = S_TYPE;
 	public static final String TAG_METHOD = METHOD;
 	public static final String TAG_INTRINSIC = "intrinsic";
 	public static final String TAG_INLINE_FAIL = "inline_fail";
@@ -112,7 +114,8 @@ public final class JITWatchConstants
 	public static final String ATTR_IICOUNT = "iicount";
 	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
-	public static final String ATTR_PARSE = PARSE;
+	public static final String ATTR_PARSE = S_PARSE;
+	public static final String ATTR_TYPE = S_TYPE;
 	public static final String ATTR_BUILDIR = "buildIR";
 	public static final String ATTR_ID = "id";
 	public static final String ATTR_HOLDER = "holder";
@@ -214,6 +217,7 @@ public final class JITWatchConstants
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";
 	public static final String S_GENERICS_WILDCARD = "<?>";
+	public static final String S_OPTIMIZER = "optimizer";
 	
 	public static final String S_TYPE_NAME_SHORT = "short";
 	public static final String S_TYPE_NAME_CHARACTER = "char";

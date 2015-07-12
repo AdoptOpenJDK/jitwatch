@@ -9,7 +9,7 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 
-public interface ILastTaskParseTagVisitable
+public interface IJournalVisitable
 {
-	void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException;
+	void visitTag(Tag toVisit, IParseDictionary parseDictionary) throws LogParseException;
 }

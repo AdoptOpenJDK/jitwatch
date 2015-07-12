@@ -5,8 +5,26 @@
  */
 package org.adoptopenjdk.jitwatch.journal;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BUILDIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.List;
 
@@ -30,7 +48,7 @@ public final class JournalUtil
 	{
 	}
 
-	public static void visitParseTagsOfLastTask(IMetaMember member, ILastTaskParseTagVisitable visitable) throws LogParseException
+	public static void visitParseTagsOfLastTask(IMetaMember member, IJournalVisitable visitable) throws LogParseException
 	{
 		if (member == null)
 		{
@@ -70,12 +88,54 @@ public final class JournalUtil
 
 				for (Tag parseTag : parseTags)
 				{
-					visitable.visitParseTag(parseTag, parseDictionary);
+					visitable.visitTag(parseTag, parseDictionary);
 				}
 			}
 		}
 	}
 
+	public static void visitOptimizerTagsOfLastTask(IMetaMember member, IJournalVisitable visitable) throws LogParseException
+	{
+		if (member == null)
+		{
+			throw new LogParseException("Cannot get Journal for null IMetaMember");
+		}
+
+		Journal journal = member.getJournal();
+
+		Task lastTask = getLastTask(journal);
+
+		if (lastTask == null)
+		{
+			if (!isJournalForCompile2NativeMember(journal))
+			{
+				logger.warn("No Task found in Journal for member {}", member);
+
+				if (journal != null && journal.getEntryList().size() > 0)
+				{
+					logger.warn(journal.toString());
+				}
+			}
+		}
+		else
+		{
+			IParseDictionary parseDictionary = lastTask.getParseDictionary();
+
+			Tag optimizerPhase = getOptimizerPhase(lastTask);
+			
+			if (optimizerPhase != null)
+			{
+				List<Tag> eliminateAllocationTags = optimizerPhase.getNamedChildren(TAG_ELIMINATE_ALLOCATION);
+
+				for (Tag eliminationTag : eliminateAllocationTags)
+				{
+					visitable.visitTag(eliminationTag, parseDictionary);
+				}
+			}
+		}
+	}
+
+	
 	public static boolean isJournalForCompile2NativeMember(Journal journal)
 	{
 		boolean result = false;
@@ -269,5 +329,30 @@ public final class JournalUtil
 		}
 
 		return parsePhase;
+	}
+	
+	private static Tag getOptimizerPhase(Task lastTask)
+	{
+		Tag optimizerPhase = null;
+
+		if (lastTask != null)
+		{
+			CompilerName compilerName = lastTask.getCompiler();
+
+			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, S_OPTIMIZER);
+
+			int count = parsePhases.size();
+
+			if (count != 1)
+			{
+				logger.warn("Unexpected optimizer phase count: {}", count);
+			}
+			else
+			{
+				optimizerPhase = parsePhases.get(0);
+			}
+		}
+
+		return optimizerPhase;
 	}
 }

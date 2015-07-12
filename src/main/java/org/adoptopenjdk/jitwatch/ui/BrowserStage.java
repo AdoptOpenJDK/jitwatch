@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
@@ -25,7 +27,7 @@ public class BrowserStage extends Stage
 
 		web = new WebView();
 
-		Scene scene = new Scene(web, 800, 480);
+		Scene scene = UserInterfaceUtil.getScene(web, 800, 480);
 
 		webEngine = web.getEngine();
 

@@ -23,6 +23,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
 public final class Dialogs
 {
 	/*
@@ -84,7 +86,7 @@ public final class Dialogs
 
 		int width = Math.max(320, message == null ? 0 : message.length() * 10);
 
-		Scene scene = new Scene(vBox, width, 80);
+		Scene scene = UserInterfaceUtil.getScene(vBox, width, 80);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
@@ -137,7 +139,7 @@ public final class Dialogs
 		vBox.setSpacing(10);
 		vBox.setPadding(new Insets(10));
 
-		Scene scene = new Scene(vBox, 320, 100);
+		Scene scene = UserInterfaceUtil.getScene(vBox, 320, 100);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
@@ -228,7 +230,7 @@ public final class Dialogs
 			width = Math.max(320, message == null ? 0 : message.length() * 10);
 		}
 		
-		Scene scene = new Scene(vBox, width, 60 + 20 * lines.length);
+		Scene scene = UserInterfaceUtil.getScene(vBox, width, 60 + 20 * lines.length);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 

@@ -14,6 +14,7 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -30,7 +31,7 @@ public class CodeCacheStage extends AbstractGraphStage
 		initStyle(StageStyle.DECORATED);
 
 		StackPane root = new StackPane();
-		Scene scene = new Scene(root, width, height);
+		Scene scene = UserInterfaceUtil.getScene(root, width, height);
 
 		canvas.widthProperty().bind(root.widthProperty());
 		canvas.heightProperty().bind(root.heightProperty());

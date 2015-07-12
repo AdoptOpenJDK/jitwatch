@@ -31,7 +31,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -43,7 +43,7 @@ import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AttributeSuggestionWalker extends AbstractSuggestionVisitable implements ILastTaskParseTagVisitable
+public class AttributeSuggestionWalker extends AbstractSuggestionVisitable implements IJournalVisitable
 {
 	private IMetaMember metaMember;
 
@@ -362,7 +362,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		processParseTag(parseTag, metaMember, parseDictionary);
 	}

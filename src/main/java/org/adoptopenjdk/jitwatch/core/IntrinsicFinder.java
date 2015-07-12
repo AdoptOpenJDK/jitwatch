@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -28,7 +28,7 @@ import org.adoptopenjdk.jitwatch.model.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class IntrinsicFinder implements ILastTaskParseTagVisitable
+public final class IntrinsicFinder implements IJournalVisitable
 {
 	private Map<String, String> result;
 
@@ -55,7 +55,7 @@ public final class IntrinsicFinder implements ILastTaskParseTagVisitable
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String currentMethod = null;
 		String holder = null;
@@ -109,9 +109,7 @@ public final class IntrinsicFinder implements ILastTaskParseTagVisitable
 			}
 
 			default:
-			{
 				break;
-			}
 			}
 		}
 	}

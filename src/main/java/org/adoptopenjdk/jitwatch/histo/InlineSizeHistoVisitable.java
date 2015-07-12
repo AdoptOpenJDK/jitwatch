@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -28,7 +28,7 @@ import org.adoptopenjdk.jitwatch.model.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements ILastTaskParseTagVisitable
+public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements IJournalVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(InlineSizeHistoVisitable.class);
 
@@ -126,7 +126,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		processParseTag(parseTag, parseDictionary);
 	}

@@ -322,9 +322,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		BorderPane borderPane = new BorderPane();
 
-		Scene scene = new Scene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-		scene.getStylesheets().add(UserInterfaceUtil.getStyleSheet());
+		Scene scene = UserInterfaceUtil.getScene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()

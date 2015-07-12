@@ -1,9 +1,19 @@
 .mnemonic-underline {
-    -fx-stroke: -fx-text-base-color;
+  -fx-stroke: -fx-text-base-color;
+}
+
+.eliminated-allocation .text {
+  -fx-strikethrough: true;
+}
+
+.tooltip .text {
+  -fx-strikethrough: false;
+  -fx-font-family: monospace;
+  -fx-font-size: 12px;
 }
 
 Button {
-	-fx-font: 12 Arial;
-	-fx-base: #eeeeff;
-	-fx-padding: 3 9 4 9;
+  -fx-font: 12 Arial;
+  -fx-base: #eeeeff;
+  -fx-padding: 3 9 4 9;
 }

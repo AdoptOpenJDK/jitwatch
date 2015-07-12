@@ -7,6 +7,8 @@ package org.adoptopenjdk.jitwatch.util;
 
 import java.io.InputStream;
 
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
 
 import org.slf4j.Logger;
@@ -22,7 +24,6 @@ public final class UserInterfaceUtil
 	public static final String FONT_MONOSPACE_FAMILY;
 	public static final String FONT_MONOSPACE_SIZE;
 
-	
 	private UserInterfaceUtil()
 	{
 	}
@@ -53,8 +54,14 @@ public final class UserInterfaceUtil
 		return result;
 	}
 	
-	public static String getStyleSheet()
+	public static Scene getScene(Parent parent, double width, double height)
 	{
-		return UserInterfaceUtil.class.getResource("/style.css").toExternalForm();
+		Scene scene = new Scene(parent, width, height);
+		
+		String styleSheet = UserInterfaceUtil.class.getResource("/style.css").toExternalForm();
+		
+		scene.getStylesheets().add(styleSheet);
+		
+		return scene;
 	}
 }

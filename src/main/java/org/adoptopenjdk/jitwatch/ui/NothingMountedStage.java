@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.ui;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,7 +36,7 @@ public class NothingMountedStage extends Stage
 		vbox.setSpacing(20);
 		vbox.setPadding(new Insets(10));
 		
-		Scene scene = new Scene(vbox, 530, 200);
+		Scene scene = UserInterfaceUtil.getScene(vbox, 530, 200);
 	
 		setTitle("No classes or sources mounted");
 		

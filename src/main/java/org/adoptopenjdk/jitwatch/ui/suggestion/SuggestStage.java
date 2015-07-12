@@ -25,6 +25,7 @@ import javafx.stage.WindowEvent;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class SuggestStage extends Stage
 {
@@ -54,7 +55,7 @@ public class SuggestStage extends Stage
 
 		borderPane.setCenter(vbox);
 
-		Scene scene = new Scene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		tableView = SuggestionTableUtil.buildTableSuggestion(obList);
 

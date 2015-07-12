@@ -27,6 +27,7 @@ import org.adoptopenjdk.jitwatch.model.JITStats;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class TimeLineStage extends AbstractGraphStage
 {
@@ -37,7 +38,7 @@ public class TimeLineStage extends AbstractGraphStage
 		initStyle(StageStyle.DECORATED);
 
 		StackPane root = new StackPane();
-		Scene scene = new Scene(root, width, height);
+		Scene scene = UserInterfaceUtil.getScene(root, width, height);
 
 		canvas.widthProperty().bind(root.widthProperty());
 		canvas.heightProperty().bind(root.heightProperty());

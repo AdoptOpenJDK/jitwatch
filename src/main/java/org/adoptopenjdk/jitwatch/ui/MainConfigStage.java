@@ -12,6 +12,7 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.core.IMainLogListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +210,7 @@ public class MainConfigStage extends Stage
 
 		setTitle("JITWatch Configuration");
 
-		Scene scene = new Scene(vbox, 640, 400);
+		Scene scene = UserInterfaceUtil.getScene(vbox, 640, 400);
 
 		setScene(scene);
 

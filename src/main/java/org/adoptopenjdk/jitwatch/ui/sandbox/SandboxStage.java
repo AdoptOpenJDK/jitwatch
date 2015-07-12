@@ -66,6 +66,7 @@ import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -311,7 +312,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 		initialiseLog();
 
-		Scene scene = new Scene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setScene(scene);
 

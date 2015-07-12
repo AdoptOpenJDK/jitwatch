@@ -24,6 +24,7 @@ import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class VMLanguageConfigStage extends Stage
 {
@@ -57,7 +58,7 @@ public class VMLanguageConfigStage extends Stage
 
 		setTitle("VM Language Configuration");
 
-		Scene scene = new Scene(vbox, 480, 120);
+		Scene scene = UserInterfaceUtil.getScene(vbox, 480, 120);
 
 		setScene(scene);
 

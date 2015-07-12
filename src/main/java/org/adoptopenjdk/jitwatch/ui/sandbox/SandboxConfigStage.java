@@ -33,6 +33,7 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.FileChooserList;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class SandboxConfigStage extends Stage
 
 		VBox vbox = new VBox();
 
-		scene = new Scene(vbox, 620, 550);
+		scene = UserInterfaceUtil.getScene(vbox, 620, 550);
 
 		setScene(scene);
 

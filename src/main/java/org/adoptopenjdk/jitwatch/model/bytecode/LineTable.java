@@ -109,43 +109,33 @@ public class LineTable
 		return Collections.unmodifiableList(lineTableEntries);
 	}
 
-	public int findSourceLineForBytecodeOffset(int offset)
+	public int findSourceLineForBytecodeOffset(int searchBCI)
 	{
-		int result = -1;
-
-		LineTableEntry previousEntry = null;
+		int sourceAtClosestBCI = -1;
+		int distanceToClosestBCI = Integer.MAX_VALUE;
 
 		for (LineTableEntry entry : lineTableEntries)
 		{
-			int currentBytecodeOffset = entry.getBytecodeOffset();
+			int entryBCI = entry.getBytecodeOffset();
 
-			if (offset == currentBytecodeOffset)
+			int distance = searchBCI - entryBCI;
+
+			if (distance >= 0)
 			{
-				result = entry.getSourceOffset();
-				break;
-			}
-			else if (offset < currentBytecodeOffset)
-			{
-				if (previousEntry != null)
+				if (distance == 0)
 				{
-					result = previousEntry.getSourceOffset();
+					sourceAtClosestBCI = entry.getSourceOffset();
+					break;
 				}
-				break;
-			}
-
-			previousEntry = entry;
-		}
-
-		// unmatched so return last offset
-		if (result == -1)
-		{
-			if (previousEntry != null)
-			{
-				result = previousEntry.getSourceOffset();
+				else if (distance < distanceToClosestBCI)
+				{
+					distanceToClosestBCI = distance;
+					sourceAtClosestBCI = entry.getSourceOffset();
+				}
 			}
 		}
 
-		return result;
+		return sourceAtClosestBCI;
 	}
 
 	public int size()

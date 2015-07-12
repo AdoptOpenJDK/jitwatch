@@ -18,6 +18,7 @@ import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class OptimizedVirtualCallStage extends Stage
 {
@@ -40,7 +41,7 @@ public class OptimizedVirtualCallStage extends Stage
 		vbox.setPadding(new Insets(8));
 		vbox.setSpacing(8);
 
-		Scene scene = new Scene(vbox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = UserInterfaceUtil.getScene(vbox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setTitle("Optimized Virtual Calls");
 

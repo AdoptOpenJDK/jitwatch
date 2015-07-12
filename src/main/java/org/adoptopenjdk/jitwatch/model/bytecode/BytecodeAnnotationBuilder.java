@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
@@ -24,7 +25,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALL
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +35,7 @@ import java.util.Map;
 
 import javafx.scene.paint.Color;
 
-import org.adoptopenjdk.jitwatch.journal.ILastTaskParseTagVisitable;
+import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
@@ -42,10 +45,11 @@ import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.InlineUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
+public class BytecodeAnnotationBuilder implements IJournalVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeAnnotationBuilder.class);
 
@@ -70,6 +74,9 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 		try
 		{
 			JournalUtil.visitParseTagsOfLastTask(member, this);
+
+			JournalUtil.visitOptimizerTagsOfLastTask(member, this);
+
 		}
 		catch (LogParseException e)
 		{
@@ -87,20 +94,78 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 	}
 
 	@Override
-	public void visitParseTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
-		if (JournalUtil.memberMatchesParseTag(member, parseTag, parseDictionary))
+		switch (tag.getName())
 		{
-			try
+		case TAG_PARSE:
+			if (JournalUtil.memberMatchesParseTag(member, tag, parseDictionary))
 			{
-				final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
+				try
+				{
+					final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
 
-				buildParseTagAnnotations(parseTag, result, instructions, compilerName);
+					buildParseTagAnnotations(tag, result, instructions, compilerName);
+				}
+				catch (Exception e)
+				{
+					throw new LogParseException("Could not parse annotations", e);
+				}
 			}
-			catch (Exception e)
+
+			break;
+
+		// <eliminate_allocation type='817'>
+		// <jvms bci='44' method='818'/>
+		// </eliminate_allocation>
+
+		case TAG_ELIMINATE_ALLOCATION:
+
+			List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
+
+			for (Tag tagJVMS : childrenJVMS)
 			{
-				throw new LogParseException("Could not parse annotations", e);
+				String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+				if (bci != null)
+				{
+					try
+					{
+						int bciValue = Integer.parseInt(bci);
+
+						BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+
+						if (instr != null)
+						{
+							StringBuilder builder = new StringBuilder();
+							builder.append("Allocated object does not escape this method.\n");
+							builder.append("The allocation occurred on the stack instead of the heap.\n");
+
+							String typeID = tag.getAttribute(ATTR_TYPE);
+
+							if (typeID != null)
+							{
+								String typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
+
+								if (typeOrKlassName != null)
+								{
+									builder.append("Eliminated heap allocation was of type ").append(typeOrKlassName);
+								}
+							}
+
+							storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
+							instr.setEliminated(true);
+						}
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Couldn't parse BCI", nfe);
+					}
+				}
+
 			}
+
+			break;
 		}
 	}
 
@@ -111,7 +176,7 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 		{
 			logger.debug("Building parse tag annotations");
 		}
-		
+
 		List<Tag> children = parseTag.getChildren();
 
 		int currentBytecode = -1;
@@ -133,7 +198,7 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 		{
 			String name = child.getName();
 			Map<String, String> tagAttrs = child.getAttrs();
-			
+
 			if (DEBUG_LOGGING)
 			{
 				logger.debug("Examining child tag {}", child);
@@ -149,6 +214,8 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 				currentBytecode = Integer.parseInt(bciAttr);
 				int code = Integer.parseInt(codeAttr);
 				callAttrs.clear();
+
+				// TODO fix this old logic
 
 				// we found a LogCompilation bc tag
 				// e.g. "<bc code='182' bci='2'/>"
@@ -282,10 +349,6 @@ public class BytecodeAnnotationBuilder implements ILastTaskParseTagVisitable
 					storeAnnotation(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN), result);
 				}
 			}
-				break;
-
-			case TAG_ELIMINATE_ALLOCATION:
-				System.out.println("ELIM");
 				break;
 
 			default:

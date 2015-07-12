@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.ui;
 
 import org.adoptopenjdk.jitwatch.model.JITStats;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,7 +33,7 @@ public class StatsStage extends Stage
 		
 		VBox vbox = new VBox();
 		
-		Scene scene = new Scene(vbox, 800, 480);
+		Scene scene = UserInterfaceUtil.getScene(vbox, 800, 480);
 	
 		tableView = TableUtil.buildTableStats(obList);
 		

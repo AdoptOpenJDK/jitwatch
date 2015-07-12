@@ -141,7 +141,7 @@ public class ViewerBytecode extends Viewer
 			int maxOffset = instructions.get(instructions.size() - 1).getOffset();
 
 			int lineIndex = 0;
-			
+
 			for (final BytecodeInstruction instruction : instructions)
 			{
 				int labelLines = instruction.getLabelLines();
@@ -203,6 +203,11 @@ public class ViewerBytecode extends Viewer
 
 		lblLine.setUnhighlightedStyle(unhighlightedStyle);
 
+		if (instruction.isEliminated())
+		{
+			lblLine.getStyleClass().add("eliminated-allocation");
+		}
+		
 		if (instruction.isInvoke())
 		{
 			if (instructionToolTipBuilder.length() > 0)
@@ -215,7 +220,12 @@ public class ViewerBytecode extends Viewer
 
 		if (instructionToolTipBuilder.length() > 0)
 		{
-			lblLine.setTooltip(new Tooltip(instructionToolTipBuilder.toString()));
+			Tooltip toolTip = new Tooltip(instructionToolTipBuilder.toString());
+
+			toolTip.setStyle("-fx-strikethrough: false;");
+			toolTip.getStyleClass().clear();
+			toolTip.getStyleClass().add("tooltip");
+			lblLine.setTooltip(toolTip);
 		}
 
 		lblLine.setOnMouseClicked(new EventHandler<MouseEvent>()

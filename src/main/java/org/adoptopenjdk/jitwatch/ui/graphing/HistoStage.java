@@ -15,6 +15,7 @@ import org.adoptopenjdk.jitwatch.histo.IHistoVisitable;
 import org.adoptopenjdk.jitwatch.histo.InlineSizeHistoVisitable;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;
@@ -77,7 +78,7 @@ public class HistoStage extends AbstractGraphStage
         vbox.getChildren().add(hbox);
         vbox.getChildren().add(canvas);
 
-        Scene scene = new Scene(vbox, width, height);
+        Scene scene = UserInterfaceUtil.getScene(vbox, width, height);
 
         canvas.widthProperty().bind(scene.widthProperty());
         canvas.heightProperty().bind(scene.heightProperty().subtract(30));

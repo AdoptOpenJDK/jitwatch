@@ -233,7 +233,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		splitViewer = new SplitPane();
 		splitViewer.setOrientation(Orientation.HORIZONTAL);
 
-		Scene scene = new Scene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		Scene scene = UserInterfaceUtil.getScene(vBox, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 		navigationStack = new TriViewNavigationStack(this, scene);
 
 		viewerSource = new ViewerSource(parent, this, LineType.SOURCE);
@@ -793,7 +793,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	}
 
 	private void highlightFromBytecode(int index)
-	{
+	{	
 		MetaClass metaClass = null;
 
 		if (currentMember != null)

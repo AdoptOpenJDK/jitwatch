@@ -68,7 +68,7 @@ public class TestLineTable
 		assertFalse(composite.sourceLineInRange(-1));
 		assertFalse(composite.sourceLineInRange(25));
 	}
-	
+
 	@Test
 	public void testNashornLineTableRegression()
 	{
@@ -85,7 +85,40 @@ public class TestLineTable
 		table.add(entry3);
 		table.add(entry4);
 		table.add(entry5);
-				
+
 		assertTrue(table.sourceLineInRange(1));
+	}
+
+	@Test
+	public void testNonSequentialBCIs()
+	{
+		LineTable table = new LineTable(null);
+
+		table.add(new LineTableEntry(21, 2));
+		table.add(new LineTableEntry(23, 4));
+		table.add(new LineTableEntry(23, 73));
+		table.add(new LineTableEntry(25, 14));
+		table.add(new LineTableEntry(26, 17));
+		table.add(new LineTableEntry(28, 20));
+		table.add(new LineTableEntry(30, 27));
+		table.add(new LineTableEntry(33, 30));
+		table.add(new LineTableEntry(34, 42));
+		table.add(new LineTableEntry(36, 54));
+		table.add(new LineTableEntry(38, 64));
+		table.add(new LineTableEntry(42, 70));
+		table.add(new LineTableEntry(46, 79));
+		table.add(new LineTableEntry(48, 103));
+		
+		for (LineTableEntry entry : table.getEntries())
+		{
+			assertEquals(entry.getSourceOffset(), table.findSourceLineForBytecodeOffset(entry.getBytecodeOffset()));
+		}
+		
+		assertEquals(33, table.findSourceLineForBytecodeOffset(31));
+		
+		assertEquals(46, table.findSourceLineForBytecodeOffset(80));
+		assertEquals(46, table.findSourceLineForBytecodeOffset(81));
+		assertEquals(46, table.findSourceLineForBytecodeOffset(82));
+		assertEquals(48, table.findSourceLineForBytecodeOffset(5000));
 	}
 }

@@ -32,6 +32,18 @@ public class BytecodeInstruction
 
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeInstruction.class);
 
+	private boolean isEliminated = false;
+	
+	public void setEliminated(boolean eliminated)
+	{
+		isEliminated = eliminated;
+	}
+	
+	public boolean isEliminated()
+	{
+		return isEliminated;
+	}
+	
 	public int getOffset()
 	{
 		return offset;
@@ -153,7 +165,14 @@ public class BytecodeInstruction
 
 		if (opcode != null)
 		{
-			toStringBuilder.append(StringUtil.alignLeft(opcode.getMnemonic(), 16));
+			String mnemonic = opcode.getMnemonic();
+			
+//			if (isEliminated)
+//			{
+//				mnemonic = "(" + mnemonic + ")";
+//			}
+				
+			toStringBuilder.append(StringUtil.alignLeft(mnemonic, 16));
 		}
 
 		if (hasParameters())
