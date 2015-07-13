@@ -27,12 +27,12 @@ public class EscapeTest
 
         for (int i = 0; i < 100_000_000; i++)
         {
-            int v1 = 1;
+            int v1 = 0xABCD;
             int v2 = 0;
 
             if (i % 2 == 0)
             {
-                v2 = 1;
+                v2 = 0xABCD;
             }
 
             final Wrapper1 wrapper1 = new Wrapper1(v1);
