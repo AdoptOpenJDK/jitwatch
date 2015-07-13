@@ -138,8 +138,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 						if (instr != null)
 						{
 							StringBuilder builder = new StringBuilder();
-							builder.append("Allocated object does not escape this method.\n");
-							builder.append("The allocation occurred on the stack instead of the heap.\n");
+							builder.append("Object does not escape method.\n");
+							builder.append("Heap allocation has been eliminated.\n");
 
 							String typeID = tag.getAttribute(ATTR_TYPE);
 
@@ -149,7 +149,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 								if (typeOrKlassName != null)
 								{
-									builder.append("Eliminated heap allocation was of type ").append(typeOrKlassName);
+									builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
 								}
 							}
 
