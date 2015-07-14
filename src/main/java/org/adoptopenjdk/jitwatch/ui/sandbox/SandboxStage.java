@@ -334,15 +334,12 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	@Override
 	public void setModified(EditorPane pane, boolean isModified)
 	{
-		System.out.println("setMod");
 		for (Tab tab : tabPane.getTabs())
 		{
 			EditorPane currentPane = (EditorPane) tab.getContent();
 
 			if (currentPane == pane)
 			{
-				System.out.println("match");
-
 				String tabText = tab.getText();
 
 				if (isModified)
