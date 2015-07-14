@@ -5,7 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
@@ -15,6 +16,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
@@ -282,7 +284,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
 		assertEquals(9, result.size());
 
@@ -513,7 +515,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
 		assertEquals(7, result.size());
 
@@ -690,7 +692,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
 		assertEquals(8, result.size());
 
@@ -885,7 +887,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
 		assertEquals(6, result.size());
 
@@ -1092,7 +1094,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
 		assertEquals(10, result.size());
 
@@ -1295,7 +1297,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain2", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
 		assertEquals(8, result.size());
 
@@ -1475,7 +1477,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
 		assertEquals(9, result.size());
 
@@ -1662,7 +1664,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, LineAnnotation> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
 		assertEquals(7, result.size());
 
@@ -1675,7 +1677,7 @@ public class TestBytecodeAnnotationBuilder
 		checkLine(result, 53, "Inlined: Yes", Color.GREEN);
 	}
 
-	private Map<Integer, LineAnnotation> buildAnnotations(IMetaMember member, CompilerName compiler, String[] logLines, String[] bytecodeLines)
+	private Map<Integer, List<LineAnnotation>> buildAnnotations(IMetaMember member, CompilerName compiler, String[] logLines, String[] bytecodeLines)
 	{
 		TagProcessor tp = new TagProcessor();
 
@@ -1714,7 +1716,7 @@ public class TestBytecodeAnnotationBuilder
 
 		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
 
-		Map<Integer, LineAnnotation> result = new HashMap<>();
+		Map<Integer, List<LineAnnotation>> result = new HashMap<>();
 
 		try
 		{
@@ -1806,14 +1808,14 @@ public class TestBytecodeAnnotationBuilder
 		assertFalse(JournalUtil.isJournalForCompile2NativeMember(member.getJournal()));
 	}
 
-	private void checkLine(Map<Integer, LineAnnotation> result, int index, String annotation, Color colour)
+	private void checkLine(Map<Integer, List<LineAnnotation>> result, int index, String annotation, Color colour)
 	{
-		LineAnnotation line = result.get(index);
+		List<LineAnnotation> lines = result.get(index);
 
-		assertNotNull(line);
+		assertNotNull(lines);
 
-		assertTrue(line.getAnnotation().contains(annotation));
-		assertEquals(colour, line.getColour());
+		assertTrue(lines.get(0).getAnnotation().contains(annotation));
+		assertEquals(colour, lines.get(0).getColour());
 	}
 	
 	@Test

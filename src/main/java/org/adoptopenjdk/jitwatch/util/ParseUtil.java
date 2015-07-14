@@ -861,7 +861,7 @@ public final class ParseUtil
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
 
-		if (methodTag != null)
+		if (methodTag != null && model != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
 

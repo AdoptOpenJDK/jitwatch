@@ -91,6 +91,7 @@ public final class JITWatchConstants
 	public static final String TAG_WRITER = "writer";
 	public static final String TAG_VM_ARGUMENTS = "vm_arguments";
 	public static final String TAG_ELIMINATE_ALLOCATION = "eliminate_allocation";
+	public static final String TAG_ELIMINATE_LOCK = "eliminate_lock";
 	public static final String TAG_JVMS = "jvms";
 
 	public static final String TAG_COMMAND = "command";

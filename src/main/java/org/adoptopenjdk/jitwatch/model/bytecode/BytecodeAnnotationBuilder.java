@@ -12,6 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_TAKEN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
@@ -22,6 +23,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_LOCK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
@@ -29,6 +31,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +60,9 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private List<BytecodeInstruction> instructions;
 
-	private Map<Integer, LineAnnotation> result = new HashMap<>();
+	private Map<Integer, List<LineAnnotation>> result = new HashMap<>();
 
-	public Map<Integer, LineAnnotation> buildBytecodeAnnotations(final IMetaMember member,
+	public Map<Integer, List<LineAnnotation>> buildBytecodeAnnotations(final IMetaMember member,
 			final List<BytecodeInstruction> instructions) throws AnnotationException
 	{
 		this.member = member;
@@ -76,7 +79,6 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 			JournalUtil.visitParseTagsOfLastTask(member, this);
 
 			JournalUtil.visitOptimizerTagsOfLastTask(member, this);
-
 		}
 		catch (LogParseException e)
 		{
@@ -99,77 +101,137 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		switch (tag.getName())
 		{
 		case TAG_PARSE:
-			if (JournalUtil.memberMatchesParseTag(member, tag, parseDictionary))
-			{
-				try
-				{
-					final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
-
-					buildParseTagAnnotations(tag, result, instructions, compilerName);
-				}
-				catch (Exception e)
-				{
-					throw new LogParseException("Could not parse annotations", e);
-				}
-			}
-
+			visitTagParse(tag, parseDictionary);
 			break;
-
-		// <eliminate_allocation type='817'>
-		// <jvms bci='44' method='818'/>
-		// </eliminate_allocation>
 
 		case TAG_ELIMINATE_ALLOCATION:
-
-			List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
-
-			for (Tag tagJVMS : childrenJVMS)
-			{
-				String bci = tagJVMS.getAttribute(ATTR_BCI);
-
-				if (bci != null)
-				{
-					try
-					{
-						int bciValue = Integer.parseInt(bci);
-
-						BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
-
-						if (instr != null)
-						{
-							StringBuilder builder = new StringBuilder();
-							builder.append("Object does not escape method.\n");
-							builder.append("Heap allocation has been eliminated.\n");
-
-							String typeID = tag.getAttribute(ATTR_TYPE);
-
-							if (typeID != null)
-							{
-								String typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
-
-								if (typeOrKlassName != null)
-								{
-									builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
-								}
-							}
-
-							storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
-							instr.setEliminated(true);
-						}
-					}
-					catch (NumberFormatException nfe)
-					{
-						logger.error("Couldn't parse BCI", nfe);
-					}
-				}
-
-			}
-
+			visitTagEliminateAllocation(tag, parseDictionary);
 			break;
+
+		case TAG_ELIMINATE_LOCK:
+			visitTagEliminateLock(tag, parseDictionary);
+			break;
+
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, Map<Integer, LineAnnotation> result,
+	private void visitTagParse(Tag tag, IParseDictionary parseDictionary) throws LogParseException
+	{
+		if (JournalUtil.memberMatchesParseTag(member, tag, parseDictionary))
+		{
+			try
+			{
+				final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
+
+				buildParseTagAnnotations(tag, result, instructions, compilerName);
+			}
+			catch (Exception e)
+			{
+				throw new LogParseException("Could not parse annotations", e);
+			}
+		}
+	}
+
+	// <eliminate_allocation type='817'>
+	// <jvms bci='44' method='818'/>
+	// </eliminate_allocation>
+	private void visitTagEliminateAllocation(Tag tag, IParseDictionary parseDictionary)
+	{
+		List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
+
+		for (Tag tagJVMS : childrenJVMS)
+		{
+			String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+			if (bci != null)
+			{
+				try
+				{
+					int bciValue = Integer.parseInt(bci);
+
+					BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+
+					if (instr != null)
+					{
+						StringBuilder builder = new StringBuilder();
+						builder.append("Object does not escape method.\n");
+						builder.append("Heap allocation has been eliminated.\n");
+
+						String typeID = tag.getAttribute(ATTR_TYPE);
+
+						if (typeID != null)
+						{
+							String typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
+
+							if (typeOrKlassName != null)
+							{
+								builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
+							}
+						}
+
+						storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
+						instr.setEliminated(true);
+					}
+				}
+				catch (NumberFormatException nfe)
+				{
+					logger.error("Couldn't parse BCI", nfe);
+				}
+			}
+		}
+	}
+
+	// <eliminate_lock lock='0'>
+	// </eliminate_lock>
+	// <eliminate_lock lock='1'>
+	// <jvms bci='-1' method='823'/>
+	// <jvms bci='21' method='818'/>
+	// </eliminate_lock>
+	private void visitTagEliminateLock(Tag tag, IParseDictionary parseDictionary)
+	{
+		List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
+
+		for (Tag tagJVMS : childrenJVMS)
+		{
+			String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+			if (bci != null)
+			{
+				try
+				{
+					int bciValue = Integer.parseInt(bci);
+
+					BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+
+					if (instr != null)
+					{
+						StringBuilder builder = new StringBuilder();
+						builder.append("A lock has has been eliminated.\n");
+
+						String methodID = tag.getAttribute(ATTR_METHOD);
+
+						if (methodID != null)
+						{
+							IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, null);
+
+							if (member != null)
+							{
+								builder.append("Eliminated lock was on ").append(member.getMemberName());
+							}
+						}
+
+						storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
+					}
+				}
+				catch (NumberFormatException nfe)
+				{
+					logger.error("Couldn't parse BCI", nfe);
+				}
+			}
+		}
+	}
+
+	private void buildParseTagAnnotations(Tag parseTag, Map<Integer, List<LineAnnotation>> result,
 			List<BytecodeInstruction> instructions, CompilerName compilerName) throws AnnotationException
 	{
 		if (DEBUG_LOGGING)
@@ -357,14 +419,22 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		}
 	}
 
-	private void storeAnnotation(int bci, LineAnnotation annotation, Map<Integer, LineAnnotation> result)
+	private void storeAnnotation(int bci, LineAnnotation annotation, Map<Integer, List<LineAnnotation>> result)
 	{
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("BCI: {} Anno: {}", bci, annotation.getAnnotation());
 		}
 
-		result.put(bci, annotation);
+		List<LineAnnotation> existingAnnotations = result.get(bci);
+
+		if (existingAnnotations == null)
+		{
+			existingAnnotations = new ArrayList<>();
+			result.put(bci, existingAnnotations);
+		}
+
+		existingAnnotations.add(annotation);
 	}
 
 	private String buildBranchAnnotation(Map<String, String> tagAttrs)

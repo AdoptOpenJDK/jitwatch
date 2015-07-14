@@ -118,7 +118,7 @@ public class ViewerBytecode extends Viewer
 			}
 		}
 
-		Map<Integer, LineAnnotation> annotations = new HashMap<Integer, LineAnnotation>();
+		Map<Integer, List<LineAnnotation>> annotations = new HashMap<>();
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
@@ -176,7 +176,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line,
-			final Map<Integer, LineAnnotation> annotations, final IMetaMember member, final int lineIndex)
+			final Map<Integer, List<LineAnnotation>> annotations, final IMetaMember member, final int lineIndex)
 	{
 		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
 
@@ -186,18 +186,23 @@ public class ViewerBytecode extends Viewer
 
 		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
 
+		//TODO strong typing here
 		if (annotations != null)
 		{
-			LineAnnotation annotation = annotations.get(offset);
+			List<LineAnnotation> annotationList = annotations.get(offset);
 
-			if (annotation != null)
+			if (annotationList != null && annotationList.size() > 0)
 			{
-				Color colour = annotation.getColour();
+				Color colour = annotationList.get(0).getColour();
 
 				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
 
 				instructionToolTipBuilder = new StringBuilder();
-				instructionToolTipBuilder.append(annotation.getAnnotation());
+				
+				for (LineAnnotation annotation : annotationList)
+				{
+					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
+				}
 			}
 		}
 
@@ -220,7 +225,7 @@ public class ViewerBytecode extends Viewer
 
 		if (instructionToolTipBuilder.length() > 0)
 		{
-			Tooltip toolTip = new Tooltip(instructionToolTipBuilder.toString());
+			Tooltip toolTip = new Tooltip(instructionToolTipBuilder.toString().trim());
 
 			toolTip.setStyle("-fx-strikethrough: false;");
 			toolTip.getStyleClass().clear();

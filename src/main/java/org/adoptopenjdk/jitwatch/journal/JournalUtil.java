@@ -21,7 +21,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
@@ -122,14 +121,12 @@ public final class JournalUtil
 			IParseDictionary parseDictionary = lastTask.getParseDictionary();
 
 			Tag optimizerPhase = getOptimizerPhase(lastTask);
-			
+						
 			if (optimizerPhase != null)
 			{
-				List<Tag> eliminateAllocationTags = optimizerPhase.getNamedChildren(TAG_ELIMINATE_ALLOCATION);
-
-				for (Tag eliminationTag : eliminateAllocationTags)
+				for (Tag child : optimizerPhase.getChildren())
 				{
-					visitable.visitTag(eliminationTag, parseDictionary);
+					visitable.visitTag(child, parseDictionary);
 				}
 			}
 		}
@@ -337,8 +334,6 @@ public final class JournalUtil
 
 		if (lastTask != null)
 		{
-			CompilerName compilerName = lastTask.getCompiler();
-
 			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, S_OPTIMIZER);
 
 			int count = parsePhases.size();
