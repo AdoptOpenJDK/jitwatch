@@ -298,7 +298,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		{
 			try
 			{
-				count = Double.valueOf(countStr).longValue();
+				count = (long)ParseUtil.parseLocaleSafeDouble(countStr);
 			}
 			catch (NumberFormatException nfe)
 			{
@@ -310,7 +310,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		{
 			try
 			{
-				probability = Double.parseDouble(probStr);
+				probability = ParseUtil.parseLocaleSafeDouble(probStr);
 			}
 			catch (NumberFormatException nfe)
 			{

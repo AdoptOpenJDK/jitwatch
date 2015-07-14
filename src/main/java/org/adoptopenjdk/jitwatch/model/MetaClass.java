@@ -132,7 +132,14 @@ public class MetaClass implements Comparable<MetaClass>
 
 			MetaClass metaClassForInner = model.getPackageManager().getMetaClass(innerClassName);
 
-			metaClassForInner.getClassBytecode(model, classLocations);
+			if (metaClassForInner != null)
+			{
+				metaClassForInner.getClassBytecode(model, classLocations);
+			}
+			else
+			{
+				logger.warn("No MetaClass found for inner Class {}", innerClassName);
+			}
 		}
 	}
 
