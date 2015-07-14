@@ -300,6 +300,8 @@ public class EditorPane extends VBox
 			writer = new FileWriter(saveFile);
 			writer.write(getSource());
 			sandboxStage.log("Saved " + saveFile.getCanonicalPath());
+			
+			sourceFile = saveFile;
 		}
 		catch (IOException ioe)
 		{

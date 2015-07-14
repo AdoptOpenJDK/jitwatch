@@ -334,12 +334,15 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	@Override
 	public void setModified(EditorPane pane, boolean isModified)
 	{
+		System.out.println("setMod");
 		for (Tab tab : tabPane.getTabs())
 		{
 			EditorPane currentPane = (EditorPane) tab.getContent();
 
 			if (currentPane == pane)
 			{
+				System.out.println("match");
+
 				String tabText = tab.getText();
 
 				if (isModified)
@@ -351,10 +354,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 				}
 				else
 				{
-					if (tabText.endsWith(S_ASTERISK))
-					{
-						tab.setText(tabText.substring(0, tabText.length() - 1));
-					}
+					tab.setText(pane.getName());
 				}
 			}
 		}
@@ -608,7 +608,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void run()
 			{
-				//TODO perhaps filter out classloading statements?
+				// TODO perhaps filter out classloading statements?
 				accessProxy.openTextViewer("Sandbox Output", output, false, false);
 			}
 		});
