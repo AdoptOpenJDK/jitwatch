@@ -41,6 +41,7 @@ import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
@@ -1720,7 +1721,7 @@ public class TestBytecodeAnnotationBuilder
 
 		try
 		{
-			result = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions);
+			result = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, new JITDataModel());
 		}
 		catch (AnnotationException annoEx)
 		{

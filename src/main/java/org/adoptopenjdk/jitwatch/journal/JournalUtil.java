@@ -15,11 +15,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
@@ -192,7 +188,7 @@ public final class JournalUtil
 				}
 
 				String klassAttrName = klassTag.getAttribute(ATTR_NAME);
-				String methodAttrName = methodTag.getAttribute(ATTR_NAME).replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);		
+				String methodAttrName = StringUtil.replaceXMLEntities(methodTag.getAttribute(ATTR_NAME));
 				
 				if (klassAttrName != null)
 				{

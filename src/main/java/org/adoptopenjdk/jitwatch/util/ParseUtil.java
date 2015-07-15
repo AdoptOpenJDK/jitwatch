@@ -28,8 +28,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
@@ -131,7 +129,8 @@ public final class ParseUtil
 		}
 		catch (ParseException pe)
 		{
-			logger.error("", pe);
+			logger.warn("Could not parse {} as a Double", pe);
+			//TODO throw NumberFormatException?
 		}
 
 		return result;
@@ -236,8 +235,7 @@ public final class ParseUtil
 	{
 		String sig = logSignature;
 
-		sig = sig.replace(S_ENTITY_LT, S_OPEN_ANGLE);
-		sig = sig.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+		sig = StringUtil.replaceXMLEntities(sig);
 
 		Matcher matcher = PATTERN_LOG_SIGNATURE.matcher(sig);
 
@@ -860,10 +858,12 @@ public final class ParseUtil
 		IMetaMember result = null;
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
-
-		if (methodTag != null && model != null)
+		
+		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
+			
+			methodName = StringUtil.replaceXMLEntities(methodName);
 
 			String klassId = methodTag.getAttribute(ATTR_HOLDER);
 
@@ -880,7 +880,7 @@ public final class ParseUtil
 			PackageManager pm = model.getPackageManager();
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
-
+			
 			if (metaClass == null)
 			{
 				if (DEBUG_LOGGING)
@@ -916,9 +916,10 @@ public final class ParseUtil
 			}
 
 			if (metaClass != null)
-			{
+			{			
 				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName,
 						returnType, argumentTypes);
+								
 				result = metaClass.getMemberForSignature(msp);
 			}
 			else if (!possibleLambdaMethod(metaClassName))

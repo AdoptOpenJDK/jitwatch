@@ -129,7 +129,7 @@ public class ViewerBytecode extends Viewer
 		{
 			try
 			{
-				annotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions);
+				annotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, model);
 			}
 			catch (AnnotationException annoEx)
 			{
@@ -201,7 +201,7 @@ public class ViewerBytecode extends Viewer
 				
 				for (LineAnnotation annotation : annotationList)
 				{
-					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
+					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE).append(S_NEWLINE);
 				}
 			}
 		}
@@ -215,11 +215,6 @@ public class ViewerBytecode extends Viewer
 		
 		if (instruction.isInvoke())
 		{
-			if (instructionToolTipBuilder.length() > 0)
-			{
-				instructionToolTipBuilder.append(S_NEWLINE).append(S_NEWLINE);
-			}
-
 			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
 		}
 

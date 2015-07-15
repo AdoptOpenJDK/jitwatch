@@ -16,6 +16,10 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -72,6 +76,18 @@ public final class StringUtil
 		}
 
 		return sb.toString();
+	}
+	
+	public static String replaceXMLEntities(String input)
+	{
+		String result = null;
+		
+		if (input != null)
+		{
+			result = input.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+		}
+		
+		return result;
 	}
 
 	public static String repeat(char c, int count)

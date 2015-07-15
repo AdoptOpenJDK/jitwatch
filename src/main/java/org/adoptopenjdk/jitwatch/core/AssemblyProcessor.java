@@ -10,13 +10,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_METHOD_MARK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_START;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -26,6 +22,7 @@ import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +49,7 @@ public class AssemblyProcessor
 	{
 		String line = inLine.replaceFirst("^ +", "");
 
-		line = line.replace(S_ENTITY_LT, S_OPEN_ANGLE);
-		line = line.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+		line = StringUtil.replaceXMLEntities(line);
 
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{

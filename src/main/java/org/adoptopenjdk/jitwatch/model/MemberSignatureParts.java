@@ -98,6 +98,9 @@ public class MemberSignatureParts
 	{
 		if (msp.memberName != null)
 		{
+			
+			
+			
 			// Constructors will return void for returnType
 			if (S_CONSTRUCTOR_INIT.equals(msp.memberName) || msp.memberName.equals(msp.fullyQualifiedClassName))
 			{

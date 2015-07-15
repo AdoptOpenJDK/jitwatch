@@ -30,6 +30,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,11 +46,13 @@ import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.InlineUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,13 +64,17 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private List<BytecodeInstruction> instructions;
 
+	private IReadOnlyJITDataModel model;
+
 	private Map<Integer, List<LineAnnotation>> result = new HashMap<>();
 
 	public Map<Integer, List<LineAnnotation>> buildBytecodeAnnotations(final IMetaMember member,
-			final List<BytecodeInstruction> instructions) throws AnnotationException
+			final List<BytecodeInstruction> instructions, IReadOnlyJITDataModel model) throws AnnotationException
 	{
 		this.member = member;
 		this.instructions = instructions;
+		this.model = model;
+
 		result.clear();
 
 		if (!member.isCompiled())
@@ -187,45 +195,61 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 	// <jvms bci='-1' method='823'/>
 	// <jvms bci='21' method='818'/>
 	// </eliminate_lock>
+
+	// JDK9 has much more detail in eliminate_lock
+	// (callnode.cpp:log_lock_optimization)
 	private void visitTagEliminateLock(Tag tag, IParseDictionary parseDictionary)
 	{
 		List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
 
-		for (Tag tagJVMS : childrenJVMS)
+		if (childrenJVMS.size() > 0)
 		{
-			String bci = tagJVMS.getAttribute(ATTR_BCI);
+			StringBuilder builder = new StringBuilder();
 
-			if (bci != null)
+			builder.append("A lock has has been eliminated").append(S_NEWLINE);
+			builder.append("Call chain:").append(S_NEWLINE);
+
+			int depth = 0;
+
+			for (Tag tagJVMS : childrenJVMS)
 			{
-				try
+				String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+				if (bci != null)
 				{
-					int bciValue = Integer.parseInt(bci);
-
-					BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
-
-					if (instr != null)
+					try
 					{
-						StringBuilder builder = new StringBuilder();
-						builder.append("A lock has has been eliminated.\n");
+						int bciValue = Integer.parseInt(bci);
 
-						String methodID = tag.getAttribute(ATTR_METHOD);
+						String methodID = tagJVMS.getAttribute(ATTR_METHOD);
 
 						if (methodID != null)
 						{
-							IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, null);
+							IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
 							if (member != null)
 							{
-								builder.append("Eliminated lock was on ").append(member.getMemberName());
+								if (bciValue != -1)
+								{
+									builder.append(StringUtil.repeat(C_SPACE, depth * 2)).append("->").append(C_SPACE);
+									depth++;
+								}
+								
+								builder.append(member.toStringUnqualifiedMethodName(true));
 							}
 						}
 
-						storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
+						builder.append(S_NEWLINE);
+
+						if (bciValue != -1)
+						{
+							storeAnnotation(bciValue, new LineAnnotation(builder.toString().trim(), Color.GRAY), result);
+						}
 					}
-				}
-				catch (NumberFormatException nfe)
-				{
-					logger.error("Couldn't parse BCI", nfe);
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Couldn't parse BCI", nfe);
+					}
 				}
 			}
 		}

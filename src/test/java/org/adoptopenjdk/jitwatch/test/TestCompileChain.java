@@ -5,12 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,6 +25,7 @@ import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.junit.Test;
 
 public class TestCompileChain
@@ -715,9 +711,8 @@ public class TestCompileChain
 		for (String line : lines)
 		{
 			line = line.trim();
-			line = line.replace(S_ENTITY_LT, S_OPEN_ANGLE);
-			line = line.replace(S_ENTITY_GT, S_CLOSE_ANGLE);
-
+			line = StringUtil.replaceXMLEntities(line);
+			
 			tag = tp.processLine(line);
 
 			if (count++ < lines.length - 1)

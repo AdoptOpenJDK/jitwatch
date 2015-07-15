@@ -16,11 +16,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
@@ -40,6 +36,7 @@ import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +128,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		explanationMap.put(REASON_RECURSIVE_INLINING_IS_TOO_DEEP, explanationInliningTooDeep);
 		explanationMap.put(REASON_RECURSIVELY_INLINING_TOO_DEEP, explanationInliningTooDeep);
 
-
 		explanationMap.put(REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT, S_EMPTY);
 		explanationMap.put(REASON_NODE_COUNT_INLINING_CUTOFF, S_EMPTY);
 		explanationMap.put(REASON_UNLOADED_SIGNATURE_CLASSES, S_EMPTY);
@@ -207,7 +203,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			{
 				String callerID = attrs.get(ATTR_METHOD);
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
-				if (nestedCaller != null) {
+				if (nestedCaller != null)
+				{
 					processParseTag(child, nestedCaller, parseDictionary);
 				}
 			}
@@ -237,7 +234,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 				if (invocationCount >= MIN_INLINING_INVOCATIONS)
 				{
 					String reason = attrs.get(ATTR_REASON);
-					reason = reason.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+					reason = StringUtil.replaceXMLEntities(reason);
 
 					double score = 0;
 
@@ -298,7 +295,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 		{
 			try
 			{
-				count = (long)ParseUtil.parseLocaleSafeDouble(countStr);
+				count = (long) ParseUtil.parseLocaleSafeDouble(countStr);
 			}
 			catch (NumberFormatException nfe)
 			{
@@ -308,21 +305,21 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 
 		if (probStr != null)
 		{
-			try
+			if (NEVER.equalsIgnoreCase(probStr))
 			{
-				probability = ParseUtil.parseLocaleSafeDouble(probStr);
+				probability = 0;
 			}
-			catch (NumberFormatException nfe)
+			else if (ALWAYS.equalsIgnoreCase(probStr))
 			{
-				if (NEVER.equalsIgnoreCase(probStr))
+				probability = 1;
+			}
+			else
+			{
+				try
 				{
-					probability = 0;
+					probability = ParseUtil.parseLocaleSafeDouble(probStr);
 				}
-				else if (ALWAYS.equalsIgnoreCase(probStr))
-				{
-					probability = 1;
-				}
-				else
+				catch (NumberFormatException nfe)
 				{
 					logger.error("Unrecognised branch probability: {}", probStr, nfe);
 				}
