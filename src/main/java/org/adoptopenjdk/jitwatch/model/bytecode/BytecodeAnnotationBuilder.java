@@ -94,9 +94,14 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 			Throwable cause = e.getCause();
 
-			if (cause instanceof AnnotationException)
+			if (cause != null)
 			{
-				throw (AnnotationException) cause;
+				logger.error("Cause", cause);
+
+				if (cause instanceof AnnotationException)
+				{
+					throw (AnnotationException) cause;
+				}
 			}
 		}
 
@@ -234,7 +239,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 									builder.append(StringUtil.repeat(C_SPACE, depth * 2)).append("->").append(C_SPACE);
 									depth++;
 								}
-								
+
 								builder.append(member.toStringUnqualifiedMethodName(true));
 							}
 						}
