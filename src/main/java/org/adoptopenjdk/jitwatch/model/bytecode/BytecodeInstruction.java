@@ -124,6 +124,11 @@ public class BytecodeInstruction
 				|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC);
 
 	}
+	
+	public boolean isLock()
+	{
+		return opcode != null && opcode ==Opcode.MONITORENTER;
+	}
 
 	public boolean isSwitch()
 	{

@@ -17,8 +17,10 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
@@ -30,8 +32,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -248,7 +248,14 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						if (bciValue != -1)
 						{
-							storeAnnotation(bciValue, new LineAnnotation(builder.toString().trim(), Color.GRAY), result);
+							storeAnnotation(bciValue, new LineAnnotation(builder.toString().trim(), Color.BLACK), result);
+						
+							BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+
+							if (instr != null && instr.isLock())
+							{
+								instr.setEliminated(true);
+							}						
 						}
 					}
 					catch (NumberFormatException nfe)
