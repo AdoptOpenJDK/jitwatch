@@ -211,7 +211,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		{
 			StringBuilder builder = new StringBuilder();
 
-			builder.append("A lock has has been eliminated").append(S_NEWLINE);
+			builder.append("A lock has been eliminated").append(S_NEWLINE);
 			builder.append("Call chain:").append(S_NEWLINE);
 
 			int depth = 0;
