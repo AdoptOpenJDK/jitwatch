@@ -15,6 +15,8 @@ public interface IStageAccessProxy
 {
 	ITriView openTriView(IMetaMember member, boolean force);
 	
+	ITriView openTriView(IMetaMember member, boolean force, double width, double height);
+	
 	void openBrowser(String title, String html, String stylesheet);
 	
 	void openTextViewer(String title, String contents, boolean lineNumbers, boolean highlighting);

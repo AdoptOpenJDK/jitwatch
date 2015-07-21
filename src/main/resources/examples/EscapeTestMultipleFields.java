@@ -1,19 +1,20 @@
-// -XX:+DoEscapeAnalysis
-// -XX:-DoEscapeAnalysis
-
-public class EscapeTest
+public class EscapeTestMultipleFields
 {
     public class Wrapper1 {
-      private int value;
-      public Wrapper1(int value) { this.value = value; }
-      public int getValue() { return this.value; }
-      public boolean equals(Wrapper2 wrapper2) { return this.value == wrapper2.getValue(); }
+        private int v1;
+        private int v2;
+        private int v3;
+        public Wrapper1(int value) { v1 = value; v2 = v1+1; v3 = v2+1; }
+        public int getValue() { return v1 + v2 + v3; }
+        public boolean equals(Wrapper2 wrapper2) { return getValue() == wrapper2.getValue(); }
     }
 
     public class Wrapper2 {
-      private int value;
-      public Wrapper2(int value) { this.value = value; }
-      public int getValue() { return this.value; }
+        private int v1;
+        private int v2;
+        private int v3;
+        public Wrapper2(int value) { v1 = value; v2 = v1+1; v3 = v2+1; }
+        public int getValue() { return v1 + v2 + v3; }
     }
 
     private java.util.Random random = new java.util.Random();
@@ -30,6 +31,7 @@ public class EscapeTest
             int v1 = 0xABCD;
             int v2 = 0;
 
+            // prevent the clever VM jumping straight to the answer
             if (random.nextBoolean())
             {
                 v2 = 0xABCD;
@@ -38,8 +40,8 @@ public class EscapeTest
             final Wrapper1 wrapper1 = new Wrapper1(v1);
             final Wrapper2 wrapper2 = new Wrapper2(v2);
 
-            // wrapper2 is NoEscape if inlining equals() succeeds
-            // wrapper2 is ArgEscape if inlining equals() fails or disabled
+            // wrapper2 is NoEscape if inlining of equals() succeeds
+            // wrapper2 is ArgEscape if inlining fails or disabled
             if (wrapper1.equals(wrapper2))
             {
                 matchYes++;
@@ -57,7 +59,7 @@ public class EscapeTest
 
     public static void main(final String[] args)
     {
-        String result = new EscapeTest().run();
+        String result = new EscapeTestMultipleFields().run();
 
         System.out.println(result);
     }

@@ -53,7 +53,7 @@ public class SourceMapper
 		}
 		else
 		{
-			logger.warn("No classBytecodeList found for name {}", fqName);
+//			logger.debug("No classBytecodeList found for name {}", fqName);
 		}
 
 		classBytecodeList.add(classBytecode);

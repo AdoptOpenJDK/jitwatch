@@ -6,6 +6,7 @@ public class LockCoarsen
     {
         long count = 0;
 
+        // both calls to increment() should be inlined
         for (int i = 0; i < 20_000; i++)
         {
             synchronized(this)

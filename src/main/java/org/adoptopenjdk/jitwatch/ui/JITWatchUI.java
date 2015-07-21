@@ -695,6 +695,29 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		return triViewStage;
 	}
+	
+	@Override
+	public ITriView openTriView(IMetaMember member, boolean force, double width, double height)
+	{
+		if (triViewStage == null)
+		{
+			triViewStage = new TriView(JITWatchUI.this, getConfig());
+
+			triViewStage.setWidth(width);
+			triViewStage.setHeight(height);
+			
+			StageManager.addAndShow(this.stage, triViewStage);
+
+			btnTriView.setDisable(true);
+		}
+
+		if (member != null)
+		{
+			triViewStage.setMember(member, force);
+		}
+
+		return triViewStage;
+	}
 
 	public void openSandbox()
 	{
