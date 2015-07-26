@@ -172,9 +172,11 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						String typeID = tag.getAttribute(ATTR_TYPE);
 
+						String typeOrKlassName = null;
+						
 						if (typeID != null)
 						{
-							String typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
+							typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
 
 							if (typeOrKlassName != null)
 							{
@@ -183,7 +185,15 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 						}
 
 						storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
-						instr.setEliminated(true);
+						
+						if (instr.getOpcode() == Opcode.NEW)
+						{
+							instr.setEliminated(true);
+						}
+						else
+						{
+							logger.warn("Found heap elimination on instruction that is not Opcode.NEW: {} @ {} ({}/{})", instr.getOpcode(), instr.getOffset(), typeID, typeOrKlassName);
+						}
 					}
 				}
 				catch (NumberFormatException nfe)

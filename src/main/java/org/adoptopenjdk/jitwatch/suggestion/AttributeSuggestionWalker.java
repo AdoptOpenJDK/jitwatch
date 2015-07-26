@@ -112,7 +112,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 						"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
 		explanationMap.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
 		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
-				"The callee method is not 'hot' but is too big to be inlined into the caller method.");
+				"The callee method has already been compiled into a 'big' method somewhere else");
+		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD,
+				"The callee method has already been compiled into a 'medium' method somewhere else");
 		explanationMap.put(REASON_EXEC_LESS_MIN_INLINING_THRESHOLD, "The callee method was not called enough times to be inlined.");
 
 		explanationMap.put(REASON_CALLEE_IS_TOO_LARGE,
