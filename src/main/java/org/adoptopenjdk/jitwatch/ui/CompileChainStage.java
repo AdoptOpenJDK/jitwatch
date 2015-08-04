@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -15,6 +15,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -23,17 +24,12 @@ import javafx.stage.WindowEvent;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CompileChainStage extends Stage
 {
-	//TODO show compilation order markers
-	
-	private static final Logger logger = LoggerFactory.getLogger(CompileChainStage.class);
-
 	private ScrollPane scrollPane;
 	private Pane pane;
+	private JITWatchUI parent;
 
 	private CompileNode rootNode;
 
@@ -57,6 +53,8 @@ public class CompileChainStage extends Stage
 	public CompileChainStage(final JITWatchUI parent, CompileNode root)
 	{
 		initStyle(StageStyle.DECORATED);
+		
+		this.parent = parent;
 
 		this.rootNode = root;
 
@@ -185,6 +183,7 @@ public class CompileChainStage extends Stage
 		nextX += X_GAP;
 
 		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.rect);
+		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.text);
 
 		Tooltip tip = new Tooltip(getToolTipText(node));
 		Tooltip.install(plotNode.rect, tip);
@@ -281,15 +280,14 @@ public class CompileChainStage extends Stage
 		}
 	}
 
-	private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Rectangle rect)
+	private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Shape shape)
 	{
-		rect.setOnMouseClicked(new EventHandler<MouseEvent>()
+		shape.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				logger.info("{}", node.getMember());
-				// TODO use for navigation in TriView?
+				parent.openTriView(node.getMember(), true);
 			}
 		});
 	}
