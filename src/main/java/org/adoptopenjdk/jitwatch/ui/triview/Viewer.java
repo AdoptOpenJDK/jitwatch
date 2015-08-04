@@ -43,7 +43,7 @@ import javafx.scene.layout.VBox;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;

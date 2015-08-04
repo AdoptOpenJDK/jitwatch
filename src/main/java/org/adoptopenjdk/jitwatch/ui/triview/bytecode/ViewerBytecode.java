@@ -9,9 +9,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -24,10 +22,12 @@ import javafx.scene.paint.Color;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
@@ -40,6 +40,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.JVMSUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class ViewerBytecode extends Viewer
 {
@@ -118,7 +119,7 @@ public class ViewerBytecode extends Viewer
 			}
 		}
 
-		Map<Integer, List<LineAnnotation>> annotations = new HashMap<>();
+		BytecodeAnnotations bcAnnotations = null;
 
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
@@ -129,7 +130,7 @@ public class ViewerBytecode extends Viewer
 		{
 			try
 			{
-				annotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, model);
+				bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, model);
 			}
 			catch (AnnotationException annoEx)
 			{
@@ -148,14 +149,14 @@ public class ViewerBytecode extends Viewer
 
 				if (labelLines == 0)
 				{
-					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, annotations, member, lineIndex++);
+					BytecodeLabel lblLine = createLabel(instruction, maxOffset, 0, bcAnnotations, member, lineIndex++);
 					labels.add(lblLine);
 				}
 				else
 				{
 					for (int i = 0; i < labelLines; i++)
 					{
-						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, annotations, member, lineIndex++);
+						BytecodeLabel lblLine = createLabel(instruction, maxOffset, i, bcAnnotations, member, lineIndex++);
 						labels.add(lblLine);
 					}
 				}
@@ -176,7 +177,7 @@ public class ViewerBytecode extends Viewer
 	}
 
 	private BytecodeLabel createLabel(final BytecodeInstruction instruction, int maxOffset, int line,
-			final Map<Integer, List<LineAnnotation>> annotations, final IMetaMember member, final int lineIndex)
+			BytecodeAnnotations bcAnnotations, final IMetaMember member, final int lineIndex)
 	{
 		BytecodeLabel lblLine = new BytecodeLabel(instruction, maxOffset, line);
 
@@ -186,14 +187,15 @@ public class ViewerBytecode extends Viewer
 
 		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
 
-		//TODO strong typing here
-		if (annotations != null)
+		if (bcAnnotations != null)
 		{
-			List<LineAnnotation> annotationList = annotations.get(offset);
+			List<LineAnnotation> annotationList = bcAnnotations.getAnnotationsForBCI(offset);
 
 			if (annotationList != null && annotationList.size() > 0)
 			{
-				Color colour = annotationList.get(0).getColour();
+				BCAnnotationType type = annotationList.get(0).getType();
+				
+				Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(type);
 
 				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
 

@@ -10,7 +10,9 @@ import java.io.InputStream;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
+import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,7 @@ public final class UserInterfaceUtil
 	static
 	{
 		IMAGE_TICK = loadResource("/images/tick.png");
-		
+
 		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", "monospace");
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
 	}
@@ -53,15 +55,32 @@ public final class UserInterfaceUtil
 
 		return result;
 	}
-	
+
 	public static Scene getScene(Parent parent, double width, double height)
 	{
 		Scene scene = new Scene(parent, width, height);
-		
+
 		String styleSheet = UserInterfaceUtil.class.getResource("/style.css").toExternalForm();
-		
+
 		scene.getStylesheets().add(styleSheet);
-		
+
 		return scene;
+	}
+
+	public static Color getColourForBytecodeAnnotation(BCAnnotationType type)
+	{
+		switch (type)
+		{
+		case BRANCH:
+			return Color.BLUE;
+		case ELIMINATED_ALLOCATION:
+			return Color.GRAY;
+		case INLINE_FAIL:
+			return Color.RED;
+		case INLINE_SUCCESS:
+			return Color.GREEN;
+		default:
+			return Color.BLACK;
+		}
 	}
 }

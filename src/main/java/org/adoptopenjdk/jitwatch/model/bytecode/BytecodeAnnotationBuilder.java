@@ -33,12 +33,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javafx.scene.paint.Color;
 
 import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
@@ -47,7 +44,6 @@ import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.InlineUtil;
@@ -66,20 +62,20 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private IReadOnlyJITDataModel model;
 
-	private Map<Integer, List<LineAnnotation>> result = new HashMap<>();
+	private BytecodeAnnotations bcAnnotations = new BytecodeAnnotations();
 
-	public Map<Integer, List<LineAnnotation>> buildBytecodeAnnotations(final IMetaMember member,
-			final List<BytecodeInstruction> instructions, IReadOnlyJITDataModel model) throws AnnotationException
+	public BytecodeAnnotations buildBytecodeAnnotations(final IMetaMember member, final List<BytecodeInstruction> instructions,
+			IReadOnlyJITDataModel model) throws AnnotationException
 	{
 		this.member = member;
 		this.instructions = instructions;
 		this.model = model;
 
-		result.clear();
+		bcAnnotations.clear();
 
 		if (!member.isCompiled())
 		{
-			return result;
+			return bcAnnotations;
 		}
 
 		try
@@ -105,7 +101,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 			}
 		}
 
-		return result;
+		return bcAnnotations;
 	}
 
 	@Override
@@ -130,13 +126,15 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private void visitTagParse(Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
-		if (JournalUtil.memberMatchesParseTag(member, tag, parseDictionary))
+		String methodID = tag.getAttribute(ATTR_METHOD);
+
+		if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 		{
 			try
 			{
 				final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
 
-				buildParseTagAnnotations(tag, result, instructions, compilerName);
+				buildParseTagAnnotations(tag, bcAnnotations, instructions, compilerName);
 			}
 			catch (Exception e)
 			{
@@ -145,11 +143,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		}
 	}
 
-	// <eliminate_allocation type='817'>
-	// <jvms bci='44' method='818'/>
-	// </eliminate_allocation>
 	private void visitTagEliminateAllocation(Tag tag, IParseDictionary parseDictionary)
-	{
+	{		
 		List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
 
 		for (Tag tagJVMS : childrenJVMS)
@@ -173,7 +168,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 						String typeID = tag.getAttribute(ATTR_TYPE);
 
 						String typeOrKlassName = null;
-						
+
 						if (typeID != null)
 						{
 							typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
@@ -184,15 +179,17 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 							}
 						}
 
-						storeAnnotation(bciValue, new LineAnnotation(builder.toString(), Color.GRAY), result);
-						
+						bcAnnotations.addAnnotation(bciValue,
+								new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
+
 						if (instr.getOpcode() == Opcode.NEW)
 						{
 							instr.setEliminated(true);
 						}
 						else
 						{
-							logger.warn("Found heap elimination on instruction that is not Opcode.NEW: {} @ {} ({}/{})", instr.getOpcode(), instr.getOffset(), typeID, typeOrKlassName);
+							logger.warn("Found heap elimination on instruction that is not Opcode.NEW: {} @ {} ({}/{})",
+									instr.getOpcode(), instr.getOffset(), typeID, typeOrKlassName);
 						}
 					}
 				}
@@ -201,6 +198,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					logger.error("Couldn't parse BCI", nfe);
 				}
 			}
+
 		}
 	}
 
@@ -258,14 +256,15 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						if (bciValue != -1)
 						{
-							storeAnnotation(bciValue, new LineAnnotation(builder.toString().trim(), Color.BLACK), result);
-						
+							bcAnnotations.addAnnotation(bciValue,
+									new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
+
 							BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
 
 							if (instr != null && instr.isLock())
 							{
 								instr.setEliminated(true);
-							}						
+							}
 						}
 					}
 					catch (NumberFormatException nfe)
@@ -277,8 +276,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, Map<Integer, List<LineAnnotation>> result,
-			List<BytecodeInstruction> instructions, CompilerName compilerName) throws AnnotationException
+	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, List<BytecodeInstruction> instructions,
+			CompilerName compilerName) throws AnnotationException
 	{
 		if (DEBUG_LOGGING)
 		{
@@ -396,7 +395,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					String reason = tagAttrs.get(ATTR_REASON);
 					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
 
-					storeAnnotation(currentBytecode, new LineAnnotation(annotationText, Color.GREEN), result);
+					bcAnnotations.addAnnotation(currentBytecode,
+							new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
 				}
 			}
 				break;
@@ -413,13 +413,13 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					String reason = tagAttrs.get(ATTR_REASON);
 					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
 
-					storeAnnotation(currentBytecode, new LineAnnotation(annotationText, Color.RED), result);
+					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 				}
 			}
 				break;
 			case TAG_BRANCH:
 			{
-				if (!result.containsKey(currentBytecode))
+				if (!bcAnnotations.hasAnnotationsForBCI(currentBytecode))
 				{
 					if (inMethod || isC2)
 					{
@@ -431,7 +431,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						String branchAnnotation = buildBranchAnnotation(tagAttrs);
 
-						storeAnnotation(currentBytecode, new LineAnnotation(branchAnnotation, Color.BLUE), result);
+						bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(branchAnnotation, BCAnnotationType.BRANCH));
 					}
 				}
 			}
@@ -454,7 +454,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					StringBuilder reason = new StringBuilder();
 					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
-					storeAnnotation(currentBytecode, new LineAnnotation(reason.toString(), Color.GREEN), result);
+					bcAnnotations.addAnnotation(currentBytecode,
+							new LineAnnotation(reason.toString(), BCAnnotationType.INTRINSIC_USED));
 				}
 			}
 				break;
@@ -463,24 +464,6 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 				break;
 			}
 		}
-	}
-
-	private void storeAnnotation(int bci, LineAnnotation annotation, Map<Integer, List<LineAnnotation>> result)
-	{
-		if (DEBUG_LOGGING)
-		{
-			logger.debug("BCI: {} Anno: {}", bci, annotation.getAnnotation());
-		}
-
-		List<LineAnnotation> existingAnnotations = result.get(bci);
-
-		if (existingAnnotations == null)
-		{
-			existingAnnotations = new ArrayList<>();
-			result.put(bci, existingAnnotations);
-		}
-
-		existingAnnotations.add(annotation);
 	}
 
 	private String buildBranchAnnotation(Map<String, String> tagAttrs)

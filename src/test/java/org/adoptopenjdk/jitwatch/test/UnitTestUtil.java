@@ -21,7 +21,6 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class UnitTestUtil
 {
-
 	public static MetaClass createMetaClassFor(JITDataModel model, String fqClassName) throws ClassNotFoundException
 	{
 		Class<?> clazz = Class.forName(fqClassName);
@@ -40,7 +39,7 @@ public class UnitTestUtil
 
 		return new MetaMethod(getMethod(fqClassName, methodName, params), metaClass);
 	}
-
+	
 	public static IMetaMember createTestMetaMember()
 	{
 		return createTestMetaMember("java.lang.String", "length", new Class<?>[0]);

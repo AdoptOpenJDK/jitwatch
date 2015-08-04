@@ -8,7 +8,6 @@ package org.adoptopenjdk.jitwatch.journal;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BUILDIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
@@ -117,7 +116,7 @@ public final class JournalUtil
 			IParseDictionary parseDictionary = lastTask.getParseDictionary();
 
 			Tag optimizerPhase = getOptimizerPhase(lastTask);
-						
+
 			if (optimizerPhase != null)
 			{
 				for (Tag child : optimizerPhase.getChildren())
@@ -128,7 +127,6 @@ public final class JournalUtil
 		}
 	}
 
-	
 	public static boolean isJournalForCompile2NativeMember(Journal journal)
 	{
 		boolean result = false;
@@ -156,16 +154,22 @@ public final class JournalUtil
 		return result;
 	}
 
-	public static boolean memberMatchesParseTag(IMetaMember member, Tag parseTag, IParseDictionary parseDictionary)
+	public static boolean memberMatchesKlassID(IMetaMember member, String klassID, IParseDictionary parseDictionary)
 	{
 		boolean result = false;
 
-		if (DEBUG_LOGGING)
-		{
-			logger.debug("memberMatchesParseTag: {}", parseTag.toString(false));
-		}
+		String klassName = ParseUtil.lookupType(klassID, parseDictionary);
 
-		String methodID = parseTag.getAttribute(ATTR_METHOD);
+		String memberClassName = member.getMetaClass().getFullyQualifiedName();
+
+		result = memberClassName.equals(klassName);
+
+		return result;
+	}
+
+	public static boolean memberMatchesMethodID(IMetaMember member, String methodID, IParseDictionary parseDictionary)
+	{
+		boolean result = false;
 
 		Tag methodTag = parseDictionary.getMethod(methodID);
 
@@ -189,7 +193,7 @@ public final class JournalUtil
 
 				String klassAttrName = klassTag.getAttribute(ATTR_NAME);
 				String methodAttrName = StringUtil.replaceXMLEntities(methodTag.getAttribute(ATTR_NAME));
-				
+
 				if (klassAttrName != null)
 				{
 					klassAttrName = klassAttrName.replace(C_SLASH, C_DOT);
@@ -208,7 +212,7 @@ public final class JournalUtil
 				}
 
 				boolean nameMatches;
-							
+
 				if (S_CONSTRUCTOR_INIT.equals(methodAttrName))
 				{
 					nameMatches = member.getMemberName().equals(klassAttrName);
@@ -217,7 +221,7 @@ public final class JournalUtil
 				{
 					nameMatches = member.getMemberName().equals(methodAttrName);
 				}
-				
+
 				boolean klassMatches = member.getMetaClass().getFullyQualifiedName().equals(klassAttrName);
 				boolean returnMatches = member.getReturnTypeName().equals(returnType);
 
@@ -323,7 +327,7 @@ public final class JournalUtil
 
 		return parsePhase;
 	}
-	
+
 	private static Tag getOptimizerPhase(Task lastTask)
 	{
 		Tag optimizerPhase = null;

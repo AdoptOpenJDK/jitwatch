@@ -13,9 +13,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
@@ -32,8 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javafx.scene.paint.Color;
-
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
@@ -42,12 +38,15 @@ import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
-import org.adoptopenjdk.jitwatch.model.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.junit.Test;
 
 public class TestBytecodeAnnotationBuilder
@@ -285,19 +284,19 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
-		assertEquals(9, result.size());
+		assertEquals(9, result.annotatedLineCount());
 
-		checkLine(result, 10, "inline (hot)", Color.GREEN);
-		checkLine(result, 16, "inline (hot)", Color.GREEN);
-		checkLine(result, 22, "inline (hot)", Color.GREEN);
-		checkLine(result, 28, "inline (hot)", Color.GREEN);
-		checkLine(result, 40, "always", Color.BLUE);
-		checkLine(result, 52, "not reached", Color.RED);
-		checkLine(result, 56, "MinInliningThreshold", Color.RED);
-		checkLine(result, 59, "MinInliningThreshold", Color.RED);
-		checkLine(result, 62, "MinInliningThreshold", Color.RED);
+		checkLine(result, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 22, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 28, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 40, "always", BCAnnotationType.BRANCH);
+		checkLine(result, 52, "not reached", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 56, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 	}
 
 	@Test
@@ -516,17 +515,17 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
-		assertEquals(7, result.size());
+		assertEquals(7, result.annotatedLineCount());
 
-		checkLine(result, 10, "inline (hot)", Color.GREEN);
-		checkLine(result, 16, "inline (hot)", Color.GREEN);
-		checkLine(result, 28, "always", Color.BLUE);
-		checkLine(result, 40, "not reached", Color.RED);
-		checkLine(result, 44, "MinInliningThreshold", Color.RED);
-		checkLine(result, 47, "MinInliningThreshold", Color.RED);
-		checkLine(result, 50, "MinInliningThreshold", Color.RED);
+		checkLine(result, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 28, "always", BCAnnotationType.BRANCH);
+		checkLine(result, 40, "not reached", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 44, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 47, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 	}
 
 	@Test
@@ -693,9 +692,9 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
-		assertEquals(8, result.size());
+		assertEquals(8, result.annotatedLineCount());
 
 		int bcOffsetStringBuilderInit = 52;
 		int bcOffsetMakeHotSpotLogLeaf1 = 10;
@@ -706,14 +705,14 @@ public class TestBytecodeAnnotationBuilder
 		int bcOffsetStringBuilderToString = 59;
 		int bcOffsetPrintStreamPrintln = 62;
 
-		checkLine(result, bcOffsetStringBuilderInit, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf1, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf2, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf3, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf4, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetStringBuilderAppend, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetStringBuilderToString, "Inlined: Yes", Color.GREEN);
-		checkLine(result, bcOffsetPrintStreamPrintln, "Inlined: Yes", Color.GREEN);
+		checkLine(result, bcOffsetStringBuilderInit, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf1, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf2, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf3, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetMakeHotSpotLogLeaf4, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetStringBuilderAppend, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetStringBuilderToString, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, bcOffsetPrintStreamPrintln, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
 	@Test
@@ -888,16 +887,16 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
-		assertEquals(6, result.size());
+		assertEquals(6, result.annotatedLineCount());
 
-		checkLine(result, 10, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 16, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 40, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 44, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 47, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 50, "Inlined: Yes", Color.GREEN);
+		checkLine(result, 10, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 16, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 40, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 44, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 47, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
 	@Test
@@ -1095,23 +1094,25 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
-		assertEquals(10, result.size());
+		assertEquals(10, result.annotatedLineCount());
 
-		checkLine(result, 10, "never", Color.BLUE);
-		checkLine(result, 15, "inline (hot)", Color.GREEN);
-		checkLine(result, 21, "inline (hot)", Color.GREEN);
-		checkLine(result, 27, "inline (hot)", Color.GREEN);
-		checkLine(result, 33, "inline (hot)", Color.GREEN);
-		checkLine(result, 50, "not reached", Color.RED);
-		checkLine(result, 55, "MinInliningThreshold", Color.RED);
-		checkLine(result, 59, "MinInliningThreshold", Color.RED);
-		checkLine(result, 62, "MinInliningThreshold", Color.RED);
-		checkLine(result, 65, "MinInliningThreshold", Color.RED);
+		checkLine(result, 10, "never", BCAnnotationType.BRANCH);
+		checkLine(result, 15, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 27, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 33, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 50, "not reached", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 55, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 65, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 	}
 
 	/*
+	 * Clean up tests related to the workaround for the now-fixed TieredCompilation log bug
+	 * 
 	@Test
 	public void testJava8NonTieredChain()
 	{
@@ -1298,18 +1299,18 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain2", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
 
-		assertEquals(8, result.size());
+		assertEquals(8, result.annotatedLineCount());
 
-		checkLine(result, 10, "never", Color.BLUE);
-		checkLine(result, 15, "inline (hot)", Color.GREEN);
-		checkLine(result, 21, "inline (hot)", Color.GREEN);
-		checkLine(result, 38, "not reached", Color.RED);
-		checkLine(result, 43, "MinInliningThreshold", Color.RED);
-		checkLine(result, 47, "MinInliningThreshold", Color.RED);
-		checkLine(result, 50, "MinInliningThreshold", Color.RED);
-		checkLine(result, 53, "MinInliningThreshold", Color.RED);
+		checkLine(result, 10, "never", BCAnnotationType.BRANCH);
+		checkLine(result, 15, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 38, "not reached", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 43, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 47, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 53, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 	}
 	*/
 
@@ -1478,19 +1479,19 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf", new Class[]{long.class});
 
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
-		assertEquals(9, result.size());
+		assertEquals(9, result.annotatedLineCount());
 
-		checkLine(result, 15, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 21, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 27, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 33, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 50, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 55, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 59, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 62, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 65, "Inlined: Yes", Color.GREEN);
+		checkLine(result, 15, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 21, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 27, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 33, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 55, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 59, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 62, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 65, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
 	@Test
@@ -1665,20 +1666,20 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain", new Class[]{long.class});
 
-		Map<Integer, List<LineAnnotation>> result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C1, logLines, bytecodeLines);
 
-		assertEquals(7, result.size());
+		assertEquals(7, result.annotatedLineCount());
 
-		checkLine(result, 15, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 21, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 38, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 43, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 47, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 50, "Inlined: Yes", Color.GREEN);
-		checkLine(result, 53, "Inlined: Yes", Color.GREEN);
+		checkLine(result, 15, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 21, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 38, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 43, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 47, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 53, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
-	private Map<Integer, List<LineAnnotation>> buildAnnotations(IMetaMember member, CompilerName compiler, String[] logLines, String[] bytecodeLines)
+	private BytecodeAnnotations buildAnnotations(IMetaMember member, CompilerName compiler, String[] logLines, String[] bytecodeLines)
 	{
 		TagProcessor tp = new TagProcessor();
 
@@ -1690,8 +1691,7 @@ public class TestBytecodeAnnotationBuilder
 
 		for (String line : logLines)
 		{
-			line = line.replace("&lt;", S_OPEN_ANGLE);
-			line = line.replace("&gt;", S_CLOSE_ANGLE);
+			line = StringUtil.replaceXMLEntities(line);
 
 			tag = tp.processLine(line);
 
@@ -1717,11 +1717,11 @@ public class TestBytecodeAnnotationBuilder
 
 		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
 
-		Map<Integer, List<LineAnnotation>> result = new HashMap<>();
+		BytecodeAnnotations bcAnnotations = null;
 
 		try
 		{
-			result = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, new JITDataModel());
+			bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, new JITDataModel());
 		}
 		catch (AnnotationException annoEx)
 		{
@@ -1730,7 +1730,7 @@ public class TestBytecodeAnnotationBuilder
 			fail();
 		}
 
-		return result;
+		return bcAnnotations;
 	}
 
 	@Test
@@ -1776,7 +1776,9 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, new Class[0]);
 
-		assertTrue(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+
+		assertTrue(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
 	}
 
 	@Test
@@ -1809,14 +1811,14 @@ public class TestBytecodeAnnotationBuilder
 		assertFalse(JournalUtil.isJournalForCompile2NativeMember(member.getJournal()));
 	}
 
-	private void checkLine(Map<Integer, List<LineAnnotation>> result, int index, String annotation, Color colour)
+	private void checkLine(BytecodeAnnotations result, int index, String annotation, BCAnnotationType type)
 	{
-		List<LineAnnotation> lines = result.get(index);
+		List<LineAnnotation> lines = result.getAnnotationsForBCI(index);
 
 		assertNotNull(lines);
 
 		assertTrue(lines.get(0).getAnnotation().contains(annotation));
-		assertEquals(colour, lines.get(0).getColour());
+		assertEquals(type, lines.get(0).getType());
 	}
 	
 	@Test
@@ -1874,7 +1876,9 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params);
 
-		assertTrue(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+		
+		assertTrue(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
 	}
 	
 	@Test
@@ -1932,6 +1936,281 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params);
 
-		assertFalse(JournalUtil.memberMatchesParseTag(member, tagParse, parseDictionary));
+		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+		
+		assertFalse(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
+	}
+	
+	@Test
+	public void testEliminatedHeapAllocationsCorrectKlass()
+	{
+		String[] logLines = new String[]{
+				"<task compile_id='11' compile_kind='osr' method='EscapeTest run ()Ljava/lang/String;' bytes='110' count='1' backedge_count='14563' iicount='1' osr_bci='7' blocking='1' stamp='0.298'>",
+				"<phase name='parse' nodes='3' live='3' stamp='0.298'>",
+				"<klass id='715' name='java/lang/String' flags='17'/>",
+				"<klass id='817' name='EscapeTest' flags='1'/>",
+				"<method id='818' holder='817' name='run' return='715' flags='1' bytes='110' iicount='1'/>",
+				"<klass id='822' name='java/lang/StringBuilder' unloaded='1'/>",
+				"<uncommon_trap method='818' bci='84' reason='unloaded' action='reinterpret' index='13' klass='822'/>",
+				"<parse method='818' uses='1' osr_bci='7' stamp='0.298'>",
+				"<uncommon_trap method='818' bci='84' reason='unloaded' action='reinterpret' index='13' klass='822'/>",
+				"<dependency type='leaf_type' ctxk='817'/>",
+				"<dependency type='leaf_type' ctxk='817'/>",
+				"<uncommon_trap bci='7' reason='constraint' action='reinterpret'/>",
+				"<uncommon_trap bci='7' reason='predicate' action='maybe_recompile'/>",
+				"<uncommon_trap bci='7' reason='loop_limit_check' action='maybe_recompile'/>",
+				"<bc code='162' bci='11'/>",
+				"<branch target_bci='84' taken='0' not_taken='11264' cnt='11264' prob='never'/>",
+				"<uncommon_trap bci='11' reason='unstable_if' action='reinterpret' comment='taken never'/>",
+				"<bc code='180' bci='22'/>",
+				"<uncommon_trap bci='22' reason='null_check' action='maybe_recompile'/>",
+				"<bc code='182' bci='25'/>",
+				"<klass id='820' name='java/util/Random' flags='1'/>",
+				"<type id='701' name='boolean'/>",
+				"<method id='823' holder='820' name='nextBoolean' return='701' flags='1' bytes='14' compile_id='5' compiler='C2' iicount='10000'/>",
+				"<dependency type='unique_concrete_method' ctxk='820' x='823'/>",
+				"<call method='823' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='823' uses='11264' stamp='0.298'>",
+				"<uncommon_trap bci='25' reason='null_check' action='maybe_recompile'/>",
+				"<bc code='182' bci='2'/>",
+				"<type id='707' name='int'/>",
+				"<method id='828' holder='820' name='next' return='707' arguments='707' flags='4' bytes='47' compile_id='6' compiler='C2' iicount='10000'/>",
+				"<dependency type='unique_concrete_method' ctxk='820' x='828'/>",
+				"<call method='828' count='6701' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='828' uses='6701' stamp='0.298'>",
+				"<bc code='182' bci='8'/>",
+				"<type id='708' name='long'/>",
+				"<klass id='830' name='java/util/concurrent/atomic/AtomicLong' flags='1'/>",
+				"<method id='831' holder='830' name='get' return='708' flags='17' bytes='5' compile_id='3' compiler='C2' iicount='10000'/>",
+				"<call method='831' count='6701' prof_factor='0.6701' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='831' uses='4490' stamp='0.298'>",
+				"<uncommon_trap bci='8' reason='null_check' action='maybe_recompile'/>",
+				"<parse_done nodes='218' live='210' memory='55928' stamp='0.298'/>",
+				"</parse>",
+				"<bc code='182' bci='32'/>",
+				"<method id='832' holder='830' name='compareAndSet' return='701' arguments='708 708' flags='17' bytes='13' compile_id='4' compiler='C2' iicount='10000'/>",
+				"<call method='832' count='6701' prof_factor='0.6701' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='832' uses='4490' stamp='0.298'>",
+				"<bc code='182' bci='9'/>",
+				"<klass id='714' name='java/lang/Object' flags='1'/>",
+				"<klass id='781' name='sun/misc/Unsafe' flags='17'/>",
+				"<method id='836' holder='781' name='compareAndSwapLong' return='701' arguments='714 708 708 708' flags='273' bytes='0' compile_id='2' compile_kind='c2n' iicount='10000'/>",
+				"<call method='836' count='6701' prof_factor='0.449' inline='1'/>",
+				"<intrinsic id='_compareAndSwapLong' nodes='19'/>",
+				"<parse_done nodes='256' live='247' memory='60872' stamp='0.298'/>",
+				"</parse>",
+				"<bc code='153' bci='35'/>",
+				"<branch target_bci='6' taken='0' not_taken='6701' cnt='6701' prob='never'/>",
+				"<uncommon_trap bci='35' reason='unstable_if' action='reinterpret' comment='taken never'/>",
+				"<parse_done nodes='281' live='270' memory='75712' stamp='0.298'/>",
+				"</parse>",
+				"<bc code='153' bci='5'/>",
+				"<branch target_bci='12' taken='3275' not_taken='3426' cnt='6701' prob='0.488733'/>",
+				"<parse_done nodes='292' live='280' memory='77120' stamp='0.298'/>",
+				"</parse>",
+				"<bc code='153' bci='28'/>",
+				"<branch target_bci='35' taken='5603' not_taken='5661' cnt='11264' prob='0.497425'/>",
+				"<bc code='183' bci='42'/>",
+				"<type id='709' name='void'/>",
+				"<klass id='821' name='EscapeTest$Wrapper1' flags='1'/>",
+				"<method id='824' holder='821' name='&lt;init&gt;' return='709' arguments='817 707' flags='1' bytes='15' compile_id='7' compiler='C2' iicount='10000'/>",
+				"<call method='824' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='824' uses='11264' stamp='0.298'>",
+				"<bc code='183' bci='6'/>",
+				"<method id='839' holder='714' name='&lt;init&gt;' return='709' flags='1' bytes='1' compile_id='1' compiler='C2' iicount='10000'/>",
+				"<call method='839' count='6701' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='839' uses='6701' stamp='0.299'>",
+				"<parse_done nodes='368' live='355' memory='89432' stamp='0.299'/>",
+				"</parse>",
+				"<parse_done nodes='380' live='366' memory='91096' stamp='0.299'/>",
+				"</parse>",
+				"<bc code='183' bci='54'/>",
+				"<klass id='825' name='EscapeTest$Wrapper2' flags='1'/>",
+				"<method id='826' holder='825' name='&lt;init&gt;' return='709' arguments='817 707' flags='1' bytes='15' compile_id='8' compiler='C2' iicount='10000'/>",
+				"<call method='826' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='826' uses='11264' stamp='0.299'>",
+				"<bc code='183' bci='6'/>",
+				"<call method='839' count='6701' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='839' uses='6701' stamp='0.299'>",
+				"<parse_done nodes='447' live='432' memory='103856' stamp='0.299'/>",
+				"</parse>",
+				"<parse_done nodes='459' live='443' memory='105584' stamp='0.299'/>",
+				"</parse>",
+				"<bc code='182' bci='63'/>",
+				"<method id='827' holder='821' name='equals' return='701' arguments='825' flags='1' bytes='17' compile_id='9' compiler='C2' iicount='10000'/>",
+				"<dependency type='unique_concrete_method' ctxk='821' x='827'/>",
+				"<call method='827' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<parse method='827' uses='11264' stamp='0.299'>",
+				"<bc code='182' bci='5'/>",
+				"<method id='843' holder='825' name='getValue' return='707' flags='1' bytes='5' compile_id='10' compiler='C2' iicount='10000'/>",
+				"<dependency type='unique_concrete_method' ctxk='825' x='843'/>",
+				"<call method='843' count='6701' prof_factor='1' inline='1'/>",
+				"<inline_success reason='accessor'/>",
+				"<parse method='843' uses='6701' stamp='0.299'>",
+				"<parse_done nodes='483' live='466' memory='109448' stamp='0.299'/>",
+				"</parse>",
+				"<bc code='160' bci='8'/>",
+				"<branch target_bci='15' taken='3275' not_taken='3426' cnt='6701' prob='0.488733'/>",
+				"<parse_done nodes='492' live='474' memory='110592' stamp='0.299'/>",
+				"</parse>",
+				"<bc code='153' bci='66'/>",
+				"<branch target_bci='75' taken='5603' not_taken='5661' cnt='11264' prob='0.497425'/>",
+				"<parse_done nodes='510' live='492' memory='114200' stamp='0.299'/>",
+				"</parse>",
+				"<phase_done name='parse' nodes='511' live='285' stamp='0.299'/>",
+				"</phase>",
+				"<phase name='optimizer' nodes='511' live='285' stamp='0.299'>",
+				"<phase name='idealLoop' nodes='533' live='253' stamp='0.299'>",
+				"<loop_tree>",
+				"<loop idx='533' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='534' live='252' stamp='0.299'/>",
+				"</phase>",
+				"<phase name='escapeAnalysis' nodes='534' live='252' stamp='0.299'>",
+				"<phase name='connectionGraph' nodes='535' live='253' stamp='0.299'>",
+				"<phase_done name='connectionGraph' nodes='535' live='253' stamp='0.299'/>",
+				"</phase>",
+				"<phase_done name='escapeAnalysis' nodes='543' live='261' stamp='0.299'/>",
+				"</phase>",
+				"<eliminate_allocation type='825'>",
+				"<jvms bci='47' method='818'/>",
+				"</eliminate_allocation>",
+				"<eliminate_allocation type='821'>",
+				"<jvms bci='35' method='818'/>",
+				"</eliminate_allocation>",
+				"<phase name='idealLoop' nodes='546' live='200' stamp='0.300'>",
+				"<loop_tree>",
+				"<loop idx='533' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='551' live='197' stamp='0.300'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='551' live='197' stamp='0.300'>",
+				"<loop_tree>",
+				"<loop idx='533' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='681' live='210' stamp='0.300'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='681' live='210' stamp='0.300'>",
+				"<loop_tree>",
+				"<loop idx='686' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='690' live='196' stamp='0.300'/>",
+				"</phase>",
+				"<phase name='ccp' nodes='690' live='196' stamp='0.300'>",
+				"<phase_done name='ccp' nodes='690' live='196' stamp='0.300'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='692' live='194' stamp='0.300'>",
+				"<loop_tree>",
+				"<loop idx='686' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='716' live='188' stamp='0.301'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='716' live='188' stamp='0.301'>",
+				"<loop_tree>",
+				"<loop idx='686' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='719' live='188' stamp='0.301'/>",
+				"</phase>",
+				"<phase_done name='optimizer' nodes='729' live='188' stamp='0.301'/>",
+				"</phase>",
+				"<phase name='matcher' nodes='729' live='188' stamp='0.301'>",
+				"<phase_done name='matcher' nodes='172' live='172' stamp='0.301'/>",
+				"</phase>",
+				"<phase name='regalloc' nodes='210' live='210' stamp='0.301'>",
+				"<regalloc attempts='0' success='1'/>",
+				"<phase_done name='regalloc' nodes='237' live='226' stamp='0.302'/>",
+				"</phase>",
+				"<phase name='output' nodes='237' live='226' stamp='0.302'>",
+				"<phase_done name='output' nodes='253' live='235' stamp='0.302'/>",
+				"</phase>",
+				"<dependency type='leaf_type' ctxk='817'/>",
+				"<dependency type='unique_concrete_method' ctxk='820' x='823'/>",
+				"<dependency type='unique_concrete_method' ctxk='820' x='828'/>",
+				"<dependency type='unique_concrete_method' ctxk='821' x='827'/>",
+				"<dependency type='unique_concrete_method' ctxk='825' x='843'/>",
+				"<code_cache total_blobs='206' nmethods='11' adapters='146' free_code_cache='49831168'/>",
+				"<task_done success='1' nmsize='408' count='1' backedge_count='14563' inlined_bytes='133' stamp='0.323'/>",
+				"</task>"	
+		};
+		
+		String[] bytecodeLines = new String[]{
+		"0: iconst_0",
+		"1: istore_2",
+		"2: iconst_0",
+		"3: istore_3",
+		"4: iconst_0",
+		"5: istore 4",
+		"7: iload  4",
+		"9: ldc  #5   // int 100000000",
+		"11: if_icmpge 84",
+		"14: ldc  #6   // int 43981",
+		"16: istore 5",
+		"18: iconst_0",
+		"19: istore 6",
+		"21: aload_0",
+		"22: getfield #4   // Field random:Ljava/util/Random;",
+		"25: invokevirtual #7   // Method java/util/Random.nextBoolean:()Z",
+		"28: ifeq  35",
+		"31: ldc  #6   // int 43981",
+		"33: istore 6",
+		"35: new  #8   // class EscapeTest$Wrapper1",
+		"38: dup",
+		"39: aload_0",
+		"40: iload  5",
+		"42: invokespecial #9   // Method EscapeTest$Wrapper1.\"<init>\":(LEscapeTest;I)V",
+		"45: astore 7",
+		"47: new  #10   // class EscapeTest$Wrapper2",
+		"50: dup",
+		"51: aload_0",
+		"52: iload  6",
+		"54: invokespecial #11   // Method EscapeTest$Wrapper2.\"<init>\":(LEscapeTest;I)V",
+		"57: astore 8",
+		"59: aload  7",
+		"61: aload  8",
+		"63: invokevirtual #12   // Method EscapeTest$Wrapper1.equals:(LEscapeTest$Wrapper2;)Z",
+		"66: ifeq  75",
+		"69: iinc  2, 1",
+		"72: goto  78",
+		"75: iinc  3, 1",
+		"78: iinc  4, 1",
+		"81: goto  7",
+		"84: new  #13   // class java/lang/StringBuilder",
+		"87: dup",
+		"88: invokespecial #14   // Method java/lang/StringBuilder.\"<init>\":()V",
+		"91: iload_2",
+		"92: invokevirtual #15   // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;",
+		"95: ldc  #16   // String /",
+		"97: invokevirtual #17   // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;",
+		"100: iload_3",
+		"101: invokevirtual #15   // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;",
+		"104: invokevirtual #18   // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
+		"107: astore_1",
+		"108: aload_1",
+		"109: areturn"
+	};		
+		
+		IMetaMember member = UnitTestUtil.createTestMetaMember();
+
+		BytecodeAnnotations result = buildAnnotations(member, CompilerName.C2, logLines, bytecodeLines);
+		
+		assertEquals(2, result.annotatedLineCount());
+
+		checkLine(result, 35, "EscapeTest$Wrapper1", BCAnnotationType.ELIMINATED_ALLOCATION);
+		checkLine(result, 47, "EscapeTest$Wrapper2", BCAnnotationType.ELIMINATED_ALLOCATION);		
 	}
 }
