@@ -1,0 +1,161 @@
+buildscript {
+   repositories {
+      jcenter()
+   }
+
+   dependencies {
+      classpath 'commons-io:commons-io:2.4'
+   }
+}
+import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM
+
+plugins {
+   id 'java'         // self explanatory
+   id 'idea'         // idem
+   id 'application'  // similar to mvn exec:java
+   id 'com.github.johnrengelman.shadow' version '1.2.2'  // fat jar
+   id 'com.github.hierynomus.license' version '0.11.0'   // license checks
+   id 'com.github.ben-manes.versions' version '0.11.3'   // version checks
+}
+
+
+// maven coordinates
+group = 'org.adoptopenjdk.jitwatch'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    jcenter()  // faster than mavenCentral()
+}
+
+// we expect jdk to be any of ['jdk7', 'jdk8', 'jdk9']
+// this property can specified at the command line as follows
+//
+//   gradle -Pjdk=jdk8 <command>
+//
+if (!hasProperty('jdk')) {
+    ext.jdk = 'jdk7' // lowest
+}
+
+// detect jfxrt.jar & tools.jar
+ext {
+    jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/jfxrt.jar").absolutePath
+    toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
+}
+
+for (location in ['lib/jfxrt.jar', 'jre/lib/jfxrt.jar', 'jre/lib/ext/jfxrt.jar']) {
+    File javaHome = new File(System.properties['java.home'])
+    javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
+    File file = new File(javaHome, location)
+    if (file.exists()) {
+        jfxrtLocation = file.absolutePath
+        break
+    }
+}
+
+File javaHome = new File(System.properties['java.home'])
+javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
+File file = new File(javaHome, 'lib/tools.jar')
+if (file.exists()) {
+    toolsLocation = file.absolutePath
+}
+
+configurations {
+    // gradle does not have a 'system' nor 'provided' scope
+    system
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'ch.qos.logback:logback-classic:1.1.3'
+    compile 'ch.qos.logback:logback-core:1.1.3'
+    testCompile 'junit:junit:4.12'
+    system project.files(jfxrtLocation)
+    if (jdk != 'jdk9') system project.files(toolsLocation)
+}
+
+mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
+
+license {
+    header = rootProject.file('config/HEADER')
+    strictCheck = true
+    ignoreFailures = true
+    mapping {
+        java   = 'SLASHSTAR_STYLE'
+        groovy = 'SLASHSTAR_STYLE'
+        scala  = 'SLASHSTAR_STYLE'
+    }
+    ext.year = '2013, 2014'
+    exclude '**/*.png'
+    exclude '**/*.kt'
+}
+
+// do not format test resources
+licenseTest {
+    source -= sourceSets.test.resources
+}
+
+// fix classpaths due to missing 'system' scope
+sourceSets {
+    main {
+        compileClasspath += [configurations.system]
+    }
+}
+
+javadoc {
+    classpath += [configurations.system]
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.system]
+    }
+}
+
+run {
+    // include tools.jar in the runtime classpath
+    classpath += [configurations.system]
+}
+
+shadowJar {
+    if (jdk != 'jdk9') {
+        from project.files(toolsLocation)
+    }
+}
+
+task makeDemoLogFile(type: JavaExec) {
+    dependsOn classes
+    main = 'org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog'
+    jvmArgs = [
+        // --== required switches ==--
+        // Unlock the HotSpot logging options
+        "-XX:+UnlockDiagnosticVMOptions",
+
+        // Log each time a class is loaded (how JITWatch builds the class model)
+        "-XX:+TraceClassLoading",
+
+        // Enable XML format HotSpot log output
+        "-XX:+LogCompilation",
+
+        // --== optional switches ==--
+        // Enable disassembly of native code into assembly language (AT&T / GNU format)
+        // Requires the hsdis (HotSpot disassembler) binary to be added to your JRE
+        // For hsdis build instructions see http://www.chrisnewland.com/building-hsdis-on-linux-amd64-on-debian-369
+        "-XX:+PrintAssembly",
+
+        // Change disassembly format from AT&T to Intel assembly
+        "-XX:PrintAssemblyOptions=intel",
+
+        // Disable tiered compilation (enabled by default on Java 8, optional on Java 7)
+        "-XX:-TieredCompilation",
+
+        // Enable tiered compilation
+        "-XX:+TieredCompilation",
+
+        // Disable compressed oops (makes assembly easier to read)
+        "-XX:-UseCompressedOops"
+    ]
+    classpath = project.configurations.runtime
+    ignoreExitValue = true
+    standardOutput = NULL_OUTPUT_STREAM
+    errorOutput = NULL_OUTPUT_STREAM
+}

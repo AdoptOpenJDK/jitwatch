@@ -1,0 +1,70 @@
+apply plugin: 'jdepend'
+apply plugin: 'checkstyle'
+apply plugin: 'com.github.hierynomus.license'
+
+def configDir = new File(buildscript.sourceFile.parentFile.parentFile, 'config')
+ext.checkstyleConfigDir = "$configDir/checkstyle"
+
+checkstyle {
+    toolVersion = '6.0'
+    configFile = new File(checkstyleConfigDir, 'checkstyle.xml')
+    configProperties.checkstyleConfigDir = checkstyleConfigDir
+}
+
+if (project.hasProperty('findBugsEnabled') && project.findBugsEnabled.toBoolean()) {
+    apply plugin: 'findbugs'
+    findbugs {
+        toolVersion = '3.0.0'
+        sourceSets = [sourceSets.main]
+        ignoreFailures = true
+        reportsDir = file("$project.buildDir/reports/findbugs")
+        effort = 'max'
+        reportLevel = 'high'
+    }
+
+    findbugsMain {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    findbugsTest {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+}
+
+jdepend {
+    toolVersion = '2.9.1'
+    sourceSets = [sourceSets.main]
+    ignoreFailures = true
+    reportsDir = file("$project.buildDir/reports/jdepend")
+}
+
+license {
+    header = rootProject.file('config/HEADER')
+    strictCheck = true
+    ignoreFailures = true
+    mapping {
+        java   = 'SLASHSTAR_STYLE'
+        groovy = 'SLASHSTAR_STYLE'
+    }
+    ext.year = '2014'
+    exclude '**/*.png'
+}
+
+licenseTest {
+    source -= sourceSets.test.resources
+}
+
+if (project.plugins.hasPlugin('groovy')) {
+    apply plugin: 'codenarc'
+
+    codenarc {
+        ignoreFailures = true
+        configFile = file("$configDir/codenarc/codenarc.groovy")
+    }
+}
