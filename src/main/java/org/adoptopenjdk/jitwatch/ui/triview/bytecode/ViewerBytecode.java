@@ -105,9 +105,12 @@ public class ViewerBytecode extends Viewer
 		highlightLine(index);
 	}
 
-	public void setContent(final IMetaMember member, final ClassBC metaClassBytecode, final List<String> classLocations)
+	public void setContent(final IMetaMember member)
 	{
 		offsetMismatchDetected = false;
+		instructions.clear();
+
+		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode();
 
 		if (metaClassBytecode != null)
 		{
@@ -130,7 +133,7 @@ public class ViewerBytecode extends Viewer
 		{
 			try
 			{
-				bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, instructions, model);
+				bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, model);
 			}
 			catch (AnnotationException annoEx)
 			{
@@ -193,17 +196,25 @@ public class ViewerBytecode extends Viewer
 
 			if (annotationList != null && annotationList.size() > 0)
 			{
-				BCAnnotationType type = annotationList.get(0).getType();
-				
-				Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(type);
+				BCAnnotationType lastAnnotationType = annotationList.get(0).getType();
+
+				Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(lastAnnotationType);
 
 				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
 
 				instructionToolTipBuilder = new StringBuilder();
-				
+
 				for (LineAnnotation annotation : annotationList)
 				{
-					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE).append(S_NEWLINE);
+					if (annotation.getType() != lastAnnotationType
+						|| lastAnnotationType != BCAnnotationType.UNCOMMON_TRAP)
+					{
+						instructionToolTipBuilder.append(S_NEWLINE);
+					}
+					
+					lastAnnotationType = annotation.getType();
+					
+					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
 				}
 			}
 		}
@@ -214,9 +225,10 @@ public class ViewerBytecode extends Viewer
 		{
 			lblLine.getStyleClass().add("eliminated-allocation");
 		}
-		
+
 		if (instruction.isInvoke())
 		{
+			instructionToolTipBuilder.append(S_NEWLINE);
 			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
 		}
 

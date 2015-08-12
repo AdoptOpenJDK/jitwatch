@@ -79,6 +79,8 @@ public final class UserInterfaceUtil
 			return Color.RED;
 		case INLINE_SUCCESS:
 			return Color.GREEN;
+		case UNCOMMON_TRAP:
+			return Color.PURPLE;
 		default:
 			return Color.BLACK;
 		}

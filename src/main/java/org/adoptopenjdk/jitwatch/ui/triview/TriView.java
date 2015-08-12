@@ -510,7 +510,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		List<String> allClassLocations = config.getAllClassLocations();
 
-		ClassBC classBytecode = loadBytecodeForCurrentMember(allClassLocations);
+		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(model, allClassLocations);
 
 		if (!sameClass)
 		{
@@ -543,7 +543,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		updateStatusBarIfCompiled(statusBarBuilder);
 		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
-		viewerBytecode.setContent(currentMember, classBytecode, allClassLocations);
+		viewerBytecode.setContent(currentMember);
 
 		setAssemblyPaneContent();
 
@@ -624,13 +624,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 				}
 			}
 		}
-	}
-
-	private ClassBC loadBytecodeForCurrentMember(List<String> classLocations)
-	{
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(model, classLocations);
-
-		return classBytecode;
 	}
 
 	private void updateStatusBarWithClassInformation(ClassBC classBytecode, StringBuilder statusBarBuilder)

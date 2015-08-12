@@ -5,9 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COUNT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PROF_FACTOR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 import java.util.Map;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 
 public final class InlineUtil
 {
@@ -16,10 +24,15 @@ public final class InlineUtil
 	}
 
 	public static String buildInlineAnnotationText(boolean inlined, String reason, Map<String, String> callAttrs,
-			Map<String, String> methodAttrs)
+			Map<String, String> methodAttrs, IParseDictionary parseDictionary)
 	{
 		StringBuilder builder = new StringBuilder();
 
+		String holder = methodAttrs.get(ATTR_HOLDER);
+		String methodName = methodAttrs.get(ATTR_NAME);
+
+		builder.append("Class: ").append(ParseUtil.lookupType(holder, parseDictionary)).append(S_NEWLINE);
+		builder.append("Method: ").append(methodName).append(S_NEWLINE);
 		builder.append("Inlined: ");
 
 		if (inlined)

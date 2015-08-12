@@ -32,6 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,17 +59,14 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private IMetaMember member;
 
-	private List<BytecodeInstruction> instructions;
-
 	private IReadOnlyJITDataModel model;
 
 	private BytecodeAnnotations bcAnnotations = new BytecodeAnnotations();
 
-	public BytecodeAnnotations buildBytecodeAnnotations(final IMetaMember member, final List<BytecodeInstruction> instructions,
-			IReadOnlyJITDataModel model) throws AnnotationException
+	public BytecodeAnnotations buildBytecodeAnnotations(final IMetaMember member, IReadOnlyJITDataModel model)
+			throws AnnotationException
 	{
 		this.member = member;
-		this.instructions = instructions;
 		this.model = model;
 
 		bcAnnotations.clear();
@@ -120,7 +118,6 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		case TAG_ELIMINATE_LOCK:
 			visitTagEliminateLock(tag, parseDictionary);
 			break;
-
 		}
 	}
 
@@ -134,7 +131,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 			{
 				final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
 
-				buildParseTagAnnotations(tag, bcAnnotations, instructions, compilerName);
+				buildParseTagAnnotations(tag, bcAnnotations, compilerName, parseDictionary);
 			}
 			catch (Exception e)
 			{
@@ -144,7 +141,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 	}
 
 	private void visitTagEliminateAllocation(Tag tag, IParseDictionary parseDictionary)
-	{		
+	{
 		List<Tag> childrenJVMS = tag.getNamedChildren(TAG_JVMS);
 
 		for (Tag tagJVMS : childrenJVMS)
@@ -157,7 +154,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 				{
 					int bciValue = Integer.parseInt(bci);
 
-					BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+					BytecodeInstruction instr = getInstructionAtIndex(bciValue);
 
 					if (instr != null)
 					{
@@ -179,8 +176,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 							}
 						}
 
-						bcAnnotations.addAnnotation(bciValue,
-								new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
+						bcAnnotations.addAnnotation(bciValue, new LineAnnotation(builder.toString(),
+								BCAnnotationType.ELIMINATED_ALLOCATION));
 
 						if (instr.getOpcode() == Opcode.NEW)
 						{
@@ -256,10 +253,10 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						if (bciValue != -1)
 						{
-							bcAnnotations.addAnnotation(bciValue,
-									new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
+							bcAnnotations.addAnnotation(bciValue, new LineAnnotation(builder.toString().trim(),
+									BCAnnotationType.LOCK_ELISION));
 
-							BytecodeInstruction instr = getInstructionAtIndex(instructions, bciValue);
+							BytecodeInstruction instr = getInstructionAtIndex(bciValue);
 
 							if (instr != null && instr.isLock())
 							{
@@ -276,8 +273,18 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, List<BytecodeInstruction> instructions,
-			CompilerName compilerName) throws AnnotationException
+	private void visitTagUncommonTrap(Tag tag)
+	{
+		UncommonTrap trap = UncommonTrap.parse(tag);
+
+		if (trap != null)
+		{
+			bcAnnotations.addAnnotation(trap.getBCI(), new LineAnnotation(trap.toString(), BCAnnotationType.UNCOMMON_TRAP));
+		}
+	}
+
+	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, CompilerName compilerName, IParseDictionary parseDictionary)
+			throws AnnotationException
 	{
 		if (DEBUG_LOGGING)
 		{
@@ -339,7 +346,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					logger.debug("BC Tag {} {}", currentBytecode, code);
 				}
 
-				currentInstruction = getInstructionAtIndex(instructions, currentBytecode);
+				currentInstruction = getInstructionAtIndex(currentBytecode);
 
 				if (DEBUG_LOGGING_BYTECODE)
 				{
@@ -393,7 +400,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					}
 
 					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
+					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs, parseDictionary);
 
 					bcAnnotations.addAnnotation(currentBytecode,
 							new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
@@ -411,7 +418,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					}
 
 					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs, parseDictionary);
 
 					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 				}
@@ -425,7 +432,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					{
 						if (!sanityCheckBranch(currentInstruction))
 						{
-							throw new AnnotationException("Expected a branch instruction (in BRANCH)", currentBytecode,
+							throw new AnnotationException("Expected a branch instruction (BRANCH)", currentBytecode,
 									currentInstruction);
 						}
 
@@ -442,22 +449,21 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 				{
 					if (!sanityCheckIntrinsic(currentInstruction))
 					{
-						for (BytecodeInstruction ins : instructions)
-						{
-							logger.info("! instruction: {}", ins);
-						}
-
-						throw new AnnotationException("Expected an invoke instruction (IN INTRINSIC)", currentBytecode,
+						throw new AnnotationException("Expected an invoke instruction (INTRINSIC)", currentBytecode,
 								currentInstruction);
 					}
 
 					StringBuilder reason = new StringBuilder();
 					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
-					bcAnnotations.addAnnotation(currentBytecode,
-							new LineAnnotation(reason.toString(), BCAnnotationType.INTRINSIC_USED));
+					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(reason.toString(),
+							BCAnnotationType.INTRINSIC_USED));
 				}
 			}
+				break;
+
+			case TAG_UNCOMMON_TRAP:
+				visitTagUncommonTrap(child);
 				break;
 
 			default:
@@ -527,11 +533,11 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		return sane;
 	}
 
-	private BytecodeInstruction getInstructionAtIndex(List<BytecodeInstruction> instructions, int index)
+	private BytecodeInstruction getInstructionAtIndex(int index)
 	{
 		BytecodeInstruction found = null;
 
-		for (BytecodeInstruction instruction : instructions)
+		for (BytecodeInstruction instruction : member.getInstructions())
 		{
 			if (instruction.getOffset() == index)
 			{

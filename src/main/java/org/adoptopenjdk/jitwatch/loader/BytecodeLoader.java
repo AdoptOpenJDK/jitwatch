@@ -139,9 +139,11 @@ public final class BytecodeLoader
 
 		if (byteCodeString != null)
 		{
+			String[] bytecodeLines = byteCodeString.split(S_NEWLINE);
+			
 			try
 			{
-				result = parse(fqClassName, byteCodeString);
+				result = parse(fqClassName, bytecodeLines);
 			}
 			catch (Exception ex)
 			{
@@ -203,11 +205,9 @@ public final class BytecodeLoader
 	}
 
 	// TODO refactor this class - better stateful than all statics
-	public static ClassBC parse(String fqClassName, String bytecode)
+	public static ClassBC parse(String fqClassName, String[] bytecodeLines)
 	{
 		ClassBC classBytecode = new ClassBC(fqClassName);
-
-		String[] lines = bytecode.split(S_NEWLINE);
 
 		int pos = 0;
 
@@ -219,9 +219,9 @@ public final class BytecodeLoader
 
 		MemberBytecode memberBytecode = null;
 
-		while (pos < lines.length)
+		while (pos < bytecodeLines.length)
 		{
-			String line = lines[pos].trim();
+			String line = bytecodeLines[pos].trim();
 
 			if (DEBUG_LOGGING_BYTECODE)
 			{
@@ -237,9 +237,9 @@ public final class BytecodeLoader
 				section = changeSection(nextSection);
 				pos++;
 
-				if (pos < lines.length)
+				if (pos < bytecodeLines.length)
 				{
-					line = lines[pos].trim();
+					line = bytecodeLines[pos].trim();
 				}
 			}
 

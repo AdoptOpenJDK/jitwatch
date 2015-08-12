@@ -26,6 +26,8 @@ public class MemberBytecode
 	private ClassBC classBytecode;
 
 	private static final Logger logger = LoggerFactory.getLogger(MemberBytecode.class);
+	
+	private BytecodeAnnotations bytecodeAnnotations = new BytecodeAnnotations();
 
 	public MemberBytecode(ClassBC classBytecode, MemberSignatureParts msp)
 	{
@@ -37,6 +39,11 @@ public class MemberBytecode
 	public ClassBC getClassBytecode()
 	{
 		return classBytecode;
+	}
+	
+	public BytecodeAnnotations getBytecodeAnnotations()
+	{
+		return bytecodeAnnotations;
 	}
 
 	public MemberSignatureParts getMemberSignatureParts()
@@ -67,7 +74,7 @@ public class MemberBytecode
 		{
 			if (DEBUG_LOGGING_BYTECODE)
 			{
-				// logger.debug("checking: {}", instruction);
+				logger.debug("checking: {}", instruction);
 			}
 
 			if (instruction.getOffset() == bci)

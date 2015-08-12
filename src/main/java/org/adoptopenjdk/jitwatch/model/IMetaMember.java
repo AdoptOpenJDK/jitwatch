@@ -9,12 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public interface IMetaMember
 {
 	List<String> getQueuedAttributes();
 
 	MetaClass getMetaClass();
+	
+	MemberBytecode getMemberBytecode();
+	
+	List<BytecodeInstruction> getInstructions();
 
 	void addJournalEntry(Tag entry);
 	Journal getJournal();

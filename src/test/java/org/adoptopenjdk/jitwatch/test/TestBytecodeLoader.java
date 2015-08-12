@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.junit.Assert.assertEquals;
@@ -312,76 +311,73 @@ public class TestBytecodeLoader
 	@Test
 	public void testLineNumberTable() throws ClassNotFoundException
 	{
-		StringBuilder builder = new StringBuilder();
+		String[] lines = new String[]{
 
-		builder.append("Classfile TestBytecodeLoader.class").append(S_NEWLINE);
-		builder.append("  Last modified 18-May-2014; size 426 bytes").append(S_NEWLINE);
-		builder.append("  MD5 checksum d8d0af7620175f82d2c5c753b493196f").append(S_NEWLINE);
-		builder.append("  Compiled from \"TestBytecodeLoader.java\"").append(S_NEWLINE);
-		builder.append("public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader").append(S_NEWLINE);
-		builder.append("  SourceFile: \"TestBytecodeLoader.java\"").append(S_NEWLINE);
-		builder.append("  minor version: 0").append(S_NEWLINE);
-		builder.append("  major version: 51").append(S_NEWLINE);
-		builder.append("  flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
-		builder.append("Constant pool:").append(S_NEWLINE);
-		builder.append("   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V").append(S_NEWLINE);
-		builder.append("   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader").append(
-				S_NEWLINE);
-		builder.append("   #3 = Class              #20            //  java/lang/Object").append(S_NEWLINE);
-		builder.append("   #4 = Utf8               <init>").append(S_NEWLINE);
-		builder.append("   #5 = Utf8               ()V").append(S_NEWLINE);
-		builder.append("   #6 = Utf8               Code").append(S_NEWLINE);
-		builder.append("   #7 = Utf8               LineNumberTable").append(S_NEWLINE);
-		builder.append("   #8 = Utf8               LocalVariableTable").append(S_NEWLINE);
-		builder.append("   #9 = Utf8               this").append(S_NEWLINE);
-		builder.append("  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(S_NEWLINE);
-		builder.append("  #11 = Utf8               add").append(S_NEWLINE);
-		builder.append("  #12 = Utf8               (II)I").append(S_NEWLINE);
-		builder.append("  #13 = Utf8               a").append(S_NEWLINE);
-		builder.append("  #14 = Utf8               I").append(S_NEWLINE);
-		builder.append("  #15 = Utf8               b").append(S_NEWLINE);
-		builder.append("  #16 = Utf8               SourceFile").append(S_NEWLINE);
-		builder.append("  #17 = Utf8               TestBytecodeLoader.java").append(S_NEWLINE);
-		builder.append("  #18 = NameAndType        #4:#5          //  \"<init>\":()V").append(S_NEWLINE);
-		builder.append("  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader").append(S_NEWLINE);
-		builder.append("  #20 = Utf8               java/lang/Object").append(S_NEWLINE);
-		builder.append("{").append(S_NEWLINE);
-		builder.append("  public org.adoptopenjdk.jitwatch.test.TestBytecodeLoader();").append(S_NEWLINE);
-		builder.append("    flags: ACC_PUBLIC").append(S_NEWLINE);
-		builder.append("    Code:").append(S_NEWLINE);
-		builder.append("      stack=1, locals=1, args_size=1").append(S_NEWLINE);
-		builder.append("         0: aload_0       ").append(S_NEWLINE);
-		builder.append("         1: invokespecial #1                  // Method java/lang/Object.\"<init>\":()V").append(S_NEWLINE);
-		builder.append("         4: return        ").append(S_NEWLINE);
-		builder.append("      LineNumberTable:").append(S_NEWLINE);
-		builder.append("        line 3: 0").append(S_NEWLINE);
-		builder.append("      LocalVariableTable:").append(S_NEWLINE);
-		builder.append("        Start  Length  Slot  Name   Signature").append(S_NEWLINE);
-		builder.append("               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(
-				S_NEWLINE);
-		builder.append("").append(S_NEWLINE);
-		builder.append("  public int add(int, int);").append(S_NEWLINE);
-		builder.append("    flags: ACC_PUBLIC").append(S_NEWLINE);
-		builder.append("    Code:").append(S_NEWLINE);
-		builder.append("      stack=2, locals=3, args_size=3").append(S_NEWLINE);
-		builder.append("         0: iload_1       ").append(S_NEWLINE);
-		builder.append("         1: iload_2       ").append(S_NEWLINE);
-		builder.append("         2: iadd          ").append(S_NEWLINE);
-		builder.append("         3: ireturn       ").append(S_NEWLINE);
-		builder.append("      LineNumberTable:").append(S_NEWLINE);
-		builder.append("        line 7: 0").append(S_NEWLINE);
-		builder.append("      LocalVariableTable:").append(S_NEWLINE);
-		builder.append("        Start  Length  Slot  Name   Signature").append(S_NEWLINE);
-		builder.append("               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;").append(
-				S_NEWLINE);
-		builder.append("               0       4     1     a   I").append(S_NEWLINE);
-		builder.append("               0       4     2     b   I").append(S_NEWLINE);
-		builder.append("}").append(S_NEWLINE);
+		"Classfile TestBytecodeLoader.class",
+		"  Last modified 18-May-2014; size 426 bytes",
+		"  MD5 checksum d8d0af7620175f82d2c5c753b493196f",
+		"  Compiled from \"TestBytecodeLoader.java\"",
+		"public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader",
+		"  SourceFile: \"TestBytecodeLoader.java\"",
+		"  minor version: 0",
+		"  major version: 51",
+		"  flags: ACC_PUBLIC, ACC_SUPER",
+		"Constant pool:",
+		"   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V",
+		"   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+		"   #3 = Class              #20            //  java/lang/Object",
+		"   #4 = Utf8               <init>",
+		"   #5 = Utf8               ()V",
+		"   #6 = Utf8               Code",
+		"   #7 = Utf8               LineNumberTable",
+		"   #8 = Utf8               LocalVariableTable",
+		"   #9 = Utf8               this",
+		"  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+		"  #11 = Utf8               add",
+		"  #12 = Utf8               (II)I",
+		"  #13 = Utf8               a",
+		"  #14 = Utf8               I",
+		"  #15 = Utf8               b",
+		"  #16 = Utf8               SourceFile",
+		"  #17 = Utf8               TestBytecodeLoader.java",
+		"  #18 = NameAndType        #4:#5          //  \"<init>\":()V",
+		"  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+		"  #20 = Utf8               java/lang/Object",
+		"{",
+		"  public org.adoptopenjdk.jitwatch.test.TestBytecodeLoader();",
+		"    flags: ACC_PUBLIC",
+		"    Code:",
+		"      stack=1, locals=1, args_size=1",
+		"         0: aload_0       ",
+		"         1: invokespecial #1                  // Method java/lang/Object.\"<init>\":()V",
+		"         4: return        ",
+		"      LineNumberTable:",
+		"        line 3: 0",
+		"      LocalVariableTable:",
+		"        Start  Length  Slot  Name   Signature",
+		"               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+		"",
+		"  public int add(int, int);",
+		"    flags: ACC_PUBLIC",
+		"    Code:",
+		"      stack=2, locals=3, args_size=3",
+		"         0: iload_1       ",
+		"         1: iload_2       ",
+		"         2: iadd          ",
+		"         3: ireturn       ",
+		"      LineNumberTable:",
+		"        line 7: 0",
+		"      LocalVariableTable:",
+		"        Start  Length  Slot  Name   Signature",
+		"               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+		"               0       4     1     a   I",
+		"               0       4     2     b   I",
+		"}"};
 
 		IMetaMember member = UnitTestUtil
 				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class });
 
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -427,15 +423,15 @@ public class TestBytecodeLoader
 	@Test
 	public void testClassFileVersion()
 	{
-		StringBuilder builder = new StringBuilder();
+		String[] lines = new String[]{
 
-		builder.append("public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog").append(S_NEWLINE);
-		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append(S_NEWLINE);
-		builder.append("minor version: 1").append(S_NEWLINE);
-		builder.append("major version: 51").append(S_NEWLINE);
-		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
+		"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
+		"SourceFile: \"MakeHotSpotLog.java\"",
+		"minor version: 1",
+		"major version: 51",
+		"flags: ACC_PUBLIC, ACC_SUPER"};
 
-		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines);
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -443,20 +439,20 @@ public class TestBytecodeLoader
 	@Test
 	public void testClassFileVersionWithRuntimeAnnotations()
 	{
-		StringBuilder builder = new StringBuilder();
+		String[] lines = new String[]{
 
-		builder.append("public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog").append(S_NEWLINE);
-		builder.append("SourceFile: \"MakeHotSpotLog.java\"").append(S_NEWLINE);
-		builder.append("  RuntimeVisibleAnnotations:").append(S_NEWLINE);
-		builder.append("    0: #49(#50=e#51.#52)").append(S_NEWLINE);
-		builder.append("    0: #49(#50=e#51.#52)").append(S_NEWLINE);
-		builder.append("    1: #53(#50=[e#54.#55])").append(S_NEWLINE);
-		builder.append("    2: #56(#50=e#57.#58)").append(S_NEWLINE);
-		builder.append("minor version: 1").append(S_NEWLINE);
-		builder.append("major version: 51").append(S_NEWLINE);
-		builder.append("flags: ACC_PUBLIC, ACC_SUPER").append(S_NEWLINE);
+		"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
+		"SourceFile: \"MakeHotSpotLog.java\"",
+		"  RuntimeVisibleAnnotations:",
+		"    0: #49(#50=e#51.#52)",
+		"    0: #49(#50=e#51.#52)",
+		"    1: #53(#50=[e#54.#55])",
+		"    2: #56(#50=e#57.#58)",
+		"minor version: 1",
+		"major version: 51",
+		"flags: ACC_PUBLIC, ACC_SUPER"};
 
-		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines);
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -464,32 +460,32 @@ public class TestBytecodeLoader
 	@Test
 	public void testRegressionJMHSampleWithRuntimeAnnotations()
 	{
-		StringBuilder builder = new StringBuilder();
-
 		String bcSig = "public void measureWrong();";
+	
+		String[] lines = new String[]{
+	
+		bcSig,
+		"      descriptor: ()V",
+		"    flags: ACC_PUBLIC",
+		"    Code:",
+		"      stack=2, locals=1, args_size=1",
+		"         0: aload_0       ",
+		"         0: aload_0       ",
+		"         1: getfield      #4          // Field x:D",
+		"         4: invokestatic  #5                  // Method java/lang/Math.log:(D)D",
+		"         7: pop2          ",
+		"         8: return        ",
+		"      LineNumberTable:",
+		"        line 65: 0",
+		"        line 66: 8",
+		"      LocalVariableTable:",
+		"        Start  Length  Slot  Name   Signature",
+		"            0       9     0  this   Lorg/openjdk/jmh/samples/JMHSample_08_DeadCode;",
+		"    RuntimeVisibleAnnotations:",
+		"      0: #35()",
+		"      0: #35()"};
 
-		builder.append("  ").append(bcSig).append(S_NEWLINE);
-		builder.append("      descriptor: ()V").append(S_NEWLINE);
-		builder.append("    flags: ACC_PUBLIC").append(S_NEWLINE);
-		builder.append("    Code:").append(S_NEWLINE);
-		builder.append("      stack=2, locals=1, args_size=1").append(S_NEWLINE);
-		builder.append("         0: aload_0       ").append(S_NEWLINE);
-		builder.append("         0: aload_0       ").append(S_NEWLINE);
-		builder.append("         1: getfield      #4          // Field x:D").append(S_NEWLINE);
-		builder.append("         4: invokestatic  #5                  // Method java/lang/Math.log:(D)D").append(S_NEWLINE);
-		builder.append("         7: pop2          ").append(S_NEWLINE);
-		builder.append("         8: return        ").append(S_NEWLINE);
-		builder.append("      LineNumberTable:").append(S_NEWLINE);
-		builder.append("        line 65: 0").append(S_NEWLINE);
-		builder.append("        line 66: 8").append(S_NEWLINE);
-		builder.append("      LocalVariableTable:").append(S_NEWLINE);
-		builder.append("        Start  Length  Slot  Name   Signature").append(S_NEWLINE);
-		builder.append("            0       9     0  this   Lorg/openjdk/jmh/samples/JMHSample_08_DeadCode;").append(S_NEWLINE);
-		builder.append("    RuntimeVisibleAnnotations:").append(S_NEWLINE);
-		builder.append("      0: #35()").append(S_NEWLINE);
-		builder.append("      0: #35()").append(S_NEWLINE);
-
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), bcSig);
 
@@ -620,14 +616,7 @@ public class TestBytecodeLoader
 				"                            line 44: 60",
 				"                            line 45: 74" };
 
-		StringBuilder builder = new StringBuilder();
-
-		for (String line : lines)
-		{
-			builder.append(line).append(C_NEWLINE);
-		}
-
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), builder.toString());
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(),
 				S_BYTECODE_STATIC_INITIALISER_SIGNATURE);

@@ -84,6 +84,8 @@ public class CompileChainWalker implements IJournalVisitable
 		{
 			String tagName = child.getName();
 			Map<String, String> tagAttrs = child.getAttrs();
+			
+			//System.out.println("CCW: " + child.toString(false));
 
 			switch (tagName)
 			{
@@ -113,6 +115,8 @@ public class CompileChainWalker implements IJournalVisitable
 
 			case TAG_INLINE_FAIL:
 			{
+				//System.out.println("INLINE FAIL!");
+
 				inlined = false; // reset
 
 				IMetaMember childCall = ParseUtil.lookupMember(methodID, parseDictionary, model);
@@ -123,7 +127,7 @@ public class CompileChainWalker implements IJournalVisitable
 					parentNode.addChild(childNode);
 
 					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs);
+					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs, parseDictionary);
 					childNode.setInlined(inlined, annotationText);
 				}
 				else
@@ -136,9 +140,10 @@ public class CompileChainWalker implements IJournalVisitable
 				break;
 
 			case TAG_INLINE_SUCCESS:
+				//System.out.println("INLINE SUCCESS!");
 				inlined = true;
 				String reason = tagAttrs.get(ATTR_REASON);
-				inlineReason = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs);
+				inlineReason = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs, parseDictionary);
 				break;
 
 			case TAG_PARSE: // call depth

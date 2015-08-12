@@ -93,6 +93,7 @@ public final class JITWatchConstants
 	public static final String TAG_ELIMINATE_ALLOCATION = "eliminate_allocation";
 	public static final String TAG_ELIMINATE_LOCK = "eliminate_lock";
 	public static final String TAG_JVMS = "jvms";
+	public static final String TAG_UNCOMMON_TRAP = "uncommon_trap";
 
 	public static final String TAG_COMMAND = "command";
 
@@ -129,6 +130,8 @@ public final class JITWatchConstants
 	public static final String ATTR_BRANCH_PROB = "prob";
 	public static final String ATTR_COUNT = "count";
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
+	public static final String ATTR_ACTION = "action";
+	public static final String ATTR_COMMENT = "comment";
 
 	public static final String ALWAYS = "always";
 	public static final String NEVER = "never";

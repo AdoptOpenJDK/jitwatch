@@ -115,6 +115,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 		return classBytecode;
 	}
+	
+	public ClassBC getClassBytecode()
+	{
+		return classBytecode;
+	}
 
 	private void loadInnerClasses(List<String> innerClassNames, IReadOnlyJITDataModel model, List<String> classLocations)
 	{

@@ -14,7 +14,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.MetaMethod;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -28,7 +27,7 @@ public class UnitTestUtil
 		return model.buildAndGetMetaClass(clazz);
 	}
 
-	public static IMetaMember createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
+	public static HelperMetaMethod createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
 	{
 		String packageName = StringUtil.getPackageName(fqClassName);
 		String className = StringUtil.getUnqualifiedClassName(fqClassName);
@@ -37,9 +36,9 @@ public class UnitTestUtil
 
 		MetaClass metaClass = new MetaClass(metaPackage, className);
 
-		return new MetaMethod(getMethod(fqClassName, methodName, params), metaClass);
+		return new HelperMetaMethod(getMethod(fqClassName, methodName, params), metaClass);
 	}
-	
+
 	public static IMetaMember createTestMetaMember()
 	{
 		return createTestMetaMember("java.lang.String", "length", new Class<?>[0]);

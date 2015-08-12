@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
@@ -244,6 +247,43 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		return attrList;
 	}
+	
+	@Override
+	public MemberBytecode getMemberBytecode()
+	{
+		MemberBytecode result = null;
+		
+		if (metaClass != null)
+		{
+			ClassBC classBytecode = metaClass.getClassBytecode();
+			
+			if (classBytecode != null)
+			{
+				result = classBytecode.getMemberBytecode(this);
+			}
+		}
+				
+		return result;
+	}
+
+	public List<BytecodeInstruction> getInstructions()
+	{
+		List<BytecodeInstruction> result = null;
+		
+		MemberBytecode memberBytecode = getMemberBytecode();
+		
+		if (memberBytecode != null)
+		{
+			result = memberBytecode.getInstructions();
+		}
+		else
+		{
+			result = new ArrayList<>();
+		}
+		
+		return result;
+	}
+
 
 	@Override
 	public MetaClass getMetaClass()
