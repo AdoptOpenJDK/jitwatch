@@ -48,15 +48,15 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 	@Override
 	public void visit(IMetaMember metaMember)
 	{
-		if (metaMember.isCompiled())
+		if (metaMember != null && metaMember.isCompiled())
 		{
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
 			}
 			catch (LogParseException e)
 			{
-				logger.error("Could not build histo", e);
+				logger.error("Could not build histo for {}", metaMember.getMemberName(), e);
 			}
 		}
 	}

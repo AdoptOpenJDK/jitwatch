@@ -42,22 +42,15 @@ public final class JournalUtil
 	{
 	}
 
-	public static void visitParseTagsOfLastTask(IMetaMember member, IJournalVisitable visitable) throws LogParseException
+	public static void visitParseTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
 	{
-		if (member == null)
-		{
-			throw new LogParseException("Cannot get Journal for null IMetaMember");
-		}
-
-		Journal journal = member.getJournal();
-
 		Task lastTask = getLastTask(journal);
 
 		if (lastTask == null)
 		{
 			if (!isJournalForCompile2NativeMember(journal))
 			{
-				logger.warn("No Task found in Journal for member {}", member);
+				logger.warn("No Task found in Journal");
 
 				if (journal != null && journal.getEntryList().size() > 0)
 				{
@@ -88,22 +81,15 @@ public final class JournalUtil
 		}
 	}
 
-	public static void visitOptimizerTagsOfLastTask(IMetaMember member, IJournalVisitable visitable) throws LogParseException
+	public static void visitOptimizerTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
 	{
-		if (member == null)
-		{
-			throw new LogParseException("Cannot get Journal for null IMetaMember");
-		}
-
-		Journal journal = member.getJournal();
-
 		Task lastTask = getLastTask(journal);
 
 		if (lastTask == null)
 		{
 			if (!isJournalForCompile2NativeMember(journal))
 			{
-				logger.warn("No Task found in Journal for member {}", member);
+				logger.warn("No Task found in Journal");
 
 				if (journal != null && journal.getEntryList().size() > 0)
 				{
@@ -338,11 +324,11 @@ public final class JournalUtil
 
 			int count = parsePhases.size();
 
-			if (count != 1)
+			if (count > 1)
 			{
 				logger.warn("Unexpected optimizer phase count: {}", count);
-			}
-			else
+			}			
+			else if (count == 1)
 			{
 				optimizerPhase = parsePhases.get(0);
 			}

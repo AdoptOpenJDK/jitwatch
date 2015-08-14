@@ -49,4 +49,18 @@ public class ParseDictionary implements IParseDictionary
 	{
 		methodMap.put(id, method);
 	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("ParseDictionary [typeMap=");
+		builder.append(typeMap);
+		builder.append(", klassMap=");
+		builder.append(klassMap);
+		builder.append(", methodMap=");
+		builder.append(methodMap);
+		builder.append("]");
+		return builder.toString();
+	}
 }

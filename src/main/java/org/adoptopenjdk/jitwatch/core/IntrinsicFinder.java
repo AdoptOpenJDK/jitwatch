@@ -42,13 +42,16 @@ public final class IntrinsicFinder implements IJournalVisitable
 	{
 		result = new HashMap<>();
 
-		try
+		if (member != null)
 		{
-			JournalUtil.visitParseTagsOfLastTask(member, this);
-		}
-		catch (LogParseException e)
-		{
-			logger.error("Error while finding intrinsics", e);
+			try
+			{
+				JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
+			}
+			catch (LogParseException e)
+			{
+				logger.error("Error while finding intrinsics for member {}", member, e);
+			}
 		}
 
 		return result;

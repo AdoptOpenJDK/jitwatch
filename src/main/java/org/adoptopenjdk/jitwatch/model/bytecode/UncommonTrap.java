@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2013, 2014 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ACTION;
@@ -67,11 +72,11 @@ public class UncommonTrap
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("UncommonTrap");
-		builder.append("(");
+		builder.append("Uncommon trap");
+		builder.append(" (");
 		builder.append("reason:");
 		builder.append(reason);
-		builder.append(" action:");
+		builder.append(", action:");
 		builder.append(action);
 
 		if (comment != null)

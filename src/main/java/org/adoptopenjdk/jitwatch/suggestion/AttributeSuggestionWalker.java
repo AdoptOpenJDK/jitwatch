@@ -148,13 +148,13 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	@Override
 	public void visit(IMetaMember metaMember)
 	{
-		if (metaMember.isCompiled())
+		if (metaMember != null && metaMember.isCompiled())
 		{
 			this.metaMember = metaMember;
 
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
 			}
 			catch (LogParseException e)
 			{

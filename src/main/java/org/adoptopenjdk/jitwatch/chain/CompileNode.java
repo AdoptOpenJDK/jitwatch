@@ -9,15 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class CompileNode
-{
-	private IMetaMember member;
-	
+{	
+	private boolean compiled = false;
 	private boolean inlined = false;
-	private String inlineReason = null;
+	private String tooltip;
 	
 	private List<CompileNode> children;
 	
@@ -25,9 +27,20 @@ public class CompileNode
 	
 	private String methodID = null;
 	
-	public CompileNode(IMetaMember member, String methodID)
+	private IParseDictionary parseDictionary;
+	private IReadOnlyJITDataModel model;
+
+	public static CompileNode createRootNode(String methodID, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
-		this.member = member;
+		CompileNode root = new CompileNode(methodID);
+		root.parseDictionary = parseDictionary;
+		root.model = model;
+		
+		return root;
+	}
+	
+	public CompileNode(String methodID)
+	{
 		this.methodID = methodID;
 		
 		children = new ArrayList<>();
@@ -38,15 +51,14 @@ public class CompileNode
 		return methodID;
 	}
 
-	public IMetaMember getMember()
-	{
-		return member;
-	}
-	
-	public void setInlined(boolean inlined, String reason)
+	public void setInlined(boolean inlined)
 	{
 		this.inlined = inlined;
-		this.inlineReason = reason;
+	}
+	
+	public void setCompiled(boolean compiled)
+	{
+		this.compiled = compiled;
 	}
 	
 	public boolean isInlined()
@@ -54,9 +66,9 @@ public class CompileNode
 		return inlined;
 	}
 	
-	public String getInlineReason()
+	public boolean isCompiled()
 	{
-		return inlineReason;
+		return compiled;
 	}
 	
 	public void addChild(CompileNode child)
@@ -75,6 +87,17 @@ public class CompileNode
 		return parent;
 	}
 	
+	public void setTooltipText(String tooltip)
+	{
+		this.tooltip = tooltip;
+	}
+	
+	
+	public String getTooltipText()
+	{
+		return tooltip;
+	}
+	
 	@Override
 	public String toString()
 	{
@@ -84,10 +107,36 @@ public class CompileNode
 
 		return builder.toString();
 	}
+		
+	private CompileNode getRoot()
+	{
+		if (parent == null)
+		{
+			return this;
+		}
+		else
+		{
+			return getParent().getRoot();
+		}
+	}
+	
+	public IMetaMember getMember()
+	{
+		CompileNode root = getRoot();
+		
+		return ParseUtil.lookupMember(methodID, root.parseDictionary, root.model);
+	}
+		
+	public String getMemberName()
+	{
+		CompileNode root = getRoot();
+		
+		return ParseUtil.getMethodName(methodID, root.parseDictionary);
+	}
 
 	private void show(CompileNode node, StringBuilder builder, int depth)
 	{
-		if (depth > 0)
+		if (depth >= 0)
 		{
 			for (int i = 0; i < depth; i++)
 			{
@@ -96,11 +145,11 @@ public class CompileNode
 
 			builder.append(" -> ");
 
-			builder.append(node.getMember().getMemberName());
+			builder.append(node.getMemberName());
 
-			builder.append("[");
+			builder.append(" [");
 
-			if (node.getMember().isCompiled())
+			if (node.isCompiled())
 			{
 				builder.append("C");
 			}

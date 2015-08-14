@@ -5,36 +5,156 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
+import static org.junit.Assert.*;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.Journal;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.junit.Test;
 
 public class TestCompileChain
 {
+	@Test
+	public void testRegressionTwoInlinesC2() throws Exception
+	{
+		String[] lines = new String[] {
+				"<task compile_id='2' compile_kind='osr' method='PolymorphismTest &lt;init&gt; ()V' bytes='132' count='1' backedge_count='14563' iicount='1' osr_bci='40' blocking='1' stamp='0.500'>",
+				"<phase name='parse' nodes='3' live='3' stamp='0.500'>",
+				"<type id='709' name='void'/>",
+				"<klass id='817' name='PolymorphismTest' flags='1'/>",
+				"<method id='818' holder='817' name='&lt;init&gt;' return='709' flags='1' bytes='132' iicount='1'/>",
+				"<klass id='828' name='java/lang/System' unloaded='1'/>",
+				"<uncommon_trap method='818' bci='104' reason='unloaded' action='reinterpret' index='60' klass='828'/>",
+				"<uncommon_trap method='818' bci='104' reason='unloaded' action='reinterpret' index='60' klass='828'/>",
+				"<parse method='818' uses='1' osr_bci='40' stamp='0.500'>",
+				"<uncommon_trap method='818' bci='104' reason='unloaded' action='reinterpret' index='60' klass='828'/>",
+				"<uncommon_trap method='818' bci='104' reason='unloaded' action='reinterpret' index='60' klass='828'/>",
+				"<klass id='821' name='PolymorphismTest$Nickel' flags='1'/>",
+				"<dependency type='leaf_type' ctxk='821'/>",
+				"<dependency type='leaf_type' ctxk='821'/>",
+				"<klass id='820' name='PolymorphismTest$Dime' flags='1'/>",
+				"<dependency type='leaf_type' ctxk='820'/>",
+				"<dependency type='leaf_type' ctxk='820'/>",
+				"<klass id='825' name='PolymorphismTest$Quarter' flags='1'/>",
+				"<dependency type='leaf_type' ctxk='825'/>",
+				"<dependency type='leaf_type' ctxk='825'/>",
+				"<uncommon_trap bci='40' reason='constraint' action='reinterpret'/>",
+				"<uncommon_trap bci='40' reason='predicate' action='maybe_recompile'/>",
+				"<uncommon_trap bci='40' reason='loop_limit_check' action='maybe_recompile'/>",
+				"<bc code='162' bci='44'/>",
+				"<branch target_bci='104' taken='0' not_taken='11264' cnt='11264' prob='never'/>",
+				"<uncommon_trap bci='44' reason='unstable_if' action='reinterpret' comment='taken never'/>",
+				"<bc code='185' bci='93'/>",
+				"<klass id='829' name='PolymorphismTest$Coin' flags='1545'/>",
+				"<method id='830' holder='829' name='deposit' return='709' flags='1025' bytes='0' iicount='1'/>",
+				"<call method='830' count='11264' prof_factor='1' virtual='1' inline='1' receiver='820' receiver_count='5632' receiver2='821' receiver2_count='5632'/>",
+				"<method id='831' holder='820' name='deposit' return='709' flags='1' bytes='10' iicount='7281'/>",
+				"<call method='831' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<method id='832' holder='821' name='deposit' return='709' flags='1' bytes='9' iicount='7282'/>",
+				"<call method='832' count='11264' prof_factor='1' inline='1'/>",
+				"<inline_success reason='inline (hot)'/>",
+				"<predicted_call bci='93' klass='820'/>",
+				"<uncommon_trap bci='93' reason='null_check' action='maybe_recompile'/>",
+				"<predicted_call bci='93' klass='821'/>",
+				"<uncommon_trap bci='93' reason='bimorphic' action='maybe_recompile'/>",
+				"<parse method='832' uses='11264' stamp='0.500'>",
+				"<parse_done nodes='270' live='263' memory='68048' stamp='0.500'/>",
+				"</parse>",
+				"<parse method='831' uses='11264' stamp='0.500'>",
+				"<parse_done nodes='287' live='279' memory='71104' stamp='0.500'/>",
+				"</parse>",
+				"<parse_done nodes='296' live='288' memory='72840' stamp='0.500'/>",
+				"</parse>",
+				"<phase_done name='parse' nodes='296' live='200' stamp='0.500'/>",
+				"</phase>",
+				"<phase name='optimizer' nodes='296' live='200' stamp='0.500'>",
+				"<phase name='idealLoop' nodes='320' live='191' stamp='0.500'>",
+				"<loop_tree>",
+				"<loop idx='320' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='433' live='203' stamp='0.501'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='433' live='203' stamp='0.501'>",
+				"<loop_tree>",
+				"<loop idx='626' main_loop='626' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='711' live='406' stamp='0.501'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='711' live='406' stamp='0.501'>",
+				"<loop_tree>",
+				"<loop idx='540' inner_loop='1' pre_loop='438' >",
+				"</loop>",
+				"<loop idx='626' inner_loop='1' main_loop='626' >",
+				"</loop>",
+				"<loop idx='463' inner_loop='1' post_loop='438' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='716' live='411' stamp='0.501'/>",
+				"</phase>",
+				"<phase name='ccp' nodes='716' live='411' stamp='0.501'>",
+				"<phase_done name='ccp' nodes='716' live='411' stamp='0.501'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='734' live='407' stamp='0.501'>",
+				"<loop_tree>",
+				"<loop idx='540' inner_loop='1' pre_loop='438' >",
+				"</loop>",
+				"<loop idx='626' inner_loop='1' main_loop='626' >",
+				"</loop>",
+				"<loop idx='463' inner_loop='1' post_loop='438' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='774' live='404' stamp='0.502'/>",
+				"</phase>",
+				"<phase_done name='optimizer' nodes='796' live='401' stamp='0.502'/>",
+				"</phase>",
+				"<phase name='matcher' nodes='796' live='401' stamp='0.502'>",
+				"<phase_done name='matcher' nodes='358' live='358' stamp='0.502'/>",
+				"</phase>",
+				"<phase name='regalloc' nodes='502' live='502' stamp='0.502'>",
+				"<regalloc attempts='0' success='1'/>",
+				"<phase_done name='regalloc' nodes='559' live='547' stamp='0.503'/>",
+				"</phase>",
+				"<phase name='output' nodes='559' live='547' stamp='0.503'>",
+				"<phase_done name='output' nodes='599' live='554' stamp='0.503'/>",
+				"</phase>",
+				"<dependency type='leaf_type' ctxk='821'/>",
+				"<dependency type='leaf_type' ctxk='820'/>",
+				"<dependency type='leaf_type' ctxk='825'/>",
+				"<code_cache total_blobs='206' nmethods='2' adapters='154' free_code_cache='49831040'/>",
+				"<task_done success='1' nmsize='760' count='1' backedge_count='14563' stamp='0.794'/>",
+				"</task>" };
 
-	// test disabled until I remove the workaround for broken Tiered logs in J8
+		CompileNode root = buildCompileNodeForXML(lines);
+
+		// root
+		// -> deposit()
+		// -> deposit()
+
+		List<CompileNode> rootChildren = root.getChildren();
+
+		assertEquals(2, rootChildren.size());
+
+		CompileNode child0 = rootChildren.get(0);
+		CompileNode child1 = rootChildren.get(1);
+
+		assertEquals("deposit", child0.getMemberName());
+		assertTrue(child0.isInlined());
+
+		assertEquals("deposit", child1.getMemberName());
+		assertTrue(child1.isInlined());
+	}
+
 	public void testJava8TieredCompilation() throws Exception
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 				"<task osr_bci='8' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testCallChain3 ()V' compile_kind='osr' level='3' bytes='71' count='1' backedge_count='60494' stamp='13.088' compile_id='127' iicount='1'>",
 				"<phase name='buildIR' stamp='13.088'>",
 				"<type name='void' id='680'/>",
@@ -153,55 +273,32 @@ public class TestCompileChain
 				"</phase>",
 				"<code_cache nmethods='124' free_code_cache='250227008' adapters='142' total_blobs='349' stamp='13.088'/>",
 				"<task_done inlined_bytes='142' success='1' count='1' backedge_count='100000' stamp='13.173' nmsize='3624'/>",
-				"</task>"
-		};
+				"</task>" };
 
-		JITDataModel testModel = new JITDataModel();
-		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-		String methodName = "testCallChain3";
+		CompileNode root = buildCompileNodeForXML(lines);
 
-		try
-		{
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
-
-			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
-		}
-		catch (ClassNotFoundException cnfe)
-		{
-			fail();
-		}
-
-		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-
-		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog " + methodName + " ()V");
-
-		IMetaMember testMember = metaClass.getMemberForSignature(msp);
-
-		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
-
-//		private void testCallChain3()
-//		{
-//		  long count = 0;
-//		  int iterations = 100_000;
-//		  for (int i = 0; i < iterations; i++)
-//		  {
-//		     if (test(i, iterations))
-//		     {
-//		       count = chainC1(count);
-//		     }
-//		     else
-//		     {
-//		       count = chainC2(count);
-//		     }
-//		   }
-//		   System.out.println("testCallChain2: " + count);
-//		}
+		// private void testCallChain3()
+		// {
+		// long count = 0;
+		// int iterations = 100_000;
+		// for (int i = 0; i < iterations; i++)
+		// {
+		// if (test(i, iterations))
+		// {
+		// count = chainC1(count);
+		// }
+		// else
+		// {
+		// count = chainC2(count);
+		// }
+		// }
+		// System.out.println("testCallChain2: " + count);
+		// }
 
 		// root
 		// -> test()
 		// -> chainC1() -> chainC2()
-		//              -> chainC3()
+		// -> chainC3()
 		// -> chainC2()
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
 		// -> append()
@@ -215,14 +312,14 @@ public class TestCompileChain
 
 		int pos = 0;
 
-		assertEquals("test", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("chainC1", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("chainC2", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("toString", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("test", rootChildren.get(pos++).getMemberName());
+		assertEquals("chainC1", rootChildren.get(pos++).getMemberName());
+		assertEquals("chainC2", rootChildren.get(pos++).getMemberName());
+		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMemberName());
+		assertEquals("append", rootChildren.get(pos++).getMemberName());
+		assertEquals("append", rootChildren.get(pos++).getMemberName());
+		assertEquals("toString", rootChildren.get(pos++).getMemberName());
+		assertEquals("println", rootChildren.get(pos++).getMemberName());
 	}
 
 	@Test
@@ -421,60 +518,83 @@ public class TestCompileChain
 				"<dependency type='unique_concrete_method' ctxk='702' x='772'/>",
 				"<code_cache total_blobs='255' nmethods='75' adapters='134' free_code_cache='49824384' largest_free_block='49810304'/>",
 				"<task_done success='1' nmsize='800' count='10000' backedge_count='5317' inlined_bytes='79' stamp='11.662'/>",
-				"</task>"
-		};
+				"</task>" };
 
-		JITDataModel testModel = new JITDataModel();
-
-		String methodName = "testCallChain";
-		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-
-		try
-		{
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
-
-			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
-		}
-		catch (ClassNotFoundException cnfe)
-		{
-			fail();
-		}
-
-		List<String> paramList = new ArrayList<>();
-		paramList.add("long");
-
-		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, S_TYPE_NAME_VOID, paramList));
-
-		assertNotNull(testMember);
-
-		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
+		CompileNode root = buildCompileNodeForXML(lines);
 
 		// root
 		// -> chainA1() -> chainA2() -> chainA3() -> chainA4() -> bigMethod()
 		// -> chainB1() -> chainB2() -> chainB3()
+		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
 		// -> append()
 		// -> append()
 		// -> toString()
 		// -> println
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
-
+		
 		List<CompileNode> rootChildren = root.getChildren();
 
-		assertEquals(7, rootChildren.size());
+		assertEquals(8, rootChildren.size());
 
-		int pos = 0;
+		CompileNode child0 = rootChildren.get(0);
+		CompileNode child1 = rootChildren.get(1);
+		CompileNode child2 = rootChildren.get(2);
+		CompileNode child3 = rootChildren.get(3);
+		CompileNode child4 = rootChildren.get(4);
+		CompileNode child5 = rootChildren.get(5);
+		CompileNode child6 = rootChildren.get(6);
+		CompileNode child7 = rootChildren.get(7);
 
-		assertEquals("chainA1", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("chainB1", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("toString", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
+
+		assertEquals("chainA1", child0.getMemberName());
+		assertTrue(child0.isInlined());
+
+		assertEquals("chainB1", child1.getMemberName());
+		assertTrue(child1.isInlined());
+		
+		assertEquals("<init>", child2.getMemberName());
+		assertTrue(child2.isInlined());
+
+		assertEquals("append", child3.getMemberName());
+		assertTrue(!child3.isInlined());
+
+		assertEquals("append", child4.getMemberName());
+		assertTrue(!child4.isInlined());
+
+		assertEquals("toString", child5.getMemberName());
+		assertTrue(!child5.isInlined());
+
+		assertEquals("println", child6.getMemberName());
+		assertTrue(!child6.isInlined());
+
+		assertEquals("<init>", child7.getMemberName());
+		assertTrue(child7.isInlined());
+
+		List<CompileNode> child0Children = child0.getChildren();
+		assertEquals(1, child0Children.size());
+		CompileNode child0child0 = child0Children.get(0);
+		assertEquals("chainA2", child0child0.getMemberName());
+		assertTrue(child0child0.isInlined());
+
+		List<CompileNode> child0child0Children = child0child0.getChildren();
+		assertEquals(1, child0child0Children.size());
+		CompileNode child0child0child0 = child0child0Children.get(0);
+		assertEquals("chainA3", child0child0child0.getMemberName());
+		assertTrue(child0child0child0.isInlined());
+
+		List<CompileNode> child0child0child0Children = child0child0child0.getChildren();
+		assertEquals(1, child0child0child0Children.size());
+		CompileNode child0child0child0child0 = child0child0child0Children.get(0);
+		assertEquals("chainA4", child0child0child0child0.getMemberName());
+		assertTrue(child0child0child0child0.isInlined());
+
+		List<CompileNode> child0child0child0child0Children = child0child0child0child0.getChildren();
+		assertEquals(1, child0child0child0child0Children.size());
+		CompileNode child0child0child0child0child0 = child0child0child0child0Children.get(0);
+		assertEquals("bigMethod", child0child0child0child0child0.getMemberName());
+		assertTrue(!child0child0child0child0child0.isInlined());
+
 	}
-
 
 	@Test
 	public void testJava8LateInlineRegression()
@@ -620,87 +740,135 @@ public class TestCompileChain
 				"<phase name='connectionGraph' nodes='531' live='237' stamp='11.165'>",
 				"<method id='819' holder='747' name='expandCapacity' return='680' arguments='678' flags='0' bytes='50' iicount='162'/>",
 				"<dependency type='unique_concrete_method' ctxk='747' x='819'/>",
-				"<phase_done name='connectionGraph' nodes='531' live='237' stamp='11.167'/>", "</phase>",
-				"<phase_done name='escapeAnalysis' nodes='531' live='237' stamp='11.167'/>", "</phase>",
-				"<phase name='idealLoop' nodes='531' live='237' stamp='11.167'>", "<loop_tree>",
-				"<loop idx='529' inner_loop='1' >", "</loop>", "</loop_tree>",
-				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.168'/>", "</phase>",
-				"<phase name='idealLoop' nodes='534' live='219' stamp='11.168'>", "<loop_tree>",
-				"<loop idx='529' inner_loop='1' >", "</loop>", "</loop_tree>",
-				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.169'/>", "</phase>",
-				"<phase name='idealLoop' nodes='534' live='219' stamp='11.169'>", "<loop_tree>",
-				"<loop idx='529' inner_loop='1' >", "</loop>", "</loop_tree>",
-				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.169'/>", "</phase>",
+				"<phase_done name='connectionGraph' nodes='531' live='237' stamp='11.167'/>",
+				"</phase>",
+				"<phase_done name='escapeAnalysis' nodes='531' live='237' stamp='11.167'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='531' live='237' stamp='11.167'>",
+				"<loop_tree>",
+				"<loop idx='529' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.168'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='534' live='219' stamp='11.168'>",
+				"<loop_tree>",
+				"<loop idx='529' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.169'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='534' live='219' stamp='11.169'>",
+				"<loop_tree>",
+				"<loop idx='529' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='534' live='219' stamp='11.169'/>",
+				"</phase>",
 				"<phase name='ccp' nodes='534' live='219' stamp='11.170'>",
-				"<phase_done name='ccp' nodes='534' live='219' stamp='11.170'/>", "</phase>",
-				"<phase name='idealLoop' nodes='535' live='215' stamp='11.170'>", "<loop_tree>",
-				"<loop idx='529' inner_loop='1' >", "</loop>", "</loop_tree>",
-				"<phase_done name='idealLoop' nodes='538' live='215' stamp='11.170'/>", "</phase>",
-				"<phase_done name='optimizer' nodes='662' live='291' stamp='11.171'/>", "</phase>",
+				"<phase_done name='ccp' nodes='534' live='219' stamp='11.170'/>",
+				"</phase>",
+				"<phase name='idealLoop' nodes='535' live='215' stamp='11.170'>",
+				"<loop_tree>",
+				"<loop idx='529' inner_loop='1' >",
+				"</loop>",
+				"</loop_tree>",
+				"<phase_done name='idealLoop' nodes='538' live='215' stamp='11.170'/>",
+				"</phase>",
+				"<phase_done name='optimizer' nodes='662' live='291' stamp='11.171'/>",
+				"</phase>",
 				"<phase name='matcher' nodes='662' live='291' stamp='11.171'>",
-				"<phase_done name='matcher' nodes='255' live='255' stamp='11.174'/>", "</phase>",
-				"<phase name='regalloc' nodes='317' live='317' stamp='11.175'>", "<regalloc attempts='1' success='1'/>",
-				"<phase_done name='regalloc' nodes='393' live='376' stamp='11.193'/>", "</phase>",
+				"<phase_done name='matcher' nodes='255' live='255' stamp='11.174'/>",
+				"</phase>",
+				"<phase name='regalloc' nodes='317' live='317' stamp='11.175'>",
+				"<regalloc attempts='1' success='1'/>",
+				"<phase_done name='regalloc' nodes='393' live='376' stamp='11.193'/>",
+				"</phase>",
 				"<phase name='output' nodes='395' live='378' stamp='11.193'>",
-				"<phase_done name='output' nodes='422' live='396' stamp='11.194'/>", "</phase>",
-				"<dependency type='leaf_type' ctxk='776'/>", "<dependency type='unique_concrete_method' ctxk='779' x='785'/>",
+				"<phase_done name='output' nodes='422' live='396' stamp='11.194'/>",
+				"</phase>",
+				"<dependency type='leaf_type' ctxk='776'/>",
+				"<dependency type='unique_concrete_method' ctxk='779' x='785'/>",
 				"<dependency type='unique_concrete_method' ctxk='747' x='819'/>",
 				"<code_cache total_blobs='263' nmethods='73' adapters='142' free_code_cache='49731968'/>",
 				"<task_done success='1' nmsize='800' count='10000' backedge_count='5317' inlined_bytes='79' stamp='11.194'/>",
 				"</task>" };
 
-		JITDataModel testModel = new JITDataModel();
-
-		String methodName = "testCallChain";
-		String fqClassName = "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog";
-
-		try
-		{
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassName));
-
-			String fqClassNameSB = "java.lang.AbstractStringBuilder";
-			testModel.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(fqClassNameSB));
-		}
-		catch (ClassNotFoundException cnfe)
-		{
-			fail();
-		}
-
-		List<String> paramList = new ArrayList<>();
-		paramList.add("long");
-
-		MetaClass metaClass = testModel.getPackageManager().getMetaClass(fqClassName);
-		IMetaMember testMember = metaClass.getMemberForSignature(MemberSignatureParts.fromParts(fqClassName, methodName, S_TYPE_NAME_VOID, paramList));
-
-		assertNotNull(testMember);
-
-		CompileNode root = buildCompileNodeForXML(lines, testMember, testModel);
+		CompileNode root = buildCompileNodeForXML(lines);
 
 		// root
 		// -> chainA1() -> chainA2() -> chainA3() -> chainA4() -> bigMethod()
 		// -> chainB1() -> chainB2() -> chainB3()
+		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
 		// -> append()
 		// -> append()
 		// -> toString()
 		// -> println
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
-
+		
 		List<CompileNode> rootChildren = root.getChildren();
 
-		assertEquals(7, rootChildren.size());
+		assertEquals(8, rootChildren.size());
 
-		int pos = 0;
+		CompileNode child0 = rootChildren.get(0);
+		CompileNode child1 = rootChildren.get(1);
+		CompileNode child2 = rootChildren.get(2);
+		CompileNode child3 = rootChildren.get(3);
+		CompileNode child4 = rootChildren.get(4);
+		CompileNode child5 = rootChildren.get(5);
+		CompileNode child6 = rootChildren.get(6);
+		CompileNode child7 = rootChildren.get(7);
 
-		assertEquals("chainA1", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("chainB1", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("append", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("toString", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("println", rootChildren.get(pos++).getMember().getMemberName());
-		assertEquals("java.lang.AbstractStringBuilder", rootChildren.get(pos++).getMember().getMemberName());
+		assertEquals("chainA1", child0.getMemberName());
+		assertTrue(child0.isInlined());
+
+		assertEquals("chainB1", child1.getMemberName());
+		assertTrue(child1.isInlined());
+		
+		assertEquals("<init>", child2.getMemberName());
+		assertTrue(child2.isInlined());
+
+		assertEquals("append", child3.getMemberName());
+		assertTrue(!child3.isInlined());
+
+		assertEquals("append", child4.getMemberName());
+		assertTrue(!child4.isInlined());
+
+		assertEquals("toString", child5.getMemberName());
+		assertTrue(!child5.isInlined());
+
+		assertEquals("println", child6.getMemberName());
+		assertTrue(!child6.isInlined());
+
+		assertEquals("<init>", child7.getMemberName());
+		assertTrue(child7.isInlined());
+
+		List<CompileNode> child0Children = child0.getChildren();
+		assertEquals(1, child0Children.size());
+		CompileNode child0child0 = child0Children.get(0);
+		assertEquals("chainA2", child0child0.getMemberName());
+		assertTrue(child0child0.isInlined());
+
+		List<CompileNode> child0child0Children = child0child0.getChildren();
+		assertEquals(1, child0child0Children.size());
+		CompileNode child0child0child0 = child0child0Children.get(0);
+		assertEquals("chainA3", child0child0child0.getMemberName());
+		assertTrue(child0child0child0.isInlined());
+
+		List<CompileNode> child0child0child0Children = child0child0child0.getChildren();
+		assertEquals(1, child0child0child0Children.size());
+		CompileNode child0child0child0child0 = child0child0child0Children.get(0);
+		assertEquals("chainA4", child0child0child0child0.getMemberName());
+		assertTrue(child0child0child0child0.isInlined());
+
+		List<CompileNode> child0child0child0child0Children = child0child0child0child0.getChildren();
+		assertEquals(1, child0child0child0child0Children.size());
+		CompileNode child0child0child0child0child0 = child0child0child0child0Children.get(0);
+		assertEquals("bigMethod", child0child0child0child0child0.getMemberName());
+		assertTrue(!child0child0child0child0child0.isInlined());
 	}
 
-	private CompileNode buildCompileNodeForXML(String[] lines, IMetaMember member, JITDataModel model)
+	private CompileNode buildCompileNodeForXML(String[] lines)
 	{
 		TagProcessor tp = new TagProcessor();
 
@@ -712,7 +880,7 @@ public class TestCompileChain
 		{
 			line = line.trim();
 			line = StringUtil.replaceXMLEntities(line);
-			
+
 			tag = tp.processLine(line);
 
 			if (count++ < lines.length - 1)
@@ -723,18 +891,15 @@ public class TestCompileChain
 
 		assertNotNull(tag);
 
-		member.setCompiledAttributes(new HashMap<String, String>());
-
-		Journal journal = member.getJournal();
+		Journal journal = new Journal();
 		journal.addEntry(tag);
 
-		CompileChainWalker walker = new CompileChainWalker(model);
+		CompileChainWalker walker = new CompileChainWalker(new JITDataModel());
 
-		CompileNode root = walker.buildCallTree(member);
+		CompileNode root = walker.buildCallTree(journal);
 
 		assertNotNull(root);
 
 		return root;
-
 	}
 }

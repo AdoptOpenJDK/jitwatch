@@ -854,11 +854,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	public void openCompileChain(IMetaMember member)
 	{
-		if (member.isCompiled())
+		if (member != null && member.isCompiled())
 		{
 			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			CompileNode root = walker.buildCallTree(member);
+			CompileNode root = walker.buildCallTree(member.getJournal());
 
 			if (root != null)
 			{

@@ -47,7 +47,7 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.util.InlineUtil;
+import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
@@ -71,34 +71,37 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 		bcAnnotations.clear();
 
-		if (!member.isCompiled())
+		if (member != null)
 		{
-			return bcAnnotations;
-		}
 
-		try
-		{
-			JournalUtil.visitParseTagsOfLastTask(member, this);
-
-			JournalUtil.visitOptimizerTagsOfLastTask(member, this);
-		}
-		catch (LogParseException e)
-		{
-			logger.error("Error building bytecode annotations", e);
-
-			Throwable cause = e.getCause();
-
-			if (cause != null)
+			if (!member.isCompiled())
 			{
-				logger.error("Cause", cause);
+				return bcAnnotations;
+			}
 
-				if (cause instanceof AnnotationException)
+			try
+			{
+				JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
+
+				JournalUtil.visitOptimizerTagsOfLastTask(member.getJournal(), this);
+			}
+			catch (LogParseException e)
+			{
+				logger.error("Error building bytecode annotations", e);
+
+				Throwable cause = e.getCause();
+
+				if (cause != null)
 				{
-					throw (AnnotationException) cause;
+					logger.error("Cause", cause);
+
+					if (cause instanceof AnnotationException)
+					{
+						throw (AnnotationException) cause;
+					}
 				}
 			}
 		}
-
 		return bcAnnotations;
 	}
 
@@ -283,8 +286,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, CompilerName compilerName, IParseDictionary parseDictionary)
-			throws AnnotationException
+	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, CompilerName compilerName,
+			IParseDictionary parseDictionary) throws AnnotationException
 	{
 		if (DEBUG_LOGGING)
 		{
@@ -400,7 +403,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					}
 
 					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs, parseDictionary);
+					String annotationText = TooltipUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs,
+							parseDictionary);
 
 					bcAnnotations.addAnnotation(currentBytecode,
 							new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
@@ -418,7 +422,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					}
 
 					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = InlineUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs, parseDictionary);
+					String annotationText = TooltipUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs,
+							parseDictionary);
 
 					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 				}

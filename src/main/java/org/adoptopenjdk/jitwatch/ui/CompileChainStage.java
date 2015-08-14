@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -22,7 +21,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class CompileChainStage extends Stage
@@ -64,8 +62,8 @@ public class CompileChainStage extends Stage
 		scrollPane.setContent(pane);
 
 		Scene scene = UserInterfaceUtil.getScene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-
-		setTitle("Compile Chain: " + root.getMember().toString());
+			
+		setTitle("Compile Chain: " + root.getMemberName());
 
 		setScene(scene);
 
@@ -89,7 +87,9 @@ public class CompileChainStage extends Stage
 
 		if (rootNode.getChildren().size() == 0)
 		{
-			Text text = new Text("No method calls made by " + rootNode.getMember().toStringUnqualifiedMethodName(false) + " were inlined or JIT compiled");
+			
+			
+			Text text = new Text("No method calls made by " + rootNode.getMemberName() + " were inlined or JIT compiled");
 			text.setX(X_OFFSET);
 			text.setY(y);
 
@@ -152,16 +152,16 @@ public class CompileChainStage extends Stage
 
 	private String getLabelText(CompileNode node)
 	{
-		IMetaMember member = node.getMember();
+		String memberName = node.getMemberName();
 
-		return member == null ? "Unknown" : member.getMemberName();
+		return memberName == null ? "Unknown" : memberName;
 	}
 
 	private double plotNode(final CompileNode node, final double x, final double parentY, final int depth)
 	{
 		String labelText = getLabelText(node);
 
-		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.getMember().isCompiled());
+		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.isCompiled());
 
 		if (depth > 0)
 		{
@@ -185,7 +185,7 @@ public class CompileChainStage extends Stage
 		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.rect);
 		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.text);
 
-		Tooltip tip = new Tooltip(getToolTipText(node));
+		Tooltip tip = new Tooltip(node.getTooltipText());
 		Tooltip.install(plotNode.rect, tip);
 		Tooltip.install(plotNode.text, tip);
 
@@ -226,34 +226,6 @@ public class CompileChainStage extends Stage
 		result.text = text;
 
 		return result;
-	}
-
-	private String getToolTipText(CompileNode node)
-	{
-		StringBuilder tipBuilder = new StringBuilder();
-		tipBuilder.append(node.getMember().toString()).append(C_NEWLINE);
-
-		tipBuilder.append("JIT Compiled: ");
-
-		if (node.getMember().isCompiled())
-		{
-			tipBuilder.append("Yes\n");
-		}
-		else
-		{
-			tipBuilder.append("No\n");
-		}
-
-		String inlineReason = node.getInlineReason();
-
-		if (inlineReason != null)
-		{
-			tipBuilder.append(inlineReason);
-		}
-
-		tipBuilder.append(C_NEWLINE);
-
-		return tipBuilder.toString();
 	}
 
 	private Color getColourForCompilation(boolean isCompiled)

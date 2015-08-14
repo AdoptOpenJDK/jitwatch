@@ -33,11 +33,11 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 	@Override
 	public void visit(IMetaMember metaMember)
 	{
-		if (metaMember.isCompiled())
+		if (metaMember != null && metaMember.isCompiled())
 		{
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember, this);
+				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
 			}
 			catch (LogParseException e)
 			{

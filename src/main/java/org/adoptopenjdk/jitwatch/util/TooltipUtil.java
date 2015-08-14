@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
@@ -17,9 +18,9 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 
-public final class InlineUtil
+public final class TooltipUtil
 {
-	private InlineUtil()
+	private TooltipUtil()
 	{
 	}
 
@@ -33,6 +34,18 @@ public final class InlineUtil
 
 		builder.append("Class: ").append(ParseUtil.lookupType(holder, parseDictionary)).append(S_NEWLINE);
 		builder.append("Method: ").append(methodName).append(S_NEWLINE);
+
+		builder.append("JIT Compiled: ");
+
+		if (methodAttrs.containsKey(ATTR_COMPILE_ID))
+		{
+			builder.append("Yes\n");
+		}
+		else
+		{
+			builder.append("No\n");
+		}
+
 		builder.append("Inlined: ");
 
 		if (inlined)

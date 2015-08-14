@@ -18,4 +18,6 @@ public interface IParseDictionary
 	Tag getKlass(String id);
 
 	Tag getMethod(String id);
+	
+	String toString();
 }

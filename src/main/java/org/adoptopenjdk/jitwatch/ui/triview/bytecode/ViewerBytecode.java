@@ -109,7 +109,7 @@ public class ViewerBytecode extends Viewer
 	{
 		offsetMismatchDetected = false;
 		instructions.clear();
-
+		
 		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode();
 
 		if (metaClassBytecode != null)
@@ -118,7 +118,7 @@ public class ViewerBytecode extends Viewer
 
 			if (memberBytecode != null)
 			{
-				instructions = memberBytecode.getInstructions();
+				instructions.addAll(memberBytecode.getInstructions());
 			}
 		}
 

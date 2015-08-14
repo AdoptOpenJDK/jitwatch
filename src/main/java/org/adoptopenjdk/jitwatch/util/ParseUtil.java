@@ -852,6 +852,22 @@ public final class ParseUtil
 
 		return result;
 	}
+	
+	public static String getMethodName(String methodID, IParseDictionary parseDictionary)
+	{
+		String result = null;
+		
+		Tag methodTag = parseDictionary.getMethod(methodID);
+		
+		if (methodTag != null)
+		{
+			String methodName = methodTag.getAttribute(ATTR_NAME);
+			
+			result = StringUtil.replaceXMLEntities(methodName);
+		}
+		
+		return result;
+	}
 
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
@@ -955,32 +971,22 @@ public final class ParseUtil
 	{
 		String result = null;
 
-		// logger.debug("Looking up type: {}", typeOrKlassID);
-
 		if (typeOrKlassID != null)
 		{
 			Tag typeTag = parseDictionary.getType(typeOrKlassID);
-
-			// logger.debug("Type? {}", typeTag);
-
+			
 			if (typeTag == null)
 			{
 				typeTag = parseDictionary.getKlass(typeOrKlassID);
-
-				// logger.debug("Klass? {}", typeTag);
 			}
 
 			if (typeTag != null)
 			{
 				String typeAttrName = typeTag.getAttribute(ATTR_NAME);
 
-				// logger.debug("Name {}", typeAttrName);
-
 				if (typeAttrName != null)
 				{
 					result = typeAttrName.replace(S_SLASH, S_DOT);
-
-					result = ParseUtil.expandParameterType(result);
 				}
 			}
 		}
