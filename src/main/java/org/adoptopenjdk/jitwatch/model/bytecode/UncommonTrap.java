@@ -1,0 +1,88 @@
+package org.adoptopenjdk.jitwatch.model.bytecode;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ACTION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMMENT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+
+import org.adoptopenjdk.jitwatch.model.Tag;
+
+public class UncommonTrap
+{
+	private int bci;
+	private String reason;
+	private String action;
+	private String comment;
+
+	public int getBCI()
+	{
+		return bci;
+	}
+
+	public String getReason()
+	{
+		return reason;
+	}
+
+	public String getAction()
+	{
+		return action;
+	}
+
+	public String getComment()
+	{
+		return comment;
+	}
+
+	public UncommonTrap(int bci, String reason, String action, String comment)
+	{
+		this.bci = bci;
+		this.reason = reason;
+		this.action = action;
+		this.comment = comment;
+	}
+
+	public static UncommonTrap parse(Tag tag)
+	{
+		UncommonTrap trap = null;
+
+		String bci = tag.getAttribute(ATTR_BCI);
+		String reason = tag.getAttribute(ATTR_REASON);
+		String action = tag.getAttribute(ATTR_ACTION);
+		String comment = tag.getAttribute(ATTR_COMMENT);
+
+		if (bci != null)
+		{
+			int bciValue = Integer.valueOf(bci);
+
+			trap = new UncommonTrap(bciValue, reason, action, comment);
+		}
+
+		return trap;
+
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("UncommonTrap");
+		builder.append("(");
+		builder.append("reason:");
+		builder.append(reason);
+		builder.append(" action:");
+		builder.append(action);
+
+		if (comment != null)
+		{
+			builder.append(" comment:");
+			builder.append(comment);
+		}
+
+		builder.append(")");
+
+		return builder.toString();
+	}
+
+}
