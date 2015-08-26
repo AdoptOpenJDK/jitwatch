@@ -9,6 +9,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP_COMPLETED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OBJECT_REF;
@@ -112,6 +114,23 @@ public final class ParseUtil
 		else
 		{
 			logger.warn("Could not parse null stamp");
+			Thread.dumpStack();
+		}
+
+		return result;
+	}
+
+	public static long getStamp(Map<String, String> attrs)
+	{
+		long result = 0;
+
+		if (attrs.containsKey(ATTR_STAMP_COMPLETED))
+		{
+			result = parseStamp(attrs.get(ATTR_STAMP_COMPLETED));
+		}
+		else if (attrs.containsKey(ATTR_STAMP))
+		{
+			result = parseStamp(attrs.get(ATTR_STAMP));
 		}
 
 		return result;
@@ -130,7 +149,6 @@ public final class ParseUtil
 		catch (ParseException pe)
 		{
 			logger.warn("Could not parse {} as a Double", pe);
-			//TODO throw NumberFormatException?
 		}
 
 		return result;
@@ -852,20 +870,20 @@ public final class ParseUtil
 
 		return result;
 	}
-	
+
 	public static String getMethodName(String methodID, IParseDictionary parseDictionary)
 	{
 		String result = null;
-		
+
 		Tag methodTag = parseDictionary.getMethod(methodID);
-		
+
 		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
-			
+
 			result = StringUtil.replaceXMLEntities(methodName);
 		}
-		
+
 		return result;
 	}
 
@@ -874,11 +892,11 @@ public final class ParseUtil
 		IMetaMember result = null;
 
 		Tag methodTag = parseDictionary.getMethod(methodId);
-		
+
 		if (methodTag != null)
 		{
 			String methodName = methodTag.getAttribute(ATTR_NAME);
-			
+
 			methodName = StringUtil.replaceXMLEntities(methodName);
 
 			String klassId = methodTag.getAttribute(ATTR_HOLDER);
@@ -896,7 +914,7 @@ public final class ParseUtil
 			PackageManager pm = model.getPackageManager();
 
 			MetaClass metaClass = pm.getMetaClass(metaClassName);
-			
+
 			if (metaClass == null)
 			{
 				if (DEBUG_LOGGING)
@@ -932,10 +950,10 @@ public final class ParseUtil
 			}
 
 			if (metaClass != null)
-			{			
+			{
 				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName,
 						returnType, argumentTypes);
-								
+
 				result = metaClass.getMemberForSignature(msp);
 			}
 			else if (!possibleLambdaMethod(metaClassName))
@@ -966,7 +984,7 @@ public final class ParseUtil
 			return false;
 		}
 	}
-	
+
 	public static String lookupType(String typeOrKlassID, IParseDictionary parseDictionary)
 	{
 		String result = null;
@@ -974,7 +992,7 @@ public final class ParseUtil
 		if (typeOrKlassID != null)
 		{
 			Tag typeTag = parseDictionary.getType(typeOrKlassID);
-			
+
 			if (typeTag == null)
 			{
 				typeTag = parseDictionary.getKlass(typeOrKlassID);

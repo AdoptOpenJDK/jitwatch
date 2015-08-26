@@ -8,15 +8,18 @@ package org.adoptopenjdk.jitwatch.ui.graphing;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public abstract class AbstractGraphStage extends Stage
 {
@@ -24,9 +27,9 @@ public abstract class AbstractGraphStage extends Stage
 	protected GraphicsContext gc;
 	protected JITWatchUI parent;
 
-	protected static double graphGapLeft = 20.5;
-	protected static final double graphGapRight = 20.5;
-	protected static final double graphGapTop = 20.5;
+	protected double graphGapLeft = 20.5;
+	protected final double graphGapRight = 20.5;
+	protected final double graphGapTop = 20.5;
 
 	protected static final int[] Y_SCALE = new int[21];
 
@@ -46,6 +49,12 @@ public abstract class AbstractGraphStage extends Stage
 	protected long maxYQ;
 
 	private boolean xAxisTime = false;
+	
+	protected static final Font STANDARD_FONT = new Font(UserInterfaceUtil.FONT_MONOSPACE_FAMILY,
+			Double.valueOf(UserInterfaceUtil.FONT_MONOSPACE_SIZE));
+	
+	protected static final Font MEMBER_FONT = new Font(UserInterfaceUtil.FONT_MONOSPACE_FAMILY,
+			Double.valueOf(UserInterfaceUtil.FONT_MONOSPACE_SIZE) * 2.0);
 
 	static
 	{
@@ -101,15 +110,21 @@ public abstract class AbstractGraphStage extends Stage
 
 	protected void baseRedraw()
 	{
+		gc.setFont(STANDARD_FONT);
+		
 		width = canvas.getWidth();
 		height = canvas.getHeight();
 		chartWidth = width - graphGapLeft - graphGapRight;
 		chartHeight = height - graphGapTop * 2;
 
+		setStrokeForAxis();
+
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, width, height);
+		
 		gc.setFill(Color.rgb(210, 255, 255));
 		gc.fillRect(graphGapLeft, graphGapTop, chartWidth, chartHeight);
+		
 		gc.setStroke(Color.BLACK);
 		gc.strokeRect(graphGapLeft, graphGapTop, chartWidth, chartHeight);
 	}
@@ -141,11 +156,14 @@ public abstract class AbstractGraphStage extends Stage
 		while (gridX <= maxX)
 		{
 			double x = graphGapLeft + normaliseX(gridX);
+			
+			setStrokeForAxis();
 			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
 
 			boolean showMillis = maxX  < 5000;
 
-			gc.strokeText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(graphGapTop + chartHeight + 12));
+			setStrokeForText();
+			gc.fillText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(graphGapTop + chartHeight + 2));
 
 			gridX += xInc;
 		}
@@ -164,8 +182,12 @@ public abstract class AbstractGraphStage extends Stage
 		while (gridX <= maxX)
 		{
 			double x = graphGapLeft + normaliseX(gridX);
+			
+			setStrokeForAxis();
 			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
-			gc.strokeText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(graphGapTop + chartHeight + 12));
+			
+			setStrokeForText();
+			gc.fillText(StringUtil.formatThousands(Long.toString(gridX)), fix(x), fix(graphGapTop + chartHeight + 2));
 
 			gridX += xInc;
 		}
@@ -192,12 +214,26 @@ public abstract class AbstractGraphStage extends Stage
 			if (gridY >= minYQ)
 			{
 				double y = graphGapTop + normaliseY(gridY);
+				
+				setStrokeForAxis();
 				gc.strokeLine(fix(graphGapLeft), fix(y), fix(graphGapLeft + chartWidth), fix(y));
-				gc.strokeText(StringUtil.formatThousands(Long.toString(gridY)), fix(yLabelX), fix(y + 2));
+				
+				setStrokeForText();
+				gc.fillText(StringUtil.formatThousands(Long.toString(gridY)), fix(yLabelX), fix(y - getStringHeight() / 2));
 			}
 
 			gridY += yInc;
 		}
+	}
+	
+	protected double getApproximateStringWidth(String text)
+	{
+		return text.length() * gc.getFont().getSize() * 0.5;
+	}
+
+	protected double getStringHeight()
+	{
+		return gc.getFont().getSize();
 	}
 
 	private long getXStepTime()
@@ -278,5 +314,19 @@ public abstract class AbstractGraphStage extends Stage
 	protected double fix(double pixel)
 	{
 		return 0.5 + (int) pixel;
+	}
+	
+	protected void setStrokeForAxis()
+	{
+		gc.setStroke(Color.BLACK);
+		gc.setLineWidth(0.5);
+	}
+	
+	protected void setStrokeForText()
+	{
+		gc.setStroke(Color.BLACK);
+		gc.setFill(Color.BLACK);
+		gc.setLineWidth(1.0);
+		gc.setTextBaseline(VPos.TOP);
 	}
 }

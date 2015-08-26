@@ -10,6 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP_COMPLETED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
@@ -662,9 +663,22 @@ public class HotSpotLogParser implements ILogParser
 		handleMethodLine(tag, EventType.QUEUE);
 	}
 
+	private void renameCompilationCompletedTimestamp(Tag tag)
+	{
+		String compilationCompletedStamp = tag.getAttribute(ATTR_STAMP);
+		
+		if (compilationCompletedStamp != null)
+		{
+			tag.getAttrs().remove(ATTR_STAMP);
+			tag.getAttrs().put(ATTR_STAMP_COMPLETED, compilationCompletedStamp);
+		}
+	}
+	
 	private void handleTagNMethod(Tag tag)
 	{
 		String attrCompiler = tag.getAttribute(ATTR_COMPILER);
+		
+		renameCompilationCompletedTimestamp(tag);
 
 		if (attrCompiler != null)
 		{
@@ -742,9 +756,8 @@ public class HotSpotLogParser implements ILogParser
 	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-
-		String stampAttr = attrs.get(ATTR_STAMP);
-		long stampTime = ParseUtil.parseStamp(stampAttr);
+		
+		long stampTime = ParseUtil.getStamp(attrs);
 
 		if (metaMember != null)
 		{

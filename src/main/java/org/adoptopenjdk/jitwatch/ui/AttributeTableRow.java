@@ -17,7 +17,7 @@ public class AttributeTableRow
     {
         this.type = type;
         this.name = name;
-        this.value = StringUtil.formatThousands(value);
+        this.value = StringUtil.replaceXMLEntities(value);
     }
 
     public String getType()

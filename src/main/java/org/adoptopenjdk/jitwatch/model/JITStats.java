@@ -258,7 +258,7 @@ public class JITStats
 
 	public long getTotalCompiledMethods()
 	{
-		return countC1 + countC2 + countC2N + countOSR;
+		return countC1 + countC2 + countC2N;
 	}
 
 	public long getNativeBytes()

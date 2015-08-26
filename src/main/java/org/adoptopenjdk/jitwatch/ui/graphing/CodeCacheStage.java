@@ -19,7 +19,6 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.StageStyle;
 
 public class CodeCacheStage extends AbstractGraphStage
@@ -94,7 +93,6 @@ public class CodeCacheStage extends AbstractGraphStage
 			double lastCY = graphGapTop + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
 			gc.setStroke(Color.BLACK);
-			gc.setFont(new Font("monospace", 10));
 
 			Color colourLine = Color.BLUE;
 
@@ -120,7 +118,7 @@ public class CodeCacheStage extends AbstractGraphStage
 		}
 		else
 		{
-			gc.strokeText("No code cache information in log", fix(10), fix(10));
+			gc.fillText("No code cache information in log", fix(10), fix(10));
 		}
 	}
 

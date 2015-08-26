@@ -14,8 +14,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public interface IMetaMember
 {
-	List<String> getQueuedAttributes();
-
 	MetaClass getMetaClass();
 	
 	MemberBytecode getMemberBytecode();
@@ -26,21 +24,16 @@ public interface IMetaMember
 	Journal getJournal();
 
 	String getQueuedAttribute(String key);
-
-	List<String> getCompiledAttributes();
-
-	String getCompiledAttribute(String key);
-
-	void addCompiledAttribute(String key, String value);
-
+	List<String> getQueuedAttributes();
 	void setQueuedAttributes(Map<String, String> queuedAttributes);
-
 	boolean isQueued();
 
+	//TODO split task and nmethod attrs?
 	void setCompiledAttributes(Map<String, String> compiledAttributes);
-
 	void addCompiledAttributes(Map<String, String> additionalAttrs);
-
+	String getCompiledAttribute(String key);
+	List<String> getCompiledAttributes();
+	void addCompiledAttribute(String key, String value);
 	boolean isCompiled();
 
 	String toStringUnqualifiedMethodName(boolean fqParamTypes);

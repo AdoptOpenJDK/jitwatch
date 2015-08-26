@@ -5,9 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import org.adoptopenjdk.jitwatch.util.StringUtil;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class JITEvent
 {

@@ -98,7 +98,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// ugly but better than using COWAL with so many writes
 	public void addEvent(JITEvent event)
-	{
+	{		
 		synchronized (jitEvents)
 		{
 			jitEvents.add(event);
@@ -106,7 +106,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	}
 
 	@Override
-	public synchronized List<JITEvent> getEventListCopy()
+	public List<JITEvent> getEventListCopy()
 	{
 		synchronized (jitEvents)
 		{

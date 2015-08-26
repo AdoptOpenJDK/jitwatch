@@ -50,7 +50,7 @@ public class JournalViewerStage extends AbstractTextViewerStage
 		int maxLineLength = 0;
 
 		List<Label> labels = new ArrayList<>();
-
+		
 		for (Tag tag : journal.getEntryList())
 		{
 			String[] tagLines = tag.toString().split(S_NEWLINE);

@@ -127,6 +127,7 @@ public class HistoStage extends AbstractGraphStage
 
                 double x = graphGapLeft + normaliseX(key);
 
+                gc.setLineWidth(2.0);
                 gc.setStroke(colourLine);
 
                 double y = graphGapTop + normaliseY(value);
@@ -146,17 +147,19 @@ public class HistoStage extends AbstractGraphStage
             gc.strokeRect(fix(xPos), fix(yPos), fix(legendWidth), fix(legendHeight));
 
             xPos += 5;
-            yPos += 15;
+            yPos += 5;
 
             for (double percent : new double[] { 50, 75, 80, 85, 90, 95, 98, 99, 99.5, 99.9, 100 })
             {
-                gc.strokeText(percent + "% : " + histo.getPercentile(percent), fix(xPos), fix(yPos));
+        		setStrokeForText();
+                gc.fillText(percent + "% : " + histo.getPercentile(percent), fix(xPos), fix(yPos));
                 yPos += 20;
             }
         }
         else
         {
-            gc.strokeText("No data for histogram.", fix(graphGapLeft + 8), fix(graphGapTop + 16));
+			setStrokeForText();
+            gc.fillText("No data for histogram.", fix(graphGapLeft + 8), fix(graphGapTop + 16));
         }
     }
 }

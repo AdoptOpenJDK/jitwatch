@@ -5,10 +5,14 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 public class Journal
 {
@@ -34,6 +38,18 @@ public class Journal
 		{
 			List<Tag> copy = new ArrayList<>(entryList);
 
+			Collections.sort(copy, new Comparator<Tag>()
+			{
+				@Override
+				public int compare(Tag tag1, Tag tag2)
+				{
+					long ts1 = ParseUtil.getStamp(tag1.getAttrs());
+					long ts2 = ParseUtil.getStamp(tag2.getAttrs());
+					
+					return Long.compare(ts1, ts2);
+				}
+			});
+
 			return copy;
 		}
 	}
@@ -43,12 +59,9 @@ public class Journal
 	{
 		StringBuilder builder = new StringBuilder();
 
-		synchronized (entryList)
+		for (Tag tag : getEntryList())
 		{
-			for (Tag tag : entryList)
-			{
-				builder.append(tag.toString(true)).append(JITWatchConstants.C_NEWLINE);
-			}
+			builder.append(tag.toString(true)).append(C_NEWLINE);
 		}
 
 		return builder.toString();

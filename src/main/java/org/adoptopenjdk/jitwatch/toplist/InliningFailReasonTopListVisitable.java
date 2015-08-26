@@ -32,7 +32,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 
 	@Override
 	public void visit(IMetaMember metaMember)
-	{
+	{		
 		if (metaMember != null && metaMember.isCompiled())
 		{
 			try
@@ -52,6 +52,9 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		{
 			String tagName = child.getName();
 			Map<String, String> attrs = child.getAttrs();
+			
+			logger.info("processParseTag {}", child.toString(false));
+
 
 			switch (tagName)
 			{
