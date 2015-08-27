@@ -70,7 +70,7 @@ public class CompileChainWalker implements IJournalVisitable
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();
-			Map<String, String> tagAttrs = child.getAttrs();
+			Map<String, String> tagAttrs = child.getAttributes();
 
 			switch (tagName)
 			{

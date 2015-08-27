@@ -43,8 +43,8 @@ public class Journal
 				@Override
 				public int compare(Tag tag1, Tag tag2)
 				{
-					long ts1 = ParseUtil.getStamp(tag1.getAttrs());
-					long ts2 = ParseUtil.getStamp(tag2.getAttrs());
+					long ts1 = ParseUtil.getStamp(tag1.getAttributes());
+					long ts2 = ParseUtil.getStamp(tag2.getAttributes());
 					
 					return Long.compare(ts1, ts2);
 				}

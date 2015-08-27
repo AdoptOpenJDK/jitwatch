@@ -70,7 +70,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();
-			Map<String, String> attrs = child.getAttrs();
+			Map<String, String> attrs = child.getAttributes();
 
 			switch (tagName)
 			{

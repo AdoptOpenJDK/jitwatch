@@ -51,7 +51,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		for (Tag child : parseTag.getChildren())
 		{
 			String tagName = child.getName();
-			Map<String, String> attrs = child.getAttrs();
+			Map<String, String> attrs = child.getAttributes();
 			
 			logger.info("processParseTag {}", child.toString(false));
 

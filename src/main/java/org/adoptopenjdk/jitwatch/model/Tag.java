@@ -107,7 +107,7 @@ public class Tag
 		{
 			if (child.getName().equals(tagName))
 			{
-				if (child.getAttrs().containsKey(attrName) && child.getAttribute(attrName).equals(attrValue))
+				if (child.containsAttribute(attrName) && child.getAttribute(attrName).equals(attrValue))
 				{
 					result.add(child);
 				}
@@ -131,8 +131,13 @@ public class Tag
 	{
 		return name;
 	}
+	
+	public boolean containsAttribute(String name)
+	{
+		return attrs.containsKey(name);
+	}
 
-	public Map<String, String> getAttrs()
+	public Map<String, String> getAttributes()
 	{
 		return attrs;
 	}

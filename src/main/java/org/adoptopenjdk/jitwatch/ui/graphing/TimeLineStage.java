@@ -30,7 +30,6 @@ import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class TimeLineStage extends AbstractGraphStage
@@ -40,7 +39,7 @@ public class TimeLineStage extends AbstractGraphStage
 	private int selectedTagIndex = 0;
 	private static final double MARKET_DIAMETER = 10;
 	private boolean labelLeft = true;
-
+	
 	public TimeLineStage(final JITWatchUI parent)
 	{
 		super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, true);
@@ -122,8 +121,8 @@ public class TimeLineStage extends AbstractGraphStage
 
 			minX = 0;
 			maxX = events.get(events.size() - 1).getStamp();
-			maxX *= 1.1;
-			
+			maxX *= 1.2;
+
 			minY = 0;
 
 			calculateMaxCompiles(events);
@@ -154,7 +153,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 		Tag nextJournalEvent = selectedMemberJournalTags.get(selectedTagIndex);
 
-		long journalEventTime = ParseUtil.getStamp(nextJournalEvent.getAttrs());
+		long journalEventTime = ParseUtil.getStamp(nextJournalEvent.getAttributes());
 
 		if (journalEventTime == stamp)
 		{
@@ -176,8 +175,8 @@ public class TimeLineStage extends AbstractGraphStage
 
 			if (labelLeft)
 			{
-				labelX = blobX - getApproximateStringWidth(label) - 8;
-				labelY = Math.min(blobY - getStringHeight() - 8, graphGapTop + chartHeight - 32);
+				labelX = blobX - getApproximateStringWidth(label) - 16;
+				labelY = Math.min(blobY - getStringHeight(), graphGapTop + chartHeight - 32);
 
 			}
 			else
@@ -185,11 +184,36 @@ public class TimeLineStage extends AbstractGraphStage
 				labelX = blobX + 16;
 				labelY = Math.min(blobY, graphGapTop + chartHeight - 32);
 			}
-			
+
 			labelLeft = !labelLeft;
 
-			drawLabel(label, labelX, labelY);
+			drawLabel(label, labelX, labelY, getLabelColour(nextJournalEvent));
 		}
+	}
+	
+	private Color getLabelColour(Tag tag)
+	{
+		Color result = Color.WHITE;
+		
+		String tagName = tag.getName();
+		
+		if (TAG_NMETHOD.equals(tagName))
+		{
+			if (tag.containsAttribute(ATTR_DECOMPILES))
+			{
+				result = Color.ORANGERED;
+			}
+			else
+			{
+				result = Color.LIMEGREEN;
+			}				 
+		}
+		else if (TAG_TASK_QUEUED.equals(tagName))
+		{
+			result = Color.YELLOW;
+		}
+		
+		return result;
 	}
 
 	private void showSelectedMemberLabel()
@@ -203,12 +227,17 @@ public class TimeLineStage extends AbstractGraphStage
 
 	private void drawLabel(String text, double xPos, double yPos)
 	{
+		drawLabel(text, xPos, yPos, Color.WHITE);
+	}
+	
+	private void drawLabel(String text, double xPos, double yPos, Color backgroundColour)
+	{
 		double boxPad = 4;
 
 		double boxWidth = getApproximateStringWidth(text) + boxPad * 2;
 		double boxHeight = getStringHeight() + boxPad * 2;
 
-		gc.setFill(Color.WHITE);
+		gc.setFill(backgroundColour);
 
 		setStrokeForAxis();
 		gc.fillRect(fix(xPos), fix(yPos), fix(boxWidth), fix(boxHeight));
@@ -226,40 +255,37 @@ public class TimeLineStage extends AbstractGraphStage
 
 		if (TAG_TASK_QUEUED.equals(tagName))
 		{
-			selectedItemBuilder.append("Queued at ");
-			selectedItemBuilder.append(StringUtil.formatTimestamp((long) journalEventTime, true));
+			selectedItemBuilder.append("Queued");
 		}
 		else
 		{
 			if (nextJournalEvent.getAttribute(ATTR_DECOMPILES) != null)
 			{
-				selectedItemBuilder.append("Recompiled at ");
+				selectedItemBuilder.append("Recompiled");
 			}
 			else
 			{
-				selectedItemBuilder.append("Compiled at ");
+				selectedItemBuilder.append("Compiled");
 			}
 
-			selectedItemBuilder.append(StringUtil.formatTimestamp((long) journalEventTime, true));
-
 			String compiler = nextJournalEvent.getAttribute(ATTR_COMPILER);
-			
+
 			if (compiler == null)
 			{
 				compiler = "unknown!";
 			}
-			
+
 			selectedItemBuilder.append(" by ").append(compiler);
-			
+
 			String compileKind = nextJournalEvent.getAttribute(ATTR_COMPILE_KIND);
-			
+
 			if (compileKind != null)
 			{
-				selectedItemBuilder.append(C_OPEN_PARENTHESES).append(compileKind.toUpperCase()).append(C_CLOSE_PARENTHESES);
+				selectedItemBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES).append(compileKind.toUpperCase()).append(C_CLOSE_PARENTHESES);
 			}
-			
+
 			String level = nextJournalEvent.getAttribute(ATTR_LEVEL);
-			
+
 			if (level != null)
 			{
 				selectedItemBuilder.append(" (Level ").append(level).append(C_CLOSE_PARENTHESES);
@@ -287,29 +313,25 @@ public class TimeLineStage extends AbstractGraphStage
 
 		for (JITEvent event : events)
 		{
-			// if (event.getEventType() != EventType.QUEUE)
+			long stamp = event.getStamp();
+
+			cumC++;
+
+			double x = graphGapLeft + normaliseX(stamp);
+
+			double y = graphGapTop + normaliseY(cumC);
+
+			if (selectedMemberJournalTags.size() > 0)
 			{
-
-				long stamp = event.getStamp();
-
-				cumC++;
-
-				double x = graphGapLeft + normaliseX(stamp);
-
-				double y = graphGapTop + normaliseY(cumC);
-
-				if (selectedMemberJournalTags.size() > 0)
-				{
-					drawMemberEvents(stamp, y);
-				}
-
-				gc.setStroke(colourMarker);
-				gc.setLineWidth(2);
-				gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-
-				lastCX = x;
-				lastCY = y;
+				drawMemberEvents(stamp, y);
 			}
+
+			gc.setStroke(colourMarker);
+			gc.setLineWidth(2);
+			gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+
+			lastCX = x;
+			lastCY = y;
 		}
 
 		showStatsLegend(gc);

@@ -669,8 +669,8 @@ public class HotSpotLogParser implements ILogParser
 		
 		if (compilationCompletedStamp != null)
 		{
-			tag.getAttrs().remove(ATTR_STAMP);
-			tag.getAttrs().put(ATTR_STAMP_COMPLETED, compilationCompletedStamp);
+			tag.getAttributes().remove(ATTR_STAMP);
+			tag.getAttributes().put(ATTR_STAMP_COMPLETED, compilationCompletedStamp);
 		}
 	}
 	
@@ -721,7 +721,7 @@ public class HotSpotLogParser implements ILogParser
 			// copy timestamp from parent <task> tag used for graphing code
 			// cache
 			String stamp = tag.getAttribute(ATTR_STAMP);
-			tagCodeCache.getAttrs().put(ATTR_STAMP, stamp);
+			tagCodeCache.getAttributes().put(ATTR_STAMP, stamp);
 
 			model.addCodeCacheTag(tagCodeCache);
 		}
@@ -736,7 +736,7 @@ public class HotSpotLogParser implements ILogParser
 
 	private void handleMethodLine(Tag tag, EventType eventType)
 	{
-		Map<String, String> attrs = tag.getAttrs();
+		Map<String, String> attrs = tag.getAttributes();
 
 		String attrMethod = attrs.get(ATTR_METHOD);
 
@@ -798,7 +798,7 @@ public class HotSpotLogParser implements ILogParser
 
 	private void handleTaskDone(Tag tag)
 	{
-		Map<String, String> attrs = tag.getAttrs();
+		Map<String, String> attrs = tag.getAttributes();
 
 		if (attrs.containsKey("nmsize"))
 		{

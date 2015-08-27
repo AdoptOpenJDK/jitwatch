@@ -68,7 +68,7 @@ public final class IntrinsicFinder implements IJournalVisitable
 		for (Tag childTag : allChildren)
 		{
 			String tagName = childTag.getName();
-			Map<String, String> attrs = childTag.getAttrs();
+			Map<String, String> attrs = childTag.getAttributes();
 
 			switch (tagName)
 			{

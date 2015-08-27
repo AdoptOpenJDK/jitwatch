@@ -124,14 +124,14 @@ public class CodeCacheStage extends AbstractGraphStage
 
 	private long getStampFromTag(Tag tag)
 	{
-		Map<String, String> attrs = tag.getAttrs();
+		Map<String, String> attrs = tag.getAttributes();
 		return ParseUtil.parseStamp(attrs.get(JITWatchConstants.ATTR_STAMP));
 
 	}
 
 	private long getFreeCodeCacheFromTag(Tag tag)
 	{
-		Map<String, String> attrs = tag.getAttrs();
+		Map<String, String> attrs = tag.getAttributes();
 		return Long.parseLong(attrs.get(JITWatchConstants.ATTR_FREE_CODE_CACHE));
 	}
 }

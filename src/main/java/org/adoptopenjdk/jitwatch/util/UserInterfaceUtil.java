@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public final class UserInterfaceUtil
 	{
 		IMAGE_TICK = loadResource("/images/tick.png");
 
-		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", "monospace");
+		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", Font.font(java.awt.Font.MONOSPACED, 12).getName());
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
 	}
 

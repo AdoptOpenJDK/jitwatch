@@ -314,7 +314,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 		for (Tag child : children)
 		{
 			String name = child.getName();
-			Map<String, String> tagAttrs = child.getAttrs();
+			Map<String, String> tagAttrs = child.getAttributes();
 
 			if (DEBUG_LOGGING)
 			{

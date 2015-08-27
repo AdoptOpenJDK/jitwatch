@@ -228,7 +228,7 @@ public abstract class AbstractGraphStage extends Stage
 	
 	protected double getApproximateStringWidth(String text)
 	{
-		return text.length() * gc.getFont().getSize() * 0.5;
+		return text.length() * gc.getFont().getSize() * 0.6;
 	}
 
 	protected double getStringHeight()
