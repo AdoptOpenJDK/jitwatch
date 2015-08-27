@@ -6,12 +6,15 @@
 package org.adoptopenjdk.jitwatch.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javafx.stage.Stage;
 
 public class StageManager
 {
-	private static List<Stage> openStages = new ArrayList<>();
+	private static Map<Stage, List<Stage>> openStages = new HashMap<>();
 
 	private StageManager()
 	{
@@ -19,8 +22,16 @@ public class StageManager
 
 	public static void addAndShow(Stage parent, Stage childStage)
 	{
-		openStages.add(childStage);
-
+		List<Stage> childrenOfParent = openStages.get(parent);
+		
+		if (childrenOfParent == null)
+		{
+			childrenOfParent = new ArrayList<>();
+			openStages.put(parent, childrenOfParent);
+		}
+		
+		childrenOfParent.add(childStage);
+		
 		childStage.show();
 
 		double parentX = parent.getX();
@@ -38,19 +49,20 @@ public class StageManager
 		childStage.setY(childY);
 	}
 
-	public static void remove(Stage stage)
-	{
-		openStages.remove(stage);
-	}
-
-	public static void closeAll()
-	{
-		for (Stage s : openStages)
+	public static void closeStageAndChildren(Stage stage)
+	{		
+		List<Stage> childrenOfParent = openStages.get(stage);
+		
+		if (childrenOfParent != null)
 		{
-			if (s != null)
+			for (Stage child : childrenOfParent)
 			{
-				s.close();
+				closeStageAndChildren(child);
 			}
 		}
+		
+		stage.close();
+		
+		openStages.remove(stage);
 	}
 }

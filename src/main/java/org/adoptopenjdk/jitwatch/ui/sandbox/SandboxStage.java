@@ -323,8 +323,6 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			{
 				saveEditorPaneConfig();
 
-				//TODO wrong - only close children
-				StageManager.closeAll();
 				closeListener.handleStageClosed(SandboxStage.this);
 			}
 		});
@@ -628,7 +626,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		StageManager.remove(stage);
+		StageManager.closeStageAndChildren(stage);
 
 		if (stage instanceof SandboxConfigStage)
 		{

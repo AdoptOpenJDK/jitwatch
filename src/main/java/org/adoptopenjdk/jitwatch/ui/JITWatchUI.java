@@ -314,7 +314,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				StageManager.closeAll();
+				StageManager.closeStageAndChildren(stage);
 
 				stopParsing();
 			}
@@ -1138,9 +1138,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		StageManager.remove(stage);
+		StageManager.closeStageAndChildren(stage);
 
-		// map?
 		if (stage instanceof TimeLineStage)
 		{
 			btnTimeLine.setDisable(false);
