@@ -14,14 +14,14 @@ public class JITEvent
 {
     private long stamp;
     private EventType eventType;
-    private String methodSignature;
+    private IMetaMember eventMember;
     private String stampString;
 
-    public JITEvent(long stamp, EventType eventType, String methodSignature)
+    public JITEvent(long stamp, EventType eventType, IMetaMember eventMember)
     {
         this.stamp = stamp;
         this.eventType = eventType;
-        this.methodSignature = methodSignature;
+        this.eventMember = eventMember;
 
         this.stampString = StringUtil.formatTimestamp(stamp, true);
     }
@@ -36,9 +36,9 @@ public class JITEvent
         return eventType;
     }
 
-    public String getMethodSignature()
+    public IMetaMember getEventMember()
     {
-        return methodSignature;
+        return eventMember;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class JITEvent
 
         sb.append(StringUtil.alignRight(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
      
-        sb.append(methodSignature);
+        sb.append(eventMember.toString());
 
         return sb.toString();
     }

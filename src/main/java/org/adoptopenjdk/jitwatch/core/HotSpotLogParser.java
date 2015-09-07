@@ -766,7 +766,7 @@ public class HotSpotLogParser implements ILogParser
 			case QUEUE:
 			{
 				metaMember.setQueuedAttributes(attrs);
-				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember.toString());
+				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(queuedEvent);
 				logEvent(queuedEvent);
 			}
@@ -779,7 +779,7 @@ public class HotSpotLogParser implements ILogParser
 				metaMember.getMetaClass().incCompiledMethodCount();
 				model.updateStats(metaMember);
 
-				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember.toString());
+				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(compiledEvent);
 				logEvent(compiledEvent);
 			}

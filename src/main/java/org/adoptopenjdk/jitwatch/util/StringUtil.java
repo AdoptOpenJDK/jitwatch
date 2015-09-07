@@ -24,6 +24,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -461,5 +462,13 @@ public final class StringUtil
 		}
 
 		return builder.toString();
+	}
+	
+	public static List<String> getSortedKeys(Map<String, ?> map)
+	{
+		List<String> attrList = new ArrayList<String>(map.keySet());
+		Collections.sort(attrList);
+
+		return attrList;
 	}
 }

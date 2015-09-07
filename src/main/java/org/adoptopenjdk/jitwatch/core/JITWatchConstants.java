@@ -29,6 +29,8 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING_TRIVIEW = false;
 	public static final boolean DEBUG_LOGGING_TAGPROCESSOR = false;
 
+	public static final char HEADLESS_SEPARATOR = '|';
+	
 	public static final boolean DEBUG_MEMBER_CREATION = false;
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
@@ -207,6 +209,7 @@ public final class JITWatchConstants
 	public static final String S_DOT = ".";
 	public static final String S_ASTERISK = "*";
 	public static final String S_COMMA = ",";
+	public static final String S_HYPEN = "-";
 	public static final String S_SLASH = "/";
 	public static final String S_DOUBLE_SLASH = "//";
 	public static final String S_QUOTE = "'";

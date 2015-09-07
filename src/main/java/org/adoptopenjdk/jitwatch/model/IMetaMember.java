@@ -24,15 +24,15 @@ public interface IMetaMember
 	Journal getJournal();
 
 	String getQueuedAttribute(String key);
-	List<String> getQueuedAttributes();
 	void setQueuedAttributes(Map<String, String> queuedAttributes);
 	boolean isQueued();
 
-	//TODO split task and nmethod attrs?
 	void setCompiledAttributes(Map<String, String> compiledAttributes);
-	void addCompiledAttributes(Map<String, String> additionalAttrs);
+	void addCompiledAttributes(Map<String, String> additionalAttrs);	
+	Map<String, String> getQueuedAttributes();
+	Map<String, String> getCompiledAttributes();
+	
 	String getCompiledAttribute(String key);
-	List<String> getCompiledAttributes();
 	void addCompiledAttribute(String key, String value);
 	boolean isCompiled();
 

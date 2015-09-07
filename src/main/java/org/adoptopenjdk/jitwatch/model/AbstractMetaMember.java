@@ -35,7 +35,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -240,15 +239,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public List<String> getQueuedAttributes()
-	{
-		List<String> attrList = new ArrayList<String>(queuedAttributes.keySet());
-		Collections.sort(attrList);
-
-		return attrList;
-	}
-	
-	@Override
 	public MemberBytecode getMemberBytecode()
 	{
 		MemberBytecode result = null;
@@ -295,15 +285,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public String getQueuedAttribute(String key)
 	{
 		return queuedAttributes.get(key);
-	}
-
-	@Override
-	public List<String> getCompiledAttributes()
-	{
-		List<String> attrList = new ArrayList<String>(compiledAttributes.keySet());
-		Collections.sort(attrList);
-
-		return attrList;
 	}
 
 	@Override
@@ -354,6 +335,18 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return isCompiled;
 	}
 
+	@Override
+	public Map<String, String> getQueuedAttributes()
+	{
+		return queuedAttributes;
+	}
+	
+	@Override
+	public Map<String, String> getCompiledAttributes()
+	{
+		return compiledAttributes;
+	}
+	
 	@Override
 	public String toStringUnqualifiedMethodName(boolean fqParamTypes)
 	{

@@ -5,11 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -291,7 +297,7 @@ public class TimeLineStage extends AbstractGraphStage
 				selectedItemBuilder.append(" (Level ").append(level).append(C_CLOSE_PARENTHESES);
 			}
 
-			String compiletime = selectedMember.getCompiledAttribute("compileMillis");
+			String compiletime = selectedMember.getCompiledAttribute(ATTR_COMPILE_MILLIS);
 
 			if (compiletime != null)
 			{

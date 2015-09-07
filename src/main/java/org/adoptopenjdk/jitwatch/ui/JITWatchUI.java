@@ -76,6 +76,7 @@ import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1024,14 +1025,14 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		selectedMember = member;
 
-		List<String> queuedAttrKeys = member.getQueuedAttributes();
+		List<String> queuedAttrKeys = StringUtil.getSortedKeys(member.getQueuedAttributes());
 
 		for (String key : queuedAttrKeys)
 		{
 			memberAttrList.add(new AttributeTableRow("Queued", key, member.getQueuedAttribute(key)));
 		}
 
-		List<String> compiledAttrKeys = member.getCompiledAttributes();
+		List<String> compiledAttrKeys = StringUtil.getSortedKeys(member.getCompiledAttributes());
 
 		for (String key : compiledAttrKeys)
 		{

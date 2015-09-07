@@ -7,7 +7,7 @@ package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
@@ -119,9 +119,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		stats.addNativeBytes(count);
 	}
 
-	public void updateStats(IMetaMember meta)
+	public void updateStats(IMetaMember member)
 	{
-		String fullSignature = meta.toString();
+		String fullSignature = member.toString();
 
 		for (String modifier : MODIFIERS)
 		{
@@ -149,7 +149,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		String compiler = meta.getCompiledAttribute(ATTR_COMPILER);
+		String compiler = member.getCompiledAttribute(ATTR_COMPILER);
 
 		if (compiler != null)
 		{
@@ -163,7 +163,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		String compileKind = meta.getCompiledAttribute(ATTR_COMPILE_KIND);
+		String compileKind = member.getCompiledAttribute(ATTR_COMPILE_KIND);
 
 		if (compileKind != null)
 		{
@@ -177,18 +177,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		String queueStamp = meta.getQueuedAttribute(ATTR_STAMP);
-		String compileStamp = meta.getCompiledAttribute(ATTR_STAMP);
-
-		if (queueStamp != null && compileStamp != null)
+		long queueStamp = ParseUtil.getStamp(member.getQueuedAttributes());
+		long compileStamp = ParseUtil.getStamp(member.getCompiledAttributes());
+				
+		if (queueStamp != 0 && compileStamp != 0)
 		{
-			// convert decimal seconds into millis
-			long queueMillis = ParseUtil.parseStamp(queueStamp);
-			long compileMillis = ParseUtil.parseStamp(compileStamp);
+			long delayMillis = compileStamp - queueStamp;
 
-			long delayMillis = compileMillis - queueMillis;
-
-			meta.addCompiledAttribute("compileMillis", Long.toString(delayMillis));
+			member.addCompiledAttribute(ATTR_COMPILE_MILLIS, Long.toString(delayMillis));
 
 			stats.recordDelay(delayMillis);
 		}
