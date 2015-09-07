@@ -5,11 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.launch;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.HEADLESS_SEPARATOR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
@@ -31,6 +37,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	private boolean showOnlyCompiledMethods;
 	// private boolean showOptimizedVirtualCalls;
 	private boolean showSuggestions;
+	private boolean outputFile;
 
 	private HotSpotLogParser parser;
 	private JITWatchConfig config;
@@ -105,9 +112,11 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			System.err.println("options:");
 			System.err.println("-e\tShow parse errors");
 			System.err.println("-m\tShow model");
-			System.err.println("\t-c\tShow only compiled methods in model");
+			System.err.println("-c\tShow only compiled methods in model (use with -m)");
 			System.err.println("-s\tShow code suggestions");
 			System.err.println("-t\tShow compilation timeline");
+			System.err.println("-f\tWrite output to headless.csv");
+
 			// System.err.println("-o\tShow optimized virtual calls");
 
 			System.exit(-1);
@@ -142,7 +151,9 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			case "-t":
 				showTimeLine = true;
 				break;
-
+			case "-f":
+				outputFile = true;
+				break;
 			}
 		}
 	}
@@ -150,14 +161,16 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	@Override
 	public void handleReadComplete()
 	{
+		StringBuilder outputBuilder = new StringBuilder();
+		
 		if (showTimeLine)
 		{
-			System.out.println(timelineBuilder.toString());
+			outputBuilder.append(timelineBuilder.toString()).append(S_NEWLINE);
 		}
 
 		if (showErrors)
 		{
-			System.out.println(errorBuilder.toString());
+			outputBuilder.append(errorBuilder.toString()).append(S_NEWLINE);
 		}
 
 		if (showModel)
@@ -166,7 +179,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 			String modelString = HeadlessUtil.modelToString(model, showOnlyCompiledMethods);
 
-			System.out.println(modelString);
+			outputBuilder.append(modelString).append(S_NEWLINE);
 		}
 
 		if (showSuggestions)
@@ -175,9 +188,29 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 			List<Suggestion> suggestions = walker.getSuggestionList();
 
-			showSuggestions(suggestions);
+			outputBuilder.append(getSuggestions(suggestions));
 		}
 
+		if (outputFile)
+		{
+			outputBuilder.insert(0, "sep=" + HEADLESS_SEPARATOR + S_NEWLINE);
+			
+			try
+			{
+				Files.write(Paths.get("headless.csv"), outputBuilder.toString().getBytes());
+			
+				System.out.println("Wrote to headless.csv");
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+			System.out.println(outputBuilder.toString());
+		}
+		
 		// if (showOptimizedVirtualCalls)
 		// {
 		// OptimizedVirtualCallVisitable optimizedVCallVisitable = new
@@ -191,7 +224,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		// }
 	}
 
-	private void showSuggestions(List<Suggestion> suggestions)
+	private String getSuggestions(List<Suggestion> suggestions)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -229,7 +262,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			builder.append(cleanText).append(S_NEWLINE);
 		}
 
-		System.out.println(builder.toString());
+		return builder.toString();
 	}
 
 	// private void showOptimizedVCalls(List<OptimizedVirtualCall> vCalls)
