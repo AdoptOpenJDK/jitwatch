@@ -20,12 +20,14 @@ import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.inline.InlineVisitor;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 //import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 //import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
 import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 import org.adoptopenjdk.jitwatch.util.HeadlessUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
@@ -38,6 +40,8 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	// private boolean showOptimizedVirtualCalls;
 	private boolean showSuggestions;
 	private boolean outputFile;
+	private boolean showOptimizedVirtualCalls;
+	private boolean showInlineFailedCalls;
 
 	private HotSpotLogParser parser;
 	private JITWatchConfig config;
@@ -118,6 +122,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			System.err.println("-f\tWrite output to headless.csv");
 
 			// System.err.println("-o\tShow optimized virtual calls");
+			System.err.println("-i\tShow inline failed calls");
 
 			System.exit(-1);
 		}
@@ -154,6 +159,9 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			case "-f":
 				outputFile = true;
 				break;
+			case "-i":
+				showInlineFailedCalls = true;
+				break;
 			}
 		}
 	}
@@ -162,7 +170,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	public void handleReadComplete()
 	{
 		StringBuilder outputBuilder = new StringBuilder();
-		
+
 		if (showTimeLine)
 		{
 			outputBuilder.append(timelineBuilder.toString()).append(S_NEWLINE);
@@ -194,11 +202,11 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		if (outputFile)
 		{
 			outputBuilder.insert(0, "sep=" + HEADLESS_SEPARATOR + S_NEWLINE);
-			
+
 			try
 			{
 				Files.write(Paths.get("headless.csv"), outputBuilder.toString().getBytes());
-			
+
 				System.out.println("Wrote to headless.csv");
 			}
 			catch (IOException e)
@@ -210,7 +218,14 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		{
 			System.out.println(outputBuilder.toString());
 		}
-		
+
+		if (showInlineFailedCalls)
+		{
+			InlineVisitor inlineVisitor = new InlineVisitor(parser.getModel());
+			TreeVisitor.walkTree(parser.getModel(), inlineVisitor);
+			inlineVisitor.printFailedList(System.out);
+		}
+
 		// if (showOptimizedVirtualCalls)
 		// {
 		// OptimizedVirtualCallVisitable optimizedVCallVisitable = new
@@ -222,6 +237,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		//
 		// showOptimizedVCalls(optimizedVirtualCalls);
 		// }
+
 	}
 
 	private String getSuggestions(List<Suggestion> suggestions)
