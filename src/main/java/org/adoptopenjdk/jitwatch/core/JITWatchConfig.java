@@ -322,14 +322,10 @@ public class JITWatchConfig
 
 		intelMode = loadBooleanFromProperty(loadedProps, KEY_SANDBOX_INTEL_MODE, false);
 
-		mouseFollow = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, true);
+		mouseFollow = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, false);
 		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, true);
 
-		// TODO I'm forcing no tiered compilation in sandbox until this fix for
-		// the LogCompilation output goes live
-		// http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8049532
-		// http://mail.openjdk.java.net/pipermail/hotspot-compiler-dev/2014-June/014911.html
-		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2"));
+		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0"));
 
 		switch (tieredMode)
 		{
@@ -564,21 +560,31 @@ public class JITWatchConfig
 	public static File getJDKSourceZip()
 	{
 		String jrePath = System.getProperty("java.home");
+		
 		File jreDir = new File(jrePath);
-
+		
 		File result = null;
 
 		if (jreDir.exists() && jreDir.isDirectory())
 		{
-			File parentDir = jreDir.getParentFile();
-
-			if (parentDir.exists() && parentDir.isDirectory())
+			File srcZipFile = new File(jreDir, "src.zip");
+			
+			if (srcZipFile.exists() && srcZipFile.isFile())
 			{
-				File srcZipFile = new File(parentDir, "src.zip");
-
-				if (srcZipFile.exists() && srcZipFile.isFile())
+				result = srcZipFile;
+			}
+			else
+			{
+				File parentDir = jreDir.getParentFile();
+	
+				if (parentDir.exists() && parentDir.isDirectory())
 				{
-					result = srcZipFile;
+					srcZipFile = new File(parentDir, "src.zip");
+	
+					if (srcZipFile.exists() && srcZipFile.isFile())
+					{
+						result = srcZipFile;
+					}
 				}
 			}
 		}

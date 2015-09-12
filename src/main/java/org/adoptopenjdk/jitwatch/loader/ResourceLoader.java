@@ -179,7 +179,7 @@ public final class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-			logger.error("", ioe);
+			logger.error("Could not read file {} from zip {}", fileName, zipFile.getName(), ioe);
 		}
 
 		return result;

@@ -33,7 +33,7 @@ public class FileChooserListSrcZip extends FileChooserList
 			public void handle(ActionEvent e)
 			{
 				File srcZipFile = JITWatchConfig.getJDKSourceZip();
-
+				
 				if (srcZipFile != null)
 				{
 					try
