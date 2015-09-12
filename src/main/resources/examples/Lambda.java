@@ -15,9 +15,9 @@ public class Lambda
         items.add("pear");
         items.add("strawberry");
 
-        List<String> filtered = items.stream().filter( item -> item.startsWith("b") ).collect(Collectors.toList());
+        List<Object> filtered = items.stream().filter( item -> item.startsWith("b") ).collect(Collectors.toList());
 
-        for (String str : filtered)
+        for (Object str : filtered)
         {
             System.out.println(str);
         }

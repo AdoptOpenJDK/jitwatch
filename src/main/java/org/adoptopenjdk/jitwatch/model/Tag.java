@@ -27,7 +27,8 @@ public class Tag
 	private boolean selfClosing = false;
 	private boolean isFragment = false;
 	private String textContent = null;
-
+	private String closingTag;
+	
 	private static final String INDENT = "  ";
 
 	public Tag(String name, Map<String, String> attrs, boolean selfClosing)
@@ -35,6 +36,10 @@ public class Tag
 		this.name = name;
 		this.attrs = attrs;
 		this.selfClosing = selfClosing;
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(C_OPEN_ANGLE).append(C_SLASH).append(name).append(C_CLOSE_ANGLE);
+		closingTag = builder.toString();
 	}
 
 	public void addTextContent(String text)
@@ -68,6 +73,11 @@ public class Tag
 	public boolean isSelfClosing()
 	{
 		return selfClosing;
+	}
+	
+	public String getClosingTag()
+	{
+		return closingTag;
 	}
 
 	public Tag getFirstNamedChild(String name)

@@ -27,14 +27,11 @@ public class TagProcessor
 {
 	private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
 
-	// feed it lines until it completes a tag
 	private Tag currentTag;
 	private Tag topTag = null;
 	private CompilerName currentCompiler;
 	private boolean fragmentSeen;
-
-	// TODO write own mini XPath?
-
+	
 	public void setCompiler(CompilerName compiler)
 	{
 		currentCompiler = compiler;
@@ -68,8 +65,19 @@ public class TagProcessor
 				result = handleTag(line);
 			}
 			else if (currentTag != null)
-			{
-				currentTag.addTextContent(line);
+			{								
+				String closingTag = currentTag.getClosingTag();
+				
+				if (line.endsWith(closingTag))
+				{
+					line = line.substring(0, line.length() - closingTag.length());
+					currentTag.addTextContent(line);
+					processLine(closingTag);
+				}
+				else
+				{
+					currentTag.addTextContent(line);
+				}
 			}
 			else
 			{
