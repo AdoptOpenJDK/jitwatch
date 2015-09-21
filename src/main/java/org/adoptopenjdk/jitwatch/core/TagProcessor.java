@@ -5,6 +5,9 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
@@ -190,15 +193,30 @@ public class TagProcessor
 
 		Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
 
-		Tag t;
+		if (attrs.containsKey(ATTR_COMPILER))
+		{
+			String compilerValue = attrs.get(ATTR_COMPILER);
+			
+			if (C1.equals(compilerValue))
+			{
+				currentCompiler = CompilerName.C1;
+			}
+			else if (C2.equals(compilerValue))
+			{
+				currentCompiler = CompilerName.C2;
+			}
+		}
+			
+		
+		Tag nextTag;
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			t = new Task(name, attrs, selfClosing, currentCompiler);
+			nextTag = new Task(name, attrs, selfClosing, currentCompiler);
 		}
 		else
 		{
-			t = new Tag(name, attrs, selfClosing);
+			nextTag = new Tag(name, attrs, selfClosing);
 		}
 
 		if (DEBUG_LOGGING_TAGPROCESSOR)
@@ -211,7 +229,7 @@ public class TagProcessor
 		}
 		if (DEBUG_LOGGING_TAGPROCESSOR)
 		{
-			logger.debug("t: {}", t);
+			logger.debug("t: {}", nextTag);
 		}
 
 		if (currentTag == null)
@@ -229,13 +247,13 @@ public class TagProcessor
 			else
 			{
 				// new tag at top level
-				currentTag = t;
-				topTag = t;
+				currentTag = nextTag;
+				topTag = nextTag;
 			}
 		}
 		else
 		{
-			currentTag.addChild(t);
+			currentTag.addChild(nextTag);
 		}
 
 		if (topTag instanceof Task)
@@ -243,15 +261,15 @@ public class TagProcessor
 			switch (name)
 			{
 			case JITWatchConstants.TAG_TYPE:
-				((Task) topTag).addDictionaryType(attrs.get(JITWatchConstants.ATTR_ID), t);
+				((Task) topTag).addDictionaryType(attrs.get(JITWatchConstants.ATTR_ID), nextTag);
 				break;
 
 			case JITWatchConstants.TAG_METHOD:
-				((Task) topTag).addDictionaryMethod(attrs.get(JITWatchConstants.ATTR_ID), t);
+				((Task) topTag).addDictionaryMethod(attrs.get(JITWatchConstants.ATTR_ID), nextTag);
 				break;
 
 			case JITWatchConstants.TAG_KLASS:
-				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), t);
+				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), nextTag);
 				break;
 
 			default:
@@ -272,7 +290,7 @@ public class TagProcessor
 		else
 		{
 			// not closed
-			currentTag = t;
+			currentTag = nextTag;
 		}
 
 		return result;

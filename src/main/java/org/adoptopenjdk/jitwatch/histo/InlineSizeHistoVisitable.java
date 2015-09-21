@@ -9,10 +9,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -79,8 +81,8 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 				currentMethod = attrs.get(ATTR_NAME);
 				holder = attrs.get(ATTR_HOLDER);
 				attrInlineBytes = attrs.get(ATTR_BYTES);
-			}
 				break;
+			}
 
 			case TAG_INLINE_FAIL:
 			{
@@ -89,8 +91,9 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 				currentMethod = null;
 				holder = null;
 				attrInlineBytes = null;
-			}
+				
 				break;
+			}
 
 			case TAG_INLINE_SUCCESS:
 			{
@@ -111,13 +114,31 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable implements 
 						}
 					}
 				}
-			}
+				
 				break;
+			}
+				
 			case TAG_PARSE:
 			{
 				processParseTag(child, parseDictionary);
-			}
 				break;
+			}
+				
+  			case TAG_PHASE:
+			{
+				String phaseName = attrs.get(ATTR_NAME);
+				
+				if (S_PARSE_HIR.equals(phaseName))
+				{
+					processParseTag(child, parseDictionary);
+				}
+				else
+				{
+					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				
+				break;
+			}
 
 			default:
 				break;

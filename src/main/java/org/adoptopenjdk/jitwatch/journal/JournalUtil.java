@@ -45,7 +45,7 @@ public final class JournalUtil
 	public static void visitParseTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
 	{
 		Task lastTask = getLastTask(journal);
-
+		
 		if (lastTask == null)
 		{
 			if (!isJournalForCompile2NativeMember(journal))
@@ -63,7 +63,7 @@ public final class JournalUtil
 			IParseDictionary parseDictionary = lastTask.getParseDictionary();
 
 			Tag parsePhase = getParsePhase(lastTask);
-
+			
 			if (parsePhase != null)
 			{
 				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -291,7 +291,7 @@ public final class JournalUtil
 			CompilerName compilerName = lastTask.getCompiler();
 
 			String parseAttributeName = ATTR_PARSE;
-
+			
 			if (compilerName == CompilerName.C1)
 			{
 				parseAttributeName = ATTR_BUILDIR;
@@ -301,13 +301,19 @@ public final class JournalUtil
 
 			int count = parsePhases.size();
 
-			if (count != 1)
+			if (count > 1)
 			{
 				logger.warn("Unexpected parse phase count: {}", count);
+				
+				logger.warn("\n{}", lastTask.toString(true));
+			}
+			else if (count == 1)
+			{
+				parsePhase = parsePhases.get(0);
 			}
 			else
 			{
-				parsePhase = parsePhases.get(0);
+				parsePhase = lastTask;
 			}
 		}
 

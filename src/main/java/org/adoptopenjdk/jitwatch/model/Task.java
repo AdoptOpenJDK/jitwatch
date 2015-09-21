@@ -5,7 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_PARSE_DICTIONARY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;

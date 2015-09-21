@@ -13,16 +13,20 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_UNLOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -179,27 +183,33 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			case TAG_METHOD:
 			{
 				methodID = attrs.get(ATTR_ID);
-			}
 				break;
+			}
+
 			case TAG_BC:
 			{
 				String bci = attrs.get(ATTR_BCI);
 				currentBytecode = Integer.parseInt(bci);
-			}
 				break;
+			}
+
 			case TAG_BRANCH:
+			{
 				handleBranchTag(attrs, currentBytecode, caller);
 				break;
+			}
 
 			case TAG_CALL:
 			{
 				methodID = attrs.get(ATTR_METHOD);
-			}
 				break;
+			}
 
 			case TAG_INLINE_FAIL:
+			{
 				handleInlineFailTag(attrs, methodID, caller, currentBytecode, parseDictionary);
 				break;
+			}
 
 			case TAG_PARSE:
 			{
@@ -209,6 +219,22 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 				{
 					processParseTag(child, nestedCaller, parseDictionary);
 				}
+				break;
+			}
+
+			case TAG_PHASE:
+			{
+				String phaseName = attrs.get(ATTR_NAME);
+
+				if (S_PARSE_HIR.equals(phaseName))
+				{
+					processParseTag(child, caller, parseDictionary);
+				}
+				else
+				{
+					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				break;
 			}
 
 			default:
@@ -278,9 +304,14 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 					}
 				}
 			}
+			else if (methodTag.containsAttribute(ATTR_UNLOADED) && "1".equals(methodTag.getAttribute(ATTR_UNLOADED)))
+			{
+				//TODO investigate
+			}
 			else
 			{
 				logger.warn("Invocation count missing for methodID: {}", methodID);
+				logger.warn("{}", methodTag);
 			}
 		}
 	}

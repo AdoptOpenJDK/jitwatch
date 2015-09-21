@@ -5,16 +5,19 @@
  */
 package org.adoptopenjdk.jitwatch.chain;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,32 +80,35 @@ public class CompileChainWalker implements IJournalVisitable
 			case TAG_BC:
 			{
 				callAttrs.clear();
-			}
+
 				break;
+			}
 
 			case TAG_METHOD:
 			{
 				methodID = tagAttrs.get(ATTR_ID);
 				methodAttrs.clear();
 				methodAttrs.putAll(tagAttrs);
-			}
+				
 				break;
+			}
 
 			case TAG_CALL:
 			{
 				methodID = tagAttrs.get(ATTR_METHOD);
 				callAttrs.clear();
 				callAttrs.putAll(tagAttrs);
-			}
 				break;
+			}
 
 			case TAG_INLINE_FAIL:
 			{
 				handleInline(parentNode, methodID, parseDictionary, false, methodAttrs, callAttrs, tagAttrs);
 				methodID = null;
 				lastNode = null;
-			}
+				
 				break;
+			}
 
 			case TAG_INLINE_SUCCESS:
 			{
@@ -130,9 +136,24 @@ public class CompileChainWalker implements IJournalVisitable
 				}
 
 				processParseTag(child, nextParent, parseDictionary);
-
-			}
+				
 				break;
+			}
+				
+			case TAG_PHASE:
+			{
+				String phaseName = tagAttrs.get(ATTR_NAME);
+				
+				if (S_PARSE_HIR.equals(phaseName))
+				{
+					processParseTag(child, parentNode, parseDictionary);
+				}
+				else
+				{
+					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				break;
+			}
 
 			default:
 				break;

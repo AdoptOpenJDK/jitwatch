@@ -63,6 +63,7 @@ public final class JITWatchConstants
 	public static final String METHOD = "method";
 	public static final String S_PARSE = "parse";
 	public static final String S_TYPE = "type";
+	public static final String S_PARSE_HIR = "parse_hir";
 
 	public static final String S_CODE_COLON = "Code:";
 
@@ -105,6 +106,7 @@ public final class JITWatchConstants
 	public static final String C2 = "C2";
 
 	public static final String ATTR_METHOD = METHOD;
+	public static final String ATTR_KLASS = "klass";
 	public static final String ATTR_COMPILE_ID = "compile_id";
 	public static final String ATTR_COMPILE_KIND = "compile_kind";
 	public static final String ATTR_STAMP = "stamp";
@@ -132,6 +134,7 @@ public final class JITWatchConstants
 	public static final String ATTR_BRANCH_TAKEN = "taken";
 	public static final String ATTR_BRANCH_NOT_TAKEN = "not_taken";
 	public static final String ATTR_BRANCH_PROB = "prob";
+	public static final String ATTR_UNLOADED = "unloaded";
 	public static final String ATTR_COUNT = "count";
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
 	public static final String ATTR_ACTION = "action";

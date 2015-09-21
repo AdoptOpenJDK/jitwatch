@@ -5,9 +5,12 @@
  */
 package org.adoptopenjdk.jitwatch.toplist;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,9 +56,6 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 			String tagName = child.getName();
 			Map<String, String> attrs = child.getAttributes();
 			
-			logger.info("processParseTag {}", child.toString(false));
-
-
 			switch (tagName)
 			{
 			case TAG_INLINE_FAIL:
@@ -71,6 +71,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				{
 					reasonCountMap.put(reason, 1);
 				}
+				
 				break;
 			}
 			case TAG_PARSE:
@@ -78,6 +79,23 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 				processParseTag(child);
 				break;
 			}
+			
+  			case TAG_PHASE:
+			{
+				String phaseName = attrs.get(ATTR_NAME);
+				
+				if (S_PARSE_HIR.equals(phaseName))
+				{
+					processParseTag(child);
+				}
+				else
+				{
+					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				
+				break;
+			}
+			
 			default:
 				break;
 			}

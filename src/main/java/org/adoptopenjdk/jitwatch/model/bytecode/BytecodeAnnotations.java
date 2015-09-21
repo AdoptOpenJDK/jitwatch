@@ -6,9 +6,9 @@
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +70,8 @@ public class BytecodeAnnotations
 		{
 			for (LineAnnotation annotation : entry.getValue())
 			{
-				builder.append(entry.getKey()).append(S_SPACE).append(S_COLON).append(S_SPACE).append(annotation.toString()).append(S_NEWLINE);
+				builder.append(entry.getKey()).append(S_SPACE).append(S_COLON).append(S_SPACE);
+				builder.append(annotation.toString()).append(S_NEWLINE).append(S_NEWLINE);
 			}			
 		}
 		

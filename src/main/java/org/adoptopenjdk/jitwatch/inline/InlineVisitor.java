@@ -1,10 +1,24 @@
 package org.adoptopenjdk.jitwatch.inline;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -16,8 +30,6 @@ import org.adoptopenjdk.jitwatch.treevisitor.ITreeVisitable;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class InlineVisitor implements ITreeVisitable
 {
@@ -73,7 +85,6 @@ public class InlineVisitor implements ITreeVisitable
         }
     }
 
-
     private static class InlineJournalVisitor implements IJournalVisitable
     {
         private final Map<String, Map<String, InlineFailureInfo>> failures;
@@ -96,32 +107,40 @@ public class InlineVisitor implements ITreeVisitable
         private void processParseTag(Tag parseTag, IParseDictionary parseDictionary)
         {
             String methodID = null;
+            
             for (Tag child : parseTag.getChildren())
             {
                 String tagName = child.getName();
+                
                 Map<String, String> tagAttrs = child.getAttributes();
+                
                 switch (tagName)
                 {
                     case TAG_METHOD:
                     {
                         methodID = tagAttrs.get(ATTR_ID);
+                        break;
                     }
-                    break;
+                    
                     case TAG_CALL:
                     {
                         methodID = tagAttrs.get(ATTR_METHOD);
+                        break;
                     }
-                    break;
+                    
                     case TAG_INLINE_FAIL:
                     {
                         String reason = tagAttrs.get(ATTR_REASON);
                         Map<String, InlineFailureInfo> inlineFailureInfos = failures.get(reason);
+                   
                         if (inlineFailureInfos == null)
                         {
                             inlineFailureInfos = new HashMap<>();
                             failures.put(reason, inlineFailureInfos);
                         }
+                     
                         IMetaMember metaMember = ParseUtil.lookupMember(methodID, parseDictionary, model);
+                     
                         if (metaMember == null)
                         {
                             logger.warn("Cannot find name of methodId: ", methodID);
@@ -141,17 +160,37 @@ public class InlineVisitor implements ITreeVisitable
                             inlineFailureInfo.incFailureCount();
                         }
                         methodID = null;
+                        
+                        break;
                     }
-                    break;
+
                     case TAG_INLINE_SUCCESS:
                     {
                         break;
                     }
+                    
                     case TAG_PARSE:
                     {
                         processParseTag(child, parseDictionary);
+                        break;
                     }
-                    break;
+        			
+        			case TAG_PHASE:
+        			{
+        				String phaseName = tagAttrs.get(ATTR_NAME);
+        				
+        				if (S_PARSE_HIR.equals(phaseName))
+        				{
+        					processParseTag(child, parseDictionary);
+        				}
+        				else
+        				{
+        					logger.warn("Don't know how to handle phase {}", phaseName);
+        				}
+        				
+        				break;
+        			}
+                    
                     default:
                         break;
                 }

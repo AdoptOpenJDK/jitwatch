@@ -11,9 +11,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +35,6 @@ public final class IntrinsicFinder implements IJournalVisitable
 	private Map<String, String> result;
 
 	private static final Logger logger = LoggerFactory.getLogger(IntrinsicFinder.class);
-
-	public IntrinsicFinder()
-	{
-	}
 
 	public Map<String, String> findIntrinsics(IMetaMember member)
 	{
@@ -76,8 +74,8 @@ public final class IntrinsicFinder implements IJournalVisitable
 			{
 				currentMethod = attrs.get(ATTR_NAME);
 				holder = attrs.get(ATTR_HOLDER);
-			}
 				break;
+			}
 
 			// changes member context
 			case TAG_CALL:
@@ -87,8 +85,8 @@ public final class IntrinsicFinder implements IJournalVisitable
 				Tag methodTag = parseDictionary.getMethod(methodID);
 				currentMethod = methodTag.getAttribute(ATTR_NAME);
 				holder = methodTag.getAttribute(ATTR_HOLDER);
-			}
 				break;
+			}
 
 			case TAG_INTRINSIC:
 			{
@@ -108,6 +106,22 @@ public final class IntrinsicFinder implements IJournalVisitable
 
 				holder = null;
 				currentMethod = null;
+				break;
+			}
+			
+  			case TAG_PHASE:
+			{
+				String phaseName = attrs.get(ATTR_NAME);
+				
+				if (S_PARSE_HIR.equals(phaseName))
+				{
+					visitTag(childTag, parseDictionary);
+				}
+				else
+				{
+					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				
 				break;
 			}
 

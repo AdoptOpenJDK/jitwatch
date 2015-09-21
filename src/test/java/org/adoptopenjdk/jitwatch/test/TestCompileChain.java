@@ -5,7 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
@@ -142,14 +146,14 @@ public class TestCompileChain
 
 		assertEquals(2, rootChildren.size());
 
-		CompileNode child0 = rootChildren.get(0);
-		CompileNode child1 = rootChildren.get(1);
+		CompileNode c0 = rootChildren.get(0);
+		CompileNode c1 = rootChildren.get(1);
 
-		assertEquals("deposit", child0.getMemberName());
-		assertTrue(child0.isInlined());
+		assertEquals("deposit", c0.getMemberName());
+		assertTrue(c0.isInlined());
 
-		assertEquals("deposit", child1.getMemberName());
-		assertTrue(child1.isInlined());
+		assertEquals("deposit", c1.getMemberName());
+		assertTrue(c1.isInlined());
 	}
 
 	public void testJava8TieredCompilation() throws Exception
@@ -531,68 +535,67 @@ public class TestCompileChain
 		// -> toString()
 		// -> println
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
-		
+
 		List<CompileNode> rootChildren = root.getChildren();
 
 		assertEquals(8, rootChildren.size());
 
-		CompileNode child0 = rootChildren.get(0);
-		CompileNode child1 = rootChildren.get(1);
-		CompileNode child2 = rootChildren.get(2);
-		CompileNode child3 = rootChildren.get(3);
-		CompileNode child4 = rootChildren.get(4);
-		CompileNode child5 = rootChildren.get(5);
-		CompileNode child6 = rootChildren.get(6);
-		CompileNode child7 = rootChildren.get(7);
+		CompileNode c0 = rootChildren.get(0);
+		CompileNode c1 = rootChildren.get(1);
+		CompileNode c2 = rootChildren.get(2);
+		CompileNode c3 = rootChildren.get(3);
+		CompileNode c4 = rootChildren.get(4);
+		CompileNode c5 = rootChildren.get(5);
+		CompileNode c6 = rootChildren.get(6);
+		CompileNode c7 = rootChildren.get(7);
 
+		assertEquals("chainA1", c0.getMemberName());
+		assertTrue(c0.isInlined());
 
-		assertEquals("chainA1", child0.getMemberName());
-		assertTrue(child0.isInlined());
+		assertEquals("chainB1", c1.getMemberName());
+		assertTrue(c1.isInlined());
 
-		assertEquals("chainB1", child1.getMemberName());
-		assertTrue(child1.isInlined());
-		
-		assertEquals("<init>", child2.getMemberName());
-		assertTrue(child2.isInlined());
+		assertEquals("<init>", c2.getMemberName());
+		assertTrue(c2.isInlined());
 
-		assertEquals("append", child3.getMemberName());
-		assertTrue(!child3.isInlined());
+		assertEquals("append", c3.getMemberName());
+		assertTrue(!c3.isInlined());
 
-		assertEquals("append", child4.getMemberName());
-		assertTrue(!child4.isInlined());
+		assertEquals("append", c4.getMemberName());
+		assertTrue(!c4.isInlined());
 
-		assertEquals("toString", child5.getMemberName());
-		assertTrue(!child5.isInlined());
+		assertEquals("toString", c5.getMemberName());
+		assertTrue(!c5.isInlined());
 
-		assertEquals("println", child6.getMemberName());
-		assertTrue(!child6.isInlined());
+		assertEquals("println", c6.getMemberName());
+		assertTrue(!c6.isInlined());
 
-		assertEquals("<init>", child7.getMemberName());
-		assertTrue(child7.isInlined());
+		assertEquals("<init>", c7.getMemberName());
+		assertTrue(c7.isInlined());
 
-		List<CompileNode> child0Children = child0.getChildren();
-		assertEquals(1, child0Children.size());
-		CompileNode child0child0 = child0Children.get(0);
-		assertEquals("chainA2", child0child0.getMemberName());
-		assertTrue(child0child0.isInlined());
+		List<CompileNode> c0Children = c0.getChildren();
+		assertEquals(1, c0Children.size());
+		CompileNode c0c0 = c0Children.get(0);
+		assertEquals("chainA2", c0c0.getMemberName());
+		assertTrue(c0c0.isInlined());
 
-		List<CompileNode> child0child0Children = child0child0.getChildren();
-		assertEquals(1, child0child0Children.size());
-		CompileNode child0child0child0 = child0child0Children.get(0);
-		assertEquals("chainA3", child0child0child0.getMemberName());
-		assertTrue(child0child0child0.isInlined());
+		List<CompileNode> c0c0Children = c0c0.getChildren();
+		assertEquals(1, c0c0Children.size());
+		CompileNode c0c0c0 = c0c0Children.get(0);
+		assertEquals("chainA3", c0c0c0.getMemberName());
+		assertTrue(c0c0c0.isInlined());
 
-		List<CompileNode> child0child0child0Children = child0child0child0.getChildren();
-		assertEquals(1, child0child0child0Children.size());
-		CompileNode child0child0child0child0 = child0child0child0Children.get(0);
-		assertEquals("chainA4", child0child0child0child0.getMemberName());
-		assertTrue(child0child0child0child0.isInlined());
+		List<CompileNode> c0c0c0Children = c0c0c0.getChildren();
+		assertEquals(1, c0c0c0Children.size());
+		CompileNode c0c0c0c0 = c0c0c0Children.get(0);
+		assertEquals("chainA4", c0c0c0c0.getMemberName());
+		assertTrue(c0c0c0c0.isInlined());
 
-		List<CompileNode> child0child0child0child0Children = child0child0child0child0.getChildren();
-		assertEquals(1, child0child0child0child0Children.size());
-		CompileNode child0child0child0child0child0 = child0child0child0child0Children.get(0);
-		assertEquals("bigMethod", child0child0child0child0child0.getMemberName());
-		assertTrue(!child0child0child0child0child0.isInlined());
+		List<CompileNode> c0c0c0c0Children = c0c0c0c0.getChildren();
+		assertEquals(1, c0c0c0c0Children.size());
+		CompileNode c0c0c0c0c0 = c0c0c0c0Children.get(0);
+		assertEquals("bigMethod", c0c0c0c0c0.getMemberName());
+		assertTrue(!c0c0c0c0c0.isInlined());
 
 	}
 
@@ -805,67 +808,67 @@ public class TestCompileChain
 		// -> toString()
 		// -> println
 		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
-		
+
 		List<CompileNode> rootChildren = root.getChildren();
 
 		assertEquals(8, rootChildren.size());
 
-		CompileNode child0 = rootChildren.get(0);
-		CompileNode child1 = rootChildren.get(1);
-		CompileNode child2 = rootChildren.get(2);
-		CompileNode child3 = rootChildren.get(3);
-		CompileNode child4 = rootChildren.get(4);
-		CompileNode child5 = rootChildren.get(5);
-		CompileNode child6 = rootChildren.get(6);
-		CompileNode child7 = rootChildren.get(7);
+		CompileNode c0 = rootChildren.get(0);
+		CompileNode c1 = rootChildren.get(1);
+		CompileNode c2 = rootChildren.get(2);
+		CompileNode c3 = rootChildren.get(3);
+		CompileNode c4 = rootChildren.get(4);
+		CompileNode c5 = rootChildren.get(5);
+		CompileNode c6 = rootChildren.get(6);
+		CompileNode c7 = rootChildren.get(7);
 
-		assertEquals("chainA1", child0.getMemberName());
-		assertTrue(child0.isInlined());
+		assertEquals("chainA1", c0.getMemberName());
+		assertTrue(c0.isInlined());
 
-		assertEquals("chainB1", child1.getMemberName());
-		assertTrue(child1.isInlined());
-		
-		assertEquals("<init>", child2.getMemberName());
-		assertTrue(child2.isInlined());
+		assertEquals("chainB1", c1.getMemberName());
+		assertTrue(c1.isInlined());
 
-		assertEquals("append", child3.getMemberName());
-		assertTrue(!child3.isInlined());
+		assertEquals("<init>", c2.getMemberName());
+		assertTrue(c2.isInlined());
 
-		assertEquals("append", child4.getMemberName());
-		assertTrue(!child4.isInlined());
+		assertEquals("append", c3.getMemberName());
+		assertTrue(!c3.isInlined());
 
-		assertEquals("toString", child5.getMemberName());
-		assertTrue(!child5.isInlined());
+		assertEquals("append", c4.getMemberName());
+		assertTrue(!c4.isInlined());
 
-		assertEquals("println", child6.getMemberName());
-		assertTrue(!child6.isInlined());
+		assertEquals("toString", c5.getMemberName());
+		assertTrue(!c5.isInlined());
 
-		assertEquals("<init>", child7.getMemberName());
-		assertTrue(child7.isInlined());
+		assertEquals("println", c6.getMemberName());
+		assertTrue(!c6.isInlined());
 
-		List<CompileNode> child0Children = child0.getChildren();
-		assertEquals(1, child0Children.size());
-		CompileNode child0child0 = child0Children.get(0);
-		assertEquals("chainA2", child0child0.getMemberName());
-		assertTrue(child0child0.isInlined());
+		assertEquals("<init>", c7.getMemberName());
+		assertTrue(c7.isInlined());
 
-		List<CompileNode> child0child0Children = child0child0.getChildren();
-		assertEquals(1, child0child0Children.size());
-		CompileNode child0child0child0 = child0child0Children.get(0);
-		assertEquals("chainA3", child0child0child0.getMemberName());
-		assertTrue(child0child0child0.isInlined());
+		List<CompileNode> c0Children = c0.getChildren();
+		assertEquals(1, c0Children.size());
+		CompileNode c0c0 = c0Children.get(0);
+		assertEquals("chainA2", c0c0.getMemberName());
+		assertTrue(c0c0.isInlined());
 
-		List<CompileNode> child0child0child0Children = child0child0child0.getChildren();
-		assertEquals(1, child0child0child0Children.size());
-		CompileNode child0child0child0child0 = child0child0child0Children.get(0);
-		assertEquals("chainA4", child0child0child0child0.getMemberName());
-		assertTrue(child0child0child0child0.isInlined());
+		List<CompileNode> c0c0Children = c0c0.getChildren();
+		assertEquals(1, c0c0Children.size());
+		CompileNode c0c0c0 = c0c0Children.get(0);
+		assertEquals("chainA3", c0c0c0.getMemberName());
+		assertTrue(c0c0c0.isInlined());
 
-		List<CompileNode> child0child0child0child0Children = child0child0child0child0.getChildren();
-		assertEquals(1, child0child0child0child0Children.size());
-		CompileNode child0child0child0child0child0 = child0child0child0child0Children.get(0);
-		assertEquals("bigMethod", child0child0child0child0child0.getMemberName());
-		assertTrue(!child0child0child0child0child0.isInlined());
+		List<CompileNode> c0c0c0Children = c0c0c0.getChildren();
+		assertEquals(1, c0c0c0Children.size());
+		CompileNode c0c0c0c0 = c0c0c0Children.get(0);
+		assertEquals("chainA4", c0c0c0c0.getMemberName());
+		assertTrue(c0c0c0c0.isInlined());
+
+		List<CompileNode> c0c0c0c0Children = c0c0c0c0.getChildren();
+		assertEquals(1, c0c0c0c0Children.size());
+		CompileNode c0c0c0c0c0 = c0c0c0c0Children.get(0);
+		assertEquals("bigMethod", c0c0c0c0c0.getMemberName());
+		assertTrue(!c0c0c0c0c0.isInlined());
 	}
 
 	private CompileNode buildCompileNodeForXML(String[] lines)
@@ -901,5 +904,359 @@ public class TestCompileChain
 		assertNotNull(root);
 
 		return root;
+	}
+
+	@Test
+	public void testJDK9XMLWithHIRPhase()
+	{
+		String[] lines = new String[] {
+				"<task compiler='C1' compile_id='881' compile_kind='osr' method='org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog testCallChain3 ()V' bytes='71' count='1' backedge_count='60529' iicount='1' osr_bci='8' level='3' stamp='18.121'>",
+				"<phase name='setup' stamp='18.121'>",
+				"<phase_done name='setup' stamp='18.121'/>",
+				"</phase>",
+				"<phase name='buildIR' stamp='18.121'>",
+				"<type id='758' name='void'/>",
+				"<klass id='868' name='org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog' flags='1'/>",
+				"<method id='869' holder='868' name='testCallChain3' return='758' flags='2' bytes='71' iicount='1'/>",
+				"<parse method='869'  stamp='18.121'>",
+				"<phase name='parse_hir' stamp='18.121'>",
+				"<bc code='183' bci='18'/>",
+				"<type id='750' name='boolean'/>",
+				"<type id='756' name='int'/>",
+				"<method id='871' holder='868' name='test' return='750' arguments='756 756' flags='2' bytes='18' compile_id='879' compiler='C2' level='4' iicount='32412'/>",
+				"<call method='871' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='871'>",
+				"<parse_done stamp='18.121'/>",
+				"</parse>",
+				"<bc code='183' bci='26'/>",
+				"<type id='757' name='long'/>",
+				"<method id='873' holder='868' name='chainC1' return='757' arguments='757' flags='2' bytes='16' compile_id='880' compiler='C2' level='4' iicount='36824'/>",
+				"<call method='873' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='873'>",
+				"<bc code='183' bci='5'/>",
+				"<method id='875' holder='868' name='chainC2' return='757' arguments='757' flags='2' bytes='6' compile_id='878' compiler='C1' level='3' iicount='36824'/>",
+				"<call method='875' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='875'>",
+				"<parse_done stamp='18.122'/>",
+				"</parse>",
+				"<bc code='183' bci='12'/>",
+				"<method id='877' holder='868' name='chainC3' return='757' arguments='757' flags='2' bytes='6' compile_id='877' compiler='C1' level='3' iicount='36824'/>",
+				"<call method='877' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='877'>",
+				"<parse_done stamp='18.122'/>",
+				"</parse>",
+				"<parse_done stamp='18.122'/>",
+				"</parse>",
+				"<bc code='183' bci='35'/>",
+				"<call method='875' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='875'>",
+				"<parse_done stamp='18.122'/>",
+				"</parse>",
+				"<bc code='183' bci='52'/>",
+				"<klass id='831' name='java.lang.StringBuilder' flags='17'/>",
+				"<method id='881' holder='831' name='&lt;init&gt;' return='758' flags='1' bytes='7' compile_id='157' compiler='C1' level='3' iicount='3350'/>",
+				"<call method='881' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='881'>",
+				"<bc code='183' bci='3'/>",
+				"<klass id='829' name='java.lang.AbstractStringBuilder' flags='1024'/>",
+				"<method id='883' holder='829' name='&lt;init&gt;' return='758' arguments='756' flags='0' bytes='12' compile_id='127' compiler='C1' level='3' iicount='4382'/>",
+				"<call method='883' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='883'>",
+				"<bc code='183' bci='1'/>",
+				"<klass id='763' name='java.lang.Object' flags='1'/>",
+				"<method id='885' holder='763' name='&lt;init&gt;' return='758' flags='1' bytes='1' compile_id='9' compiler='C1' level='1' iicount='406725'/>",
+				"<call method='885' instr='invokespecial'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='885'>",
+				"<parse_done stamp='18.123'/>",
+				"</parse>",
+				"<parse_done stamp='18.123'/>",
+				"</parse>",
+				"<parse_done stamp='18.123'/>",
+				"</parse>",
+				"<bc code='182' bci='57'/>",
+				"<klass id='764' name='java.lang.String' flags='17'/>",
+				"<method id='888' holder='831' name='append' return='831' arguments='764' flags='1' bytes='8' compile_id='481' compiler='C2' level='4' iicount='7576'/>",
+				"<call method='888' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='888'>",
+				"<bc code='183' bci='2'/>",
+				"<method id='890' holder='829' name='append' return='829' arguments='764' flags='1' bytes='50' compile_id='480' compiler='C2' level='4' iicount='5332'/>",
+				"<call method='890' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='18.123'/>",
+				"</parse>",
+				"<bc code='182' bci='61'/>",
+				"<method id='892' holder='831' name='append' return='831' arguments='757' flags='1' bytes='8' iicount='12'/>",
+				"<call method='892' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='892'>",
+				"<bc code='183' bci='2'/>",
+				"<method id='894' holder='829' name='append' return='829' arguments='757' flags='1' bytes='70' iicount='12'/>",
+				"<call method='894' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='18.123'/>",
+				"</parse>",
+				"<bc code='182' bci='64'/>",
+				"<method id='896' holder='831' name='toString' return='764' flags='1' bytes='17' compile_id='164' compiler='C1' level='3' iicount='3924'/>",
+				"<call method='896' instr='invokevirtual'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<parse method='896'>",
+				"<bc code='183' bci='13'/>",
+				"<klass id='857' name='[C' flags='1041'/>",
+				"<method id='898' holder='764' name='&lt;init&gt;' return='758' arguments='857 756 756' flags='1' bytes='82' compile_id='431' compiler='C1' level='3' iicount='12354'/>",
+				"<call method='898' instr='invokespecial'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='18.124'/>",
+				"</parse>",
+				"<bc code='182' bci='67'/>",
+				"<klass id='879' name='java.io.PrintStream' flags='1'/>",
+				"<method id='900' holder='879' name='println' return='758' arguments='764' flags='1' bytes='24' iicount='11'/>",
+				"<call method='900' instr='invokevirtual'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<parse method='900'>",
+				"<bc code='182' bci='6'/>",
+				"<method id='902' holder='879' name='print' return='758' arguments='764' flags='1' bytes='13' iicount='11'/>",
+				"<call method='902' instr='invokevirtual'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<inline_success reason='receiver is statically known'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<parse method='902'>",
+				"<bc code='183' bci='9'/>",
+				"<method id='904' holder='879' name='write' return='758' arguments='764' flags='2' bytes='83' iicount='11'/>",
+				"<call method='904' instr='invokespecial'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='18.124'/>",
+				"</parse>",
+				"<bc code='183' bci='10'/>",
+				"<method id='908' holder='879' name='newLine' return='758' flags='2' bytes='73' iicount='11'/>",
+				"<call method='908' instr='invokespecial'/>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<inline_fail reason='callee is too large'/>",
+				"<parse_done stamp='18.124'/>",
+				"</parse>",
+				"<phase_done name='parse_hir' stamp='18.124'/>",
+				"</phase>",
+				"<parse_done stamp='18.124'/>",
+				"</parse>",
+				"<phase name='optimize_blocks' stamp='18.124'>",
+				"<phase_done name='optimize_blocks' stamp='18.124'/>",
+				"</phase>",
+				"<phase name='gvn' stamp='18.124'>",
+				"<phase_done name='gvn' stamp='18.125'/>",
+				"</phase>",
+				"<phase name='optimize_null_checks' stamp='18.125'>",
+				"<phase_done name='optimize_null_checks' stamp='18.125'/>",
+				"</phase>",
+				"<phase_done name='buildIR' stamp='18.125'/>",
+				"</phase>",
+				"<phase name='emit_lir' stamp='18.125'>",
+				"<phase name='lirGeneration' stamp='18.125'>",
+				"<phase_done name='lirGeneration' stamp='18.125'/>",
+				"</phase>",
+				"<phase name='linearScan' stamp='18.125'>",
+				"<phase_done name='linearScan' stamp='18.126'/>",
+				"</phase>",
+				"<phase_done name='emit_lir' stamp='18.126'/>",
+				"</phase>",
+				"<phase name='codeemit' stamp='18.126'>",
+				"<phase_done name='codeemit' stamp='18.127'/>",
+				"</phase>",
+				"<phase name='codeinstall' stamp='18.127'>",
+				"<dependency type='leaf_type' ctxk='879'/>",
+				"<phase_done name='codeinstall' stamp='18.127'/>",
+				"</phase>",
+				"<code_cache total_blobs='1176' nmethods='854' adapters='236' free_code_cache='248442752'/>",
+				"<task_done success='1' nmsize='3784' count='1' backedge_count='75645' inlined_bytes='142' stamp='18.127'/>",
+				"</task>" };
+
+		CompileNode root = buildCompileNodeForXML(lines);
+
+		// root
+		// -> test()
+		// -> chainC1() -> chainC2()
+		// -> chainC3()
+		// -> chainC2()
+		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
+		// -> append()
+		// -> append()
+		// -> toString()
+		// -> println
+		// -> java.lang.AbstractStringBuilder() -> java.lang.Object()
+
+		List<CompileNode> rootChildren = root.getChildren();
+
+		assertEquals(8, rootChildren.size());
+
+		CompileNode c0 = rootChildren.get(0);
+		CompileNode c1 = rootChildren.get(1);
+		CompileNode c2 = rootChildren.get(2);
+		CompileNode c3 = rootChildren.get(3);
+		CompileNode c4 = rootChildren.get(4);
+		CompileNode c5 = rootChildren.get(5);
+		CompileNode c6 = rootChildren.get(6);
+		CompileNode c7 = rootChildren.get(7);
+
+		assertEquals("test", c0.getMemberName());
+		assertTrue(c0.isInlined());
+
+		assertEquals("chainC1", c1.getMemberName());
+		assertTrue(c1.isInlined());
+
+		assertEquals("chainC2", c2.getMemberName());
+		assertTrue(c2.isInlined());
+
+		assertEquals("<init>", c3.getMemberName());
+		assertTrue(c3.isInlined());
+
+		assertEquals("append", c4.getMemberName());
+		assertTrue(c4.isInlined());
+
+		assertEquals("append", c5.getMemberName());
+		assertTrue(c5.isInlined());
+
+		assertEquals("toString", c6.getMemberName());
+		assertTrue(c6.isInlined());
+
+		assertEquals("println", c7.getMemberName());
+		assertTrue(c7.isInlined());
+
+		List<CompileNode> c0Children = c0.getChildren();
+		assertEquals(0, c0Children.size());
+
+		List<CompileNode> c1Children = c1.getChildren();
+		assertEquals(2, c1Children.size());
+
+		CompileNode c1c0 = c1Children.get(0);
+		assertEquals("chainC2", c1c0.getMemberName());
+		assertTrue(c1c0.isInlined());
+
+		CompileNode c1c1 = c1Children.get(1);
+		assertEquals("chainC3", c1c1.getMemberName());
+		assertTrue(c1c1.isInlined());
+
+		assertEquals(0, c2.getChildren().size());
+
+		assertEquals(1, c3.getChildren().size());
+
+		CompileNode c3c0 = c3.getChildren().get(0);
+		assertEquals("<init>", c3c0.getMemberName());
+		assertTrue(c3c0.isInlined());
+
+		assertEquals(1, c3c0.getChildren().size());
+
+		CompileNode c3c0c0 = c3c0.getChildren().get(0);
+		assertEquals("<init>", c3c0c0.getMemberName());
+		assertTrue(c3c0c0.isInlined());
+
+		assertEquals(1, c4.getChildren().size());
+
+		CompileNode c4c0 = c4.getChildren().get(0);
+		assertEquals("append", c4c0.getMemberName());
+		assertTrue(!c4c0.isInlined());
+
+		assertEquals(1, c5.getChildren().size());
+
+		CompileNode c5c0 = c5.getChildren().get(0);
+		assertEquals("append", c5c0.getMemberName());
+		assertTrue(!c5c0.isInlined());
+
+		assertEquals(1, c6.getChildren().size());
+
+		CompileNode c6c0 = c6.getChildren().get(0);
+		assertEquals("<init>", c6c0.getMemberName());
+		assertTrue(!c6c0.isInlined());
+
+		assertEquals(2, c7.getChildren().size());
+
+		CompileNode c7c0 = c7.getChildren().get(0);
+		assertEquals("print", c7c0.getMemberName());
+		assertTrue(c7c0.isInlined());
+
+		assertEquals(1, c7c0.getChildren().size());
+
+		CompileNode c7c0c0 = c7c0.getChildren().get(0);
+		assertEquals("write", c7c0c0.getMemberName());
+		assertTrue(!c7c0c0.isInlined());
+
+		CompileNode c7c1 = c7.getChildren().get(1);
+		assertEquals("newLine", c7c1.getMemberName());
+		assertTrue(!c7c1.isInlined());
+	}
+
+	@Test
+	public void testJDK9CompileTaskWithNoParsePhase()
+	{
+		String[] lines = new String[] {
+				"<task method='java.io.BufferedInputStream read ()I' bytes='49' count='5485' stamp='3.616' compiler='C2' compile_id='730' iicount='5489'>",
+				"  <type name='int' id='756'/>",
+				"  <klass name='java.io.BufferedInputStream' flags='1' id='868'/>",
+				"  <method level='3' bytes='49' name='read' flags='33' holder='868' id='869' compile_id='611' compiler='C1' iicount='5621' return='756'/>",
+				"  <parse method='869' stamp='3.617' uses='5621.000000'>",
+				"    <bc code='161' bci='8'/>",
+				"    <branch prob='0.999822' not_taken='1' taken='5604' cnt='5605.000000' target_bci='28'/>",
+				"    <bc code='183' bci='12'/>",
+				"    <type name='void' id='758'/>",
+				"    <method bytes='233' name='fill' flags='2' holder='868' id='872' iicount='16' return='758'/>",
+				"    <call method='872' inline='1' count='1' prof_factor='1.000000'/>",
+				"    <klass name='java.io.IOException' flags='1' id='881'/>",
+				"    <uncommon_trap reason='unloaded' method='872' klass='881' bci='178' action='reinterpret' index='2'/>",
+				"    <klass name='java.lang.OutOfMemoryError' flags='1' id='786'/>",
+				"    <uncommon_trap reason='unloaded' method='872' klass='786' bci='100' action='reinterpret' index='18'/>",
+				"    <inline_fail reason='too big'/>",
+				"    <direct_call bci='12'/>",
+				"    <bc code='161' bci='23'/>",
+				"    <branch not_taken='0' taken='1' target_bci='28'/>",
+				"    <bc code='183' bci='29'/>",
+				"    <klass name='[B' flags='1041' id='860'/>",
+				"    <method level='3' bytes='21' name='getBufIfOpen' flags='2' holder='868' id='871' compile_id='610' compiler='C1' iicount='8108' return='860'/>",
+				"    <call method='871' inline='1' count='5601' prof_factor='1.000000'/>",
+				"    <uncommon_trap reason='unloaded' method='871' klass='881' bci='9' action='reinterpret' index='2'/>",
+				"    <inline_success reason='inline (hot)'/>",
+				"    <parse method='871' stamp='3.618' uses='5605.000000'>",
+				"      <bc code='199' bci='6'/>",
+				"      <branch prob='always' not_taken='0' taken='9784' cnt='9784.000000' target_bci='19'/>",
+				"      <uncommon_trap reason='unstable_if' bci='6' action='reinterpret' comment='taken always'/>",
+				"      <parse_done nodes='118' memory='36952' stamp='3.618' live='115'/>",
+				"    </parse>",
+				"    <bc code='51' bci='43'/>",
+				"    <uncommon_trap reason='range_check' bci='43' action='make_not_entrant' comment='range_check'/>",
+				"    <parse_done nodes='166' memory='45816' stamp='3.619' live='161'/>",
+				"  </parse>",
+				"  <dependency ctxk='868' type='leaf_type'/>",
+				"  <regalloc success='1' attempts='1'/>",
+				"  <dependency ctxk='868' type='leaf_type'/>",
+				"  <code_cache nmethods='709' free_code_cache='248903424' adapters='229' total_blobs='1025' stamp='3.616'/>",
+				"  <task_done inlined_bytes='21' success='1' count='8763' stamp='3.634' nmsize='1096'/>",
+				"</task>" };
+
+		CompileNode root = buildCompileNodeForXML(lines);
+		
+		// root
+		// -> fill()
+		// -> getBufIfOpen()
+		
+		List<CompileNode> rootChildren = root.getChildren();
+
+		assertEquals(2, rootChildren.size());
+		
+		CompileNode c0 = rootChildren.get(0);
+		CompileNode c1 = rootChildren.get(1);
+
+		assertEquals("fill", c0.getMemberName());
+		assertTrue(!c0.isInlined());
+
+		assertEquals("getBufIfOpen", c1.getMemberName());
+		assertTrue(c1.isInlined());
 	}
 }
