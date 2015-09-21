@@ -33,7 +33,7 @@ public final class TooltipUtil
 		String methodName = methodAttrs.get(ATTR_NAME);
 
 		builder.append("Class: ").append(ParseUtil.lookupType(holder, parseDictionary)).append(S_NEWLINE);
-		builder.append("Method: ").append(methodName).append(S_NEWLINE);
+		builder.append("Method: ").append(StringUtil.replaceXMLEntities(methodName)).append(S_NEWLINE);
 
 		builder.append("JIT Compiled: ");
 
