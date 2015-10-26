@@ -27,8 +27,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
-import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.intrinsic.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;

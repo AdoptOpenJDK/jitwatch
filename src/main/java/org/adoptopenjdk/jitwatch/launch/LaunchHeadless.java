@@ -37,10 +37,8 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	private boolean showErrors;
 	private boolean showModel;
 	private boolean showOnlyCompiledMethods;
-	// private boolean showOptimizedVirtualCalls;
 	private boolean showSuggestions;
 	private boolean outputFile;
-	private boolean showOptimizedVirtualCalls;
 	private boolean showInlineFailedCalls;
 
 	private HotSpotLogParser parser;

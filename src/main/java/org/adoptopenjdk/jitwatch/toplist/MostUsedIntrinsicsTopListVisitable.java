@@ -8,7 +8,7 @@ package org.adoptopenjdk.jitwatch.toplist;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
+import org.adoptopenjdk.jitwatch.intrinsic.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 

@@ -10,12 +10,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractTopListVisitable implements ITopListVisitable
+public abstract class AbstractTopListVisitable extends AbstractJournalVisitable implements ITopListVisitable
 {
     protected IReadOnlyJITDataModel model;
     protected List<ITopListScore> topList;
@@ -37,6 +41,13 @@ public abstract class AbstractTopListVisitable implements ITopListVisitable
 	//override if necessary
 	public void postProcess()
 	{
+	}
+	
+
+	@Override
+	public void visitTag(Tag toVisit, IParseDictionary parseDictionary) throws LogParseException
+	{
+		
 	}
 
 	@Override

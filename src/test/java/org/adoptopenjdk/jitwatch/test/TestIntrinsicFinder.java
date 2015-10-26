@@ -11,14 +11,22 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.core.IntrinsicFinder;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
+import org.adoptopenjdk.jitwatch.intrinsic.IntrinsicFinder;
+import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.junit.After;
 import org.junit.Test;
 
 public class TestIntrinsicFinder
 {
+	@After
+	public void checkUnhandledTags()
+	{
+		assertEquals(0, JournalUtil.getUnhandledTagCount());
+	}
+	
 	@Test
 	public void testRegressionIntrinsicFinderNeedParseDictionary()
 	{

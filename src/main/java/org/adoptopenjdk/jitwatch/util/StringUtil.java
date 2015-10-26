@@ -12,12 +12,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_APOSTROPHE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_LT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_GT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 
@@ -85,7 +87,7 @@ public final class StringUtil
 		
 		if (input != null)
 		{
-			result = input.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE);
+			result = input.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE).replace(S_ENTITY_APOS, S_APOSTROPHE);
 		}
 		
 		return result;

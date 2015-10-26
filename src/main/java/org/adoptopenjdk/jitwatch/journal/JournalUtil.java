@@ -38,6 +38,8 @@ public final class JournalUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 
+	private static int unhandledTagCount = 0;
+	
 	private JournalUtil()
 	{
 	}
@@ -45,7 +47,7 @@ public final class JournalUtil
 	public static void visitParseTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
 	{
 		Task lastTask = getLastTask(journal);
-		
+
 		if (lastTask == null)
 		{
 			if (!isJournalForCompile2NativeMember(journal))
@@ -63,7 +65,7 @@ public final class JournalUtil
 			IParseDictionary parseDictionary = lastTask.getParseDictionary();
 
 			Tag parsePhase = getParsePhase(lastTask);
-			
+
 			if (parsePhase != null)
 			{
 				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
@@ -290,8 +292,12 @@ public final class JournalUtil
 		{
 			CompilerName compilerName = lastTask.getCompiler();
 
+			// fix this shit
+			// treat build_ir as a task to dive into
+			// all parsers start at task tag
+
 			String parseAttributeName = ATTR_PARSE;
-			
+
 			if (compilerName == CompilerName.C1)
 			{
 				parseAttributeName = ATTR_BUILDIR;
@@ -304,7 +310,7 @@ public final class JournalUtil
 			if (count > 1)
 			{
 				logger.warn("Unexpected parse phase count: {}", count);
-				
+
 				logger.warn("\n{}", lastTask.toString(true));
 			}
 			else if (count == 1)
@@ -333,7 +339,7 @@ public final class JournalUtil
 			if (count > 1)
 			{
 				logger.warn("Unexpected optimizer phase count: {}", count);
-			}			
+			}
 			else if (count == 1)
 			{
 				optimizerPhase = parsePhases.get(0);
@@ -341,5 +347,16 @@ public final class JournalUtil
 		}
 
 		return optimizerPhase;
+	}
+
+	public static void unhandledTag(IJournalVisitable visitable, Tag child)
+	{
+		unhandledTagCount++;
+		logger.warn("{} did not handle {}", visitable.getClass().getName(), child.toString(false));
+	}
+	
+	public static int getUnhandledTagCount()
+	{
+		return unhandledTagCount;
 	}
 }

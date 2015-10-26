@@ -47,10 +47,17 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.junit.After;
 import org.junit.Test;
 
 public class TestBytecodeAnnotationBuilder
 {
+	@After
+	public void checkUnhandledTags()
+	{
+		assertEquals(0, JournalUtil.getUnhandledTagCount());
+	}
+	
 	@Test
 	public void testSanityCheckInlineFail()
 	{

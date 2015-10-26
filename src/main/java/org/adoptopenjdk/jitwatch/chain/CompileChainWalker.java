@@ -5,24 +5,33 @@
  */
 package org.adoptopenjdk.jitwatch.chain;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
+import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -33,7 +42,7 @@ import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CompileChainWalker implements IJournalVisitable
+public class CompileChainWalker extends AbstractJournalVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
 
@@ -44,6 +53,16 @@ public class CompileChainWalker implements IJournalVisitable
 	public CompileChainWalker(IReadOnlyJITDataModel model)
 	{
 		this.model = model;
+		
+		ignoreTags.add(TAG_DIRECT_CALL);
+		ignoreTags.add(TAG_KLASS);
+		ignoreTags.add(TAG_TYPE);
+		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_PREDICTED_CALL);
+		ignoreTags.add(TAG_PARSE_DONE);
+		ignoreTags.add(TAG_PHASE_DONE);
+		ignoreTags.add(TAG_BRANCH);
+		ignoreTags.add(TAG_UNCOMMON_TRAP);
 	}
 
 	public CompileNode buildCallTree(Journal journal)
@@ -80,7 +99,6 @@ public class CompileChainWalker implements IJournalVisitable
 			case TAG_BC:
 			{
 				callAttrs.clear();
-
 				break;
 			}
 
@@ -89,7 +107,6 @@ public class CompileChainWalker implements IJournalVisitable
 				methodID = tagAttrs.get(ATTR_ID);
 				methodAttrs.clear();
 				methodAttrs.putAll(tagAttrs);
-				
 				break;
 			}
 
@@ -106,7 +123,6 @@ public class CompileChainWalker implements IJournalVisitable
 				handleInline(parentNode, methodID, parseDictionary, false, methodAttrs, callAttrs, tagAttrs);
 				methodID = null;
 				lastNode = null;
-				
 				break;
 			}
 
@@ -156,6 +172,7 @@ public class CompileChainWalker implements IJournalVisitable
 			}
 
 			default:
+				handleOther(child);
 				break;
 			}
 		}

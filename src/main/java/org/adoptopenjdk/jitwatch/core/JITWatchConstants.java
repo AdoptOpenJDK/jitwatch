@@ -97,6 +97,13 @@ public final class JITWatchConstants
 	public static final String TAG_ELIMINATE_LOCK = "eliminate_lock";
 	public static final String TAG_JVMS = "jvms";
 	public static final String TAG_UNCOMMON_TRAP = "uncommon_trap";
+	public static final String TAG_PARSE_DONE = "parse_done";
+	public static final String TAG_PHASE_DONE = "phase_done";
+
+	public static final String TAG_CAST_UP = "cast_up";
+	public static final String TAG_PREDICTED_CALL = "predicted_call";
+	public static final String TAG_DIRECT_CALL = "direct_call";
+	public static final String TAG_DEPENDENCY = "dependency";
 
 	public static final String TAG_COMMAND = "command";
 
@@ -208,6 +215,7 @@ public final class JITWatchConstants
 	public static final String S_COLON = ":";
 	public static final String S_SEMICOLON = ";";
 	public static final String S_VARARGS_DOTS = "...";
+	public static final String S_APOSTROPHE = "'";
 	public static final String S_OBJECT_ARRAY_DEF = "[L";
 	public static final String S_DOT = ".";
 	public static final String S_ASTERISK = "*";

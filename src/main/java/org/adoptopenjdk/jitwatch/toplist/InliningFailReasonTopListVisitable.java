@@ -8,22 +8,37 @@ package org.adoptopenjdk.jitwatch.toplist;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
-public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable implements IJournalVisitable
+public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 {
 	private final Map<String, Integer> reasonCountMap;
 
@@ -31,6 +46,21 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 	{
 		super(model, sortHighToLow);
 		reasonCountMap = new HashMap<>();
+		
+		ignoreTags.add(TAG_BC);
+		ignoreTags.add(TAG_KLASS);
+		ignoreTags.add(TAG_TYPE);
+		ignoreTags.add(TAG_METHOD);
+		ignoreTags.add(TAG_CALL);
+		ignoreTags.add(TAG_INTRINSIC);
+		ignoreTags.add(TAG_UNCOMMON_TRAP);
+		ignoreTags.add(TAG_PARSE_DONE);
+		ignoreTags.add(TAG_BRANCH);
+		ignoreTags.add(TAG_CAST_UP);
+		ignoreTags.add(TAG_INLINE_SUCCESS);
+		ignoreTags.add(TAG_DIRECT_CALL);
+		ignoreTags.add(TAG_PREDICTED_CALL);
+		ignoreTags.add(TAG_DEPENDENCY);	
 	}
 
 	@Override
@@ -61,6 +91,8 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 			case TAG_INLINE_FAIL:
 			{
 				String reason = attrs.get(ATTR_REASON);
+				
+				reason = StringUtil.replaceXMLEntities(reason);						
 
 				if (reasonCountMap.containsKey(reason))
 				{
@@ -97,6 +129,7 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 			}
 			
 			default:
+				handleOther(child);
 				break;
 			}
 		}

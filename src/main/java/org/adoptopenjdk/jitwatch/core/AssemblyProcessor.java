@@ -10,7 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_METHOD_MARK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_START;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_APOSTROPHE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
@@ -53,7 +53,7 @@ public class AssemblyProcessor
 
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
-			logger.debug("handleLine: '{}'", line);
+			logger.debug("handleLine:{}", line);
 		}
 
 		if (S_HASH.equals(previousLine) && line.startsWith("{method}"))
@@ -95,7 +95,7 @@ public class AssemblyProcessor
 
 				methodStarted = true;
 
-				if (!line.endsWith(S_ENTITY_APOS))
+				if (!line.endsWith(S_APOSTROPHE))
 				{
 					if (DEBUG_LOGGING_ASSEMBLY)
 					{
@@ -105,7 +105,7 @@ public class AssemblyProcessor
 					methodInterrupted = true;
 				}
 			}
-			else if (methodInterrupted && line.endsWith(S_ENTITY_APOS))
+			else if (methodInterrupted && line.endsWith(S_APOSTROPHE))
 			{
 				methodInterrupted = false;
 			}

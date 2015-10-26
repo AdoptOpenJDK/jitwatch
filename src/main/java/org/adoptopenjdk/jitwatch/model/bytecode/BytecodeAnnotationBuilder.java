@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_COUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_NOT_TAKEN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
@@ -13,9 +12,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_TAKEN
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
@@ -26,22 +25,30 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_LOCK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
+
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
+import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.CompilerName;
@@ -56,7 +63,7 @@ import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BytecodeAnnotationBuilder implements IJournalVisitable
+public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeAnnotationBuilder.class);
 
@@ -66,6 +73,19 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 	private BytecodeAnnotations bcAnnotations = new BytecodeAnnotations();
 
+	public BytecodeAnnotationBuilder()
+	{
+		ignoreTags.add(TAG_KLASS);
+		ignoreTags.add(TAG_TYPE);
+		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_PHASE);
+		ignoreTags.add(TAG_PARSE_DONE);
+		ignoreTags.add(TAG_DIRECT_CALL);
+		ignoreTags.add(TAG_PARSE);
+		ignoreTags.add(TAG_PHASE_DONE);
+		ignoreTags.add(TAG_PREDICTED_CALL);
+	}
+	
 	public BytecodeAnnotations buildBytecodeAnnotations(final IMetaMember member, IReadOnlyJITDataModel model)
 			throws AnnotationException
 	{
@@ -122,6 +142,10 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 		case TAG_ELIMINATE_LOCK:
 			visitTagEliminateLock(tag, parseDictionary);
+			break;
+
+		default:
+			handleOther(tag);
 			break;
 		}
 	}
@@ -185,8 +209,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 							}
 						}
 
-						bcAnnotations.addAnnotation(bciValue, new LineAnnotation(builder.toString(),
-								BCAnnotationType.ELIMINATED_ALLOCATION));
+						bcAnnotations.addAnnotation(bciValue,
+								new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
 
 						if (instr.getOpcode() == Opcode.NEW)
 						{
@@ -262,8 +286,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 						if (bciValue != -1)
 						{
-							bcAnnotations.addAnnotation(bciValue, new LineAnnotation(builder.toString().trim(),
-									BCAnnotationType.LOCK_ELISION));
+							bcAnnotations.addAnnotation(bciValue,
+									new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
 
 							BytecodeInstruction instr = getInstructionAtIndex(bciValue);
 
@@ -297,7 +321,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 	{
 		// Only interested in annotating the current method so
 		// do not recurse into method or parse tags
-		
+
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("Building parse tag annotations");
@@ -309,7 +333,7 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
-		
+
 		String currentMethodID = parseTag.getAttribute(ATTR_METHOD);
 
 		boolean isC2 = false;
@@ -483,8 +507,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 					StringBuilder reason = new StringBuilder();
 					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
 
-					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(reason.toString(),
-							BCAnnotationType.INTRINSIC_USED));
+					bcAnnotations.addAnnotation(currentBytecode,
+							new LineAnnotation(reason.toString(), BCAnnotationType.INTRINSIC_USED));
 				}
 
 				break;
@@ -492,14 +516,13 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 
 			case TAG_UNCOMMON_TRAP:
 			{
-				String trapKlass = child.getAttribute(ATTR_KLASS);
 				String trapMethod = child.getAttribute(ATTR_METHOD);
 
 				if (trapMethod == null || currentMethodID.equals(trapMethod))
 				{
 					visitTagUncommonTrap(child);
 				}
-				
+
 				break;
 			}
 
@@ -520,10 +543,8 @@ public class BytecodeAnnotationBuilder implements IJournalVisitable
 			}
 
 			default:
-			{
+				handleOther(child);
 				break;
-			}
-			
 			}
 		}
 	}

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -85,7 +86,7 @@ public class InlineVisitor implements ITreeVisitable
         }
     }
 
-    private static class InlineJournalVisitor implements IJournalVisitable
+    private static class InlineJournalVisitor extends AbstractJournalVisitable  implements IJournalVisitable
     {
         private final Map<String, Map<String, InlineFailureInfo>> failures;
         private final IReadOnlyJITDataModel model;
@@ -192,6 +193,7 @@ public class InlineVisitor implements ITreeVisitable
         			}
                     
                     default:
+                    	handleOther(child);
                         break;
                 }
             }

@@ -23,15 +23,23 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -44,7 +52,7 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AttributeSuggestionWalker extends AbstractSuggestionVisitable implements IJournalVisitable
+public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
 	private IMetaMember metaMember;
 
@@ -147,6 +155,16 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
+		
+		ignoreTags.add(TAG_KLASS);
+		ignoreTags.add(TAG_TYPE);
+		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_PARSE_DONE);
+		ignoreTags.add(TAG_DIRECT_CALL);
+		ignoreTags.add(TAG_PHASE_DONE);
+		ignoreTags.add(TAG_INLINE_SUCCESS);
+		ignoreTags.add(TAG_UNCOMMON_TRAP);
+		ignoreTags.add(TAG_INTRINSIC);
 	}
 
 	@Override
@@ -238,6 +256,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			}
 
 			default:
+				handleOther(child);
 				break;
 			}
 		}
@@ -306,7 +325,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable imple
 			}
 			else if (methodTag.containsAttribute(ATTR_UNLOADED) && "1".equals(methodTag.getAttribute(ATTR_UNLOADED)))
 			{
-				//TODO investigate
+				logger.warn("method {} has unloaded attribute of 1", callee.toStringUnqualifiedMethodName(false));
 			}
 			else
 			{

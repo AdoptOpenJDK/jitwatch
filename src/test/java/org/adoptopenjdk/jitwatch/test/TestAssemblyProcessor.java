@@ -116,7 +116,7 @@ public class TestAssemblyProcessor
 		for (String line : lines)
 		{
 			String trimmedLine = line.trim();
-
+			
 			if (!trimmedLine.startsWith(S_OPEN_ANGLE) && !trimmedLine.startsWith(LOADED))
 			{
 				asmProcessor.handleLine(trimmedLine);
