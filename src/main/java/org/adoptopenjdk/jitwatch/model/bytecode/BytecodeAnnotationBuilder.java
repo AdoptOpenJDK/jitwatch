@@ -57,6 +57,7 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.TooltipUtil;
@@ -93,6 +94,8 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		this.model = model;
 
 		bcAnnotations.clear();
+		
+		String vmVersion = model.getVmVersionRelease();
 
 		if (member != null)
 		{
@@ -103,9 +106,9 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
-
-				JournalUtil.visitOptimizerTagsOfLastTask(member.getJournal(), this);
+				buildParseTagAnnotations(vmVersion, member.getJournal());
+				
+				buildEliminationTagAnnotations(vmVersion, member.getJournal());
 			}
 			catch (LogParseException e)
 			{
@@ -126,10 +129,27 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		}
 		return bcAnnotations;
 	}
+	
+	private void buildParseTagAnnotations(String vmVersion, Journal journal) throws LogParseException
+	{
+		JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
+	}
+	
+	private void buildEliminationTagAnnotations(String vmVersion, Journal journal) throws LogParseException
+	{		
+		if (vmVersion != null && vmVersion.startsWith("1.9"))
+		{
+			JournalUtil.visitEliminationTagsOfLastTask(member.getJournal(), this);
+		}
+		else
+		{			
+			JournalUtil.visitOptimizerTagsOfLastTask(member.getJournal(), this);
+		}
+	}
 
 	@Override
 	public void visitTag(Tag tag, IParseDictionary parseDictionary) throws LogParseException
-	{
+	{	
 		switch (tag.getName())
 		{
 		case TAG_PARSE:

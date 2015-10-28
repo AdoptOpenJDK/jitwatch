@@ -188,8 +188,8 @@ public class TestCompositeObjectEquality
 	@Test
 	public void testOptimizedVirtualCallEqual()
 	{
-		IMetaMember caller1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test1", new Class<?>[0]);
-		IMetaMember callee1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test2", new Class<?>[0]);
+		IMetaMember caller1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test1", new Class<?>[0], void.class);
+		IMetaMember callee1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test2", new Class<?>[0], void.class);
 
 		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
 		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "FooMember", 123, 456);

@@ -19,10 +19,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.CompilerName;
+import org.adoptopenjdk.jitwatch.model.EliminatedAllocation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Journal;
@@ -39,7 +41,7 @@ public final class JournalUtil
 	private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
 
 	private static int unhandledTagCount = 0;
-	
+
 	private JournalUtil()
 	{
 	}
@@ -115,6 +117,33 @@ public final class JournalUtil
 		}
 	}
 
+	public static void visitEliminationTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
+	{
+		Task lastTask = getLastTask(journal);
+
+		if (lastTask == null)
+		{
+			if (!isJournalForCompile2NativeMember(journal))
+			{
+				logger.warn("No Task found in Journal");
+
+				if (journal != null && journal.getEntryList().size() > 0)
+				{
+					logger.warn(journal.toString());
+				}
+			}
+		}
+		else
+		{
+			IParseDictionary parseDictionary = lastTask.getParseDictionary();
+
+			for (Tag child : lastTask.getNamedChildren(TAG_ELIMINATE_ALLOCATION))
+			{
+				visitable.visitTag(child, parseDictionary);
+			}
+		}
+	}
+
 	public static boolean isJournalForCompile2NativeMember(Journal journal)
 	{
 		boolean result = false;
@@ -163,7 +192,7 @@ public final class JournalUtil
 
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("methodTag: {}", methodTag.toString(true));
+			logger.debug("methodTag: {}", methodTag != null ? methodTag.toString(true) : "null");
 		}
 
 		if (methodTag != null)
@@ -354,7 +383,7 @@ public final class JournalUtil
 		unhandledTagCount++;
 		logger.warn("{} did not handle {}", visitable.getClass().getName(), child.toString(false));
 	}
-	
+
 	public static int getUnhandledTagCount()
 	{
 		return unhandledTagCount;

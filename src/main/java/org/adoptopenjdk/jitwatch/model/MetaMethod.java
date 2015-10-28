@@ -10,6 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_MEMBER_CREA
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
 
 public class MetaMethod extends AbstractMetaMember
 {
@@ -36,6 +37,21 @@ public class MetaMethod extends AbstractMetaMember
         {
         	logger.debug("Created MetaMethod: {}", toString());
         }
+    }
+    
+    public void setMemberName(String name)
+    {
+    	this.memberName = name;
+    }
+    
+    public void setParamTypes(List<Class<?>> types)
+    {
+    	this.paramTypes = types;
+    }
+    
+    public void setReturnType(Class<?> returnType)
+    {
+    	this.returnType = returnType;
     }
 
     @Override

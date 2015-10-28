@@ -11,9 +11,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class BytecodeAnnotations
 {	
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeAnnotations.class);
 
-	private Map<Integer, List<LineAnnotation>> annotationMap = new HashMap<>();
+	private Map<Integer, List<LineAnnotation>> annotationMap = new TreeMap<>();
 	
 	public void addAnnotation(int bci, LineAnnotation annotation)
 	{

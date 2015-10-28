@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
@@ -27,7 +28,8 @@ public class UnitTestUtil
 		return model.buildAndGetMetaClass(clazz);
 	}
 
-	public static HelperMetaMethod createTestMetaMember(String fqClassName, String methodName, Class<?>[] params)
+	public static HelperMetaMethod createTestMetaMember(String fqClassName, String methodName, Class<?>[] params,
+			Class<?> returnType)
 	{
 		String packageName = StringUtil.getPackageName(fqClassName);
 		String className = StringUtil.getUnqualifiedClassName(fqClassName);
@@ -36,12 +38,27 @@ public class UnitTestUtil
 
 		MetaClass metaClass = new MetaClass(metaPackage, className);
 
-		return new HelperMetaMethod(getMethod(fqClassName, methodName, params), metaClass);
+		HelperMetaMethod helper = null;
+
+		try
+		{
+			helper = new HelperMetaMethod(java.lang.String.class.getDeclaredMethod("length", new Class<?>[0]), metaClass);
+
+			helper.setMemberName(methodName);
+			helper.setParamTypes(Arrays.asList(params));
+			helper.setReturnType(returnType);
+		}
+		catch (NoSuchMethodException | SecurityException e)
+		{
+			e.printStackTrace();
+		}
+
+		return helper;
 	}
 
 	public static IMetaMember createTestMetaMember()
 	{
-		return createTestMetaMember("java.lang.String", "length", new Class<?>[0]);
+		return createTestMetaMember("java.lang.String", "length", new Class<?>[0], void.class);
 	}
 
 	public static Method getMethod(String fqClassName, String method, Class<?>[] paramTypes)

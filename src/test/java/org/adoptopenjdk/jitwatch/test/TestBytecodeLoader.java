@@ -41,7 +41,7 @@ public class TestBytecodeLoader
 		String methodName = "charAt";
 		Class<?>[] params = new Class<?>[] { int.class };
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(fqClassName, methodName, params);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(fqClassName, methodName, params, char.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), fqClassName);
 
@@ -375,7 +375,7 @@ public class TestBytecodeLoader
 		"}"};
 
 		IMetaMember member = UnitTestUtil
-				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class });
+				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class }, int.class);
 
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
 
@@ -636,7 +636,7 @@ public class TestBytecodeLoader
 		String className = "java.io.PrintStream";
 		String methodName = "print";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class });
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class }, void.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
@@ -657,7 +657,7 @@ public class TestBytecodeLoader
 		String className = "java.io.PrintStream";
 		String methodName = "print";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class });
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class }, void.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
