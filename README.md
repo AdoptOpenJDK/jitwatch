@@ -24,6 +24,9 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 <h2>maven</h2>
 <pre>mvn clean compile test exec:java</pre>
 
+<h2>gradle</h2>
+<pre>gradlew clean build run</pre>
+
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code first with ant / maven / IDE
 ./makeDemoLogFile.sh</pre>

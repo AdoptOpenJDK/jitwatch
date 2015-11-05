@@ -10,9 +10,14 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.junit.Test;
@@ -23,8 +28,20 @@ public class TestExecutionUtil
 	public void testExecuteDemo()
 	{
 		List<String> cp = new ArrayList<>();
-
-		cp.add("target" + File.separatorChar + "classes");
+		
+		//path for maven build
+		Path path = FileSystems.getDefault().getPath("target", "classes");
+		
+		if (Files.exists(path)){
+			cp.add(path.toString());
+		}
+		
+		// path for gradle build
+		path = FileSystems.getDefault().getPath("build", "classes", "main");
+		
+		if (Files.exists(path)){
+			cp.add(path.toString());
+		}
 
 		File libDir = new File("lib");
 
@@ -46,12 +63,15 @@ public class TestExecutionUtil
 		}
 
 		List<String> options = new ArrayList<>();
+		options.add("-XX:+UnlockDiagnosticVMOptions");
+		options.add("-XX:+TraceClassLoading");
+		options.add("-XX:+LogCompilation");
 
 		try
 		{
 			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-			boolean success = executor.execute("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", cp, options,
+			boolean success = executor.execute(MakeHotSpotLog.class.getCanonicalName(), cp, options,
 					new ISandboxLogListener()
 					{
 						@Override
