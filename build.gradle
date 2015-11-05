@@ -10,14 +10,18 @@ buildscript {
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM
 
 plugins {
-   id 'java'         // self explanatory
-   id 'idea'         // idem
-   id 'application'  // similar to mvn exec:java
+   id 'java'         	// self explanatory
+   id 'idea'         	// idem
+   id 'eclipse'		 	// eclipse
+   id 'findbugs'	 	// findbugs plugin for static code analysis
+   id 'pmd'			 	// code quality check plugin
+   id 'jacoco'			// code coverage 
+   id 'project-report'	// project reporting plugin
+   id 'application'  	// similar to mvn exec:java
    id 'com.github.johnrengelman.shadow' version '1.2.2'  // fat jar
    id 'com.github.hierynomus.license' version '0.11.0'   // license checks
    id 'com.github.ben-manes.versions' version '0.11.3'   // version checks
 }
-
 
 // maven coordinates
 group = 'org.adoptopenjdk.jitwatch'
@@ -26,6 +30,33 @@ version = '1.0.0-SNAPSHOT'
 repositories {
     jcenter()  // faster than mavenCentral()
 }
+
+//Code quality plugins configuration
+findbugsMain {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+findbugs {
+	ignoreFailures = true
+	sourceSets = [sourceSets.main]
+}
+
+pmd {
+	ignoreFailures = true
+	sourceSets = [sourceSets.main]
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.enabled true
+	}
+}
+//Code quality plugins configuration end
 
 // we expect jdk to be any of ['jdk7', 'jdk8', 'jdk9']
 // this property can specified at the command line as follows
@@ -38,8 +69,26 @@ if (!hasProperty('jdk')) {
 
 // detect jfxrt.jar & tools.jar
 ext {
-    jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/jfxrt.jar").absolutePath
-    toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
+	
+	//fx path on 1.7
+	jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/jfxrt.jar").absolutePath
+	toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
+	
+	switch (JavaVersion.current()){
+		case JavaVersion.VERSION_1_6 : 
+			throw new GradleException("Java FX is not supported by Java 1.6 upgrade to 1.7.")
+			break
+		case JavaVersion.VERSION_1_7 :
+			break
+		case JavaVersion.VERSION_1_8 : 
+			jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/ext/jfxrt.jar").absolutePath  
+			break
+		case JavaVersion.VERSION_1_9 :
+			break 
+		default: 
+			throw new GradleException("Can't get java version!")
+			break
+	}
 }
 
 for (location in ['lib/jfxrt.jar', 'jre/lib/jfxrt.jar', 'jre/lib/ext/jfxrt.jar']) {
@@ -62,15 +111,36 @@ if (file.exists()) {
 configurations {
     // gradle does not have a 'system' nor 'provided' scope
     system
+    
+    // fix classpaths due to missing 'system' scope
+	sourceSets {
+    	main {
+        	compileClasspath += configurations.system
+   		}
+	}
 }
 
+apply from: "gradle/eclipse.gradle"
+
 dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile 'ch.qos.logback:logback-classic:1.1.3'
-    compile 'ch.qos.logback:logback-core:1.1.3'
+    compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.1.3', 'ch.qos.logback:logback-core:1.1.3'
     testCompile 'junit:junit:4.12'
-    system project.files(jfxrtLocation)
-    if (jdk != 'jdk9') system project.files(toolsLocation)
+    system files(jfxrtLocation)
+    if (jdk != 'jdk9') system files(toolsLocation)
+}
+
+compileJava {
+    //add required JavaFX libs to compile classpath
+    sourceSets.main.compileClasspath += configurations.system
+}
+
+run {
+    //add required JavaFX libs to runtime classpath
+	classpath += configurations.system
+}
+
+test {
+	classpath += configurations.system
 }
 
 mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
@@ -94,26 +164,14 @@ licenseTest {
     source -= sourceSets.test.resources
 }
 
-// fix classpaths due to missing 'system' scope
-sourceSets {
-    main {
-        compileClasspath += [configurations.system]
-    }
-}
-
 javadoc {
-    classpath += [configurations.system]
+    classpath += configurations.system
 }
 
 idea {
     module {
-        scopes.PROVIDED.plus += [configurations.system]
+        scopes.PROVIDED.plus += configurations.system
     }
-}
-
-run {
-    // include tools.jar in the runtime classpath
-    classpath += [configurations.system]
 }
 
 shadowJar {

@@ -1,0 +1,12 @@
+//Eclipse project generation instructions
+eclipse {
+	project {
+		name = rootProject.name
+
+		comment = 'Log analyser and visualiser for the HotSpot JIT compiler'
+
+		natures 'org.eclipse.buildship.core.gradleprojectnature', 'org.springsource.ide.eclipse.gradle.core.nature', 'org.eclipse.jdt.core.javanature'
+	}
+}
+
+eclipse.classpath.plusConfigurations += [configurations.system]
