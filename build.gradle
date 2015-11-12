@@ -218,7 +218,7 @@ bintray {
     repo = 'maven'
     licenses = ['BSD 2-Clause']
     vcsUrl = 'https://github.com/AdoptOpenJDK/jitwatch'
-    name = 'net.java.adoptopenjdk:jitwatch'
+    name = "${project.group}:${project.name}"
 
     version {
       name = project.version
