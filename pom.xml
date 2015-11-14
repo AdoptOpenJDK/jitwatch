@@ -519,6 +519,7 @@
     </build>
 
     <scm>
+        <connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
         <developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
         <url>${project.url}</url>
         <tag>HEAD</tag>
