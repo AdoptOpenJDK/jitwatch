@@ -9,7 +9,7 @@
 
     <name>jitwatch</name>
     <description>Visualisation of JIT behaviour</description>
-    <url>https://github.com/chriswhocodes/jitwatch</url>
+    <url>https://github.com/AdoptOpenJDK/jitwatch</url>
     <inceptionYear>2013</inceptionYear>
 
     <prerequisites>
@@ -520,7 +520,7 @@
 
     <scm>
         <developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
-        <url>https://github.com/AdoptOpenJDK/jitwatch</url>
+        <url>${project.url}</url>
         <tag>HEAD</tag>
     </scm>
 
