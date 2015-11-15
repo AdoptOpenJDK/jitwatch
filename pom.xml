@@ -4,7 +4,6 @@
 
     <groupId>org.adoptopenjdk.jitwatch</groupId>
     <artifactId>jitwatch</artifactId>
-    <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
 
     <name>jitwatch</name>
@@ -113,8 +112,6 @@
             </properties>
         </profile>
 	</profiles>
-
-   <!--========================================= Common dependencies across JDKs ============================================== -->
 
     <dependencyManagement>
         <dependencies>
