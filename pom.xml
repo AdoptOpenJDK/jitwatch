@@ -83,6 +83,15 @@
                 <!-- Actually 2.2.x depending on what Java 7 you have -->
                 <javafx.version>2.2</javafx.version>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>${jdk.version}</version>
+                    <systemPath>${tools.jar}</systemPath>
+                    <scope>system</scope>
+                </dependency>
+            </dependencies>
         </profile>
         
     <!--========================================= JDK 8 ============================================== -->
@@ -99,6 +108,15 @@
                 <!-- Generic version number as Oracle doesn't release separate jars -->
                 <javafx.version>8</javafx.version>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>${jdk.version}</version>
+                    <systemPath>${tools.jar}</systemPath>
+                    <scope>system</scope>
+                </dependency>
+            </dependencies>
         </profile>
         
    <!--========================================= JDK9 ============================================== -->
@@ -108,6 +126,7 @@
                 <jdk>1.9</jdk>
             </activation>
             <properties>
+                <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
                 <jdk.version>1.9</jdk.version>
                 <!-- Generic version number as Oracle doesn't release separate jars -->
                 <javafx.version>9</javafx.version>
@@ -170,13 +189,6 @@
             <!-- System dependencies -->
             <dependency>
                 <groupId>com.oracle</groupId>
-                <artifactId>tools</artifactId>
-                <version>${jdk.version}</version>
-                <systemPath>${tools.jar}</systemPath>
-                <scope>system</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.oracle</groupId>
                 <artifactId>javafx</artifactId>
                 <version>${javafx.version}</version>
                 <systemPath>${jfxrt.jar}</systemPath>
@@ -205,10 +217,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>tools</artifactId>
         </dependency>
         <dependency>
             <groupId>com.oracle</groupId>
@@ -246,7 +254,7 @@
                         <source>${jdk.version}</source>
                         <target>${jdk.version}</target>
                         <compilerArgument>-Xlint:unchecked</compilerArgument>
-        		<compilerArgument>-g:source,lines</compilerArgument>
+        		        <compilerArgument>-g:source,lines</compilerArgument>
                     </configuration>
                 </plugin>
                 <plugin>
