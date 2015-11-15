@@ -18,7 +18,7 @@
     <licenses>
         <license>
             <name>Simplified BSD License</name>
-            <url>http://opensource.org/licenses/BSD-3-Clause</url>
+            <url>http://opensource.org/licenses/BSD-2-Clause</url>
             <distribution>repo</distribution>
             <comments>Simplified BSD License</comments>
         </license>
@@ -41,6 +41,39 @@
         <contributor>
             <name>Mani Sarkar</name>
             <timezone>GMT</timezone>
+        </contributor>
+        <contributor>
+            <name>Stefan Ferstl</name>
+        </contributor>
+        <contributor>
+            <name>Philip Aston</name>
+        </contributor>
+        <contributor>
+            <name>Marshall Pierce</name>
+        </contributor>
+        <contributor>
+            <name>Ben Evans</name>
+        </contributor>
+        <contributor>
+            <name>David Schlosnagle</name>
+        </contributor>
+        <contributor>
+            <name>Trask Stalnaker</name>
+        </contributor>
+        <contributor>
+            <name>Chris Vest</name>
+        </contributor>
+        <contributor>
+            <name>Jean-Philippe BEMPEL</name>
+        </contributor>
+        <contributor>
+            <name>Sebastian Sickelmann</name>
+        </contributor>
+        <contributor>
+            <name>Rafael Winterhalter</name>
+        </contributor>
+        <contributor>
+            <name>Andres Almiray</name>
         </contributor>
     </contributors>
 
@@ -498,5 +531,4 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-
 </project>
