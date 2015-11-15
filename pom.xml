@@ -65,6 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
+        <main.class>org.adoptopenjdk.jitwatch.launch.LaunchUI</main.class>
     </properties>
 
     <profiles>
@@ -242,7 +243,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
+                                <mainClass>${main.class}</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
@@ -381,7 +382,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
+                            <mainClass>${main.class}</mainClass>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
                     </execution>
