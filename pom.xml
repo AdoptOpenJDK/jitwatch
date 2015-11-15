@@ -6,7 +6,7 @@
     <artifactId>jitwatch</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <name>jitwatch</name>
+    <name>JITWatch</name>
     <description>Visualisation of JIT behaviour</description>
     <url>https://github.com/AdoptOpenJDK/jitwatch</url>
     <inceptionYear>2013</inceptionYear>
