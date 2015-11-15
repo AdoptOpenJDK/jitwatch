@@ -21,6 +21,8 @@ plugins {
    id 'com.github.johnrengelman.shadow' version '1.2.2'  // fat jar
    id 'com.github.hierynomus.license' version '0.11.0'   // license checks
    id 'com.github.ben-manes.versions' version '0.11.3'   // version checks
+   id 'com.jfrog.bintray' version '1.4'
+   id 'maven-publish'
 }
 
 // maven coordinates
@@ -174,10 +176,56 @@ idea {
     }
 }
 
+task sourceJar(type: Jar, dependsOn: classes) {
+  from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  from javadoc.destinationDir
+}
+
+publishing {
+  publications {
+    bintray(MavenPublication) {
+      from components.java
+      groupId project.group
+      artifactId project.name
+      version project.version
+
+      artifact sourceJar {
+        classifier 'sources'
+      }
+
+      artifact javadocJar {
+        classifier 'javadoc'
+      }
+    }
+  }
+}
+
 shadowJar {
     if (jdk != 'jdk9') {
         from project.files(toolsLocation)
     }
+}
+
+bintray {
+  user = rootProject.hasProperty('bintrayUser') ? rootProject.property('bintrayUser') : 'FIXME'
+  key = rootProject.hasProperty('bintrayApiKey') ? rootProject.property('bintrayApiKey') : 'FIXME'
+  publications = ['bintray']
+
+  pkg {
+    repo = 'maven'
+    licenses = ['BSD 2-Clause']
+    vcsUrl = 'https://github.com/AdoptOpenJDK/jitwatch'
+    name = "${project.group}:${project.name}"
+
+    version {
+      name = project.version
+      released = new Date()
+      vcsTag = 'v' + project.version
+    }
+  }
 }
 
 task makeDemoLogFile(type: JavaExec) {
