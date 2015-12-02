@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2014 Philip Aston.
+ * Copyright (c) 2013-2015 Philip Aston.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2014 Chris Newland.
+ * Copyright (c) 2013-2015 Chris Newland.
  * Copyright (c) 2015 Philip Aston
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
@@ -22,7 +22,7 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
  * Calculate symbolic names for method-local addresses.
  * 
  * <p>
- * Operates in two modes. During parsing, {@link #newInstruction()} accumulates
+ * Operates in two modes. During parsing, {@link #newInstruction(AssemblyInstruction)} accumulates
  * addresses used by instructions. After all the instructions have been parsed,
  * {@link #buildLabels()} builds an index of addresses of all known instructions
  * to label numbers, and {@link #formatAddress} and {@link #formatOperands}

@@ -16,3 +16,4 @@ jitwatch.properties
 .idea
 jitwatch.i*
 build/
+.gradle
