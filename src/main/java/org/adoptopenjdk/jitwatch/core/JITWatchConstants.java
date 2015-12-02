@@ -103,7 +103,9 @@ public final class JITWatchConstants
 	public static final String TAG_CAST_UP = "cast_up";
 	public static final String TAG_PREDICTED_CALL = "predicted_call";
 	public static final String TAG_DIRECT_CALL = "direct_call";
+	public static final String TAG_VIRTUAL_CALL = "virtual_call";
 	public static final String TAG_DEPENDENCY = "dependency";
+	public static final String TAG_OBSERVE  = "observe";
 
 	public static final String TAG_COMMAND = "command";
 

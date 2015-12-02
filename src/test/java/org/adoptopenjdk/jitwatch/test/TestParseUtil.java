@@ -5,8 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
-import static org.adoptopenjdk.jitwatch.test.UnitTestUtil.getConstructor;
-import static org.adoptopenjdk.jitwatch.test.UnitTestUtil.getMethod;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -21,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 
 import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -45,7 +42,7 @@ public class TestParseUtil
 	public void testSourceSignatureRegExMatcher()
 	{
 		// single primitive param, void return
-		Method m = getMethod("java.lang.AbstractStringBuilder", "ensureCapacity", new Class<?>[] { int.class });
+		Method m = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "ensureCapacity", new Class<?>[] { int.class });
 		MetaMethod method = new MetaMethod(m, null);
 		String sourceSig = "public void ensureCapacity(int foo)";
 		Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
@@ -53,7 +50,7 @@ public class TestParseUtil
 		assertTrue(match);
 
 		// 2 primitive params,void return
-		Method m2 = getMethod("java.lang.AbstractStringBuilder", "setCharAt", new Class<?>[] { int.class, char.class });
+		Method m2 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "setCharAt", new Class<?>[] { int.class, char.class });
 		MetaMethod method2 = new MetaMethod(m2, null);
 		String sourceSig2 = "public void setCharAt(int foo, char bar)";
 		Matcher matcher2 = Pattern.compile(method2.getSignatureRegEx()).matcher(sourceSig2);
@@ -61,7 +58,7 @@ public class TestParseUtil
 		assertTrue(match2);
 
 		// Object param and return type
-		Method m3 = getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { java.lang.String.class });
+		Method m3 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { java.lang.String.class });
 		MetaMethod methodFQ = new MetaMethod(m3, null);
 		String sourceSigFQ = "public AbstractStringBuilder append(String foo)";
 		Matcher matcherFQ = Pattern.compile(methodFQ.getSignatureRegEx()).matcher(sourceSigFQ);
@@ -69,7 +66,7 @@ public class TestParseUtil
 		assertTrue(matchFQ);
 
 		// constructor with primitive params
-		Constructor<?> c1 = getConstructor("java.lang.AbstractStringBuilder", new Class<?>[] { int.class });
+		Constructor<?> c1 = UnitTestUtil.getConstructor("java.lang.AbstractStringBuilder", new Class<?>[] { int.class });
 		MetaConstructor con1 = new MetaConstructor(c1, null);
 		String sourceSigC1 = "AbstractStringBuilder(int foo)";
 		Matcher matcherC1 = Pattern.compile(con1.getSignatureRegEx()).matcher(sourceSigC1);
@@ -77,15 +74,15 @@ public class TestParseUtil
 		assertTrue(matchC1);
 
 		// array return type, no params
-		Method m4 = getMethod("java.lang.AbstractStringBuilder", "getValue", new Class<?>[0]);
+		Method m4 = UnitTestUtil.getMethod("java.lang.String", "getBytes", new Class<?>[0]);
 		MetaMethod method4 = new MetaMethod(m4, null);
-		String sourceSig4 = "final char[] getValue()";
+		String sourceSig4 = "public byte[] getBytes()";
 		Matcher matcher4 = Pattern.compile(method4.getSignatureRegEx()).matcher(sourceSig4);
 		boolean match4 = matcher4.find();
 		assertTrue(match4);
 
 		// array param and object return type
-		Method m5 = getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { char[].class });
+		Method m5 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { char[].class });
 		MetaMethod method5 = new MetaMethod(m5, null);
 		String sourceSig5 = "public AbstractStringBuilder append(char[] foo)";
 		Matcher matcher5 = Pattern.compile(method5.getSignatureRegEx()).matcher(sourceSig5);
@@ -97,7 +94,7 @@ public class TestParseUtil
 	public void testRegressionJavaUtilPropertiesLoadConvert() // space before
 																// parentheses
 	{
-		Method m = getMethod("java.util.Properties", "loadConvert", new Class<?>[] { char[].class, int.class, int.class,
+		Method m = UnitTestUtil.getMethod("java.util.Properties", "loadConvert", new Class<?>[] { char[].class, int.class, int.class,
 				char[].class });
 		MetaMethod method = new MetaMethod(m, null);
 
@@ -114,7 +111,7 @@ public class TestParseUtil
 		// public static <U,T> T[] copyOf(U[] original, int newLength, Class<?
 		// extends T[]> newType) {
 
-		Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
 		MetaMethod method = new MetaMethod(m, null);
 
 		// test for failure on matching internal (type erased) representation
@@ -128,7 +125,7 @@ public class TestParseUtil
 	@Test
 	public void testFindBestLineMatchForMemberSignature()
 	{
-		Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
 
 		MetaClass metaClass = new MetaClass(null, "java.util.arrays");
 		IMetaMember member = new MetaMethod(m, metaClass);
@@ -166,7 +163,7 @@ public class TestParseUtil
 	@Test
 	public void testFindBestLineMatchForMemberSignatureBytecode()
 	{
-		Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
+		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
 
 		MetaClass metaClass = new MetaClass(null, "java.util.arrays");
 		IMetaMember member = new MetaMethod(m, metaClass);
@@ -188,7 +185,7 @@ public class TestParseUtil
 	@Test
 	public void testFindBestLineMatchForMemberSignatureBytecodeRegression()
 	{
-		Method m = getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class });
+		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class });
 
 		MetaClass metaClass = new MetaClass(null, "java.util.arrays");
 		IMetaMember member = new MetaMethod(m, metaClass);
@@ -434,7 +431,7 @@ public class TestParseUtil
 		String className = "java.lang.StringBuilder";
 		String methodName = "charAt";
 
-		Method m = getMethod(className, methodName, new Class<?>[] { int.class });
+		Method m = UnitTestUtil.getMethod(className, methodName, new Class<?>[] { int.class });
 		MetaMethod method = new MetaMethod(m, null);
 
 		String uqToString = method.toStringUnqualifiedMethodName(false);
