@@ -47,6 +47,7 @@ public class AssemblyBlock
 		return instructions;
 	}
 
+	@Override
 	public String toString()
 	{
 		return toString(0);

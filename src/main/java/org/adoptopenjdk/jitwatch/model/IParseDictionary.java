@@ -19,5 +19,6 @@ public interface IParseDictionary
 
 	Tag getMethod(String id);
 	
+	@Override
 	String toString();
 }
