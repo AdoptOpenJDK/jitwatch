@@ -28,6 +28,7 @@ public class LineAnnotation
 		return type;
 	}
 
+	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();

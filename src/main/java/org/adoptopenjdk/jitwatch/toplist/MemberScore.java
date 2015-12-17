@@ -18,11 +18,13 @@ public class MemberScore implements ITopListScore
 		this.score = score;
 	}
 	
+	@Override
 	public IMetaMember getKey()
 	{
 		return member;
 	}
 
+	@Override
 	public long getScore()
 	{
 		return score;

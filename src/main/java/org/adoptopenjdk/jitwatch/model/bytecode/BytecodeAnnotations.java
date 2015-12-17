@@ -62,6 +62,7 @@ public class BytecodeAnnotations
 		return annotationMap.size();
 	}
 
+	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();

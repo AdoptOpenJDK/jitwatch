@@ -24,6 +24,7 @@ public abstract class AbstractHistoVisitable extends AbstractJournalVisitable im
 		this.resolution = resolution;
 	}
 
+	@Override
 	public Histo buildHistogram()
 	{
 		histo = new Histo(resolution);
@@ -33,6 +34,7 @@ public abstract class AbstractHistoVisitable extends AbstractJournalVisitable im
 		return histo;
 	}
 
+	@Override
 	public void reset()
 	{
 	}

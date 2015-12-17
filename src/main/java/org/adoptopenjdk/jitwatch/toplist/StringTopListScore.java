@@ -16,11 +16,13 @@ public class StringTopListScore implements ITopListScore
 		this.score = score;
 	}
 	
+	@Override
 	public String getKey()
 	{
 		return key;
 	}
 
+	@Override
 	public long getScore()
 	{
 		return score;

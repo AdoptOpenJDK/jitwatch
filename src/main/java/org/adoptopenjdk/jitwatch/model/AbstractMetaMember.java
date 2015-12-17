@@ -256,6 +256,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
+	@Override
 	public List<BytecodeInstruction> getInstructions()
 	{
 		List<BytecodeInstruction> result = null;
