@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 import javafx.scene.control.Label;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
+import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 
 public class AssemblyLabel extends Label
 {
@@ -22,5 +23,17 @@ public class AssemblyLabel extends Label
 	public AssemblyInstruction getInstruction()
 	{
 		return instruction;
+	}
+	
+	public String getUnhighlightedStyle()
+	{
+		if (instruction.isSafePoint())
+		{
+			return Viewer.STYLE_SAFEPOINT;	
+		}
+		else
+		{
+			return Viewer.STYLE_UNHIGHLIGHTED;
+		}	
 	}
 }

@@ -254,7 +254,7 @@ public class ViewerAssembly extends Viewer
 	{
 		AssemblyLabel lbl = new AssemblyLabel(instruction, annoWidth, line, showLocalLabels);
 
-		lbl.setStyle(STYLE_UNHIGHLIGHTED);
+		lbl.setStyle(lbl.getUnhighlightedStyle());
 
 		return lbl;
 	}

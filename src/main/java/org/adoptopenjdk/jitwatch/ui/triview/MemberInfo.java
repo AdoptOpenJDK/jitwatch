@@ -10,6 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILL
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_MAX_INLINE_SIZE;
+
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -29,6 +30,7 @@ public class MemberInfo extends HBox
 	private Label lblCompileTimeVal;
 
 	private static final String STYLE_VALUE = "-fx-border-color: black; -fx-border-width: 1px; text-align: center; ";
+	private static final String NA = "n/a";
 
 	public MemberInfo()
 	{
@@ -120,6 +122,13 @@ public class MemberInfo extends HBox
 			}
 		}
 	}
+	
+	public void setAssemblyDetails(String nativeSize, String compileMillis)
+	{	
+		lblAssemblySizeVal.setText(nativeSize == null ? NA : nativeSize);
+
+		lblCompileTimeVal.setText(compileMillis == null ? NA : compileMillis);
+	}
 
 	private String getAttrOrNA(IMetaMember member, boolean compiled, String attribute)
 	{
@@ -139,7 +148,7 @@ public class MemberInfo extends HBox
 
 		if (result == null)
 		{
-			result = "n/a";
+			result = NA;
 		}
 
 		return result;

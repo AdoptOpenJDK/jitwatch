@@ -49,9 +49,9 @@ public interface IMetaMember
 
 	boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly);
 
-	AssemblyMethod getAssembly();
+	List<AssemblyMethod> getAssemblyMethods();
 
-	void setAssembly(AssemblyMethod asmMethod);
+	void addAssembly(AssemblyMethod asmMethod);
 
 	String getSignatureRegEx();
 }

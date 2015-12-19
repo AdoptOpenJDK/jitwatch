@@ -53,7 +53,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
 
 	protected MetaClass metaClass;
-	private AssemblyMethod asmMethod = null;
+	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
 
 	private boolean isQueued = false;
 	private boolean isCompiled = false;
@@ -382,20 +382,20 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public AssemblyMethod getAssembly()
+	public List<AssemblyMethod> getAssemblyMethods()
 	{
-		return asmMethod;
+		return assemblyMethods;
 	}
 
 	@Override
-	public void setAssembly(AssemblyMethod asmMethod)
+	public void addAssembly(AssemblyMethod asmMethod)
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
 		}
 
-		this.asmMethod = asmMethod;
+		assemblyMethods.add(asmMethod);
 	}
 
 	@Override

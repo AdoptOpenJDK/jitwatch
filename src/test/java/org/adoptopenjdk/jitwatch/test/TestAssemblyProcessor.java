@@ -94,7 +94,9 @@ public class TestAssemblyProcessor
 
 		performAssemblyParsingOn(lines);
 
-		AssemblyMethod assemblyMethod = createdMember.getAssembly();
+		List<AssemblyMethod> assemblyMethods = createdMember.getAssemblyMethods();
+
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
 
 		assertNotNull(assemblyMethod);
 
@@ -156,8 +158,10 @@ public class TestAssemblyProcessor
 
 		assertNotNull(member);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
 
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
@@ -216,8 +220,9 @@ public class TestAssemblyProcessor
 
 		performAssemblyParsingOn(lines);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
@@ -230,8 +235,9 @@ public class TestAssemblyProcessor
 
 		assertEquals(5, instructions.size());
 
-		AssemblyMethod assemblyMethod2 = member2.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods2 = member2.getAssemblyMethods();
+		AssemblyMethod assemblyMethod2 = assemblyMethods2.get(assemblyMethods2.size() - 1);
+		
 		assertNotNull(assemblyMethod2);
 
 		List<AssemblyBlock> asmBlocks2 = assemblyMethod2.getBlocks();
@@ -294,8 +300,9 @@ public class TestAssemblyProcessor
 
 		performAssemblyParsingOn(lines);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
@@ -355,8 +362,9 @@ public class TestAssemblyProcessor
 
 		assertNotNull(member);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		assertEquals(19, assemblyMethod.getMaxAnnotationWidth());
@@ -407,8 +415,9 @@ public class TestAssemblyProcessor
 
 		performAssemblyParsingOn(lines);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
@@ -466,8 +475,9 @@ public class TestAssemblyProcessor
 
 		performAssemblyParsingOn(lines);
 
-		AssemblyMethod assemblyMethod = member.getAssembly();
-
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
 		assertNotNull(assemblyMethod);
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();

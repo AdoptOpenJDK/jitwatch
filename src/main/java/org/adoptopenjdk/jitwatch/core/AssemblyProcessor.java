@@ -128,7 +128,7 @@ public class AssemblyProcessor
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
-			// logger.debug("completed assembly\n{}", builder.toString());
+			//logger.debug("completed assembly\n{}", builder.toString());
 		}
 
 		String asmString = builder.toString();
@@ -180,11 +180,11 @@ public class AssemblyProcessor
 
 				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
 
-				currentMember.setAssembly(asmMethod);
+				currentMember.addAssembly(asmMethod);
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Set assembly on {} {}", currentMember, currentMember.hashCode());
+					logger.info("Set assembly on {} {}", currentMember, asmString.length());
 				}
 			}
 			else

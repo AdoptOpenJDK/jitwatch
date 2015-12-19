@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.ui.triview;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
@@ -17,8 +18,37 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRI
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_SIZE;
 
 import java.util.List;
+
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.Journal;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
+import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
+import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
+import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -48,30 +78,6 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
-import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
-import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
-import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
-import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
-import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-import org.adoptopenjdk.jitwatch.ui.Dialogs;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
-import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
-import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
-import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TriView extends Stage implements ITriView, ILineListener
 {
 	private IMetaMember currentMember;
@@ -95,11 +101,15 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private Button btnCompileChain;
 	private Button btnJITJournal;
+	private Button btnLineTable;
 
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
+	private ComboBox<IMetaMember> comboMember;
+
+	private ObservableList<String> comboAssemblyMethodList = FXCollections.observableArrayList();
+	private ComboBox<String> comboAssemblyMethod;
 
 	private ClassSearch classSearch;
-	private ComboBox<IMetaMember> comboMember;
 
 	private MemberInfo memberInfo;
 
@@ -164,6 +174,22 @@ public class TriView extends Stage implements ITriView, ILineListener
 		});
 		btnJITJournal.setTooltip(new Tooltip("Show journal of JIT events for this member"));
 
+		btnLineTable = new Button("LNT");
+		btnLineTable.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					String lineNumberTable = currentMember.getMemberBytecode().getLineTable().toString();
+
+					parent.openTextViewer("LineNumberTable for " + currentMember.toString(), lineNumberTable, false, false);
+				}
+			}
+		});
+		btnLineTable.setTooltip(new Tooltip("Show LineNumberTable for current bytecode"));
+
 		memberInfo = new MemberInfo();
 
 		Region spacerTop = new Region();
@@ -177,6 +203,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(checkAssembly);
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
+		hBoxToolBarButtons.getChildren().add(btnLineTable);
 		hBoxToolBarButtons.getChildren().add(checkMouseFollow);
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
@@ -186,6 +213,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.42));
 
 		Label lblMember = new Label("Member:");
+
+		// ================ Set up Member combo box ====================
 
 		comboMember = new ComboBox<>(comboMemberList);
 		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
@@ -205,7 +234,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			}
 		});
 
-		comboMember.setCellFactory(getCallbackForCellFactory());
+		comboMember.setCellFactory(getCallbackForMemberListCellFactory());
 
 		comboMember.setConverter(new StringConverter<IMetaMember>()
 		{
@@ -349,11 +378,24 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				config.setLocalAsmLabels(newVal);
 				config.saveConfig();
-				setAssemblyPaneContent();
+				setAssemblyPaneContent(0);
 			}
 		});
 
 		hbox.getChildren().add(checkLocalLabels);
+
+		comboAssemblyMethod = new ComboBox<>(comboAssemblyMethodList);
+
+		comboAssemblyMethod.valueProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+			{
+				setAssemblyPaneContent(comboAssemblyMethod.getSelectionModel().getSelectedIndex());
+			}
+		});
+
+		hbox.getChildren().add(comboAssemblyMethod);
 
 		return hbox;
 	}
@@ -375,7 +417,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		});
 	}
 
-	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForCellFactory()
+	private Callback<ListView<IMetaMember>, ListCell<IMetaMember>> getCallbackForMemberListCellFactory()
 	{
 		return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
 		{
@@ -520,8 +562,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				String sourceFileName = classBytecode.getSourceFile();
 
-				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute {}", memberClass, sourceFileName);
-				
+				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute {}", memberClass,
+						sourceFileName);
+
 				if (sourceFileName != null)
 				{
 					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
@@ -545,9 +588,90 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		viewerBytecode.setContent(currentMember);
 
-		setAssemblyPaneContent();
+		comboAssemblyMethod.getSelectionModel().clearSelection();
+		comboAssemblyMethodList.clear();
 
+		List<AssemblyMethod> assemblyMethods = currentMember.getAssemblyMethods();
+		int numAssemblyMethod = assemblyMethods.size();
+
+		for (int i = 0; i < numAssemblyMethod; i++)
+		{
+			comboAssemblyMethodList.add("Compilation " + i + getCompilationDetail(i));
+		}
+
+		int selectedAssembly = numAssemblyMethod - 1;
+		
+		comboAssemblyMethod.getSelectionModel().select(selectedAssembly);
+
+		setAssemblyPaneContent(selectedAssembly);
+		
 		lblMemberInfo.setText(statusBarBuilder.toString());
+	}
+
+	private String getCompilationDetail(int index)
+	{
+		Journal journal = currentMember.getJournal();
+
+		StringBuilder builder = new StringBuilder();
+
+		int tagIndex = 0;
+
+		for (Tag tag : journal.getEntryList())
+		{
+			if (TAG_NMETHOD.equals(tag.getName()))
+			{
+				if (index == tagIndex)
+				{
+					String level = tag.getAttribute(ATTR_LEVEL);
+					String compiler = tag.getAttribute(ATTR_COMPILER);
+					String compileKind = tag.getAttribute(ATTR_COMPILE_KIND);
+										
+					builder.append("  (").append(compiler);
+					
+					if (compileKind != null)
+					{
+						builder.append(" / ").append(compileKind);
+					}
+					
+					builder.append(" / Level ").append(level).append(")");
+										
+					break;
+				}
+				else
+				{
+					tagIndex++;
+				}
+			}
+		}
+
+		return builder.toString();
+	}
+	
+	private void setMemberInfoAssemblyDetails(int compilation)
+	{
+		Journal journal = currentMember.getJournal();
+
+		int tagIndex = 0;
+
+		for (Tag tag : journal.getEntryList())
+		{
+			if (TAG_NMETHOD.equals(tag.getName()))
+			{
+				if (compilation == tagIndex)
+				{
+					String nativeSize = tag.getAttribute(ATTR_SIZE);
+					String compileMillis = tag.getAttribute(ATTR_COMPILE_MILLIS);
+					
+					memberInfo.setAssemblyDetails(nativeSize, compileMillis);
+					
+					break;
+				}
+				else
+				{
+					tagIndex++;
+				}
+			}
+		}
 	}
 
 	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)
@@ -575,13 +699,20 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void setAssemblyPaneContent()
+	private void setAssemblyPaneContent(int index)
 	{
 		AssemblyMethod asmMethod = null;
 
 		if (currentMember.isCompiled())
 		{
-			asmMethod = currentMember.getAssembly();
+			List<AssemblyMethod> assemblyMethods = currentMember.getAssemblyMethods();
+
+			if (index >= 0 && index < assemblyMethods.size())
+			{
+				setMemberInfoAssemblyDetails(index);
+
+				asmMethod = assemblyMethods.get(index);
+			}
 
 			if (asmMethod == null)
 			{
@@ -689,7 +820,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	}
 
 	private void highlightFromSource(int index, int updateMask)
-	{		
+	{
 		int sourceLine = index + 1;
 		int bytecodeHighlight = -1;
 
@@ -731,7 +862,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 					{
 						logger.debug("Different class in this source file");
 					}
-					
+
 					metaClass = model.getPackageManager().getMetaClass(msp.getFullyQualifiedClassName());
 				}
 
@@ -779,14 +910,14 @@ public class TriView extends Stage implements ITriView, ILineListener
 				int assemblyHighlight = -1;
 				assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
 				viewerAssembly.highlightLine(assemblyHighlight);
-			}			
+			}
 		}
-		
+
 		viewerBytecode.highlightLine(bytecodeHighlight);
 	}
 
 	private void highlightFromBytecode(int index)
-	{	
+	{
 		MetaClass metaClass = null;
 
 		if (currentMember != null)
@@ -855,7 +986,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 					{
 						sourceHighlight = Integer.parseInt(sourceLine) - 1;
 						highlightFromSource(sourceHighlight, MASK_UPDATE_BYTECODE);
-						
+
 						viewerSource.highlightLine(sourceHighlight);
 					}
 					catch (NumberFormatException nfe)

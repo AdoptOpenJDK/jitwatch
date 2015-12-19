@@ -46,6 +46,7 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
+import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -69,9 +70,10 @@ public class Viewer extends VBox
 	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
 			+ "px;";
 
-	protected static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
-	protected static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
-	protected static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
+	public static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
+	public static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
+	public static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
+	public static final String STYLE_SAFEPOINT = FONT_STYLE + "-fx-background-color:yellow;";
 
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
@@ -475,6 +477,10 @@ public class Viewer extends VBox
 		if (node instanceof BytecodeLabel)
 		{
 			node.setStyle(((BytecodeLabel) node).getUnhighlightedStyle());
+		}
+		else if (node instanceof AssemblyLabel)
+		{
+			node.setStyle(((AssemblyLabel) node).getUnhighlightedStyle());
 		}
 		else
 		{

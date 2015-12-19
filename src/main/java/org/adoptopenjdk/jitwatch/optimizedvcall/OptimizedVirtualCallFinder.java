@@ -234,7 +234,9 @@ public class OptimizedVirtualCallFinder
 
 		Set<OptimizedVirtualCall> squashDuplicatesSet = new HashSet<>();
 
-		AssemblyMethod asmMethod = member.getAssembly();
+		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		
+		AssemblyMethod asmMethod = assemblyMethods.get(assemblyMethods.size() - 1);
 
 		if (DEBUG_LOGGING_OVC)
 		{

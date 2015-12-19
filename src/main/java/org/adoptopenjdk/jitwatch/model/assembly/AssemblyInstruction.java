@@ -13,6 +13,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SAFEPOINT_POLL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SAFEPOINT_POLL_RETURN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ public class AssemblyInstruction
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
 	private final AssemblyLabels labels;
+	private boolean isSafePoint = false;
 
 	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
 
@@ -106,7 +109,17 @@ public class AssemblyInstruction
 		if (comment != null)
 		{
 			commentLines.add(comment);
+			
+			if (!isSafePoint)
+			{
+				isSafePoint = comment.contains(S_SAFEPOINT_POLL) || comment.contains(S_SAFEPOINT_POLL_RETURN);
+			}
 		}
+	}
+	
+	public boolean isSafePoint()
+	{
+		return isSafePoint;
 	}
 
 	public void appendToLastCommentLine(String comment)
@@ -305,18 +318,28 @@ public class AssemblyInstruction
 
 		if (commentLines.size() > 0)
 		{
+			String comment = commentLines.get(line);
+			
 			if (line == 0)
 			{
 				// first comment on same line as instruction
-				builder.append(S_DOUBLE_SPACE).append(commentLines.get(0)).append(S_NEWLINE);
+				builder.append(S_DOUBLE_SPACE).append(comment);
 			}
 			else
 			{
 				// later comments on own line
 				builder.delete(0, builder.length());
 				builder.append(StringUtil.repeat(C_SPACE, lineLength + 2));
-				builder.append(commentLines.get(line)).append(S_NEWLINE);
+				builder.append(comment);
 			}
+									
+			if (comment.contains(S_SAFEPOINT_POLL) || comment.contains(S_SAFEPOINT_POLL_RETURN))
+			{
+				builder.append(" *** SAFEPOINT ***");
+			}
+
+			builder.append(S_NEWLINE);
+			
 		}
 		else
 		{

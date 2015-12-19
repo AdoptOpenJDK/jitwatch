@@ -126,6 +126,7 @@ public final class JITWatchConstants
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_LEVEL = "level";
 	public static final String ATTR_FREE_CODE_CACHE = "free_code_cache";
+	public static final String ATTR_SIZE = "size";
 	public static final String ATTR_NMSIZE = "nmsize";
 	public static final String ATTR_BYTES = "bytes";
 	public static final String ATTR_IICOUNT = "iicount";
@@ -240,7 +241,9 @@ public final class JITWatchConstants
 	public static final String S_DOT_CLASS = ".class";
 	public static final String S_GENERICS_WILDCARD = "<?>";
 	public static final String S_OPTIMIZER = "optimizer";
-	
+	public static final String S_SAFEPOINT_POLL = "{poll}";
+	public static final String S_SAFEPOINT_POLL_RETURN = "{poll_return}";
+		
 	public static final String S_TYPE_NAME_SHORT = "short";
 	public static final String S_TYPE_NAME_CHARACTER = "char";
 	public static final String S_TYPE_NAME_BYTE = "byte";
