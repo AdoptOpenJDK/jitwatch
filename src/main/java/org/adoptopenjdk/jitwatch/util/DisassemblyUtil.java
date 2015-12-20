@@ -145,4 +145,28 @@ public final class DisassemblyUtil
 			return Architecture.BIT32;
 		}
 	}
+
+    public static String getGcc()
+   	{
+   		switch (getArchitecture()) {
+   		   	case BIT64:
+   				return "mingw64-x86_64-gcc-core";
+   			case BIT32:
+   				return "mingw64-i686-gcc-core";
+   			default:
+   				throw new IllegalStateException("Unknown architecture");
+   		}
+   	}
+
+    public static String getMingw()
+   	{
+   		switch (getArchitecture()) {
+   		   	case BIT64:
+   				return "x86_64-w64-mingw32";
+   			case BIT32:
+   				return "i686-w64-mingw32";
+   			default:
+   				throw new IllegalStateException("Unknown architecture");
+   		}
+   	}
 }
