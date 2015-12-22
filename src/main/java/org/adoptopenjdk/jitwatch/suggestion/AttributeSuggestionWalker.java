@@ -299,7 +299,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 					}
 					else
 					{
-						logger.info("No score is set for reason: {}", reason);
+						logger.warn("No score is set for reason: {}", reason);
 					}
 
 					StringBuilder reasonBuilder = new StringBuilder();

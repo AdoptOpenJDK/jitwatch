@@ -29,6 +29,7 @@ import javafx.stage.WindowEvent;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.FileChooserList;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
@@ -73,8 +74,8 @@ public class SandboxConfigStage extends Stage
 
 		setScene(scene);
 
-		vbox.setPadding(new Insets(5, 15, 5, 15));
-		vbox.setSpacing(15);
+		vbox.setPadding(new Insets(2, 8, 2, 8));
+		vbox.setSpacing(12);
 
 		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getConfiguredClassLocations());
 		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
@@ -95,6 +96,8 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(buildHBoxCompressedOops());
 
 		vbox.getChildren().add(buildHBoxBackgroundCompilation());
+
+		vbox.getChildren().add(buildHBoxOnStackReplacement());
 
 		vbox.getChildren().add(buildHBoxInliningSettings());
 
@@ -217,8 +220,8 @@ public class SandboxConfigStage extends Stage
 		rbATT.setSelected(!intelMode);
 		rbIntel.setSelected(intelMode);
 
-		groupAssemblySyntax.selectedToggleProperty().addListener(
-				getChangeListenerForGroupAssemblySyntax(rbIntel, groupAssemblySyntax));
+		groupAssemblySyntax.selectedToggleProperty()
+				.addListener(getChangeListenerForGroupAssemblySyntax(rbIntel, groupAssemblySyntax));
 
 		HBox hbox = new HBox();
 
@@ -287,8 +290,8 @@ public class SandboxConfigStage extends Stage
 		rbForceTiered.setToggleGroup(groupTiered);
 		rbForceNoTiered.setToggleGroup(groupTiered);
 
-		groupTiered.selectedToggleProperty().addListener(
-				getChangeListenerForGroupTiered(rbVMDefault, rbForceTiered, rbForceNoTiered, groupTiered));
+		groupTiered.selectedToggleProperty()
+				.addListener(getChangeListenerForGroupTiered(rbVMDefault, rbForceTiered, rbForceNoTiered, groupTiered));
 
 		HBox hbox = new HBox();
 
@@ -373,8 +376,8 @@ public class SandboxConfigStage extends Stage
 		rbForceCompressed.setToggleGroup(groupOops);
 		rbForceNoCompressed.setToggleGroup(groupOops);
 
-		groupOops.selectedToggleProperty().addListener(
-				getChangeListenerForGroupOops(rbVMDefault, rbForceCompressed, rbForceNoCompressed, groupOops));
+		groupOops.selectedToggleProperty()
+				.addListener(getChangeListenerForGroupOops(rbVMDefault, rbForceCompressed, rbForceNoCompressed, groupOops));
 
 		HBox hbox = new HBox();
 
@@ -430,9 +433,8 @@ public class SandboxConfigStage extends Stage
 		rbForceBackgroundCompilation.setToggleGroup(groupBackgroundCompilation);
 		rbForceNoBackgroundCompilation.setToggleGroup(groupBackgroundCompilation);
 
-		groupBackgroundCompilation.selectedToggleProperty().addListener(
-				getChangeListenerForBackgroundCompilation(rbVMDefault, rbForceBackgroundCompilation,
-						rbForceNoBackgroundCompilation, groupBackgroundCompilation));
+		groupBackgroundCompilation.selectedToggleProperty().addListener(getChangeListenerForBackgroundCompilation(rbVMDefault,
+				rbForceBackgroundCompilation, rbForceNoBackgroundCompilation, groupBackgroundCompilation));
 
 		HBox hbox = new HBox();
 
@@ -444,6 +446,62 @@ public class SandboxConfigStage extends Stage
 		hbox.getChildren().add(rbVMDefault);
 		hbox.getChildren().add(rbForceBackgroundCompilation);
 		hbox.getChildren().add(rbForceNoBackgroundCompilation);
+
+		return hbox;
+	}
+
+	private HBox buildHBoxOnStackReplacement()
+	{
+		final RadioButton rbVMDefault = new RadioButton("VM Default");
+
+		final RadioButton rbAlways = new RadioButton("Always");
+		rbAlways.setTooltip(new Tooltip("-XX:+OnStackReplacement"));
+
+		final RadioButton rbNever = new RadioButton("Never");
+		rbNever.setTooltip(new Tooltip("-XX:-OnStackReplacement"));
+
+		final ToggleGroup group = new ToggleGroup();
+
+		rbVMDefault.setStyle(DEFAULT_DISPLAY_STYLE);
+		rbAlways.setStyle(DEFAULT_DISPLAY_STYLE);
+
+		OnStackReplacement osrMode = config.getOnStackReplacementMode();
+
+		switch (osrMode)
+		{
+		case VM_DEFAULT:
+			rbVMDefault.setSelected(true);
+			rbAlways.setSelected(false);
+			rbNever.setSelected(false);
+			break;
+		case FORCE_ON_STACK_REPLACEMENT:
+			rbVMDefault.setSelected(false);
+			rbAlways.setSelected(true);
+			rbNever.setSelected(false);
+			break;
+		case FORCE_NO_ON_STACK_REPLACEMENT:
+			rbVMDefault.setSelected(false);
+			rbAlways.setSelected(false);
+			rbNever.setSelected(true);
+			break;
+		}
+
+		rbVMDefault.setToggleGroup(group);
+		rbAlways.setToggleGroup(group);
+		rbNever.setToggleGroup(group);
+
+		group.selectedToggleProperty().addListener(getChangeListenerForOnStackReplacement(rbVMDefault, rbAlways, rbNever, group));
+
+		HBox hbox = new HBox();
+
+		Label lblMode = new Label("On Stack Replacement:");
+		lblMode.setMinWidth(labelWidth);
+
+		hbox.getChildren().add(lblMode);
+
+		hbox.getChildren().add(rbVMDefault);
+		hbox.getChildren().add(rbAlways);
+		hbox.getChildren().add(rbNever);
 
 		return hbox;
 	}
@@ -496,8 +554,8 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-	private ChangeListener<Toggle> getChangeListenerForGroupOops(final RadioButton rbVMDefault,
-			final RadioButton rbForceCompressed, final RadioButton rbForceNoCompressed, final ToggleGroup groupOops)
+	private ChangeListener<Toggle> getChangeListenerForGroupOops(final RadioButton rbVMDefault, final RadioButton rbForceCompressed,
+			final RadioButton rbForceNoCompressed, final ToggleGroup groupOops)
 	{
 		return new ChangeListener<Toggle>()
 		{
@@ -549,6 +607,35 @@ public class SandboxConfigStage extends Stage
 					else if (selectedToggle.equals(rbVMDefault))
 					{
 						config.setBackgroundCompilationMode(BackgroundCompilation.VM_DEFAULT);
+					}
+				}
+			}
+		};
+	}
+
+	private ChangeListener<Toggle> getChangeListenerForOnStackReplacement(final RadioButton rbVMDefault, final RadioButton rbAlways,
+			final RadioButton rbNever, final ToggleGroup group)
+	{
+		return new ChangeListener<Toggle>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle arg1, Toggle arg2)
+			{
+				Toggle selectedToggle = group.getSelectedToggle();
+
+				if (selectedToggle != null)
+				{
+					if (selectedToggle.equals(rbAlways))
+					{
+						config.setOnStackReplacementMode(OnStackReplacement.FORCE_ON_STACK_REPLACEMENT);
+					}
+					else if (selectedToggle.equals(rbNever))
+					{
+						config.setOnStackReplacementMode(OnStackReplacement.FORCE_NO_ON_STACK_REPLACEMENT);
+					}
+					else if (selectedToggle.equals(rbVMDefault))
+					{
+						config.setOnStackReplacementMode(OnStackReplacement.VM_DEFAULT);
 					}
 				}
 			}

@@ -20,6 +20,7 @@ import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -250,6 +251,17 @@ public class Sandbox
 		else if (backgroundCompilationMode == BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION)
 		{
 			options.add("-XX:-BackgroundCompilation");
+		}
+		
+		OnStackReplacement onStackReplacementMode = logParser.getConfig().getOnStackReplacementMode();
+
+		if (onStackReplacementMode == OnStackReplacement.FORCE_ON_STACK_REPLACEMENT)
+		{
+			options.add("-XX:+UseOnStackReplacement");
+		}
+		else if (onStackReplacementMode == OnStackReplacement.FORCE_NO_ON_STACK_REPLACEMENT)
+		{
+			options.add("-XX:-UseOnStackReplacement");
 		}
 		
 		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)

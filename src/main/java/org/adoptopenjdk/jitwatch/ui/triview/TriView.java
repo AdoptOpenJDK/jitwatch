@@ -96,7 +96,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private CheckBox checkSource;
 	private CheckBox checkBytecode;
 	private CheckBox checkAssembly;
-	private CheckBox checkMouseFollow;
+	private CheckBox checkMouseover;
 	private CheckBox checkLocalLabels;
 
 	private Button btnCompileChain;
@@ -204,7 +204,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
 		hBoxToolBarButtons.getChildren().add(btnLineTable);
-		hBoxToolBarButtons.getChildren().add(checkMouseFollow);
+		hBoxToolBarButtons.getChildren().add(checkMouseover);
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(memberInfo);
 
@@ -269,9 +269,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 		viewerBytecode = new ViewerBytecode(parent, navigationStack, model, this, LineType.BYTECODE);
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
-		paneSource = new TriViewPane("Source", viewerSource);
-		paneBytecode = new TriViewPane("Bytecode (double click for JVM spec)", viewerBytecode);
-		paneAssembly = new TriViewPane("Assembly", viewerAssembly, getAssemblyTitleComponents());
+		paneSource = new TriViewPane(this, "Source", viewerSource);
+		paneBytecode = new TriViewPane(this, "Bytecode (double click for JVM spec)", viewerBytecode);
+		paneAssembly = new TriViewPane(this, "Assembly", viewerAssembly, getAssemblyTitleComponents());
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
@@ -336,7 +336,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 						checkAssembly.setSelected(!checkAssembly.isSelected());
 						break;
 					case M:
-						checkMouseFollow.setSelected(!checkMouseFollow.isSelected());
+						checkMouseover.setSelected(!checkMouseover.isSelected());
 						break;
 					case L:
 						checkLocalLabels.setSelected(!checkLocalLabels.isSelected());
@@ -367,7 +367,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 		HBox hbox = new HBox();
 		hbox.setSpacing(16);
 
-		checkLocalLabels = new CheckBox("_Local labels");
+		checkLocalLabels = new CheckBox("_Labels");
+		checkLocalLabels.setTooltip(new Tooltip("Local labels"));
 
 		checkLocalLabels.setSelected(config.isLocalAsmLabels());
 
@@ -378,13 +379,18 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				config.setLocalAsmLabels(newVal);
 				config.saveConfig();
-				setAssemblyPaneContent(0);
+				
+				if (currentMember != null)
+				{
+					setAssemblyPaneContent(0);
+				}
 			}
 		});
 
 		hbox.getChildren().add(checkLocalLabels);
 
 		comboAssemblyMethod = new ComboBox<>(comboAssemblyMethodList);
+		comboAssemblyMethod.setStyle("-fx-font-size: 10px");
 
 		comboAssemblyMethod.valueProperty().addListener(new ChangeListener<String>()
 		{
@@ -402,11 +408,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 	private void createCheckBoxMouseFollow()
 	{
-		checkMouseFollow = new CheckBox("_Mouse Follow");
+		checkMouseover = new CheckBox("_Mouseover");
 
-		checkMouseFollow.setSelected(config.isTriViewMouseFollow());
+		checkMouseover.setSelected(config.isTriViewMouseFollow());
 
-		checkMouseFollow.selectedProperty().addListener(new ChangeListener<Boolean>()
+		checkMouseover.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
@@ -596,7 +602,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		for (int i = 0; i < numAssemblyMethods; i++)
 		{
-			comboAssemblyMethodList.add("Compilation " + i + getCompilationDetail(i));
+			comboAssemblyMethodList.add("#" + (i+1) + getCompilationDetail(i));
 		}
 
 		int selectedAssembly = numAssemblyMethods - 1;
@@ -632,10 +638,15 @@ public class TriView extends Stage implements ITriView, ILineListener
 					
 					if (compileKind != null)
 					{
-						builder.append(" / ").append(compileKind);
+						builder.append(" / ").append(compileKind.toUpperCase());
 					}
 					
-					builder.append(" / Level ").append(level).append(")");
+					if (level != null)
+					{
+						builder.append(" / Level ").append(level);
+					}
+					
+					builder.append(")");
 										
 					break;
 				}
@@ -817,6 +828,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 			break;
 		case ASSEMBLY:
 			highlightFromAssembly(index);
+			break;
+		default:
 			break;
 		}
 	}
@@ -1072,6 +1085,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 			break;
 		case ASSEMBLY:
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -1098,6 +1113,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 				focusSource();
 			}
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -1114,6 +1131,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 			break;
 		case ASSEMBLY:
 			focusAssembly();
+			break;
+		default:
 			break;
 		}
 	}

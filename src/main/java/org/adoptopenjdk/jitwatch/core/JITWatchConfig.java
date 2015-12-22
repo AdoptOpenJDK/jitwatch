@@ -47,6 +47,11 @@ public class JITWatchConfig
 		VM_DEFAULT, FORCE_BACKGROUND_COMPILATION, FORCE_NO_BACKGROUND_COMPILATION;
 	}
 
+	public enum OnStackReplacement
+	{
+		VM_DEFAULT, FORCE_ON_STACK_REPLACEMENT, FORCE_NO_ON_STACK_REPLACEMENT;
+	}
+
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchConfig.class);
 
 	private static final String PROPERTIES_FILENAME = "jitwatch.properties";
@@ -77,6 +82,7 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
 	private static final String KEY_SANDBOX_EXTRA_VM_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches";
 	private static final String KEY_SANDBOX_BACKGROUND_COMPILATION = SANDBOX_PREFIX + ".background.compilation";
+	private static final String KEY_SANDBOX_ON_STACK_REPLACEMENT = SANDBOX_PREFIX + ".on.stack.replacement";
 
 	private static final String KEY_LAST_PROFILE = "last.profile";
 
@@ -96,7 +102,8 @@ public class JITWatchConfig
 
 	private TieredCompilation tieredCompilationMode;
 	private CompressedOops compressedOopsMode;
-	private BackgroundCompilation backgroundCompilation;
+	private BackgroundCompilation backgroundCompilationMode;
+	private OnStackReplacement onStackReplacementMode;
 
 	private int freqInlineSize;
 	private int maxInlineSize;
@@ -109,8 +116,9 @@ public class JITWatchConfig
 	private String profileName = S_PROFILE_DEFAULT;
 
 	private final String CONFIG_OVERRIDE = System.getProperty("jitwatch.config.file", null);
-	
-	private File propertiesFile = (CONFIG_OVERRIDE != null) ? new File(CONFIG_OVERRIDE) : new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
+
+	private File propertiesFile = (CONFIG_OVERRIDE != null) ? new File(CONFIG_OVERRIDE)
+			: new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 
 	private Properties loadedProps;
 
@@ -325,50 +333,13 @@ public class JITWatchConfig
 		mouseFollow = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, false);
 		localAsmLabels = loadBooleanFromProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, true);
 
-		int tieredMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0"));
+		loadTieredMode();
 
-		switch (tieredMode)
-		{
-		case 0:
-			tieredCompilationMode = TieredCompilation.VM_DEFAULT;
-			break;
-		case 1:
-			tieredCompilationMode = TieredCompilation.FORCE_TIERED;
-			break;
-		case 2:
-			tieredCompilationMode = TieredCompilation.FORCE_NO_TIERED;
-			break;
-		}
+		loadCompressedOopsMode();
 
-		int oopsMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
+		loadBackgroundCompilationMode();
 
-		switch (oopsMode)
-		{
-		case 0:
-			compressedOopsMode = CompressedOops.VM_DEFAULT;
-			break;
-		case 1:
-			compressedOopsMode = CompressedOops.FORCE_COMPRESSED;
-			break;
-		case 2:
-			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
-			break;
-		}
-
-		int backgroundCompilationMode = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2"));
-
-		switch (backgroundCompilationMode)
-		{
-		case 0:
-			backgroundCompilation = BackgroundCompilation.VM_DEFAULT;
-			break;
-		case 1:
-			backgroundCompilation = BackgroundCompilation.FORCE_BACKGROUND_COMPILATION;
-			break;
-		case 2:
-			backgroundCompilation = BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION;
-			break;
-		}
+		loadOnStackReplacementMode();
 
 		freqInlineSize = loadIntFromProperty(loadedProps, KEY_SANDBOX_FREQ_INLINE_SIZE, JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE);
 
@@ -381,6 +352,142 @@ public class JITWatchConfig
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 
 		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, JITWatchConstants.S_EMPTY);
+	}
+
+	private void loadTieredMode()
+	{
+		int param = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0"));
+
+		switch (param)
+		{
+		case 0:
+			tieredCompilationMode = TieredCompilation.VM_DEFAULT;
+			break;
+		case 1:
+			tieredCompilationMode = TieredCompilation.FORCE_TIERED;
+			break;
+		case 2:
+			tieredCompilationMode = TieredCompilation.FORCE_NO_TIERED;
+			break;
+		}
+	}
+
+	private void loadCompressedOopsMode()
+	{
+		int param = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
+
+		switch (param)
+		{
+		case 0:
+			compressedOopsMode = CompressedOops.VM_DEFAULT;
+			break;
+		case 1:
+			compressedOopsMode = CompressedOops.FORCE_COMPRESSED;
+			break;
+		case 2:
+			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
+			break;
+		}
+	}
+
+	private void loadBackgroundCompilationMode()
+	{
+		int param = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2"));
+
+		switch (param)
+		{
+		case 0:
+			backgroundCompilationMode = BackgroundCompilation.VM_DEFAULT;
+			break;
+		case 1:
+			backgroundCompilationMode = BackgroundCompilation.FORCE_BACKGROUND_COMPILATION;
+			break;
+		case 2:
+			backgroundCompilationMode = BackgroundCompilation.FORCE_NO_BACKGROUND_COMPILATION;
+			break;
+		}
+	}
+
+	private void loadOnStackReplacementMode()
+	{
+		int param = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_ON_STACK_REPLACEMENT, "0"));
+
+		switch (param)
+		{
+		case 0:
+			onStackReplacementMode = OnStackReplacement.VM_DEFAULT;
+			break;
+		case 1:
+			onStackReplacementMode = OnStackReplacement.FORCE_ON_STACK_REPLACEMENT;
+			break;
+		case 2:
+			onStackReplacementMode = OnStackReplacement.FORCE_NO_ON_STACK_REPLACEMENT;
+			break;
+		}
+	}
+
+	private void saveTieredCompilationMode()
+	{
+		switch (tieredCompilationMode)
+		{
+		case VM_DEFAULT:
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0");
+			break;
+		case FORCE_TIERED:
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "1");
+			break;
+		case FORCE_NO_TIERED:
+			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2");
+			break;
+		}
+	}
+
+	private void saveCompressedOopsMode()
+	{
+		switch (compressedOopsMode)
+		{
+		case VM_DEFAULT:
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0");
+			break;
+		case FORCE_COMPRESSED:
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "1");
+			break;
+		case FORCE_NO_COMPRESSED:
+			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
+			break;
+		}
+	}
+
+	private void saveBackgroundCompilationMode()
+	{
+		switch (backgroundCompilationMode)
+		{
+		case VM_DEFAULT:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "0");
+			break;
+		case FORCE_BACKGROUND_COMPILATION:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "1");
+			break;
+		case FORCE_NO_BACKGROUND_COMPILATION:
+			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2");
+			break;
+		}
+	}
+
+	private void saveOnStackReplacementMode()
+	{
+		switch (onStackReplacementMode)
+		{
+		case VM_DEFAULT:
+			putProperty(loadedProps, KEY_SANDBOX_ON_STACK_REPLACEMENT, "0");
+			break;
+		case FORCE_ON_STACK_REPLACEMENT:
+			putProperty(loadedProps, KEY_SANDBOX_ON_STACK_REPLACEMENT, "1");
+			break;
+		case FORCE_NO_ON_STACK_REPLACEMENT:
+			putProperty(loadedProps, KEY_SANDBOX_ON_STACK_REPLACEMENT, "2");
+			break;
+		}
 	}
 
 	private boolean loadBooleanFromProperty(Properties props, String propertyName, boolean defaultValue)
@@ -482,44 +589,13 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_TRIVIEW_TRILINK_MOUSE_FOLLOW, Boolean.toString(mouseFollow));
 		putProperty(loadedProps, KEY_TRIVIEW_LOCAL_ASM_LABELS, Boolean.toString(localAsmLabels));
 
-		switch (tieredCompilationMode)
-		{
-		case VM_DEFAULT:
-			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "0");
-			break;
-		case FORCE_TIERED:
-			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "1");
-			break;
-		case FORCE_NO_TIERED:
-			putProperty(loadedProps, KEY_SANDBOX_TIERED_MODE, "2");
-			break;
-		}
+		saveTieredCompilationMode();
 
-		switch (compressedOopsMode)
-		{
-		case VM_DEFAULT:
-			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0");
-			break;
-		case FORCE_COMPRESSED:
-			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "1");
-			break;
-		case FORCE_NO_COMPRESSED:
-			putProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "2");
-			break;
-		}
+		saveCompressedOopsMode();
 
-		switch (backgroundCompilation)
-		{
-		case VM_DEFAULT:
-			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "0");
-			break;
-		case FORCE_BACKGROUND_COMPILATION:
-			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "1");
-			break;
-		case FORCE_NO_BACKGROUND_COMPILATION:
-			putProperty(loadedProps, KEY_SANDBOX_BACKGROUND_COMPILATION, "2");
-			break;
-		}
+		saveBackgroundCompilationMode();
+
+		saveOnStackReplacementMode();
 
 		if (lastLogDir != null)
 		{
@@ -560,15 +636,15 @@ public class JITWatchConfig
 	public static File getJDKSourceZip()
 	{
 		String jrePath = System.getProperty("java.home");
-		
+
 		File jreDir = new File(jrePath);
-		
+
 		File result = null;
 
 		if (jreDir.exists() && jreDir.isDirectory())
 		{
 			File srcZipFile = new File(jreDir, "src.zip");
-			
+
 			if (srcZipFile.exists() && srcZipFile.isFile())
 			{
 				result = srcZipFile;
@@ -576,11 +652,11 @@ public class JITWatchConfig
 			else
 			{
 				File parentDir = jreDir.getParentFile();
-	
+
 				if (parentDir.exists() && parentDir.isDirectory())
 				{
 					srcZipFile = new File(parentDir, "src.zip");
-	
+
 					if (srcZipFile.exists() && srcZipFile.isFile())
 					{
 						result = srcZipFile;
@@ -798,12 +874,22 @@ public class JITWatchConfig
 
 	public BackgroundCompilation getBackgroundCompilationMode()
 	{
-		return backgroundCompilation;
+		return backgroundCompilationMode;
 	}
 
-	public void setBackgroundCompilationMode(BackgroundCompilation backgroundCompilation)
+	public void setBackgroundCompilationMode(BackgroundCompilation backgroundCompilationMode)
 	{
-		this.backgroundCompilation = backgroundCompilation;
+		this.backgroundCompilationMode = backgroundCompilationMode;
+	}
+	
+	public OnStackReplacement getOnStackReplacementMode()
+	{
+		return onStackReplacementMode;
+	}
+
+	public void setOnStackReplacementMode(OnStackReplacement onStackReplacementMode)
+	{
+		this.onStackReplacementMode = onStackReplacementMode;
 	}
 
 	public void addOrUpdateVMLanguage(String language, String path)

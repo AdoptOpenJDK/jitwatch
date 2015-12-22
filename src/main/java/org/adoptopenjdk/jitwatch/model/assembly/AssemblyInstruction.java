@@ -335,7 +335,7 @@ public class AssemblyInstruction
 									
 			if (comment.contains(S_SAFEPOINT_POLL) || comment.contains(S_SAFEPOINT_POLL_RETURN))
 			{
-				builder.append(" *** SAFEPOINT ***");
+				builder.append(" *** SAFEPOINT POLL ***");
 			}
 
 			builder.append(S_NEWLINE);

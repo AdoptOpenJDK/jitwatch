@@ -18,23 +18,24 @@ public class TriViewPane extends VBox
 
 	private static final String STYLE_UNFOCUSSED = "-fx-background-color:#dddddd; -fx-padding:4px;";
 	private static final String STYLE_FOCUSSED = "-fx-background-color:#ffffaa; -fx-padding:4px;";
-
-	public TriViewPane(String title, Viewer viewer)
+	
+	public TriViewPane(TriView parent, String title, Viewer viewer)
 	{
-		construct(title, viewer, new HBox());
+		construct(parent, title, viewer, new HBox());
 	}
 
-	public TriViewPane(String title, Viewer viewer, HBox titleComponents)
+	public TriViewPane(TriView parent, String title, Viewer viewer, HBox titleComponents)
 	{
-		construct(title, viewer, titleComponents);
+		construct(parent, title, viewer, titleComponents);
 	}
 
-	private void construct(String title, final Viewer viewer, HBox titleComponents)
+	private void construct(TriView parent, String title, final Viewer viewer, HBox titleComponents)
 	{
 		this.titleComponents = titleComponents;
 
 		titleComponents.setStyle(STYLE_UNFOCUSSED);
 		titleComponents.prefWidthProperty().bind(widthProperty());
+		titleComponents.setPrefHeight(60);
 
 		Label lblTitle = new Label(title);
 		titleComponents.getChildren().add(0, lblTitle);
@@ -52,29 +53,29 @@ public class TriViewPane extends VBox
 			{
 				if (viewer.getConfig().isTriViewMouseFollow())
 				{
-					focus();
+					parent.handleFocusSelf(viewer.getLineType());
 				}
 			}
 		});
 
-		titleComponents.setOnMouseExited(new EventHandler<MouseEvent>()
-		{
-			@Override
-			public void handle(MouseEvent arg0)
-			{
-				if (viewer.getConfig().isTriViewMouseFollow())
-				{
-					unFocus();
-				}
-			}
-		});
+//		titleComponents.setOnMouseExited(new EventHandler<MouseEvent>()
+//		{
+//			@Override
+//			public void handle(MouseEvent arg0)
+//			{
+//				if (viewer.getConfig().isTriViewMouseFollow())
+//				{
+//					unFocus();
+//				}
+//			}
+//		});
 
 		titleComponents.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				focus();
+				parent.handleFocusSelf(viewer.getLineType());
 			}
 		});
 	}

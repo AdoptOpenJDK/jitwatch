@@ -82,7 +82,7 @@ public class Viewer extends VBox
 	protected IStageAccessProxy stageAccessProxy;
 
 	protected ILineListener lineListener;
-	protected LineType lineType;
+	protected LineType lineType = LineType.PLAIN;
 
 	private boolean isHighlighting;
 
@@ -104,6 +104,11 @@ public class Viewer extends VBox
 		this.isHighlighting = highlighting;
 
 		setup();
+	}
+	
+	public LineType getLineType()
+	{
+		return lineType;
 	}
 
 	public JITWatchConfig getConfig()
