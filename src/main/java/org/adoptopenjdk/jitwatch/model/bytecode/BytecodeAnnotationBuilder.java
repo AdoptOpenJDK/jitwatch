@@ -42,7 +42,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
-
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -78,15 +78,16 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 	{
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
-		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_DEPENDENCY);
 		ignoreTags.add(TAG_PHASE);
 		ignoreTags.add(TAG_PARSE_DONE);
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_PARSE);
 		ignoreTags.add(TAG_PHASE_DONE);
 		ignoreTags.add(TAG_PREDICTED_CALL);
+		ignoreTags.add(TAG_OBSERVE);
 	}
-	
+
 	public BytecodeAnnotations buildBytecodeAnnotations(final IMetaMember member, IReadOnlyJITDataModel model)
 			throws AnnotationException
 	{
@@ -94,7 +95,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		this.model = model;
 
 		bcAnnotations.clear();
-		
+
 		String vmVersion = model.getVmVersionRelease();
 
 		if (member != null)
@@ -107,7 +108,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 			try
 			{
 				buildParseTagAnnotations(vmVersion, member.getJournal());
-				
+
 				buildEliminationTagAnnotations(vmVersion, member.getJournal());
 			}
 			catch (LogParseException e)
@@ -129,20 +130,20 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		}
 		return bcAnnotations;
 	}
-	
+
 	private void buildParseTagAnnotations(String vmVersion, Journal journal) throws LogParseException
 	{
 		JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
 	}
-	
+
 	private void buildEliminationTagAnnotations(String vmVersion, Journal journal) throws LogParseException
-	{		
+	{
 		if (vmVersion != null && vmVersion.startsWith("1.9"))
 		{
 			JournalUtil.visitEliminationTagsOfLastTask(member.getJournal(), this);
 		}
 		else
-		{			
+		{
 			JournalUtil.visitOptimizerTagsOfLastTask(member.getJournal(), this);
 		}
 	}
@@ -173,14 +174,12 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 	private void visitTagParse(Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String methodID = tag.getAttribute(ATTR_METHOD);
-
+		
 		if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 		{
 			try
 			{
-				final CompilerName compilerName = JournalUtil.getCompilerNameForLastTask(member.getJournal());
-
-				buildParseTagAnnotations(tag, bcAnnotations, compilerName, parseDictionary);
+				buildParseTagAnnotations(tag, bcAnnotations, parseDictionary);
 			}
 			catch (Exception e)
 			{
@@ -199,53 +198,62 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 		for (Tag tagJVMS : childrenJVMS)
 		{
-			String bci = tagJVMS.getAttribute(ATTR_BCI);
+			String methodID = tagJVMS.getAttribute(ATTR_METHOD);
 
-			if (bci != null)
+			if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 			{
-				try
+				String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+				if (bci != null)
 				{
-					int bciValue = Integer.parseInt(bci);
-
-					BytecodeInstruction instr = getInstructionAtIndex(bciValue);
-
-					if (instr != null)
+					try
 					{
-						StringBuilder builder = new StringBuilder();
-						builder.append("Object does not escape method.\n");
-						builder.append("Heap allocation has been eliminated.\n");
+						int bciValue = Integer.parseInt(bci);
 
-						String typeID = tag.getAttribute(ATTR_TYPE);
+						BytecodeInstruction instr = getInstructionAtIndex(bciValue);
 
-						String typeOrKlassName = null;
-
-						if (typeID != null)
+						if (instr != null)
 						{
-							typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
+							StringBuilder builder = new StringBuilder();
+							builder.append("Object does not escape method.\n");
+							builder.append("Heap allocation has been eliminated.\n");
 
-							if (typeOrKlassName != null)
+							String typeID = tag.getAttribute(ATTR_TYPE);
+
+							String typeOrKlassName = null;
+
+							if (typeID != null)
 							{
-								builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
+								typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
+
+								if (typeOrKlassName != null)
+								{
+									builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
+								}
+							}
+
+							if (instr.getOpcode() == Opcode.NEW)
+							{
+								bcAnnotations.addAnnotation(bciValue,
+										new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
+
+								instr.setEliminated(true);
+							}
+							else
+							{
+								logger.warn("Found heap elimination on instruction that is not Opcode.NEW: {} @ {} ({}/{})",
+										instr.getOpcode(), instr.getOffset(), typeID, typeOrKlassName);
 							}
 						}
-
-						bcAnnotations.addAnnotation(bciValue,
-								new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
-
-						if (instr.getOpcode() == Opcode.NEW)
-						{
-							instr.setEliminated(true);
-						}
-						else
-						{
-							logger.warn("Found heap elimination on instruction that is not Opcode.NEW: {} @ {} ({}/{})",
-									instr.getOpcode(), instr.getOffset(), typeID, typeOrKlassName);
-						}
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Couldn't parse BCI", nfe);
 					}
 				}
-				catch (NumberFormatException nfe)
+				else
 				{
-					logger.error("Couldn't parse BCI", nfe);
+					logger.info("Elimination not for member");
 				}
 			}
 
@@ -276,51 +284,58 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 			for (Tag tagJVMS : childrenJVMS)
 			{
-				String bci = tagJVMS.getAttribute(ATTR_BCI);
+				String methodID = tagJVMS.getAttribute(ATTR_METHOD);
 
-				if (bci != null)
+				if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 				{
-					try
+					String bci = tagJVMS.getAttribute(ATTR_BCI);
+
+					if (bci != null)
 					{
-						int bciValue = Integer.parseInt(bci);
-
-						String methodID = tagJVMS.getAttribute(ATTR_METHOD);
-
-						if (methodID != null)
+						try
 						{
-							IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, model);
+							int bciValue = Integer.parseInt(bci);
 
-							if (member != null)
+							if (methodID != null)
 							{
-								if (bciValue != -1)
+								IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, model);
+
+								if (member != null)
 								{
-									builder.append(StringUtil.repeat(C_SPACE, depth * 2)).append("->").append(C_SPACE);
-									depth++;
+									if (bciValue != -1)
+									{
+										builder.append(StringUtil.repeat(C_SPACE, depth * 2)).append("->").append(C_SPACE);
+										depth++;
+									}
+
+									builder.append(member.toStringUnqualifiedMethodName(true));
 								}
-
-								builder.append(member.toStringUnqualifiedMethodName(true));
 							}
-						}
 
-						builder.append(S_NEWLINE);
+							builder.append(S_NEWLINE);
 
-						if (bciValue != -1)
-						{
-							bcAnnotations.addAnnotation(bciValue,
-									new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
-
-							BytecodeInstruction instr = getInstructionAtIndex(bciValue);
-
-							if (instr != null && instr.isLock())
+							if (bciValue != -1)
 							{
-								instr.setEliminated(true);
+								bcAnnotations.addAnnotation(bciValue,
+										new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
+
+								BytecodeInstruction instr = getInstructionAtIndex(bciValue);
+
+								if (instr != null && instr.isLock())
+								{
+									instr.setEliminated(true);
+								}
 							}
 						}
+						catch (NumberFormatException nfe)
+						{
+							logger.error("Couldn't parse BCI", nfe);
+						}
 					}
-					catch (NumberFormatException nfe)
-					{
-						logger.error("Couldn't parse BCI", nfe);
-					}
+				}
+				else
+				{
+					logger.info("Elimination not for member");
 				}
 			}
 		}
@@ -336,12 +351,11 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, CompilerName compilerName,
-			IParseDictionary parseDictionary) throws AnnotationException
+	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, IParseDictionary parseDictionary) throws AnnotationException
 	{
 		// Only interested in annotating the current method so
 		// do not recurse into method or parse tags
-
+		
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("Building parse tag annotations");
@@ -356,14 +370,6 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 		String currentMethodID = parseTag.getAttribute(ATTR_METHOD);
 
-		boolean isC2 = false;
-
-		if (compilerName == CompilerName.C2)
-		{
-			isC2 = true;
-		}
-
-		boolean inMethod = true;
 		BytecodeInstruction currentInstruction = null;
 
 		for (Tag child : children)
@@ -387,18 +393,6 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				int code = Integer.parseInt(codeAttr);
 				callAttrs.clear();
 
-				// TODO fix this old logic
-
-				// we found a LogCompilation bc tag
-				// e.g. "<bc code='182' bci='2'/>"
-				// Now check in the current class bytecode
-				// that the instruction at offset bci
-				// has the same opcode as attribute code
-				// if not then this is probably a TieredCompilation
-				// context change. (TieredCompilation does not use
-				// nested parse tags so have to use this heuristic
-				// to check if we are still in the same method.
-
 				if (DEBUG_LOGGING_BYTECODE)
 				{
 					logger.debug("BC Tag {} {}", currentBytecode, code);
@@ -411,17 +405,6 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 					logger.debug("Instruction at {} is {}", currentBytecode, currentInstruction);
 				}
 
-				inMethod = false;
-
-				if (currentInstruction != null)
-				{
-					int opcodeValue = currentInstruction.getOpcode().getValue();
-
-					if (opcodeValue == code)
-					{
-						inMethod = true;
-					}
-				}
 				break;
 			}
 
@@ -438,57 +421,40 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				methodAttrs.clear();
 				methodAttrs.putAll(tagAttrs);
 
-				String nameAttr = methodAttrs.get(ATTR_NAME);
-
-				inMethod = false;
-
-				if (nameAttr != null && currentInstruction != null && currentInstruction.hasComment())
-				{
-					String comment = currentInstruction.getComment();
-
-					inMethod = comment.contains(nameAttr);
-				}
-
 				break;
 			}
 
 			case TAG_INLINE_SUCCESS:
 			{
-				if (inMethod || isC2)
+				if (!sanityCheckInline(currentInstruction))
 				{
-					if (!sanityCheckInline(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction (in INLINE_SUCCESS)", currentBytecode,
-								currentInstruction);
-					}
-
-					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = TooltipUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs,
-							parseDictionary);
-
-					bcAnnotations.addAnnotation(currentBytecode,
-							new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
+					throw new AnnotationException("Expected an invoke instruction (in INLINE_SUCCESS)", currentBytecode,
+							currentInstruction);
 				}
+
+				String reason = tagAttrs.get(ATTR_REASON);
+				String annotationText = TooltipUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs,
+						parseDictionary);
+
+				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
 
 				break;
 			}
 
 			case TAG_INLINE_FAIL:
 			{
-				if (inMethod || isC2)
+
+				if (!sanityCheckInline(currentInstruction))
 				{
-					if (!sanityCheckInline(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction (in INLINE_FAIL)", currentBytecode,
-								currentInstruction);
-					}
-
-					String reason = tagAttrs.get(ATTR_REASON);
-					String annotationText = TooltipUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs,
-							parseDictionary);
-
-					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
+					throw new AnnotationException("Expected an invoke instruction (in INLINE_FAIL)", currentBytecode,
+							currentInstruction);
 				}
+
+				String reason = tagAttrs.get(ATTR_REASON);
+				String annotationText = TooltipUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs,
+						parseDictionary);
+
+				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 
 				break;
 			}
@@ -497,18 +463,16 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 			{
 				if (!bcAnnotations.hasAnnotationsForBCI(currentBytecode))
 				{
-					if (inMethod || isC2)
+
+					if (!sanityCheckBranch(currentInstruction))
 					{
-						if (!sanityCheckBranch(currentInstruction))
-						{
-							throw new AnnotationException("Expected a branch instruction (BRANCH)", currentBytecode,
-									currentInstruction);
-						}
-
-						String branchAnnotation = buildBranchAnnotation(tagAttrs);
-
-						bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(branchAnnotation, BCAnnotationType.BRANCH));
+						throw new AnnotationException("Expected a branch instruction (BRANCH)", currentBytecode,
+								currentInstruction);
 					}
+
+					String branchAnnotation = buildBranchAnnotation(tagAttrs);
+
+					bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(branchAnnotation, BCAnnotationType.BRANCH));
 				}
 
 				break;
@@ -516,20 +480,18 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 			case TAG_INTRINSIC:
 			{
-				if (inMethod || isC2)
+
+				if (!sanityCheckIntrinsic(currentInstruction))
 				{
-					if (!sanityCheckIntrinsic(currentInstruction))
-					{
-						throw new AnnotationException("Expected an invoke instruction (INTRINSIC)", currentBytecode,
-								currentInstruction);
-					}
-
-					StringBuilder reason = new StringBuilder();
-					reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
-
-					bcAnnotations.addAnnotation(currentBytecode,
-							new LineAnnotation(reason.toString(), BCAnnotationType.INTRINSIC_USED));
+					throw new AnnotationException("Expected an invoke instruction (INTRINSIC)", currentBytecode,
+							currentInstruction);
 				}
+
+				StringBuilder reason = new StringBuilder();
+				reason.append("Intrinsic: ").append(tagAttrs.get(ATTR_ID));
+
+				bcAnnotations.addAnnotation(currentBytecode,
+						new LineAnnotation(reason.toString(), BCAnnotationType.INTRINSIC_USED));
 
 				break;
 			}
@@ -552,7 +514,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 				if (S_PARSE_HIR.equals(phaseName))
 				{
-					buildParseTagAnnotations(child, annotations, compilerName, parseDictionary);
+					buildParseTagAnnotations(child, annotations, parseDictionary);
 				}
 				else
 				{

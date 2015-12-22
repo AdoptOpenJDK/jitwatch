@@ -65,7 +65,7 @@ public final class JournalUtil
 		else
 		{
 			IParseDictionary parseDictionary = lastTask.getParseDictionary();
-
+			
 			Tag parsePhase = getParsePhase(lastTask);
 
 			if (parsePhase != null)
@@ -187,12 +187,12 @@ public final class JournalUtil
 	public static boolean memberMatchesMethodID(IMetaMember member, String methodID, IParseDictionary parseDictionary)
 	{
 		boolean result = false;
-
+		
 		Tag methodTag = parseDictionary.getMethod(methodID);
 
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("methodTag: {}", methodTag != null ? methodTag.toString(true) : "null");
+			logger.debug("methodID: {} methodTag: {}", methodID, methodTag != null ? methodTag.toString(true) : "null");
 		}
 
 		if (methodTag != null)
@@ -277,7 +277,7 @@ public final class JournalUtil
 				}
 			}
 		}
-
+		
 		return result;
 	}
 
@@ -299,56 +299,36 @@ public final class JournalUtil
 		return lastTask;
 	}
 
-	public static CompilerName getCompilerNameForLastTask(Journal journal)
-	{
-		Task lastTask = getLastTask(journal);
-
-		CompilerName compilerName = null;
-
-		if (lastTask != null)
-		{
-			compilerName = lastTask.getCompiler();
-		}
-
-		return compilerName;
-	}
-
 	private static Tag getParsePhase(Task lastTask)
 	{
 		Tag parsePhase = null;
 
 		if (lastTask != null)
 		{
-			CompilerName compilerName = lastTask.getCompiler();
+			// for C1 look for 	<phase name='buildIR' stamp='18.121'>
+			// for C2 look for 	<phase name='parse' nodes='3' live='3' stamp='11.237'>
 
-			// fix this shit
-			// treat build_ir as a task to dive into
-			// all parsers start at task tag
-
-			String parseAttributeName = ATTR_PARSE;
-
-			if (compilerName == CompilerName.C1)
+			List<Tag> phasesBuildIR = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_BUILDIR);
+			
+			if (phasesBuildIR.size() == 1)
 			{
-				parseAttributeName = ATTR_BUILDIR;
-			}
-
-			List<Tag> parsePhases = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, parseAttributeName);
-
-			int count = parsePhases.size();
-
-			if (count > 1)
-			{
-				logger.warn("Unexpected parse phase count: {}", count);
-
-				logger.warn("\n{}", lastTask.toString(true));
-			}
-			else if (count == 1)
-			{
-				parsePhase = parsePhases.get(0);
+				parsePhase = phasesBuildIR.get(0);
 			}
 			else
 			{
-				parsePhase = lastTask;
+				List<Tag> phasesParse = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+				
+				if (phasesParse.size() == 1)
+				{
+					parsePhase = phasesParse.get(0);
+				}
+				else
+				{
+					logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(), phasesParse.size() );
+					
+					// possible JDK9 new format with no wrapping tag so return the whole task tag
+					parsePhase = lastTask;
+				}
 			}
 		}
 

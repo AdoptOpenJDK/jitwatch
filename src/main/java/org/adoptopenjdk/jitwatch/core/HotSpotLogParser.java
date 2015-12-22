@@ -609,31 +609,6 @@ public class HotSpotLogParser implements ILogParser
 	private void handleStartCompileThread(Tag tag)
 	{
 		model.getJITStats().incCompilerThreads();
-		String threadName = tag.getAttribute(ATTR_NAME);
-
-		if (theThreadIsNotFound(threadName))
-		{
-			logger.error("Thread name not found (attribute '{}' missing in tag).\n", ATTR_NAME);
-			return;
-		}
-
-		if (threadName.startsWith(C1))
-		{
-			tagProcessor.setCompiler(CompilerName.C1);
-		}
-		else if (threadName.startsWith(C2))
-		{
-			tagProcessor.setCompiler(CompilerName.C2);
-		}
-		else
-		{
-			logger.error("Unexpected compiler name: {}", threadName);
-		}
-	}
-
-	private boolean theThreadIsNotFound(String threadName)
-	{
-		return threadName == null;
 	}
 
 	public IMetaMember findMemberWithSignature(String logSignature)

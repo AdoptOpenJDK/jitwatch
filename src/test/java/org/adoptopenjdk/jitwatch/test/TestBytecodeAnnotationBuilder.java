@@ -292,7 +292,7 @@ public class TestBytecodeAnnotationBuilder
 						long.class },
 				void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
 
 		assertEquals(10, result.annotatedLineCount());
 
@@ -526,7 +526,7 @@ public class TestBytecodeAnnotationBuilder
 						long.class },
 				void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
 
 		assertEquals(8, result.annotatedLineCount());
 
@@ -538,379 +538,6 @@ public class TestBytecodeAnnotationBuilder
 		checkLine(result, 47, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 		checkLine(result, 47, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 		checkLine(result, 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-	}
-
-	@Test
-	public void testJava7TieredLeaf()
-	{
-		String[] logLines = new String[] {
-				"<task compile_id='153' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testLeaf (J)V' bytes='66' count='1' backedge_count='60509' iicount='1' osr_bci='8' level='3' stamp='12.700'>",
-				"<phase name='buildIR' stamp='12.700'>",
-				"<type id='636' name='void'/>",
-				"<type id='635' name='long'/>",
-				"<klass id='729' name='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog' flags='1'/>",
-				"<method id='730' holder='729' name='testLeaf' return='636' arguments='635' flags='2' bytes='66' iicount='1'/>",
-				"<parse method='730'  stamp='12.700'>",
-				"<bc code='183' bci='52'/>",
-				"<klass id='646' name='java/lang/String' flags='17'/>",
-				"<klass id='704' name='java/lang/StringBuilder' flags='17'/>",
-				"<method id='735' holder='704' name='&lt;init&gt;' return='636' arguments='646' flags='1' bytes='18' iicount='9'/>",
-				"<call method='735' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='2'/>",
-				"<type id='634' name='int'/>",
-				"<method id='737' holder='646' name='length' return='634' flags='1' bytes='6' compile_id='6' compiler='C1' level='3' iicount='541'/>",
-				"<call method='737' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='8'/>",
-				"<klass id='702' name='java/lang/AbstractStringBuilder' flags='1024'/>",
-				"<method id='739' holder='702' name='&lt;init&gt;' return='636' arguments='634' flags='0' bytes='12' iicount='101'/>",
-				"<call method='739' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='1'/>",
-				"<klass id='645' name='java/lang/Object' flags='1'/>",
-				"<method id='741' holder='645' name='&lt;init&gt;' return='636' flags='1' bytes='1' compile_id='46' compiler='C1' level='1' iicount='20694'/>",
-				"<call method='741' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='13'/>",
-				"<method id='743' holder='704' name='append' return='704' arguments='646' flags='1' bytes='8' iicount='163'/>",
-				"<call method='743' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='745' holder='702' name='append' return='702' arguments='646' flags='1' bytes='48' iicount='187'/>",
-				"<call method='745' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='56'/>",
-				"<method id='747' holder='704' name='append' return='704' arguments='635' flags='1' bytes='8' iicount='9'/>",
-				"<call method='747' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='749' holder='702' name='append' return='702' arguments='635' flags='1' bytes='70' iicount='9'/>",
-				"<call method='749' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='59'/>",
-				"<method id='751' holder='704' name='toString' return='646' flags='1' bytes='17' iicount='90'/>",
-				"<call method='751' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='13'/>",
-				"<klass id='720' name='[C' flags='1041'/>",
-				"<method id='753' holder='646' name='&lt;init&gt;' return='636' arguments='720 634 634' flags='1' bytes='67' iicount='215'/>",
-				"<call method='753' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='62'/>",
-				"<klass id='732' name='java/io/PrintStream' flags='1'/>",
-				"<method id='755' holder='732' name='println' return='636' arguments='646' flags='1' bytes='24' iicount='9'/>",
-				"<call method='755' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='6'/>",
-				"<method id='757' holder='732' name='print' return='636' arguments='646' flags='1' bytes='13' iicount='9'/>",
-				"<call method='757' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='9'/>",
-				"<method id='759' holder='732' name='write' return='636' arguments='646' flags='2' bytes='83' iicount='9'/>",
-				"<call method='759' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='763' holder='732' name='newLine' return='636' flags='2' bytes='73' iicount='9'/>",
-				"<call method='763' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='766' holder='729' name='leaf1' return='635' arguments='635' flags='2' bytes='4' compile_id='149' compiler='C1' level='1' iicount='1962'/>",
-				"<call method='766' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='16'/>",
-				"<method id='768' holder='729' name='leaf2' return='635' arguments='635' flags='2' bytes='6' compile_id='150' compiler='C1' level='1' iicount='2685'/>",
-				"<call method='768' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='22'/>",
-				"<method id='770' holder='729' name='leaf3' return='635' arguments='635' flags='2' bytes='6' compile_id='151' compiler='C1' level='1' iicount='9780'/>",
-				"<call method='770' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='28'/>",
-				"<method id='772' holder='729' name='leaf4' return='635' arguments='635' flags='2' bytes='6' compile_id='152' compiler='C1' level='1' iicount='11340'/>",
-				"<call method='772' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<parse_done stamp='12.703'/>",
-				"</parse>",
-				"<phase name='optimizeIR' stamp='12.703'>",
-				"<phase_done stamp='12.703'/>",
-				"</phase>",
-				"<phase_done stamp='12.703'/>",
-				"</phase>",
-				"<phase name='emit_lir' stamp='12.703'>",
-				"<phase name='lirGeneration' stamp='12.703'>",
-				"<phase_done stamp='12.704'/>",
-				"</phase>",
-				"<phase name='linearScan' stamp='12.704'>",
-				"<phase_done stamp='12.705'/>",
-				"</phase>",
-				"<phase_done stamp='12.705'/>",
-				"</phase>",
-				"<phase name='codeemit' stamp='12.705'>",
-				"<phase_done stamp='12.706'/>",
-				"</phase>",
-				"<phase name='codeinstall' stamp='12.706'>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<phase_done stamp='12.706'/>",
-				"</phase>",
-				"<code_cache total_blobs='365' nmethods='153' adapters='134' free_code_cache='99240832' largest_free_block='99229888'/>",
-				"<task_done success='1' nmsize='3560' count='1' backedge_count='70671' inlined_bytes='129' stamp='12.706'/>",
-				"</task>" };
-
-		String[] bytecodeLines = new String[] {
-				"0: lconst_0        ",
-				"1: lstore_3        ",
-				"2: iconst_0        ",
-				"3: istore          5    ",
-				"5: goto            35   ",
-				"8: aload_0         ",
-				"9: lload_3         ",
-				"10: invokespecial   #225 // Method leaf1:(J)J",
-				"13: lstore_3        ",
-				"14: aload_0         ",
-				"15: lload_3         ",
-				"16: invokespecial   #228 // Method leaf2:(J)J",
-				"19: lstore_3        ",
-				"20: aload_0         ",
-				"21: lload_3         ",
-				"22: invokespecial   #231 // Method leaf3:(J)J",
-				"25: lstore_3        ",
-				"26: aload_0         ",
-				"27: lload_3         ",
-				"28: invokespecial   #234 // Method leaf4:(J)J",
-				"31: lstore_3        ",
-				"32: iinc            5, 1 ",
-				"35: iload           5    ",
-				"37: i2l             ",
-				"38: lload_1         ",
-				"39: lcmp            ",
-				"40: iflt            8    ",
-				"43: getstatic       #52  // Field java/lang/System.out:Ljava/io/PrintStream;",
-				"46: new             #58  // class java/lang/StringBuilder",
-				"49: dup             ",
-				"50: ldc             #237 // String testLeaf:",
-				"52: invokespecial   #62  // Method java/lang/StringBuilder.\"<init>\":(Ljava/lang/String;)V",
-				"55: lload_3         ",
-				"56: invokevirtual   #65  // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;",
-				"59: invokevirtual   #69  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
-				"62: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
-				"65: return          " };
-
-		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf",
-				new Class[] {
-						long.class },
-				void.class);
-
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C1, logLines, bytecodeLines);
-
-		assertEquals(8, result.annotatedLineCount());
-
-		int bcOffsetStringBuilderInit = 52;
-		int bcOffsetMakeHotSpotLogLeaf1 = 10;
-		int bcOffsetMakeHotSpotLogLeaf2 = 16;
-		int bcOffsetMakeHotSpotLogLeaf3 = 22;
-		int bcOffsetMakeHotSpotLogLeaf4 = 28;
-		int bcOffsetStringBuilderAppend = 56;
-		int bcOffsetStringBuilderToString = 59;
-		int bcOffsetPrintStreamPrintln = 62;
-
-		checkLine(result, bcOffsetStringBuilderInit, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf1, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf2, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf3, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetMakeHotSpotLogLeaf4, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetStringBuilderAppend, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetStringBuilderToString, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, bcOffsetPrintStreamPrintln, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-	}
-
-	@Test
-	public void testJava7TieredChain()
-	{
-		String[] logLines = new String[] {
-				"<task compile_id='133' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testCallChain (J)V' bytes='54' count='1' backedge_count='60635' iicount='1' osr_bci='8' level='3' stamp='12.538'>",
-				"<phase name='buildIR' stamp='12.538'>",
-				"<type id='636' name='void'/>",
-				"<type id='635' name='long'/>",
-				"<klass id='729' name='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog' flags='1'/>",
-				"<method id='730' holder='729' name='testCallChain' return='636' arguments='635' flags='2' bytes='54' iicount='1'/>",
-				"<parse method='730'  stamp='12.538'>",
-				"<bc code='183' bci='40'/>",
-				"<klass id='646' name='java/lang/String' flags='17'/>",
-				"<klass id='704' name='java/lang/StringBuilder' flags='17'/>",
-				"<method id='735' holder='704' name='&lt;init&gt;' return='636' arguments='646' flags='1' bytes='18' iicount='7'/>",
-				"<call method='735' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='2'/>",
-				"<type id='634' name='int'/>",
-				"<method id='737' holder='646' name='length' return='634' flags='1' bytes='6' compile_id='6' compiler='C1' level='3' iicount='533'/>",
-				"<call method='737' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='8'/>",
-				"<klass id='702' name='java/lang/AbstractStringBuilder' flags='1024'/>",
-				"<method id='739' holder='702' name='&lt;init&gt;' return='636' arguments='634' flags='0' bytes='12' iicount='99'/>",
-				"<call method='739' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='1'/>",
-				"<klass id='645' name='java/lang/Object' flags='1'/>",
-				"<method id='741' holder='645' name='&lt;init&gt;' return='636' flags='1' bytes='1' compile_id='46' compiler='C1' level='1' iicount='20694'/>",
-				"<call method='741' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='13'/>",
-				"<method id='743' holder='704' name='append' return='704' arguments='646' flags='1' bytes='8' iicount='161'/>",
-				"<call method='743' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='745' holder='702' name='append' return='702' arguments='646' flags='1' bytes='48' iicount='185'/>",
-				"<call method='745' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='44'/>",
-				"<method id='747' holder='704' name='append' return='704' arguments='635' flags='1' bytes='8' iicount='7'/>",
-				"<call method='747' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='749' holder='702' name='append' return='702' arguments='635' flags='1' bytes='70' iicount='7'/>",
-				"<call method='749' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='47'/>",
-				"<method id='751' holder='704' name='toString' return='646' flags='1' bytes='17' iicount='88'/>",
-				"<call method='751' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='13'/>",
-				"<klass id='720' name='[C' flags='1041'/>",
-				"<method id='753' holder='646' name='&lt;init&gt;' return='636' arguments='720 634 634' flags='1' bytes='67' iicount='213'/>",
-				"<call method='753' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='50'/>",
-				"<klass id='732' name='java/io/PrintStream' flags='1'/>",
-				"<method id='755' holder='732' name='println' return='636' arguments='646' flags='1' bytes='24' iicount='7'/>",
-				"<call method='755' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='6'/>",
-				"<method id='757' holder='732' name='print' return='636' arguments='646' flags='1' bytes='13' iicount='7'/>",
-				"<call method='757' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='9'/>",
-				"<method id='759' holder='732' name='write' return='636' arguments='646' flags='2' bytes='83' iicount='7'/>",
-				"<call method='759' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='763' holder='732' name='newLine' return='636' flags='2' bytes='73' iicount='7'/>",
-				"<call method='763' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='766' holder='729' name='chainA1' return='635' arguments='635' flags='2' bytes='8' compile_id='131' compiler='C2' level='4' iicount='11516'/>",
-				"<call method='766' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<method id='768' holder='729' name='chainA2' return='635' arguments='635' flags='2' bytes='10' iicount='11516'/>",
-				"<call method='768' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='5'/>",
-				"<method id='770' holder='729' name='chainA3' return='635' arguments='635' flags='2' bytes='10' iicount='11516'/>",
-				"<call method='770' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='5'/>",
-				"<method id='772' holder='729' name='chainA4' return='635' arguments='635' flags='2' bytes='7' iicount='11516'/>",
-				"<call method='772' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<method id='774' holder='729' name='bigMethod' return='635' arguments='635 634' flags='2' bytes='350' compile_id='41' compiler='C2' level='4' iicount='6537'/>",
-				"<call method='774' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='16'/>",
-				"<method id='776' holder='729' name='chainB1' return='635' arguments='635' flags='2' bytes='8' compile_id='132' compiler='C2' level='4' iicount='16492'/>",
-				"<call method='776' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='778' holder='729' name='chainB2' return='635' arguments='635' flags='2' bytes='10' iicount='16492'/>",
-				"<call method='778' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='780' holder='729' name='chainB3' return='635' arguments='635' flags='2' bytes='6' iicount='16492'/>",
-				"<call method='780' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<parse_done stamp='12.542'/>",
-				"</parse>",
-				"<phase name='optimizeIR' stamp='12.542'>",
-				"<phase_done stamp='12.542'/>",
-				"</phase>",
-				"<phase_done stamp='12.542'/>",
-				"</phase>",
-				"<phase name='emit_lir' stamp='12.542'>",
-				"<phase name='lirGeneration' stamp='12.542'>",
-				"<phase_done stamp='12.543'/>",
-				"</phase>",
-				"<phase name='linearScan' stamp='12.543'>",
-				"<phase_done stamp='12.544'/>",
-				"</phase>",
-				"<phase_done stamp='12.544'/>",
-				"</phase>",
-				"<phase name='codeemit' stamp='12.544'>",
-				"<phase_done stamp='12.545'/>",
-				"</phase>",
-				"<phase name='codeinstall' stamp='12.545'>",
-				"<dependency type='leaf_type' ctxk='732'/>",
-				"<phase_done stamp='12.545'/>",
-				"</phase>",
-				"<code_cache total_blobs='345' nmethods='133' adapters='134' free_code_cache='99281280' largest_free_block='99255360'/>",
-				"<task_done success='1' nmsize='3960' count='1' backedge_count='82045' inlined_bytes='166' stamp='12.545'/>",
-				"</task>" };
-
-		String[] bytecodeLines = new String[] {
-				"0: lconst_0        ",
-				"1: lstore_3        ",
-				"2: iconst_0        ",
-				"3: istore          5    ",
-				"5: goto            23   ",
-				"8: aload_0         ",
-				"9: lload_3         ",
-				"10: invokespecial   #190 // Method chainA1:(J)J",
-				"13: lstore_3        ",
-				"14: aload_0         ",
-				"15: lload_3         ",
-				"16: invokespecial   #194 // Method chainB1:(J)J",
-				"19: lstore_3        ",
-				"20: iinc            5, 1 ",
-				"23: iload           5    ",
-				"25: i2l             ",
-				"26: lload_1         ",
-				"27: lcmp            ",
-				"28: iflt            8    ",
-				"31: getstatic       #52  // Field java/lang/System.out:Ljava/io/PrintStream;",
-				"34: new             #58  // class java/lang/StringBuilder",
-				"37: dup             ",
-				"38: ldc             #197 // String testCallChain:",
-				"40: invokespecial   #62  // Method java/lang/StringBuilder.\"<init>\":(Ljava/lang/String;)V",
-				"43: lload_3         ",
-				"44: invokevirtual   #65  // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;",
-				"47: invokevirtual   #69  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
-				"50: invokevirtual   #73  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
-				"53: return          " };
-
-		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain",
-				new Class[] {
-						long.class },
-				void.class);
-
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C1, logLines, bytecodeLines);
-
-		assertEquals(6, result.annotatedLineCount());
-
-		checkLine(result, 10, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 16, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 40, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 44, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 47, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
 	@Test
@@ -1128,7 +755,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain3",
 				new Class[0], void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C1, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
 
 		assertEquals(8, result.annotatedLineCount());
 
@@ -1338,7 +965,7 @@ public class TestBytecodeAnnotationBuilder
 						long.class },
 				void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
 
 		assertEquals(11, result.annotatedLineCount());
 
@@ -1355,557 +982,10 @@ public class TestBytecodeAnnotationBuilder
 		checkLine(result, 65, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
-	/*
-	 * Clean up tests related to the workaround for the now-fixed
-	 * TieredCompilation log bug
-	 * 
-	 * @Test public void testJava8NonTieredChain() { String[] logLines = new
-	 * String[]{
-	 * "<task compile_id='73' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testCallChain2 (J)V' bytes='57' count='10000' backedge_count='5171' iicount='1' osr_bci='5' stamp='11.507'>"
-	 * , "<phase name='parse' nodes='3' live='3' stamp='11.507'>",
-	 * "<type id='680' name='void'/>", "<type id='679' name='long'/>",
-	 * "<klass id='776' name='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog' flags='1'/>"
-	 * ,
-	 * "<method id='777' holder='776' name='testCallChain2' return='680' arguments='679' flags='2' bytes='57' iicount='1'/>"
-	 * , "<parse method='777' uses='1' osr_bci='5' stamp='11.508'>",
-	 * "<dependency type='leaf_type' ctxk='776'/>",
-	 * "<dependency type='leaf_type' ctxk='776'/>",
-	 * "<uncommon_trap bci='5' reason='constraint' action='reinterpret'/>",
-	 * "<uncommon_trap bci='5' reason='predicate' action='maybe_recompile'/>",
-	 * "<uncommon_trap bci='5' reason='loop_limit_check' action='maybe_recompile'/>"
-	 * , "<bc code='156' bci='10'/>",
-	 * "<branch target_bci='31' taken='0' not_taken='14038' cnt='14038' prob='never'/>"
-	 * , "<bc code='183' bci='15'/>",
-	 * "<method id='786' holder='776' name='chainC1' return='679' arguments='679' flags='2' bytes='14' compile_id='71' compiler='C2' iicount='12250'/>"
-	 * , "<call method='786' count='14038' prof_factor='1' inline='1'/>",
-	 * "<inline_success reason='inline (hot)'/>",
-	 * "<parse method='786' uses='14038' stamp='11.509'>",
-	 * "<uncommon_trap bci='15' reason='null_check' action='maybe_recompile'/>",
-	 * "<bc code='183' bci='3'/>",
-	 * "<method id='787' holder='776' name='chainC2' return='679' arguments='679' flags='2' bytes='6' compile_id='70' compiler='C2' iicount='11615'/>"
-	 * , "<call method='787' count='8951' prof_factor='1' inline='1'/>",
-	 * "<inline_success reason='inline (hot)'/>",
-	 * "<parse method='787' uses='8951' stamp='11.509'>",
-	 * "<parse_done nodes='165' live='160' memory='45488' stamp='11.509'/>",
-	 * "</parse>", "<bc code='183' bci='10'/>",
-	 * "<method id='788' holder='776' name='chainC3' return='679' arguments='679' flags='2' bytes='6' compile_id='72' compiler='C2' iicount='12250'/>"
-	 * , "<call method='788' count='8951' prof_factor='1' inline='1'/>",
-	 * "<inline_success reason='inline (hot)'/>",
-	 * "<parse method='788' uses='8951' stamp='11.509'>",
-	 * "<parse_done nodes='182' live='176' memory='48192' stamp='11.509'/>",
-	 * "</parse>",
-	 * "<parse_done nodes='183' live='176' memory='49104' stamp='11.509'/>",
-	 * "</parse>", "<bc code='183' bci='21'/>",
-	 * "<call method='787' count='14037' prof_factor='1' inline='1'/>",
-	 * "<inline_success reason='inline (hot)'/>",
-	 * "<parse method='787' uses='14037' stamp='11.509'>",
-	 * "<parse_done nodes='200' live='192' memory='51352' stamp='11.509'/>",
-	 * "</parse>", "<bc code='183' bci='38'/>",
-	 * "<klass id='749' name='java/lang/StringBuilder' flags='17'/>",
-	 * "<method id='780' holder='749' name='&lt;init&gt;' return='680' flags='1' bytes='7' iicount='113'/>"
-	 * , "<call method='780' count='0' prof_factor='1' inline='1'/>",
-	 * "<inline_fail reason='call site not reached'/>",
-	 * "<direct_call bci='38'/>", "<bc code='182' bci='43'/>",
-	 * "<klass id='686' name='java/lang/String' flags='17'/>",
-	 * "<method id='782' holder='749' name='append' return='749' arguments='686' flags='1' bytes='8' iicount='208'/>"
-	 * , "<call method='782' count='0' prof_factor='1' inline='1'/>",
-	 * "<inline_fail reason='executed &lt; MinInliningThreshold times'/>",
-	 * "<direct_call bci='43'/>", "<bc code='182' bci='47'/>",
-	 * "<method id='783' holder='749' name='append' return='749' arguments='679' flags='1' bytes='8' iicount='8'/>"
-	 * , "<call method='783' count='0' prof_factor='1' inline='1'/>",
-	 * "<inline_fail reason='executed &lt; MinInliningThreshold times'/>",
-	 * "<direct_call bci='47'/>",
-	 * "<uncommon_trap bci='47' reason='null_check' action='maybe_recompile'/>",
-	 * "<bc code='182' bci='50'/>",
-	 * "<method id='784' holder='749' name='toString' return='686' flags='1' bytes='17' iicount='112'/>"
-	 * , "<call method='784' count='0' prof_factor='1' inline='1'/>",
-	 * "<inline_fail reason='executed &lt; MinInliningThreshold times'/>",
-	 * "<direct_call bci='50'/>",
-	 * "<uncommon_trap bci='50' reason='null_check' action='maybe_recompile'/>",
-	 * "<bc code='182' bci='53'/>",
-	 * "<klass id='779' name='java/io/PrintStream' flags='1'/>",
-	 * "<method id='785' holder='779' name='println' return='680' arguments='686' flags='1' bytes='24' iicount='8'/>"
-	 * , "<dependency type='unique_concrete_method' ctxk='779' x='785'/>",
-	 * "<call method='785' count='0' prof_factor='1' inline='1'/>",
-	 * "<inline_fail reason='executed &lt; MinInliningThreshold times'/>",
-	 * "<direct_call bci='53'/>",
-	 * "<uncommon_trap bci='53' reason='null_check' action='maybe_recompile'/>",
-	 * "<parse_done nodes='357' live='345' memory='81672' stamp='11.511'/>",
-	 * "</parse>",
-	 * "<phase_done name='parse' nodes='360' live='211' stamp='11.512'/>",
-	 * "</phase>",
-	 * "<phase name='optimizer' nodes='360' live='211' stamp='11.512'>",
-	 * "<phase name='idealLoop' nodes='365' live='202' stamp='11.512'>",
-	 * "<loop_tree>", "<loop idx='365' inner_loop='1' >", "</loop>",
-	 * "</loop_tree>",
-	 * "<phase_done name='idealLoop' nodes='366' live='202' stamp='11.513'/>",
-	 * "</phase>",
-	 * "<phase name='escapeAnalysis' nodes='366' live='202' stamp='11.513'>",
-	 * "<phase name='connectionGraph' nodes='367' live='203' stamp='11.513'>",
-	 * "<klass id='747' name='java/lang/AbstractStringBuilder' flags='1024'/>",
-	 * "<type id='678' name='int'/>",
-	 * "<method id='806' holder='747' name='expandCapacity' return='680' arguments='678' flags='0' bytes='50' iicount='156'/>"
-	 * , "<dependency type='unique_concrete_method' ctxk='747' x='806'/>",
-	 * "<phase_done name='connectionGraph' nodes='367' live='203' stamp='11.515'/>"
-	 * , "</phase>",
-	 * "<phase_done name='escapeAnalysis' nodes='367' live='203' stamp='11.515'/>"
-	 * , "</phase>",
-	 * "<phase name='idealLoop' nodes='367' live='203' stamp='11.515'>",
-	 * "<loop_tree>", "<loop idx='365' inner_loop='1' >", "</loop>",
-	 * "</loop_tree>",
-	 * "<phase_done name='idealLoop' nodes='392' live='215' stamp='11.516'/>",
-	 * "</phase>",
-	 * "<phase name='idealLoop' nodes='392' live='215' stamp='11.516'>",
-	 * "<loop_tree>", "<loop idx='365' inner_loop='1' >", "</loop>",
-	 * "</loop_tree>",
-	 * "<phase_done name='idealLoop' nodes='392' live='196' stamp='11.516'/>",
-	 * "</phase>",
-	 * "<phase name='idealLoop' nodes='392' live='196' stamp='11.516'>",
-	 * "<loop_tree>", "<loop idx='365' inner_loop='1' >", "</loop>",
-	 * "</loop_tree>",
-	 * "<phase_done name='idealLoop' nodes='392' live='196' stamp='11.516'/>",
-	 * "</phase>", "<phase name='ccp' nodes='392' live='196' stamp='11.517'>",
-	 * "<phase_done name='ccp' nodes='392' live='196' stamp='11.517'/>",
-	 * "</phase>",
-	 * "<phase name='idealLoop' nodes='393' live='193' stamp='11.517'>",
-	 * "<loop_tree>", "<loop idx='365' inner_loop='1' >", "</loop>",
-	 * "</loop_tree>",
-	 * "<phase_done name='idealLoop' nodes='393' live='193' stamp='11.517'/>",
-	 * "</phase>",
-	 * "<phase_done name='optimizer' nodes='461' live='231' stamp='11.518'/>",
-	 * "</phase>",
-	 * "<phase name='matcher' nodes='461' live='231' stamp='11.518'>",
-	 * "<phase_done name='matcher' nodes='214' live='214' stamp='11.519'/>",
-	 * "</phase>",
-	 * "<phase name='regalloc' nodes='272' live='272' stamp='11.520'>",
-	 * "<regalloc attempts='1' success='1'/>",
-	 * "<phase_done name='regalloc' nodes='306' live='304' stamp='11.525'/>",
-	 * "</phase>", "<phase name='output' nodes='308' live='306' stamp='11.525'>"
-	 * , "<phase_done name='output' nodes='337' live='325' stamp='11.526'/>",
-	 * "</phase>", "<dependency type='leaf_type' ctxk='776'/>",
-	 * "<dependency type='unique_concrete_method' ctxk='779' x='785'/>",
-	 * "<dependency type='unique_concrete_method' ctxk='747' x='806'/>",
-	 * "<code_cache total_blobs='263' nmethods='73' adapters='142' free_code_cache='49729600'/>"
-	 * ,
-	 * "<task_done success='1' nmsize='640' count='10000' backedge_count='5906' inlined_bytes='32' stamp='11.526'/>"
-	 * , "</task>" };
-	 * 
-	 * String[] bytecodeLines = new String[]{ "0: lconst_0        ",
-	 * "1: lstore_3        ", "2: iconst_0        ", "3: istore          5    ",
-	 * "5: iload           5    ", "7: i2l             ", "8: lload_1         ",
-	 * "9: lcmp            ", "10: ifge            31   ",
-	 * "13: aload_0         ", "14: lload_3         ",
-	 * "15: invokespecial   #58  // Method chainA1:(J)J", "18: lstore_3        "
-	 * , "19: aload_0         ", "20: lload_3         ",
-	 * "21: invokespecial   #59  // Method chainB1:(J)J", "24: lstore_3        "
-	 * , "25: iinc            5, 1 ", "28: goto            5    ",
-	 * "31: getstatic       #13  // Field java/lang/System.out:Ljava/io/PrintStream;"
-	 * , "34: new             #14  // class java/lang/StringBuilder",
-	 * "37: dup             ",
-	 * "38: invokespecial   #15  // Method java/lang/StringBuilder.\"<init>\":()V"
-	 * , "41: ldc             #60  // String testCallChain:",
-	 * "43: invokevirtual   #17  // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"
-	 * , "46: lload_3         ",
-	 * "47: invokevirtual   #18  // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;"
-	 * ,
-	 * "50: invokevirtual   #19  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;"
-	 * ,
-	 * "53: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V"
-	 * , "56: return          " };
-	 * 
-	 * IMetaMember member = UnitTestUtil.createTestMetaMember(
-	 * "org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain2", new
-	 * Class[]{long.class});
-	 * 
-	 * BytecodeAnnotations result = buildAnnotations("1.8.0", member,
-	 * CompilerName.C2, logLines, bytecodeLines);
-	 * 
-	 * assertEquals(8, result.annotatedLineCount());
-	 * 
-	 * checkLine(result, 10, "never", BCAnnotationType.BRANCH);
-	 * checkLine(result, 15, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-	 * checkLine(result, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-	 * checkLine(result, 38, "not reached", BCAnnotationType.INLINE_FAIL);
-	 * checkLine(result, 43, "MinInliningThreshold",
-	 * BCAnnotationType.INLINE_FAIL); checkLine(result, 47,
-	 * "MinInliningThreshold", BCAnnotationType.INLINE_FAIL); checkLine(result,
-	 * 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-	 * checkLine(result, 53, "MinInliningThreshold",
-	 * BCAnnotationType.INLINE_FAIL); }
-	 */
-
-	@Test
-	public void testJava8TieredLeaf()
-	{
-		String[] logLines = new String[] {
-				"<task compile_id='153' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testLeaf (J)V' bytes='69' count='1' backedge_count='60592' iicount='1' osr_bci='5' level='3' stamp='12.193'>",
-				"<phase name='buildIR' stamp='12.193'>",
-				"<type id='680' name='void'/>",
-				"<type id='679' name='long'/>",
-				"<klass id='776' name='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog' flags='1'/>",
-				"<method id='777' holder='776' name='testLeaf' return='680' arguments='679' flags='2' bytes='69' iicount='1'/>",
-				"<parse method='777'  stamp='12.193'>",
-				"<bc code='183' bci='15'/>",
-				"<method id='779' holder='776' name='leaf1' return='679' arguments='679' flags='2' bytes='4' compile_id='149' compiler='C1' level='1' iicount='6137'/>",
-				"<call method='779' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='21'/>",
-				"<method id='781' holder='776' name='leaf2' return='679' arguments='679' flags='2' bytes='6' compile_id='150' compiler='C1' level='1' iicount='5327'/>",
-				"<call method='781' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='27'/>",
-				"<method id='783' holder='776' name='leaf3' return='679' arguments='679' flags='2' bytes='6' compile_id='151' compiler='C1' level='1' iicount='10055'/>",
-				"<call method='783' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='33'/>",
-				"<method id='785' holder='776' name='leaf4' return='679' arguments='679' flags='2' bytes='6' compile_id='152' compiler='C1' level='1' iicount='11585'/>",
-				"<call method='785' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='50'/>",
-				"<klass id='749' name='java/lang/StringBuilder' flags='17'/>",
-				"<method id='789' holder='749' name='&lt;init&gt;' return='680' flags='1' bytes='7' iicount='114'/>",
-				"<call method='789' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<type id='678' name='int'/>",
-				"<klass id='747' name='java/lang/AbstractStringBuilder' flags='1024'/>",
-				"<method id='791' holder='747' name='&lt;init&gt;' return='680' arguments='678' flags='0' bytes='12' iicount='127'/>",
-				"<call method='791' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='1'/>",
-				"<klass id='685' name='java/lang/Object' flags='1'/>",
-				"<method id='793' holder='685' name='&lt;init&gt;' return='680' flags='1' bytes='1' compile_id='10' compiler='C1' level='1' iicount='447535'/>",
-				"<call method='793' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='55'/>",
-				"<klass id='686' name='java/lang/String' flags='17'/>",
-				"<method id='796' holder='749' name='append' return='749' arguments='686' flags='1' bytes='8' iicount='209'/>",
-				"<call method='796' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='798' holder='747' name='append' return='747' arguments='686' flags='1' bytes='50' iicount='242'/>",
-				"<call method='798' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='59'/>",
-				"<method id='800' holder='749' name='append' return='749' arguments='679' flags='1' bytes='8' iicount='9'/>",
-				"<call method='800' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='802' holder='747' name='append' return='747' arguments='679' flags='1' bytes='70' iicount='9'/>",
-				"<call method='802' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='62'/>",
-				"<method id='804' holder='749' name='toString' return='686' flags='1' bytes='17' iicount='113'/>",
-				"<call method='804' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='13'/>",
-				"<klass id='765' name='[C' flags='1041'/>",
-				"<method id='806' holder='686' name='&lt;init&gt;' return='680' arguments='765 678 678' flags='1' bytes='62' iicount='262'/>",
-				"<call method='806' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='65'/>",
-				"<klass id='787' name='java/io/PrintStream' flags='1'/>",
-				"<method id='808' holder='787' name='println' return='680' arguments='686' flags='1' bytes='24' iicount='9'/>",
-				"<call method='808' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='787'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='6'/>",
-				"<method id='810' holder='787' name='print' return='680' arguments='686' flags='1' bytes='13' iicount='9'/>",
-				"<call method='810' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='787'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='9'/>",
-				"<method id='812' holder='787' name='write' return='680' arguments='686' flags='2' bytes='83' iicount='9'/>",
-				"<call method='812' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='787'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='816' holder='787' name='newLine' return='680' flags='2' bytes='73' iicount='9'/>",
-				"<call method='816' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='787'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<parse_done stamp='12.196'/>",
-				"</parse>",
-				"<phase name='optimize_blocks' stamp='12.196'>",
-				"<phase_done name='optimize_blocks' stamp='12.197'/>",
-				"</phase>",
-				"<phase name='optimize_null_checks' stamp='12.197'>",
-				"<phase_done name='optimize_null_checks' stamp='12.197'/>",
-				"</phase>",
-				"<phase_done name='buildIR' stamp='12.197'/>",
-				"</phase>",
-				"<phase name='emit_lir' stamp='12.197'>",
-				"<phase name='lirGeneration' stamp='12.197'>",
-				"<phase_done name='lirGeneration' stamp='12.197'/>",
-				"</phase>",
-				"<phase name='linearScan' stamp='12.197'>",
-				"<phase_done name='linearScan' stamp='12.198'/>",
-				"</phase>",
-				"<phase_done name='emit_lir' stamp='12.198'/>",
-				"</phase>",
-				"<phase name='codeemit' stamp='12.198'>",
-				"<phase_done name='codeemit' stamp='12.199'/>",
-				"</phase>",
-				"<phase name='codeinstall' stamp='12.199'>",
-				"<dependency type='leaf_type' ctxk='787'/>",
-				"<phase_done name='codeinstall' stamp='12.199'/>",
-				"</phase>",
-				"<code_cache total_blobs='377' nmethods='152' adapters='142' free_code_cache='250142208'/>",
-				"<task_done success='1' nmsize='3272' count='1' backedge_count='73158' inlined_bytes='112' stamp='12.199'/>",
-				"</task>" };
-
-		String[] bytecodeLines = new String[] {
-				"0: lconst_0        ",
-				"1: lstore_3        ",
-				"2: iconst_0        ",
-				"3: istore          5    ",
-				"5: iload           5    ",
-				"7: i2l             ",
-				"8: lload_1         ",
-				"9: lcmp            ",
-				"10: ifge            43   ",
-				"13: aload_0         ",
-				"14: lload_3         ",
-				"15: invokespecial   #70  // Method leaf1:(J)J",
-				"18: lstore_3        ",
-				"19: aload_0         ",
-				"20: lload_3         ",
-				"21: invokespecial   #71  // Method leaf2:(J)J",
-				"24: lstore_3        ",
-				"25: aload_0         ",
-				"26: lload_3         ",
-				"27: invokespecial   #72  // Method leaf3:(J)J",
-				"30: lstore_3        ",
-				"31: aload_0         ",
-				"32: lload_3         ",
-				"33: invokespecial   #73  // Method leaf4:(J)J",
-				"36: lstore_3        ",
-				"37: iinc            5, 1 ",
-				"40: goto            5    ",
-				"43: getstatic       #13  // Field java/lang/System.out:Ljava/io/PrintStream;",
-				"46: new             #14  // class java/lang/StringBuilder",
-				"49: dup             ",
-				"50: invokespecial   #15  // Method java/lang/StringBuilder.\"<init>\":()V",
-				"53: ldc             #74  // String testLeaf:",
-				"55: invokevirtual   #17  // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;",
-				"58: lload_3         ",
-				"59: invokevirtual   #18  // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;",
-				"62: invokevirtual   #19  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
-				"65: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
-				"68: return          " };
-
-		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf",
-				new Class[] {
-						long.class },
-				void.class);
-
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C1, logLines, bytecodeLines);
-
-		assertEquals(9, result.annotatedLineCount());
-
-		checkLine(result, 15, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 21, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 27, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 33, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 55, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 59, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 62, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 65, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-	}
-
-	@Test
-	public void testJava8TieredChain()
-	{
-		String[] logLines = new String[] {
-				"<task compile_id='133' compile_kind='osr' method='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog testCallChain (J)V' bytes='57' count='1' backedge_count='60651' iicount='1' osr_bci='5' level='3' stamp='12.043'>",
-				"<phase name='buildIR' stamp='12.043'>",
-				"<type id='680' name='void'/>",
-				"<type id='679' name='long'/>",
-				"<klass id='776' name='org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog' flags='1'/>",
-				"<method id='777' holder='776' name='testCallChain' return='680' arguments='679' flags='2' bytes='57' iicount='1'/>",
-				"<parse method='777'  stamp='12.043'>",
-				"<bc code='183' bci='15'/>",
-				"<method id='779' holder='776' name='chainA1' return='679' arguments='679' flags='2' bytes='8' compile_id='131' compiler='C2' level='4' iicount='12111'/>",
-				"<call method='779' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<method id='781' holder='776' name='chainA2' return='679' arguments='679' flags='2' bytes='10' iicount='12111'/>",
-				"<call method='781' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='5'/>",
-				"<method id='783' holder='776' name='chainA3' return='679' arguments='679' flags='2' bytes='10' iicount='12111'/>",
-				"<call method='783' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='5'/>",
-				"<method id='785' holder='776' name='chainA4' return='679' arguments='679' flags='2' bytes='7' iicount='12111'/>",
-				"<call method='785' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<type id='678' name='int'/>",
-				"<method id='787' holder='776' name='bigMethod' return='679' arguments='679 678' flags='2' bytes='350' compile_id='43' compiler='C2' level='4' iicount='6047'/>",
-				"<call method='787' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='21'/>",
-				"<method id='789' holder='776' name='chainB1' return='679' arguments='679' flags='2' bytes='8' compile_id='132' compiler='C2' level='4' iicount='16858'/>",
-				"<call method='789' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='791' holder='776' name='chainB2' return='679' arguments='679' flags='2' bytes='10' compile_id='130' compiler='C1' level='3' iicount='16858'/>",
-				"<call method='791' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='793' holder='776' name='chainB3' return='679' arguments='679' flags='2' bytes='6' iicount='16858'/>",
-				"<call method='793' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='38'/>",
-				"<klass id='749' name='java/lang/StringBuilder' flags='17'/>",
-				"<method id='797' holder='749' name='&lt;init&gt;' return='680' flags='1' bytes='7' iicount='112'/>",
-				"<call method='797' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='3'/>",
-				"<klass id='747' name='java/lang/AbstractStringBuilder' flags='1024'/>",
-				"<method id='799' holder='747' name='&lt;init&gt;' return='680' arguments='678' flags='0' bytes='12' iicount='125'/>",
-				"<call method='799' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='1'/>",
-				"<klass id='685' name='java/lang/Object' flags='1'/>",
-				"<method id='801' holder='685' name='&lt;init&gt;' return='680' flags='1' bytes='1' compile_id='10' compiler='C1' level='1' iicount='447535'/>",
-				"<call method='801' instr='invokespecial'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='43'/>",
-				"<klass id='686' name='java/lang/String' flags='17'/>",
-				"<method id='804' holder='749' name='append' return='749' arguments='686' flags='1' bytes='8' iicount='207'/>",
-				"<call method='804' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='806' holder='747' name='append' return='747' arguments='686' flags='1' bytes='50' iicount='240'/>",
-				"<call method='806' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='47'/>",
-				"<method id='808' holder='749' name='append' return='749' arguments='679' flags='1' bytes='8' iicount='7'/>",
-				"<call method='808' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='2'/>",
-				"<method id='810' holder='747' name='append' return='747' arguments='679' flags='1' bytes='70' iicount='7'/>",
-				"<call method='810' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='50'/>",
-				"<method id='812' holder='749' name='toString' return='686' flags='1' bytes='17' iicount='111'/>",
-				"<call method='812' instr='invokevirtual'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='13'/>",
-				"<klass id='765' name='[C' flags='1041'/>",
-				"<method id='814' holder='686' name='&lt;init&gt;' return='680' arguments='765 678 678' flags='1' bytes='62' iicount='260'/>",
-				"<call method='814' instr='invokespecial'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='182' bci='53'/>",
-				"<klass id='795' name='java/io/PrintStream' flags='1'/>",
-				"<method id='816' holder='795' name='println' return='680' arguments='686' flags='1' bytes='24' iicount='7'/>",
-				"<call method='816' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='795'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='182' bci='6'/>",
-				"<method id='818' holder='795' name='print' return='680' arguments='686' flags='1' bytes='13' iicount='7'/>",
-				"<call method='818' instr='invokevirtual'/>",
-				"<dependency type='leaf_type' ctxk='795'/>",
-				"<inline_success reason='receiver is statically known'/>",
-				"<bc code='183' bci='9'/>",
-				"<method id='820' holder='795' name='write' return='680' arguments='686' flags='2' bytes='83' iicount='7'/>",
-				"<call method='820' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='795'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<bc code='183' bci='10'/>",
-				"<method id='824' holder='795' name='newLine' return='680' flags='2' bytes='73' iicount='7'/>",
-				"<call method='824' instr='invokespecial'/>",
-				"<dependency type='leaf_type' ctxk='795'/>",
-				"<inline_fail reason='callee is too large'/>",
-				"<parse_done stamp='12.046'/>",
-				"</parse>",
-				"<phase name='optimize_blocks' stamp='12.046'>",
-				"<phase_done name='optimize_blocks' stamp='12.046'/>",
-				"</phase>",
-				"<phase name='optimize_null_checks' stamp='12.046'>",
-				"<phase_done name='optimize_null_checks' stamp='12.046'/>",
-				"</phase>",
-				"<phase_done name='buildIR' stamp='12.046'/>",
-				"</phase>",
-				"<phase name='emit_lir' stamp='12.047'>",
-				"<phase name='lirGeneration' stamp='12.047'>",
-				"<phase_done name='lirGeneration' stamp='12.047'/>",
-				"</phase>",
-				"<phase name='linearScan' stamp='12.047'>",
-				"<phase_done name='linearScan' stamp='12.048'/>",
-				"</phase>",
-				"<phase_done name='emit_lir' stamp='12.048'/>",
-				"</phase>",
-				"<phase name='codeemit' stamp='12.048'>",
-				"<phase_done name='codeemit' stamp='12.049'/>",
-				"</phase>",
-				"<phase name='codeinstall' stamp='12.049'>",
-				"<dependency type='leaf_type' ctxk='795'/>",
-				"<phase_done name='codeinstall' stamp='12.049'/>",
-				"</phase>",
-				"<code_cache total_blobs='357' nmethods='132' adapters='142' free_code_cache='250181248'/>",
-				"<task_done success='1' nmsize='3704' count='1' backedge_count='80786' inlined_bytes='149' stamp='12.049'/>",
-				"</task>" };
-
-		String[] bytecodeLines = new String[] {
-				"0: lconst_0        ",
-				"1: lstore_3        ",
-				"2: iconst_0        ",
-				"3: istore          5    ",
-				"5: iload           5    ",
-				"7: i2l             ",
-				"8: lload_1         ",
-				"9: lcmp            ",
-				"10: ifge            31   ",
-				"13: aload_0         ",
-				"14: lload_3         ",
-				"15: invokespecial   #58  // Method chainA1:(J)J",
-				"18: lstore_3        ",
-				"19: aload_0         ",
-				"20: lload_3         ",
-				"21: invokespecial   #59  // Method chainB1:(J)J",
-				"24: lstore_3        ",
-				"25: iinc            5, 1 ",
-				"28: goto            5    ",
-				"31: getstatic       #13  // Field java/lang/System.out:Ljava/io/PrintStream;",
-				"34: new             #14  // class java/lang/StringBuilder",
-				"37: dup             ",
-				"38: invokespecial   #15  // Method java/lang/StringBuilder.\"<init>\":()V",
-				"41: ldc             #60  // String testCallChain:",
-				"43: invokevirtual   #17  // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;",
-				"46: lload_3         ",
-				"47: invokevirtual   #18  // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;",
-				"50: invokevirtual   #19  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
-				"53: invokevirtual   #20  // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
-				"56: return          " };
-
-		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain",
-				new Class[] {
-						long.class },
-				void.class);
-
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C1, logLines, bytecodeLines);
-
-		assertEquals(7, result.annotatedLineCount());
-
-		checkLine(result, 15, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 21, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 38, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 43, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 47, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 50, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 53, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-	}
-
-	private BytecodeAnnotations buildAnnotations(String vmVersion, IMetaMember member, CompilerName compiler, String[] logLines,
+	private BytecodeAnnotations buildAnnotations(String vmVersion, IMetaMember member, String[] logLines,
 			String[] bytecodeLines)
 	{
 		TagProcessor tp = new TagProcessor();
-
-		tp.setCompiler(compiler);
 
 		int count = 0;
 
@@ -2329,10 +1409,10 @@ public class TestBytecodeAnnotationBuilder
 				"<phase_done name='escapeAnalysis' nodes='543' live='261' stamp='0.299'/>",
 				"</phase>",
 				"<eliminate_allocation type='825'>",
-				"<jvms bci='47' method='818'/>",
+				"<jvms bci='47' method='871'/>",
 				"</eliminate_allocation>",
 				"<eliminate_allocation type='821'>",
-				"<jvms bci='35' method='818'/>",
+				"<jvms bci='35' method='871'/>",
 				"</eliminate_allocation>",
 				"<phase name='idealLoop' nodes='546' live='200' stamp='0.300'>",
 				"<loop_tree>",
@@ -2450,7 +1530,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
 
 		assertEquals(12, result.annotatedLineCount());
 
@@ -2692,7 +1772,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.9.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.9.0", member, logLines, bytecodeLines);
 
 		assertEquals(12, result.annotatedLineCount());
 
@@ -2790,7 +1870,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("java.io.BufferedInputStream", "read", new Class[0], int.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.9.0", member, CompilerName.C2, logLines, bytecodeLines);
+		BytecodeAnnotations result = buildAnnotations("1.9.0", member, logLines, bytecodeLines);
 
 		assertEquals(5, result.annotatedLineCount());
 
@@ -2800,4 +1880,309 @@ public class TestBytecodeAnnotationBuilder
 		checkLine(result, 29, "hot", BCAnnotationType.INLINE_SUCCESS);
 		checkLine(result, 43, "range_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
+	
+	// 
+	/*
+	@Test
+	public void testLambdaEscapeAnalysis() throws ClassNotFoundException
+	{
+		String[] logLines = new String[]{
+				"<task decompiles='1' unstable_if_traps='1' method='org.adoptopenjdk.jitwatch.test.examples.OptionalTest countOptional (Lorg.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name;I)V' bytes='58' count='2' backedge_count='676143' stamp='2.315' compile_id='186' iicount='2'>",
+				"  <phase nodes='3' name='parse' stamp='2.315' live='3'>",
+				"    <type name='void' id='711'/>",
+				"    <klass name='org.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name' flags='0' id='820'/>",
+				"    <type name='int' id='709'/>",
+				"    <klass name='org.adoptopenjdk.jitwatch.test.examples.OptionalTest' flags='1' id='819'/>",
+				"    <method level='3' bytes='58' name='countOptional' flags='10' holder='819' arguments='820 709' id='821' compile_id='182' compiler='C1' iicount='2' return='711'/>",
+				"    <parse method='821' stamp='2.315' uses='2'> <!-- void org.adoptopenjdk.jitwatch.test.examples.OptionalTest.countOptional(org.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name,int) -->",
+				"      <observe total='1' count='1' trap='unstable_if'/>",
+				"      <bc code='162' bci='4'/>",
+				"      <branch prob='1.6626e-06' not_taken='601468' taken='1' cnt='601469' target_bci='26'/>",
+				"      <uncommon_trap reason='predicate' bci='7' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='loop_limit_check' bci='7' action='maybe_recompile'/>",
+				"      <bc code='182' bci='8'/>",
+				"      <klass name='java/util/Optional' flags='17' id='823'/>",
+				"      <method level='4' bytes='8' name='getOptionalName' flags='1' holder='820' id='831' compile_id='179' compiler='C2' iicount='617882' return='823'/>",
+				"      <dependency x='831' ctxk='820' type='unique_concrete_method'/>",
+				"      <call method='831' inline='1' count='601468' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='831' stamp='2.315' uses='601468'> <!-- java.util.Optional org.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name.getOptionalName() -->",
+				"        <uncommon_trap reason='null_check' bci='8' action='maybe_recompile'/>",
+				"        <bc code='184' bci='4'/>",
+				"        <klass name='java/lang/Object' flags='1' id='716'/>",
+				"        <method level='3' bytes='15' name='ofNullable' flags='9' holder='823' arguments='716' id='833' compile_id='175' compiler='C1' iicount='617882' return='823'/>",
+				"        <call method='833' inline='1' count='617498' prof_factor='0.973435'/>",
+				"        <inline_success reason='inline (hot)'/>",
+				"        <parse method='833' stamp='2.315' uses='601468'> <!-- java.util.Optional java.util.Optional.ofNullable(java.lang.Object) -->",
+				"          <bc code='199' bci='1'/>",
+				"          <branch prob='always' not_taken='0' taken='617882' cnt='617882' target_bci='10'/>",
+				"          <uncommon_trap reason='unstable_if' bci='1' action='reinterpret' comment='taken always'/>",
+				"          <bc code='184' bci='11'/>",
+				"          <method level='2' bytes='9' name='of' flags='9' holder='823' arguments='716' id='835' compile_id='176' compiler='C1' iicount='617882' return='823'/>",
+				"          <call method='835' inline='1' count='617457' prof_factor='0.973435'/>",
+				"          <inline_success reason='inline (hot)'/>",
+				"          <parse method='835' stamp='2.315' uses='601468'> <!-- java.util.Optional java.util.Optional.of(java.lang.Object) -->",
+				"            <bc code='183' bci='5'/>",
+				"            <method level='3' bytes='13' name='&lt;init&gt;' flags='2' holder='823' arguments='716' id='838' compile_id='177' compiler='C1' iicount='617882' return='711'/>",
+				"            <call method='838' inline='1' count='617370' prof_factor='0.973435'/>",
+				"            <inline_success reason='inline (hot)'/>",
+				"            <parse method='838' stamp='2.315' uses='601468'> <!-- void java.util.Optional.\"&lt;init&gt;\"(java.lang.Object) -->",
+				"              <bc code='183' bci='1'/>",
+				"              <method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='716' id='840' compile_id='19' compiler='C1' iicount='624932' return='711'/>",
+				"              <call method='840' inline='1' count='617370' prof_factor='0.973435'/>",
+				"              <inline_success reason='inline (hot)'/>",
+				"              <parse method='840' stamp='2.315' uses='601468'> <!-- void java.lang.Object.&lt;init&gt;() -->",
+				"                <parse_done nodes='195' memory='49512' stamp='2.315' live='190'/>",
+				"              </parse>",
+				"              <bc code='184' bci='6'/>",
+				"              <klass name='java/util/Objects' flags='17' id='841'/>",
+				"              <method level='3' bytes='14' name='requireNonNull' flags='9' holder='841' arguments='716' id='842' compile_id='79' compiler='C1' iicount='619098' return='716'/>",
+				"              <call method='842' inline='1' count='617370' prof_factor='0.973435'/>",
+				"              <klass name='java/lang/NullPointerException' flags='1' id='815'/>",
+				"              <uncommon_trap reason='unloaded' method='842' klass='815' bci='4' action='reinterpret' index='12'/>",
+				"              <inline_success reason='inline (hot)'/>",
+				"              <parse method='842' stamp='2.315' uses='601468'> <!-- java.lang.Object java.util.Objects.requireNonNull(java.lang.Object) -->",
+				"                <bc code='199' bci='1'/>",
+				"                <branch prob='always' not_taken='0' taken='619098' cnt='619098' target_bci='12'/>",
+				"                <parse_done nodes='215' memory='53160' stamp='2.315' live='209'/>",
+				"              </parse>",
+				"              <parse_done nodes='235' memory='56400' stamp='2.315' live='228'/>",
+				"            </parse>",
+				"            <parse_done nodes='235' memory='56528' stamp='2.315' live='227'/>",
+				"          </parse>",
+				"          <parse_done nodes='238' memory='57432' stamp='2.315' live='229'/>",
+				"        </parse>",
+				"        <parse_done nodes='240' memory='58392' stamp='2.315' live='230'/>",
+				"      </parse>",
+				"      <bc code='182' bci='11'/>",
+				"      <method level='4' bytes='22' name='get' flags='1' holder='823' id='832' compile_id='180' compiler='C2' iicount='615816' return='716'/>",
+				"      <call method='832' inline='1' count='601468' prof_factor='1'/>",
+				"      <klass unloaded='1' name='java/util/NoSuchElementException' id='846'/>",
+				"      <uncommon_trap reason='unloaded' method='832' klass='846' bci='7' action='reinterpret' index='9'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='832' stamp='2.315' uses='601468'> <!-- java.lang.Object java.util.Optional.get() -->",
+				"        <bc code='199' bci='4'/>",
+				"        <branch prob='always' not_taken='0' taken='615816' cnt='615816' target_bci='17'/>",
+				"        <uncommon_trap reason='unstable_if' bci='4' action='reinterpret' comment='taken always'/>",
+				"        <parse_done nodes='272' memory='68416' stamp='2.315' live='260'/>",
+				"      </parse>",
+				"      <bc code='192' bci='14'/>",
+				"      <uncommon_trap reason='class_check' bci='14' action='maybe_recompile'/>",
+				"      <bc code='162' bci='4'/>",
+				"      <branch prob='1.6626e-06' not_taken='601468' taken='1' cnt='601467' target_bci='26'/>",
+				"      <bc code='183' bci='33'/>",
+				"      <klass name='java/lang/StringBuilder' flags='17' id='782'/>",
+				"      <method level='3' bytes='7' name='&lt;init&gt;' flags='1' holder='782' id='825' compile_id='169' compiler='C1' iicount='569' return='711'/>",
+				"      <call method='825' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <direct_call bci='33'/>",
+				"      <bc code='182' bci='37'/>",
+				"      <method bytes='8' name='append' flags='1' holder='782' arguments='709' id='826' iicount='113' return='782'/>",
+				"      <call method='826' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_fail reason='executed &lt; MinInliningThreshold times'/>",
+				"      <direct_call bci='37'/>",
+				"      <bc code='182' bci='42'/>",
+				"      <klass name='java/lang/String' flags='17' id='717'/>",
+				"      <method level='3' bytes='8' name='append' flags='1' holder='782' arguments='717' id='828' compile_id='13' compiler='C1' iicount='1406' return='782'/>",
+				"      <call method='828' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <direct_call bci='42'/>",
+				"      <uncommon_trap reason='null_check' bci='42' action='maybe_recompile'/>",
+				"      <bc code='182' bci='48'/>",
+				"      <call method='828' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <direct_call bci='48'/>",
+				"      <uncommon_trap reason='null_check' bci='48' action='maybe_recompile'/>",
+				"      <bc code='182' bci='51'/>",
+				"      <method level='3' bytes='17' name='toString' flags='1' holder='782' id='829' compile_id='88' compiler='C1' iicount='690' return='717'/>",
+				"      <call method='829' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <direct_call bci='51'/>",
+				"      <uncommon_trap reason='null_check' bci='51' action='maybe_recompile'/>",
+				"      <bc code='182' bci='54'/>",
+				"      <klass name='java/io/PrintStream' flags='1' id='824'/>",
+				"      <method bytes='24' name='println' flags='1' holder='824' arguments='717' id='830' iicount='2' return='711'/>",
+				"      <dependency x='830' ctxk='824' type='unique_concrete_method'/>",
+				"      <call method='830' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_fail reason='executed &lt; MinInliningThreshold times'/>",
+				"      <direct_call bci='54'/>",
+				"      <uncommon_trap reason='null_check' bci='54' action='maybe_recompile'/>",
+				"      <parse_done nodes='517' memory='116920' stamp='2.316' live='499'/>",
+				"    </parse>",
+				"    <replace_string_concat multiple='0' arguments='3' string_alloc='0'>",
+				"      <jvms method='821' bci='29'/>",
+				"    </replace_string_concat>",
+				"    <uncommon_trap reason='predicate' bci='29' action='maybe_recompile'/>",
+				"    <uncommon_trap reason='loop_limit_check' bci='29' action='maybe_recompile'/>",
+				"    <uncommon_trap reason='intrinsic' bci='29' action='make_not_entrant'/>",
+				"    <uncommon_trap reason='predicate' bci='29' action='maybe_recompile'/>",
+				"    <uncommon_trap reason='loop_limit_check' bci='29' action='maybe_recompile'/>",
+				"    <phase_done nodes='879' name='parse' stamp='2.316' live='454'/>",
+				"  </phase>",
+				"  <phase nodes='879' name='optimizer' stamp='2.316' live='454'>",
+				"    <phase nodes='884' name='idealLoop' stamp='2.316' live='432'>",
+				"      <loop_tree>",
+				"        <loop idx='892'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='893' name='idealLoop' stamp='2.317' live='430'/>",
+				"    </phase>",
+				"    <phase nodes='893' name='escapeAnalysis' stamp='2.317' live='430'>",
+				"      <phase nodes='894' name='connectionGraph' stamp='2.317' live='431'>",
+				"        <phase_done nodes='894' name='connectionGraph' stamp='2.317' live='431'/>",
+				"      </phase>",
+				"      <phase_done nodes='897' name='escapeAnalysis' stamp='2.317' live='434'/>",
+				"    </phase>",
+				"    <eliminate_allocation type='823'>",
+				"      <jvms method='835' bci='0'/>",
+				"      <jvms method='833' bci='11'/>",
+				"      <jvms method='831' bci='4'/>",
+				"      <jvms method='821' bci='8'/>",
+				"    </eliminate_allocation>",
+				"    <phase nodes='898' name='idealLoop' stamp='2.317' live='383'>",
+				"      <loop_tree>",
+				"        <loop idx='892' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='923' name='idealLoop' stamp='2.317' live='385'/>",
+				"    </phase>",
+				"    <phase nodes='923' name='idealLoop' stamp='2.317' live='385'>",
+				"      <loop_tree>",
+				"        <loop idx='1044' main_loop='1044' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1070' name='idealLoop' stamp='2.318' live='506'/>",
+				"    </phase>",
+				"    <phase nodes='1070' name='idealLoop' stamp='2.318' live='506'>",
+				"      <loop_tree>",
+				"        <loop pre_loop='892' idx='989' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='1104' main_loop='1104' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='945' post_loop='892' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1140' name='idealLoop' stamp='2.318' live='560'/>",
+				"    </phase>",
+				"    <phase nodes='1140' name='ccp' stamp='2.318' live='560'>",
+				"      <phase_done nodes='1140' name='ccp' stamp='2.318' live='560'/>",
+				"    </phase>",
+				"    <phase nodes='1142' name='idealLoop' stamp='2.318' live='559'>",
+				"      <loop_tree>",
+				"        <loop pre_loop='892' idx='989' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='1104' main_loop='1104' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='945' post_loop='892' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1174' name='idealLoop' stamp='2.318' live='505'/>",
+				"    </phase>",
+				"    <phase nodes='1174' name='idealLoop' stamp='2.318' live='505'>",
+				"      <loop_tree>",
+				"        <loop pre_loop='892' idx='989' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='1104' main_loop='1104' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='945' post_loop='892' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='885' inner_loop='1'>",
+				"        </loop>",
+				"        <loop idx='886' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1207' name='idealLoop' stamp='2.319' live='491'/>",
+				"    </phase>",
+				"    <phase_done nodes='1345' name='optimizer' stamp='2.319' live='549'/>",
+				"  </phase>",
+				"  <phase nodes='1345' name='matcher' stamp='2.319' live='549'>",
+				"    <phase_done nodes='487' name='matcher' stamp='2.319' live='487'/>",
+				"  </phase>",
+				"  <phase nodes='605' name='regalloc' stamp='2.320' live='604'>",
+				"    <regalloc success='1' attempts='2'/>",
+				"    <phase_done nodes='759' name='regalloc' stamp='2.322' live='683'/>",
+				"  </phase>",
+				"  <phase nodes='759' name='output' stamp='2.322' live='683'>",
+				"    <phase_done nodes='789' name='output' stamp='2.322' live='695'/>",
+				"  </phase>",
+				"  <dependency x='831' ctxk='820' type='unique_concrete_method'/>",
+				"  <dependency x='830' ctxk='824' type='unique_concrete_method'/>",
+				"  <code_cache nmethods='186' free_code_cache='250226176' adapters='167' total_blobs='440' stamp='2.315'/>",
+				"  <task_done inlined_bytes='82' success='1' count='2' backedge_count='677167' stamp='2.322' nmsize='1256'/>",
+				"</task>"
+		};
+		
+		String[] bytecodeLines = new String[]{
+				"         0: iconst_0",
+				"         1: istore_2",
+				"         2: iload_2",
+				"         3: iload_1",
+				"         4: if_icmpge     26",
+				"         7: aload_0",
+				"         8: invokevirtual #18                 // Method org.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name.getOptionalName:()Ljava/util/Optional;",
+				"        11: invokevirtual #19                 // Method java/util/Optional.get:()Ljava/lang/Object;",
+				"        14: checkcast     #20                 // class java/lang/String",
+				"        17: putstatic     #21                 // Field NAME:Ljava/lang/String;",
+				"        20: iinc          2, 1",
+				"        23: goto          2",
+				"        26: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;",
+				"        29: new           #22                 // class java/lang/StringBuilder",
+				"        32: dup",
+				"        33: invokespecial #23                 // Method java/lang/StringBuilder.&quote<init>&quote:()V",
+				"        36: iload_1",
+				"        37: invokevirtual #24                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;",
+				"        40: ldc           #25                 // String  optional iterations",
+				"        42: invokevirtual #26                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;",
+				"        45: getstatic     #21                 // Field NAME:Ljava/lang/String;",
+				"        48: invokevirtual #26                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;",
+				"        51: invokevirtual #27                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;",
+				"        54: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V",
+				"        57: return"
+		};
+		
+		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.test.examples.OptionalTest", "countOptional", new Class[]{Class.forName("org.adoptopenjdk.jitwatch.test.examples.OptionalTest$Name"), int.class}, void.class);
+
+		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
+		
+		assertEquals(11, result.annotatedLineCount());
+
+		checkLine(result, 4, "taken", BCAnnotationType.BRANCH);
+		checkLine(result, 7, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		checkLine(result, 8, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 11, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 14, "class_check", BCAnnotationType.UNCOMMON_TRAP);
+		checkLine(result, 33, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 37, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 42, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 42, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		checkLine(result, 48, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 48, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		checkLine(result, 51, "(hot)", BCAnnotationType.INLINE_SUCCESS);
+		checkLine(result, 51, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		checkLine(result, 54, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		checkLine(result, 54, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+	}	
+	
+	*/
+	
 }

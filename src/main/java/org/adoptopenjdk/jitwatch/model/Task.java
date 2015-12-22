@@ -25,19 +25,12 @@ public class Task extends Tag
 	private static final Logger logger = LoggerFactory.getLogger(Task.class);
 
 	private IParseDictionary parseDictionary;
-	private CompilerName compiler;
 
-	public Task(String name, Map<String, String> attrs, boolean selfClosing, CompilerName compiler)
+	public Task(String name, Map<String, String> attrs, boolean selfClosing)
 	{
 		super(name, attrs, selfClosing);
 
-		this.compiler = compiler;
 		parseDictionary = new ParseDictionary();
-	}
-
-	public CompilerName getCompiler()
-	{
-		return compiler;
 	}
 
 	public IParseDictionary getParseDictionary()

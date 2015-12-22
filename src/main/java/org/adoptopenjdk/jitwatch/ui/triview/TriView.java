@@ -8,6 +8,8 @@ package org.adoptopenjdk.jitwatch.ui.triview;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_SIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
@@ -19,8 +21,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_SIZE;
 
 import java.util.List;
 
@@ -592,16 +592,18 @@ public class TriView extends Stage implements ITriView, ILineListener
 		comboAssemblyMethodList.clear();
 
 		List<AssemblyMethod> assemblyMethods = currentMember.getAssemblyMethods();
-		int numAssemblyMethod = assemblyMethods.size();
+		int numAssemblyMethods = assemblyMethods.size();
 
-		for (int i = 0; i < numAssemblyMethod; i++)
+		for (int i = 0; i < numAssemblyMethods; i++)
 		{
 			comboAssemblyMethodList.add("Compilation " + i + getCompilationDetail(i));
 		}
 
-		int selectedAssembly = numAssemblyMethod - 1;
+		int selectedAssembly = numAssemblyMethods - 1;
 		
 		comboAssemblyMethod.getSelectionModel().select(selectedAssembly);
+		
+		comboAssemblyMethod.setVisible(numAssemblyMethods > 0);
 
 		setAssemblyPaneContent(selectedAssembly);
 		
@@ -659,7 +661,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				if (compilation == tagIndex)
 				{
-					String nativeSize = tag.getAttribute(ATTR_SIZE);
+					String nativeSize = tag.getAttribute(ATTR_SIZE); // nmethod tag has size attr, task_done has nmsize
 					String compileMillis = tag.getAttribute(ATTR_COMPILE_MILLIS);
 					
 					memberInfo.setAssemblyDetails(nativeSize, compileMillis);
@@ -970,8 +972,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		Label label = viewerAssembly.getLabelAtIndex(index);
 
-		int sourceHighlight = -1;
-
 		if (label != null)
 		{
 			String className = viewerAssembly.getClassNameFromLabel(label);
@@ -979,19 +979,32 @@ public class TriView extends Stage implements ITriView, ILineListener
 			if (isClassNameEqualsCurrentMemberClassName(className) || isClassNameAnInnerClassOfCurrentMember(className))
 			{
 				String sourceLine = viewerAssembly.getSourceLineFromLabel(label);
+				String bci = viewerAssembly.getBytecodeOffsetFromLabel(label);
 
 				if (sourceLine != null)
 				{
 					try
 					{
-						sourceHighlight = Integer.parseInt(sourceLine) - 1;
-						highlightFromSource(sourceHighlight, MASK_UPDATE_BYTECODE);
-
+						int sourceHighlight = Integer.parseInt(sourceLine) - 1;
+						
 						viewerSource.highlightLine(sourceHighlight);
+						
+						if (bci != null)
+						{
+							try
+							{
+								int bciIndex = Integer.parseInt(bci);
+								viewerBytecode.highlightBytecodeOffset(bciIndex);
+							}
+							catch (NumberFormatException nfe)
+							{
+								logger.error("Could not parse bci: {}", bci, nfe);
+							}
+						}
 					}
 					catch (NumberFormatException nfe)
 					{
-						logger.error("Could not parse line number: {}", sourceLine, nfe);
+						logger.error("Could not parse source line number: {}", sourceLine, nfe);
 					}
 				}
 			}

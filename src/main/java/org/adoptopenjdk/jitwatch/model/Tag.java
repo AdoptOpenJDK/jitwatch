@@ -110,7 +110,7 @@ public class Tag
 	}
 
 	public List<Tag> getNamedChildrenWithAttribute(String tagName, String attrName, String attrValue)
-	{
+	{	
 		List<Tag> result = new ArrayList<>();
 
 		for (Tag child : children)
@@ -123,6 +123,7 @@ public class Tag
 				}
 			}
 		}
+		
 
 		return result;
 	}

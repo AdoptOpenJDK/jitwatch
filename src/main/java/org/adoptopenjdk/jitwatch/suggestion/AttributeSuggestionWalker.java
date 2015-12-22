@@ -333,7 +333,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			}
 			else if (methodTag.containsAttribute(ATTR_UNLOADED) && "1".equals(methodTag.getAttribute(ATTR_UNLOADED)))
 			{
-				logger.warn("method {} has unloaded attribute of 1", callee.toStringUnqualifiedMethodName(false));
+				logger.debug("method {} has unloaded attribute of 1", callee.toStringUnqualifiedMethodName(false));
 			}
 			else
 			{

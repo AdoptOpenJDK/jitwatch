@@ -5,9 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
@@ -19,7 +16,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_FRAGMENT
 
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -32,19 +28,8 @@ public class TagProcessor
 
 	private Tag currentTag;
 	private Tag topTag = null;
-	private CompilerName currentCompiler;
 	private boolean fragmentSeen;
 	
-	public void setCompiler(CompilerName compiler)
-	{
-		currentCompiler = compiler;
-	}
-
-	public CompilerName getCompiler()
-	{
-		return currentCompiler;
-	}
-
 	public String getTopTagName()
 	{
 		String result = null;
@@ -192,27 +177,12 @@ public class TagProcessor
 		String remainder = line.substring(indexEndName);
 
 		Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
-
-		if (attrs.containsKey(ATTR_COMPILER))
-		{
-			String compilerValue = attrs.get(ATTR_COMPILER);
-			
-			if (C1.equals(compilerValue))
-			{
-				currentCompiler = CompilerName.C1;
-			}
-			else if (C2.equals(compilerValue))
-			{
-				currentCompiler = CompilerName.C2;
-			}
-		}
-			
 		
 		Tag nextTag;
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			nextTag = new Task(name, attrs, selfClosing, currentCompiler);
+			nextTag = new Task(name, attrs, selfClosing);
 		}
 		else
 		{
