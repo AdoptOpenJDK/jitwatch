@@ -5,6 +5,18 @@
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
+import org.adoptopenjdk.jitwatch.ui.FileChooserList;
+import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -26,18 +38,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
-import org.adoptopenjdk.jitwatch.ui.FileChooserList;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SandboxConfigStage extends Stage
 {
 	private static final String DEFAULT_DISPLAY_STYLE = "-fx-padding:0px 8px 0px 0px";
@@ -57,7 +57,7 @@ public class SandboxConfigStage extends Stage
 
 	private Scene scene;
 
-	private static final int labelWidth = 150;
+	private static final int labelWidth = 160;
 
 	private static final Logger logger = LoggerFactory.getLogger(SandboxConfigStage.class);
 

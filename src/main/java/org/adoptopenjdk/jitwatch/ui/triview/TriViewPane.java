@@ -29,7 +29,7 @@ public class TriViewPane extends VBox
 		construct(parent, title, viewer, titleComponents);
 	}
 
-	private void construct(TriView parent, String title, final Viewer viewer, HBox titleComponents)
+	private void construct(final TriView parent, String title, final Viewer viewer, HBox titleComponents)
 	{
 		this.titleComponents = titleComponents;
 

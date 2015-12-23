@@ -51,7 +51,6 @@ import java.util.Map;
 import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
-import org.adoptopenjdk.jitwatch.model.CompilerName;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;

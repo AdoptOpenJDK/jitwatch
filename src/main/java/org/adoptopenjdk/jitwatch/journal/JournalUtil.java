@@ -23,8 +23,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALL
 
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.model.CompilerName;
-import org.adoptopenjdk.jitwatch.model.EliminatedAllocation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Journal;

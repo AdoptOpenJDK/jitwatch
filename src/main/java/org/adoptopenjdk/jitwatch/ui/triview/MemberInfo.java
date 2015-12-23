@@ -11,12 +11,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_MAX_INLINE_SIZE;
 
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public class MemberInfo extends HBox
 {
@@ -34,9 +34,9 @@ public class MemberInfo extends HBox
 
 	public MemberInfo()
 	{
-		double valueWidth = 125;
+		double valueWidth = 110;
 
-		setSpacing(20);
+		setSpacing(16);
 
 		VBox vBoxBytecode = new VBox();
 		VBox vBoxAssembly = new VBox();
@@ -67,7 +67,7 @@ public class MemberInfo extends HBox
 
 		lblBytecodeSize.setText("Bytecode size");
 		lblAssemblySize.setText("Native size");
-		lblCompileTime.setText("Compile time (ms)");
+		lblCompileTime.setText("Compile time");
 
 		setMember(null);
 
@@ -127,7 +127,7 @@ public class MemberInfo extends HBox
 	{	
 		lblAssemblySizeVal.setText(nativeSize == null ? NA : nativeSize);
 
-		lblCompileTimeVal.setText(compileMillis == null ? NA : compileMillis);
+		lblCompileTimeVal.setText(compileMillis == null ? NA : (compileMillis + "ms"));
 	}
 
 	private String getAttrOrNA(IMetaMember member, boolean compiled, String attribute)
@@ -149,6 +149,10 @@ public class MemberInfo extends HBox
 		if (result == null)
 		{
 			result = NA;
+		}
+		else if (ATTR_COMPILE_MILLIS.equals(attribute))
+		{
+			result += "ms";
 		}
 
 		return result;
