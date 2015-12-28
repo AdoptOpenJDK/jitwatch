@@ -7,9 +7,7 @@ package org.adoptopenjdk.jitwatch.test;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,6 +136,26 @@ public class TestBytecodeLoader
 		assertEquals(1, paramI4b.getValue());
 
 		assertEquals(false, i4.hasComment());
+	}
+	
+	@Test
+	public void testIloadW() {
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("1: iload_w       340").append(S_NEWLINE);
+
+		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
+		
+		assertEquals(1, instructions.size());
+		
+		BytecodeInstruction i = instructions.get(0);
+		assertEquals(1, i.getOffset());
+		assertEquals(Opcode.ILOAD, i.getOpcode());
+		assertEquals(true, i.hasParameters());
+		assertEquals(1, i.getParameters().size());
+		
+		BCParamNumeric varIndex = (BCParamNumeric) i.getParameters().get(0);
+		assertEquals(Integer.valueOf(340), varIndex.getValue());
 	}
 
 	@Test
@@ -636,7 +654,7 @@ public class TestBytecodeLoader
 		String className = "java.io.PrintStream";
 		String methodName = "print";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class }, void.class);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[]{java.lang.String.class}, void.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
 
