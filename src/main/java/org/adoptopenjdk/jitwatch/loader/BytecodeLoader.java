@@ -705,6 +705,10 @@ public final class BytecodeLoader
 						String paramString = matcher.group(3);
 						String comment = matcher.group(4);
 
+						if(mnemonic.endsWith("_w")) {
+							mnemonic = mnemonic.substring(0, mnemonic.length() - "_w".length());
+						}
+
 						instruction.setOffset(Integer.parseInt(offset));
 						instruction.setOpcode(Opcode.getOpcodeForMnemonic(mnemonic));
 
