@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -236,6 +236,7 @@ public final class JITWatchConstants
 	public static final String S_XML_DOCTYPE_START = "<!DOCTYPE";
 	public static final String S_BYTECODE_METHOD_COMMENT = "// Method";
 	public static final String S_BYTECODE_INTERFACEMETHOD_COMMENT = "// InterfaceMethod";
+	public static final String S_BYTECODE_INVOKEDYNAMIC_COMMENT = "// InvokeDynamic";
 	public static final String S_DEFAULT = "default";
 	public static final String S_FILE_COLON = "file:";
 	public static final String S_DOT_CLASS = ".class";

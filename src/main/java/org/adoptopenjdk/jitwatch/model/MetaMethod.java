@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,10 +18,11 @@ public class MetaMethod extends AbstractMetaMember
 
     public MetaMethod(Method method, MetaClass methodClass)
     {
+    	super(method.getName());
+    	
         this.methodToString = method.toString();
         this.metaClass = methodClass;
 
-        memberName = method.getName();
         returnType = method.getReturnType();
         paramTypes = Arrays.asList(method.getParameterTypes());
 
@@ -38,12 +39,7 @@ public class MetaMethod extends AbstractMetaMember
         	logger.debug("Created MetaMethod: {}", toString());
         }
     }
-    
-    public void setMemberName(String name)
-    {
-    	this.memberName = name;
-    }
-    
+
     public void setParamTypes(List<Class<?>> types)
     {
     	this.paramTypes = types;

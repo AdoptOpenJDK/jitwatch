@@ -234,6 +234,11 @@ public final class StringUtil
 
 		return result;
 	}
+	
+	public static String getUnqualifiedMemberName(String memberName)
+	{
+		return getUnqualifiedClassName(memberName);
+	}
 
 	public static String getPackageName(String fqClassName)
 	{

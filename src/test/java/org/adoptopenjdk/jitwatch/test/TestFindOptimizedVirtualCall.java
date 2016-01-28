@@ -336,7 +336,7 @@ public class TestFindOptimizedVirtualCall
 
 		MemberSignatureParts mspTest1 = MemberSignatureParts.fromBytecodeSignature(fqClassName, bcSigTest1);
 		MemberSignatureParts mspTest2 = MemberSignatureParts.fromBytecodeSignature(fqClassName, bcSigTest2);
-
+		
 		IMetaMember memberTest1 = metaClass.getMemberForSignature(mspTest1);
 		IMetaMember memberTest2 = metaClass.getMemberForSignature(mspTest2);
 

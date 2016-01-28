@@ -8,7 +8,7 @@ package org.adoptopenjdk.jitwatch.model.bytecode;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum Opcode
+public enum Opcode implements Comparable<Opcode>
 {
 	NOP(0,"nop"),
 	ACONST_NULL(1,"aconst_null"),
@@ -248,5 +248,10 @@ public enum Opcode
 	public static Opcode getOpcodeForMnemonic(String mnemonic)
 	{
 		return opcodeMap.get(mnemonic);
+	}
+	
+	public boolean equals(String mnemonic)
+	{
+		return this.mnemonic.equals(mnemonic);
 	}
 }

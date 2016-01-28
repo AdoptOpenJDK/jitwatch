@@ -420,7 +420,7 @@ public class TestBytecodeLoader
 		MetaClass metaClass = UnitTestUtil.createMetaClassFor(model, getClass().getName());
 
 		IMetaMember constructor = metaClass.getFirstConstructor();
-
+		
 		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode(constructor);
 
 		assertNotNull(memberBytecode2);

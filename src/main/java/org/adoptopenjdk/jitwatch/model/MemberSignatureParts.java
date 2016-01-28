@@ -1,18 +1,16 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUESTION;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
@@ -21,7 +19,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHES
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
@@ -87,8 +84,8 @@ public class MemberSignatureParts
 		paramTypeList = new ArrayList<>();
 		modifier = 0;
 	}
-	
-	//TODO really???
+
+	// TODO really???
 	public void setClassBC(ClassBC classBytecode)
 	{
 		this.classBytecode = classBytecode;
@@ -98,14 +95,16 @@ public class MemberSignatureParts
 	{
 		if (msp.memberName != null)
 		{
-			
-			
-			
 			// Constructors will return void for returnType
 			if (S_CONSTRUCTOR_INIT.equals(msp.memberName) || msp.memberName.equals(msp.fullyQualifiedClassName))
 			{
-				msp.memberName = msp.fullyQualifiedClassName;
+				msp.memberName = StringUtil.getUnqualifiedClassName(msp.fullyQualifiedClassName);
 				msp.returnType = Void.TYPE.getName();
+
+				if (DEBUG_LOGGING)
+				{
+					logger.debug("Found constructor: {} ", msp.memberName);
+				}
 			}
 		}
 		else
@@ -169,12 +168,9 @@ public class MemberSignatureParts
 	// TODO unit test me!
 	public static MemberSignatureParts fromBytecodeComment(String toParse) throws LogParseException
 	{
-		String replace1 = toParse.replace(C_DOT, C_SPACE);
-		String replace2 = replace1.replace(C_COLON, C_SPACE);
-		String replace3 = replace2.replace(C_SLASH, C_DOT);
-		String replace4 = replace3.replace(S_DOUBLE_QUOTE, S_EMPTY);
+		String logCompilationSignature = ParseUtil.bytecodeCommentSignatureToLogCompilationSignature(toParse);
 
-		return fromLogCompilationSignature(replace4);
+		return fromLogCompilationSignature(logCompilationSignature);
 	}
 
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
@@ -212,8 +208,8 @@ public class MemberSignatureParts
 		builder.append(regexParams);
 		builder.append(regexRest);
 
-		//logger.info("\n{}\n{}", toParse, builder);
-		
+		// logger.info("\n{}\n{}", toParse, builder);
+
 		final Pattern patternBytecodeSignature = Pattern.compile(builder.toString());
 
 		Matcher matcher = patternBytecodeSignature.matcher(toParse);
@@ -485,7 +481,7 @@ public class MemberSignatureParts
 				result = classBytecode.getGenericsMap().get(typeName);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -503,7 +499,7 @@ public class MemberSignatureParts
 	{
 		return fullyQualifiedClassName;
 	}
-	
+
 	public String getPackageName()
 	{
 		return StringUtil.getAbbreviatedFQName(getFullyQualifiedClassName());
@@ -518,7 +514,6 @@ public class MemberSignatureParts
 
 		if (modifierList.size() > 0)
 		{
-
 			for (String mod : modifierList)
 			{
 				sb.append(mod).append(C_COMMA);
@@ -533,7 +528,6 @@ public class MemberSignatureParts
 
 		if (genericsMap.size() > 0)
 		{
-
 			for (Map.Entry<String, String> entry : genericsMap.entrySet())
 			{
 				if (entry.getValue() != null)
@@ -564,7 +558,6 @@ public class MemberSignatureParts
 
 		if (paramTypeList.size() > 0)
 		{
-
 			for (String param : paramTypeList)
 			{
 				sb.append(param).append(C_COMMA);
@@ -572,6 +565,27 @@ public class MemberSignatureParts
 
 			sb.deleteCharAt(sb.length() - 1);
 		}
+
+		return sb.toString();
+	}
+
+	public String toStringSingleLine()
+	{
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(fullyQualifiedClassName).append(C_DOT).append(memberName).append(S_OPEN_PARENTHESES);
+
+		if (paramTypeList.size() > 0)
+		{
+			for (String param : paramTypeList)
+			{
+				sb.append(param).append(C_COMMA);
+			}
+
+			sb.deleteCharAt(sb.length() - 1);
+		}
+
+		sb.append(S_CLOSE_PARENTHESES);
 
 		return sb.toString();
 	}

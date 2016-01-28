@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -54,7 +54,7 @@ public class TestMemberSignatureParts
 		assertEquals(0, modListBC.size());
 		assertEquals(0, mspBC.getGenerics().size());
 		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
-		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals("String", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 
 		checkSame(mspBC, mspLog);
@@ -75,7 +75,7 @@ public class TestMemberSignatureParts
 		assertEquals("public", modListBC.get(0));
 		assertEquals(0, mspBC.getGenerics().size());
 		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
-		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals("String", mspBC.getMemberName());
 		assertEquals(0, mspBC.getParamTypes().size());
 
 		checkSame(mspBC, mspLog);
@@ -96,7 +96,7 @@ public class TestMemberSignatureParts
 		assertEquals("public", modListBC.get(0));
 		assertEquals(0, mspBC.getGenerics().size());
 		assertEquals(S_TYPE_NAME_VOID, mspBC.getReturnType());
-		assertEquals("java.lang.String", mspBC.getMemberName());
+		assertEquals("String", mspBC.getMemberName());
 		assertEquals(2, mspBC.getParamTypes().size());
 
 		List<String> paramTypeListBC = mspBC.getParamTypes();

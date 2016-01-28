@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,6 +12,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP_COMPLETED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OBJECT_REF;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
@@ -29,6 +31,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLASS_AUTOGENER
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
@@ -78,14 +81,14 @@ public final class ParseUtil
 	// class<SPACE>METHOD<SPACE>(PARAMS)RETURN
 
 	// http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2
-	public static String CLASS_NAME_REGEX_GROUP = "([^;\\[/<>]+)";
+	public static String CLASS_NAME_REGEX_GROUP = "([\\p{L}0-9$=_{};\\.\\[/<>]+)";
 	public static String METHOD_NAME_REGEX_GROUP = "([^;\\[/]+)";
 
 	public static String PARAM_REGEX_GROUP = "(\\(.*\\))";
 	public static String RETURN_REGEX_GROUP = "(.*)";
 
-	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern.compile("^" + CLASS_NAME_REGEX_GROUP + " "
-			+ METHOD_NAME_REGEX_GROUP + " " + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
+	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
+			.compile("^" + CLASS_NAME_REGEX_GROUP + " " + METHOD_NAME_REGEX_GROUP + " " + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';
@@ -264,8 +267,12 @@ public final class ParseUtil
 			String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
 			String returnType = matcher.group(4);
 
-			return new String[] { className, methodName, paramTypes, returnType };
+			return new String[] {
+					className, methodName, paramTypes, returnType
+			};
 		}
+		
+		logger.debug("Could not apply {} to {}", PATTERN_LOG_SIGNATURE, logSignature);
 
 		throw new LogParseException("Could not split signature with regex: '" + logSignature + C_QUOTE);
 	}
@@ -291,20 +298,16 @@ public final class ParseUtil
 
 	public static Class<?>[] getClassTypes(String typesString) throws LogParseException
 	{
-		List<Class<?>> classes = new ArrayList<Class<?>>();
+		List<Class<?>> classes = null;
 
-		if (typesString.length() > 0)
+		try
 		{
-			try
-			{
-				findClassesForTypeString(typesString, classes);
-			}
-			catch (Throwable t)
-			{
-				throw new LogParseException("Could not parse types: " + typesString, t);
-			}
-
-		} // end if empty
+			classes = findClassesForTypeString(typesString);
+		}
+		catch (Throwable t)
+		{
+			throw new LogParseException("Could not parse types: " + typesString, t);
+		}
 
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
@@ -608,12 +611,9 @@ public final class ParseUtil
 		return count;
 	}
 
-	/*
-	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
-	 */
-	private static void findClassesForTypeString(final String typesString, List<Class<?>> classes) throws ClassNotFoundException
+	public static List<String> parseTypeString(final String typesString)
 	{
-		// logger.debug("Parsing: {}", typesString);
+		List<String> result = new ArrayList<>();
 
 		String toParse = typesString.replace(C_SLASH, C_DOT);
 
@@ -668,8 +668,7 @@ public final class ParseUtil
 					pos++;
 				}
 
-				Class<?> arrayClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-				classes.add(arrayClass);
+				result.add(builder.toString());
 				builder.delete(0, builder.length());
 				break;
 			case C_OBJECT_REF:
@@ -687,19 +686,47 @@ public final class ParseUtil
 
 					builder.append(c);
 				}
-				Class<?> refClass = ClassUtil.loadClassWithoutInitialising(builder.toString());
-				classes.add(refClass);
+				result.add(builder.toString());
 				builder.delete(0, builder.length());
 				break;
 			default:
 				// primitive
-				Class<?> primitiveClass = ParseUtil.getPrimitiveClass(c);
-				classes.add(primitiveClass);
+				result.add(Character.toString(c));
 				pos++;
 
 			} // end switch
 
 		} // end while
+
+		return result;
+	}
+
+	/*
+	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
+	 */
+	public static List<Class<?>> findClassesForTypeString(final String typesString) throws ClassNotFoundException
+	{
+		List<Class<?>> result = new ArrayList<>();
+
+		List<String> typeNames = parseTypeString(typesString);
+
+		for (String typeName : typeNames)
+		{
+			Class<?> clazz = null;
+
+			if (typeName.length() == 1)
+			{
+				clazz = getPrimitiveClass(typeName.charAt(0));
+			}
+			else
+			{
+				clazz = ClassUtil.loadClassWithoutInitialising(typeName);
+			}
+
+			result.add(clazz);
+		}
+
+		return result;
 	}
 
 	public static String findBestMatchForMemberSignature(IMetaMember member, List<String> lines)
@@ -747,8 +774,8 @@ public final class ParseUtil
 						logger.debug("Comparing {} with {}", line, member);
 					}
 
-					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass()
-							.getFullyQualifiedName(), line);
+					MemberSignatureParts msp = MemberSignatureParts
+							.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
 
 					if (!memberName.equals(msp.getMemberName()))
 					{
@@ -801,6 +828,7 @@ public final class ParseUtil
 	private static boolean compareTypeEquality(String memberTypeName, String inMspTypeName, Map<String, String> genericsMap)
 	{
 		String mspTypeName = inMspTypeName;
+
 		if (memberTypeName != null && memberTypeName.equals(mspTypeName))
 		{
 			return true;
@@ -812,7 +840,9 @@ public final class ParseUtil
 			// java.lang.Object> T[] copyOf(U[], int, java.lang.Class<? extends
 			// T[]>)";
 			// U[] -> java.lang.Object[]
+
 			String mspTypeNameWithoutArray = getParamTypeWithoutArrayBrackets(mspTypeName);
+
 			String genericSubstitution = genericsMap.get(mspTypeNameWithoutArray);
 
 			if (genericSubstitution != null)
@@ -951,8 +981,8 @@ public final class ParseUtil
 
 			if (metaClass != null)
 			{
-				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName,
-						returnType, argumentTypes);
+				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName, returnType,
+						argumentTypes);
 
 				result = metaClass.getMemberForSignature(msp);
 			}
@@ -1064,7 +1094,54 @@ public final class ParseUtil
 		return result;
 	}
 
-	private static boolean commentMethodHasNoClassPrefix(String comment)
+	public static String bytecodeMethodCommentToReadableString(String className, String comment)
+	{		
+		StringBuilder builder = new StringBuilder();
+
+		if (bytecodeMethodCommentHasNoClassPrefix(comment))
+		{
+			comment = className.replace(S_DOT,  S_SLASH) + C_DOT + comment;
+		}
+
+		String logCompilationSignature = bytecodeCommentSignatureToLogCompilationSignature(comment);
+
+		try
+		{
+			String[] parts = ParseUtil.splitLogSignatureWithRegex(logCompilationSignature);
+
+			String fullyQualifiedClassName = parts[0];
+			String memberName = parts[1];
+			String paramTypes = parts[2];
+
+			builder.append(fullyQualifiedClassName).append(S_DOT);
+			builder.append(memberName).append(S_OPEN_PARENTHESES);
+
+			List<String> paramTypeNames = parseTypeString(paramTypes);
+
+			if (paramTypeNames.size() > 0)
+			{
+				for (String paramTypeName : paramTypeNames)
+				{
+
+					builder.append(expandParameterType(paramTypeName));
+
+					builder.append(C_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
+
+			builder.append(S_CLOSE_PARENTHESES);
+		}
+		catch (LogParseException e)
+		{
+			e.printStackTrace();			
+		}
+
+		return builder.toString();
+	}
+
+	public static boolean bytecodeMethodCommentHasNoClassPrefix(String comment)
 	{
 		return (comment.indexOf(C_DOT) == -1);
 	}
@@ -1076,6 +1153,12 @@ public final class ParseUtil
 		currentClass = currentClass.replace(C_DOT, C_SLASH);
 
 		return currentClass + C_DOT + comment;
+	}
+
+	public static String bytecodeCommentSignatureToLogCompilationSignature(String bytcodeCommentSignature)
+	{
+		return bytcodeCommentSignature.replace(C_DOT, C_SPACE).replace(C_COLON, C_SPACE).replace(C_SLASH, C_DOT)
+				.replace(S_DOUBLE_QUOTE, S_EMPTY);
 	}
 
 	public static IMetaMember getMemberFromBytecodeComment(IReadOnlyJITDataModel model, IMetaMember currentMember,
@@ -1094,7 +1177,7 @@ public final class ParseUtil
 
 			if (comment != null)
 			{
-				if (commentMethodHasNoClassPrefix(comment) && currentMember != null)
+				if (bytecodeMethodCommentHasNoClassPrefix(comment) && currentMember != null)
 				{
 					comment = prependCurrentMember(comment, currentMember);
 				}

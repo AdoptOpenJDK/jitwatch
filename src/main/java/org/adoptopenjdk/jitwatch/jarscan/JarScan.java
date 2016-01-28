@@ -1,35 +1,51 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.jarscan;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT_CLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.adoptopenjdk.jitwatch.jarscan.bytecodefrequency.BytecodeFrequencyTree;
+import org.adoptopenjdk.jitwatch.jarscan.chains.ChainCounter;
+import org.adoptopenjdk.jitwatch.jarscan.freqinline.FreqInlineCounter;
+import org.adoptopenjdk.jitwatch.jarscan.invokecounter.InvokeCounter;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-
-public final class JarScan
+public class JarScan
 {
-	private JarScan()
+	private List<IJarScanOperation> operations = new ArrayList<>();
+
+	private Writer writer;
+
+	public JarScan(Writer writer)
 	{
+		this.writer = writer;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static void iterateJar(File jarFile, int maxMethodBytes, PrintWriter writer) throws IOException
+	public void addOperation(IJarScanOperation op)
+	{
+		operations.add(op);
+	}
+
+	public void iterateJar(File jarFile) throws IOException
 	{
 		List<String> classLocations = new ArrayList<>();
 
@@ -37,6 +53,7 @@ public final class JarScan
 
 		try (ZipFile zip = new ZipFile(jarFile))
 		{
+			@SuppressWarnings("unchecked")
 			Enumeration<ZipEntry> list = (Enumeration<ZipEntry>) zip.entries();
 
 			while (list.hasMoreElements())
@@ -47,15 +64,28 @@ public final class JarScan
 
 				if (name.endsWith(S_DOT_CLASS))
 				{
-					String fqName = name.replace(S_SLASH, S_DOT).substring(0, name.length() - 6);
+					String fqName = name.replace(S_SLASH, S_DOT).substring(0, name.length() - S_DOT_CLASS.length());
 
-					process(classLocations, fqName, maxMethodBytes, writer);
+					process(classLocations, fqName);
 				}
 			}
 		}
+
+		createReport();
 	}
 
-	private static void process(List<String> classLocations, String className, int maxMethodBytes, PrintWriter writer)
+	private void createReport() throws IOException
+	{
+		for (IJarScanOperation op : operations)
+		{
+			String report = op.getReport();
+
+			writer.write(report);
+			writer.flush();
+		}
+	}
+
+	private void process(List<String> classLocations, String className)
 	{
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, className);
 
@@ -63,33 +93,18 @@ public final class JarScan
 		{
 			for (MemberBytecode memberBytecode : classBytecode.getMemberBytecodeList())
 			{
-				List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
-
-				if (instructions != null && instructions.size() > 0)
+				for (IJarScanOperation op : operations)
 				{
-					BytecodeInstruction lastInstruction = instructions.get(instructions.size() - 1);
-
-					// final instruction is a return for 1 byte
-					int bcSize = 1 + lastInstruction.getOffset();
-
-					MemberSignatureParts msp = memberBytecode.getMemberSignatureParts();
-
-					if (bcSize >= maxMethodBytes && !S_STATIC_INIT.equals(msp.getMemberName()))
+					try
 					{
-						writer.print(C_DOUBLE_QUOTE);
-						writer.print(className);
-						writer.print(C_DOUBLE_QUOTE);
-						writer.print(C_COMMA);
-
-						writer.print(C_DOUBLE_QUOTE);
-						writer.print(msp.getMemberName());
-						writer.print(C_DOUBLE_QUOTE);
-						writer.print(C_COMMA);
-
-						writer.print(bcSize);
-						writer.println();
-
-						writer.flush();
+						op.processInstructions(className, memberBytecode);
+					}
+					catch (Exception e)
+					{
+						System.err.println("Could not process " + className + " " + memberBytecode.getMemberSignatureParts().getMemberName());
+						System.err.println(memberBytecode.toString());
+						e.printStackTrace();
+						System.exit(-1);
 					}
 				}
 			}
@@ -101,23 +116,68 @@ public final class JarScan
 		}
 	}
 
+	private static void showUsage()
+	{
+		System.err.println("JarScan [options] <jar> [jar]...");
+		System.err.println("Options:");
+		System.err.println("-DmaxMethodSize=n\t\t\tFind methods with bytecode larger than n bytes");
+		System.err.println("-DmaxBytecodeChain=n\t\t\tCount bytecode chains of length n");
+		System.err.println("-DmaxFrequencyTreeChildren=n\t\t\tFind the n most frequent next bytecodes");
+		System.err.println("-DinvokeCount\t\t\tCount methods by invoke type");
+	}
+
 	public static void main(String[] args) throws IOException
 	{
-		int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
+		if (args.length == 0)
+		{
+			showUsage();
+			System.exit(-1);
+		}
 
-		PrintWriter writer = new PrintWriter(System.out);
+		Writer writer = new PrintWriter(System.out);
+
+		JarScan scanner = new JarScan(writer);
+
+		if (System.getProperty("maxMethodSize") != null)
+		{
+			int maxMethodBytes = Integer.getInteger("maxMethodSize");
+			scanner.addOperation(new FreqInlineCounter(maxMethodBytes));
+		}
+		else if (System.getProperty("maxBytecodeChain") != null)
+		{
+			int maxBytecodeChain = Integer.getInteger("maxBytecodeChain");
+			scanner.addOperation(new ChainCounter(maxBytecodeChain));
+		}
+		else if (System.getProperty("maxFrequencyTreeChildren") != null)
+		{
+			int maxFrequencyTreeChildren = Integer.getInteger("maxFrequencyTreeChildren");
+
+			scanner.addOperation(new BytecodeFrequencyTree(maxFrequencyTreeChildren));
+		}
+		else if (System.getProperty("invokeCount") != null)
+		{
+			scanner.addOperation(new InvokeCounter());
+		}
+
+		if (scanner.operations.size() == 0)
+		{
+			// default mode is to report methods > 325 bytes
+			int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
+			scanner.addOperation(new FreqInlineCounter(maxMethodBytes));
+		}
 
 		for (String jar : args)
 		{
 			File jarFile = new File(jar);
 
-			writer.print(jarFile.getAbsolutePath());
+			writer.write(jarFile.getAbsolutePath());
 
-			writer.println(C_COLON);
+			writer.write(C_COLON);
+			writer.write(S_NEWLINE);
 
-			iterateJar(jarFile, maxMethodBytes, writer);
+			scanner.iterateJar(jarFile);
 
-			writer.println();
+			writer.write(S_NEWLINE);
 		}
 
 		writer.flush();

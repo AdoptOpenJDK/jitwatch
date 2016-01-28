@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -223,7 +223,7 @@ public class TestParseUtil
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("java.lang.Object <init> ()V");
 
 		assertEquals("java.lang.Object", msp.getFullyQualifiedClassName());
-		assertEquals("java.lang.Object", msp.getMemberName());
+		assertEquals("Object", msp.getMemberName());
 		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
 		assertEquals(0, msp.getParamTypes().size());
 	}
@@ -270,6 +270,30 @@ public class TestParseUtil
 		assertEquals("int", msp.getParamTypes().get(3));
 	}
 
+	@Test
+	public void testMemberSignaturePartsClassIsArrayClone() throws LogParseException
+	{
+		MemberSignatureParts msp = MemberSignatureParts
+				.fromLogCompilationSignature("[Ljava.lang.String; clone ()Ljava.lang.Object;");
+
+		assertEquals("[Ljava.lang.String;", msp.getFullyQualifiedClassName());
+		assertEquals("clone", msp.getMemberName());
+		assertEquals("java.lang.Object", msp.getReturnType());
+		assertEquals(0, msp.getParamTypes().size());
+	}
+	
+	@Test
+	public void testMemberSignaturePartsClassHasUnderscores() throws LogParseException
+	{
+		MemberSignatureParts msp = MemberSignatureParts
+				.fromLogCompilationSignature("org.omg.CORBA_2_3.portable.ObjectImpl <init> ()V");
+
+		assertEquals("org.omg.CORBA_2_3.portable.ObjectImpl", msp.getFullyQualifiedClassName());
+		assertEquals("ObjectImpl", msp.getMemberName());
+		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
+		assertEquals(0, msp.getParamTypes().size());
+	}	
+	
 	// test varargs method
 	public void doSomethingWithVarArgs(String... args)
 	{

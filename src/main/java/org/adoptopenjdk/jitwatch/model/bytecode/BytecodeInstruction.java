@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,7 +11,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_BRACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_INTERFACEMETHOD_COMMENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_METHOD_COMMENT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_INVOKEDYNAMIC_COMMENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_BRACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +35,17 @@ public class BytecodeInstruction
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeInstruction.class);
 
 	private boolean isEliminated = false;
-	
+
 	public void setEliminated(boolean eliminated)
 	{
 		isEliminated = eliminated;
 	}
-	
+
 	public boolean isEliminated()
 	{
 		return isEliminated;
 	}
-	
+
 	public int getOffset()
 	{
 		return offset;
@@ -84,25 +86,42 @@ public class BytecodeInstruction
 		return comment;
 	}
 
+	//TODO unit test INDY
 	public String getCommentWithMemberPrefixStripped()
 	{
-		if (comment != null && comment.startsWith(S_BYTECODE_METHOD_COMMENT))
+		String stripped = comment;
+
+		if (comment != null)
 		{
-			return comment.substring(S_BYTECODE_METHOD_COMMENT.length()).trim();
+			if (comment.startsWith(S_BYTECODE_METHOD_COMMENT))
+			{
+				return comment.substring(S_BYTECODE_METHOD_COMMENT.length()).trim();
+			}
+			else if (comment.startsWith(S_BYTECODE_INTERFACEMETHOD_COMMENT))
+			{
+				return comment.substring(S_BYTECODE_INTERFACEMETHOD_COMMENT.length()).trim();
+			}
+			else if (comment.startsWith(S_BYTECODE_INVOKEDYNAMIC_COMMENT))
+			{
+				// InvokeDynamic #1:run:(Ljavafx/embed/swt/FXCanvas$HostContainer;)Ljava/lang/Runnable;
+				
+				int firstColon = comment.indexOf(C_COLON);
+				
+				if (firstColon != -1)
+				{
+					stripped = comment.substring(firstColon+1, comment.length());
+				}
+			}
 		}
-		else if (comment != null && comment.startsWith(S_BYTECODE_INTERFACEMETHOD_COMMENT))
-		{
-			return comment.substring(S_BYTECODE_INTERFACEMETHOD_COMMENT.length()).trim();
-		}
-		else
-		{
-			return comment;
-		}
+
+		return stripped;
+
 	}
 
 	public void setComment(String comment)
 	{
 		this.comment = comment;
+		
 		hasComment = true;
 	}
 
@@ -119,15 +138,13 @@ public class BytecodeInstruction
 
 	public boolean isInvoke()
 	{
-		return opcode != null
-				&& (opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
+		return opcode != null && (opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
 				|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC);
-
 	}
-	
+
 	public boolean isLock()
 	{
-		return opcode != null && opcode ==Opcode.MONITORENTER;
+		return opcode != null && opcode == Opcode.MONITORENTER;
 	}
 
 	public boolean isSwitch()
@@ -146,6 +163,20 @@ public class BytecodeInstruction
 		}
 
 		return result;
+	}
+
+	public String toStringComplete()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < getLabelLines(); i++)
+		{
+			builder.append(toString(1000, i)).append(S_NEWLINE);
+		}
+
+		builder.deleteCharAt(builder.length() - 1);
+
+		return builder.toString();
 	}
 
 	public String toString(int maxOffset, int line)
@@ -171,12 +202,7 @@ public class BytecodeInstruction
 		if (opcode != null)
 		{
 			String mnemonic = opcode.getMnemonic();
-			
-//			if (isEliminated)
-//			{
-//				mnemonic = "(" + mnemonic + ")";
-//			}
-				
+
 			toStringBuilder.append(StringUtil.alignLeft(mnemonic, 16));
 		}
 

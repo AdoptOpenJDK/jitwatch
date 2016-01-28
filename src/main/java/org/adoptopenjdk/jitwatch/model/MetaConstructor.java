@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class MetaConstructor extends AbstractMetaMember
 {
@@ -18,11 +19,13 @@ public class MetaConstructor extends AbstractMetaMember
 
 	public MetaConstructor(Constructor<?> constructor, MetaClass methodClass)
 	{
+		super(StringUtil.getUnqualifiedMemberName(constructor.getName()));
+		
 		this.constructorToString = constructor.toString();
 		this.metaClass = methodClass;
 
 		returnType = Void.TYPE;
-		memberName = constructor.getName();
+		
 		paramTypes = Arrays.asList(constructor.getParameterTypes());
 		modifier = constructor.getModifiers();
 

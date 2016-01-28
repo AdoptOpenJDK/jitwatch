@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
@@ -42,11 +41,7 @@ public class UnitTestUtil
 
 		try
 		{
-			helper = new HelperMetaMethod(java.lang.String.class.getDeclaredMethod("length", new Class<?>[0]), metaClass);
-
-			helper.setMemberName(methodName);
-			helper.setParamTypes(Arrays.asList(params));
-			helper.setReturnType(returnType);
+			helper = new HelperMetaMethod(methodName, metaClass, params, returnType);
 		}
 		catch (NoSuchMethodException | SecurityException e)
 		{

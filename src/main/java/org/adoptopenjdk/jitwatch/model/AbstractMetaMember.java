@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -66,10 +66,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected boolean isVarArgs = false;
 	protected boolean isPolymorphicSignature = false;
 	protected int modifier; // bitset
-	protected String memberName;
+	private String memberName;
 	protected Class<?> returnType;
 	protected List<Class<?>> paramTypes;
 
+	public AbstractMetaMember(String memberName)
+	{
+		this.memberName = memberName;
+	}
+	
 	protected void checkPolymorphicSignature(Method method)
 	{
 		for (Annotation anno : method.getAnnotations())
@@ -116,10 +121,17 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
-			logger.debug("Name: '{}' v '{}'", memberName, msp.getMemberName());
+			logger.debug("nameMatches this.memberName: '{}' fq: '{}' other '{}' fq: '{}'", memberName, getFullyQualifiedMemberName(), msp.getMemberName(), msp.getFullyQualifiedClassName());
 		}
+		
+		boolean match =  memberName.equals(msp.getMemberName());
 
-		return memberName.equals(msp.getMemberName());
+		if (DEBUG_LOGGING_SIG_MATCH)
+		{
+			logger.debug("nameMatches {}", match);
+		}
+		
+		return match;
 	}
 
 	private boolean returnTypeMatches(MemberSignatureParts msp) throws ClassNotFoundException

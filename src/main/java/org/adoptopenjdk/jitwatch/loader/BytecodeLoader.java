@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -108,7 +108,7 @@ public final class BytecodeLoader
 	}
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
-	{		
+	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
@@ -140,7 +140,7 @@ public final class BytecodeLoader
 		if (byteCodeString != null)
 		{
 			String[] bytecodeLines = byteCodeString.split(S_NEWLINE);
-			
+
 			try
 			{
 				result = parse(fqClassName, bytecodeLines);
@@ -705,7 +705,9 @@ public final class BytecodeLoader
 						String paramString = matcher.group(3);
 						String comment = matcher.group(4);
 
-						if(mnemonic.endsWith("_w")) {
+						if (mnemonic.endsWith("_w") && !Opcode.GOTO_W.equals(mnemonic) && !Opcode.JSR_W.equals(mnemonic)
+								&& !Opcode.LDC_W.equals(mnemonic) && !Opcode.LDC2_W.equals(mnemonic))
+						{
 							mnemonic = mnemonic.substring(0, mnemonic.length() - "_w".length());
 						}
 
