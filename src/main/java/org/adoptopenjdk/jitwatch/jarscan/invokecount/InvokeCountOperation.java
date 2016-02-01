@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.invokecounter;
+package org.adoptopenjdk.jitwatch.jarscan.invokecount;
 
 import java.util.List;
 import org.adoptopenjdk.jitwatch.jarscan.IJarScanOperation;
@@ -12,25 +12,27 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
-public class InvokeCounter implements IJarScanOperation
+public class InvokeCountOperation implements IJarScanOperation
 {
 	private OpcodeInvokeCountMap opcodeInvokeCountMap;
 
-	public InvokeCounter()
+	private int limitPerInvoke;
+	
+	public InvokeCountOperation(int limitPerInvoke)
 	{
 		opcodeInvokeCountMap = new OpcodeInvokeCountMap();
+		
+		this.limitPerInvoke = limitPerInvoke;
 	}
 
 	@Override
 	public String getReport()
 	{
-		return opcodeInvokeCountMap.toString();
+		return opcodeInvokeCountMap.toString(limitPerInvoke);
 	}
 	
 	private void count(String className, BytecodeInstruction instruction)
-	{	
-		//System.out.println(className + " == " + instruction.getComment());
-		
+	{			
 		String comment = instruction.getCommentWithMemberPrefixStripped();
 		
 		String methodSig = ParseUtil.bytecodeMethodCommentToReadableString(className, comment);

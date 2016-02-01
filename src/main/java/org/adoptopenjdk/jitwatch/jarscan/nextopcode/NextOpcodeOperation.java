@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.bytecodefrequency;
+package org.adoptopenjdk.jitwatch.jarscan.nextopcode;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -12,17 +12,17 @@ import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.jarscan.chains.ChainCounter;
-import org.adoptopenjdk.jitwatch.jarscan.chains.OpcodeSequence;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.OpcodeSequence;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-public class BytecodeFrequencyTree extends ChainCounter
+public class NextOpcodeOperation extends SequenceCountOperation
 {
 	private Map<Opcode, NextBytecodeList> nextBytecodeMap;
 
 	private int maxChildren = 0;
 
-	public BytecodeFrequencyTree(int maxChildren)
+	public NextOpcodeOperation(int maxChildren)
 	{
 		super(2);
 

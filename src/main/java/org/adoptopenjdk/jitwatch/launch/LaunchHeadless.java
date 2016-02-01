@@ -118,9 +118,8 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			System.err.println("-s\tShow code suggestions");
 			System.err.println("-t\tShow compilation timeline");
 			System.err.println("-f\tWrite output to headless.csv");
-
-			// System.err.println("-o\tShow optimized virtual calls");
 			System.err.println("-i\tShow inline failed calls");
+			// System.err.println("-o\tShow optimized virtual calls");
 
 			System.exit(-1);
 		}
@@ -139,27 +138,34 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			case "-c":
 				showOnlyCompiledMethods = true;
 				break;
+				
 			case "-e":
 				showErrors = true;
 				break;
+				
 			case "-m":
 				showModel = true;
 				break;
-			// case "-o":
-			// showOptimizedVirtualCalls = true;
-			// break;
+				
 			case "-s":
 				showSuggestions = true;
 				break;
+				
 			case "-t":
 				showTimeLine = true;
 				break;
+				
 			case "-f":
 				outputFile = true;
 				break;
+				
 			case "-i":
 				showInlineFailedCalls = true;
 				break;
+				
+				// case "-o":
+				// showOptimizedVirtualCalls = true;
+				// break;s
 			}
 		}
 	}
@@ -263,7 +269,6 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			{
 				callerClass = "Unknown";
 				callerMember = "Unknown";
-
 			}
 
 			String cleanText = suggestion.getText().replace(C_NEWLINE, C_SPACE);

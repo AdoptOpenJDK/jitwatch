@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.adoptopenjdk.jitwatch.jarscan.bytecodefrequency.BytecodeFrequencyTree;
-import org.adoptopenjdk.jitwatch.jarscan.chains.ChainCounter;
-import org.adoptopenjdk.jitwatch.jarscan.freqinline.FreqInlineCounter;
-import org.adoptopenjdk.jitwatch.jarscan.invokecounter.InvokeCounter;
+import org.adoptopenjdk.jitwatch.jarscan.allocation.AllocationCountOperation;
+import org.adoptopenjdk.jitwatch.jarscan.freqinlinesize.FreqInlineSizeOperation;
+import org.adoptopenjdk.jitwatch.jarscan.invokecount.InvokeCountOperation;
+import org.adoptopenjdk.jitwatch.jarscan.nextopcode.NextOpcodeOperation;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
@@ -101,7 +102,8 @@ public class JarScan
 					}
 					catch (Exception e)
 					{
-						System.err.println("Could not process " + className + " " + memberBytecode.getMemberSignatureParts().getMemberName());
+						System.err.println(
+								"Could not process " + className + " " + memberBytecode.getMemberSignatureParts().getMemberName());
 						System.err.println(memberBytecode.toString());
 						e.printStackTrace();
 						System.exit(-1);
@@ -118,17 +120,125 @@ public class JarScan
 
 	private static void showUsage()
 	{
-		System.err.println("JarScan [options] <jar> [jar]...");
-		System.err.println("Options:");
-		System.err.println("-DmaxMethodSize=n\t\t\tFind methods with bytecode larger than n bytes");
-		System.err.println("-DmaxBytecodeChain=n\t\t\tCount bytecode chains of length n");
-		System.err.println("-DmaxFrequencyTreeChildren=n\t\t\tFind the n most frequent next bytecodes");
-		System.err.println("-DinvokeCount\t\t\tCount methods by invoke type");
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("JarScan --mode=<mode> [params] <jars>").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("Available modes:").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("  maxMethodSize      List every method with bytecode larger than specified limit.").append(S_NEWLINE);
+		builder.append("    [--limit=n]      Report methods larger than n bytes.").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("  invokeCount        Count the most called methods for each invoke opcode.").append(S_NEWLINE);
+		builder.append("    [--limit=n]      Limit to top n results per invoke type.").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("  nextOpcodeFreq     List the next instructions for each opcode by frequency.").append(S_NEWLINE);
+		builder.append("    [--limit=n]      Limit to top n results per opcode.").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("  sequenceCount      Count occurences of bytecode sequences.").append(S_NEWLINE);
+		builder.append("    [--length=n]     Report sequences of length n.").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("  allocations        Count the most allocated types.").append(S_NEWLINE);
+		builder.append("    [--limit=n]      Limit to top n results.").append(S_NEWLINE);
+		builder.append("--------------------------------------------------------------------------------------").append(S_NEWLINE);
+
+		System.err.println(builder.toString());
+	}
+
+	private static final String ARG_MODE = "--mode=";
+	private static final String ARG_LIMIT = "--limit=";
+	private static final String ARG_LENGTH = "--length=";
+
+	private static int getParam(String arg, String paramName)
+	{
+		int result = -1;
+
+		String argValue = arg.substring(paramName.length(), arg.length());
+		
+		try
+		{
+			result = Integer.parseInt(argValue);
+		}
+		catch (NumberFormatException nfe)
+		{
+			System.err.println("Could not parse parameter " + paramName + " : " + argValue);
+		}
+
+		return result;
+	}
+
+	private static IJarScanOperation getJarScanOperation(String[] args)
+	{
+		IJarScanOperation operation = null;
+
+		if (args.length >= 2)
+		{
+			String mode = args[0];
+			String param = args[1];
+
+			if (mode.startsWith(ARG_MODE))
+			{
+				String modeParam = mode.substring(ARG_MODE.length(), mode.length());
+				
+				switch (modeParam)
+				{
+				case "maxMethodSize":
+				{
+					int paramValue = getParam(param, ARG_LIMIT);
+					if (paramValue > 0)
+					{
+						operation = new FreqInlineSizeOperation(paramValue);
+					}
+				}
+					break;
+				case "invokeCount":
+				{
+					int paramValue = getParam(param, ARG_LIMIT);
+					if (paramValue > 0)
+					{
+						operation = new InvokeCountOperation(paramValue);
+					}
+				}
+					break;
+				case "nextOpcodeFreq":
+				{
+					int paramValue = getParam(param, ARG_LIMIT);
+					if (paramValue > 0)
+					{
+						operation = new NextOpcodeOperation(paramValue);
+					}
+				}
+					break;
+				case "sequenceCount":
+				{
+					int paramValue = getParam(param, ARG_LENGTH);
+					if (paramValue > 0)
+					{
+						operation = new SequenceCountOperation(paramValue);
+					}
+				}
+					break;
+				case "allocations":
+				{
+					int paramValue = getParam(param, ARG_LIMIT);
+					if (paramValue > 0)
+					{
+						operation = new AllocationCountOperation(paramValue);
+					}
+				}
+					break;
+				}
+			}
+		}
+
+		return operation;
 	}
 
 	public static void main(String[] args) throws IOException
 	{
-		if (args.length == 0)
+		IJarScanOperation operation = getJarScanOperation(args);
+
+		if (operation == null)
 		{
 			showUsage();
 			System.exit(-1);
@@ -138,46 +248,32 @@ public class JarScan
 
 		JarScan scanner = new JarScan(writer);
 
-		if (System.getProperty("maxMethodSize") != null)
+		scanner.addOperation(operation);
+
+		for (String arg : args)
 		{
-			int maxMethodBytes = Integer.getInteger("maxMethodSize");
-			scanner.addOperation(new FreqInlineCounter(maxMethodBytes));
-		}
-		else if (System.getProperty("maxBytecodeChain") != null)
-		{
-			int maxBytecodeChain = Integer.getInteger("maxBytecodeChain");
-			scanner.addOperation(new ChainCounter(maxBytecodeChain));
-		}
-		else if (System.getProperty("maxFrequencyTreeChildren") != null)
-		{
-			int maxFrequencyTreeChildren = Integer.getInteger("maxFrequencyTreeChildren");
+			if (arg.startsWith("--"))
+			{
+				continue;
+			}
 
-			scanner.addOperation(new BytecodeFrequencyTree(maxFrequencyTreeChildren));
-		}
-		else if (System.getProperty("invokeCount") != null)
-		{
-			scanner.addOperation(new InvokeCounter());
-		}
+			File jarFile = new File(arg);
 
-		if (scanner.operations.size() == 0)
-		{
-			// default mode is to report methods > 325 bytes
-			int maxMethodBytes = Integer.getInteger("maxMethodSize", 325);
-			scanner.addOperation(new FreqInlineCounter(maxMethodBytes));
-		}
+			if (jarFile.exists() && jarFile.isFile())
+			{
+				writer.write(jarFile.getAbsolutePath());
 
-		for (String jar : args)
-		{
-			File jarFile = new File(jar);
+				writer.write(C_COLON);
+				writer.write(S_NEWLINE);
 
-			writer.write(jarFile.getAbsolutePath());
+				scanner.iterateJar(jarFile);
 
-			writer.write(C_COLON);
-			writer.write(S_NEWLINE);
-
-			scanner.iterateJar(jarFile);
-
-			writer.write(S_NEWLINE);
+				writer.write(S_NEWLINE);
+			}
+			else
+			{
+				System.err.println("Could not scan jar " + jarFile.toString());
+			}
 		}
 
 		writer.flush();

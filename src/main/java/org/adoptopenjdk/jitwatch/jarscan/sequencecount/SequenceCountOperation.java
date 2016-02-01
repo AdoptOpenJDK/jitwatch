@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.chains;
+package org.adoptopenjdk.jitwatch.jarscan.sequencecount;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
@@ -23,7 +23,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-public class ChainCounter implements IJarScanOperation
+public class SequenceCountOperation implements IJarScanOperation
 {
 	protected Map<OpcodeSequence, Integer> chainCountMap = new TreeMap<>();
 
@@ -31,7 +31,7 @@ public class ChainCounter implements IJarScanOperation
 
 	private int maxLength = 0;
 
-	public ChainCounter(int maxLength)
+	public SequenceCountOperation(int maxLength)
 	{
 		this.maxLength = maxLength;
 	}

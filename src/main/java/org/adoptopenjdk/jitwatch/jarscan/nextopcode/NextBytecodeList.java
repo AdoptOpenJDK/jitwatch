@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.bytecodefrequency;
+package org.adoptopenjdk.jitwatch.jarscan.nextopcode;
 
 import java.util.ArrayList;
 import java.util.Collections;

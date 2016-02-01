@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.jarscan.chains.ChainCounter;
-import org.adoptopenjdk.jitwatch.jarscan.chains.OpcodeSequence;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.OpcodeSequence;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
@@ -113,7 +113,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(1);
+		SequenceCountOperation counter = new SequenceCountOperation(1);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -211,7 +211,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(6);
+		SequenceCountOperation counter = new SequenceCountOperation(6);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -291,7 +291,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(1);
+		SequenceCountOperation counter = new SequenceCountOperation(1);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -323,7 +323,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(2);
+		SequenceCountOperation counter = new SequenceCountOperation(2);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -355,7 +355,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(3);
+		SequenceCountOperation counter = new SequenceCountOperation(3);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -386,7 +386,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(1);
+		SequenceCountOperation counter = new SequenceCountOperation(1);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -412,7 +412,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(2);
+		SequenceCountOperation counter = new SequenceCountOperation(2);
 
 		counter.processInstructions("Foo", memberBytecode);
 
@@ -458,7 +458,7 @@ public class TestJarScan
 
 		MemberBytecode memberBytecode = createMemberBytecode(lines);
 
-		ChainCounter counter = new ChainCounter(3);
+		SequenceCountOperation counter = new SequenceCountOperation(3);
 
 		counter.processInstructions("Foo", memberBytecode);
 

@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.invokecounter;
+package org.adoptopenjdk.jitwatch.jarscan.invokecount;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
@@ -29,8 +29,7 @@ public class OpcodeInvokeCountMap
 		invokeCountMap.count(method);
 	}
 
-	@Override
-	public String toString()
+	public String toString(int limitPerInvoke)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -39,7 +38,7 @@ public class OpcodeInvokeCountMap
 			Opcode opcode = entry.getKey();
 			InvokeCountMap invokeCountMap = entry.getValue();
 			
-			builder.append(invokeCountMap.toString(opcode)).append(S_NEWLINE);
+			builder.append(invokeCountMap.toString(opcode, limitPerInvoke)).append(S_NEWLINE);
 		}
 
 		return builder.toString();
