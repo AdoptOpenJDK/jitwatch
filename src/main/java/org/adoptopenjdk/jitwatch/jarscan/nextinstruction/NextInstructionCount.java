@@ -3,17 +3,17 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.nextopcode;
+package org.adoptopenjdk.jitwatch.jarscan.nextinstruction;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-public class NextBytecode
+public class NextInstructionCount
 {
 	private Opcode opcode;
 	
 	private int count;
 
-	public NextBytecode(Opcode opcode, int count)
+	public NextInstructionCount(Opcode opcode, int count)
 	{
 		this.opcode = opcode;
 		this.count = count;

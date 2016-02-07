@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.allocation;
+package org.adoptopenjdk.jitwatch.jarscan.invokecount;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
@@ -18,13 +18,13 @@ import java.util.TreeMap;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-public class AllocCountMap
+public class MethodCountMap
 {
-	private Map<String, Integer> typeCountMap = new TreeMap<>();
+	private Map<String, Integer> methodCountMap = new TreeMap<>();
 	
 	public void count(String method)
 	{
-		Integer count = typeCountMap.get(method);
+		Integer count = methodCountMap.get(method);
 		
 		if (count == null)
 		{
@@ -35,14 +35,14 @@ public class AllocCountMap
 			count++;
 		}
 		
-		typeCountMap.put(method, count);
+		methodCountMap.put(method, count);
 	}
 	
 	public String toString(Opcode prefix, int limitPerInvoke)
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(typeCountMap.entrySet());
+		List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(methodCountMap.entrySet());
 
 		Collections.sort(sortedList, new Comparator<Map.Entry<String, Integer>>()
 		{
@@ -64,7 +64,9 @@ public class AllocCountMap
 			builder.append(C_DOUBLE_QUOTE).append(methodName).append(C_DOUBLE_QUOTE).append(C_COMMA);
 			builder.append(count).append(S_NEWLINE);
 			
-			if (limitPerInvoke != 0 && outputCount++ == limitPerInvoke)
+			outputCount++;
+			
+			if (limitPerInvoke != 0 && outputCount == limitPerInvoke)
 			{
 				break;
 			}

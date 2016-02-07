@@ -9,26 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
-public class OpcodeSequence implements Comparable<OpcodeSequence>
+public class InstructionSequence implements Comparable<InstructionSequence>
 {
 	private List<Opcode> sequence = new ArrayList<>();
 
-	public OpcodeSequence(List<Opcode> opcodeList)
+	public InstructionSequence(List<Opcode> opcodeList)
 	{
 		sequence.addAll(opcodeList);
 	}
 
+	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
 
 		for (Opcode opcode : sequence)
 		{
-			builder.append(opcode.getMnemonic()).append("->");
+			builder.append(opcode.getMnemonic()).append(S_COMMA);
 		}
 
-		builder.delete(builder.length() - 2, builder.length());
+		builder.delete(builder.length() - 1, builder.length());
 
 		return builder.toString();
 	}
@@ -51,7 +53,7 @@ public class OpcodeSequence implements Comparable<OpcodeSequence>
 	}
 
 	@Override
-	public int compareTo(OpcodeSequence o)
+	public int compareTo(InstructionSequence o)
 	{
 		return toString().compareTo(o.toString());
 	}

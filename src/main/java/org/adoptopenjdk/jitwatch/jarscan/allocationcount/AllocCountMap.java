@@ -3,7 +3,11 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.invokecount;
+package org.adoptopenjdk.jitwatch.jarscan.allocationcount;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,17 +18,13 @@ import java.util.TreeMap;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-
-public class InvokeCountMap
+public class AllocCountMap
 {
-	private Map<String, Integer> methodCountMap = new TreeMap<>();
+	private Map<String, Integer> typeCountMap = new TreeMap<>();
 	
-	public void count(String method)
+	public void countAllocationOfType(String type)
 	{
-		Integer count = methodCountMap.get(method);
+		Integer count = typeCountMap.get(type);
 		
 		if (count == null)
 		{
@@ -35,14 +35,14 @@ public class InvokeCountMap
 			count++;
 		}
 		
-		methodCountMap.put(method, count);
+		typeCountMap.put(type, count);
 	}
 	
 	public String toString(Opcode prefix, int limitPerInvoke)
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(methodCountMap.entrySet());
+		List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(typeCountMap.entrySet());
 
 		Collections.sort(sortedList, new Comparator<Map.Entry<String, Integer>>()
 		{
@@ -64,7 +64,9 @@ public class InvokeCountMap
 			builder.append(C_DOUBLE_QUOTE).append(methodName).append(C_DOUBLE_QUOTE).append(C_COMMA);
 			builder.append(count).append(S_NEWLINE);
 			
-			if (limitPerInvoke != 0 && outputCount++ == limitPerInvoke)
+			outputCount++;;
+			
+			if (limitPerInvoke != 0 && outputCount == limitPerInvoke)
 			{
 				break;
 			}

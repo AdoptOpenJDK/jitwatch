@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.jarscan.sequencecount;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
 public class SequenceCountOperation implements IJarScanOperation
 {
-	protected Map<OpcodeSequence, Integer> chainCountMap = new TreeMap<>();
+	protected Map<InstructionSequence, Integer> chainCountMap = new TreeMap<>();
 
 	private List<Opcode> chain = new LinkedList<>();
 
@@ -38,7 +39,7 @@ public class SequenceCountOperation implements IJarScanOperation
 
 	private void storeChain()
 	{
-		OpcodeSequence sequence = new OpcodeSequence(chain);
+		InstructionSequence sequence = new InstructionSequence(chain);
 
 		Integer count = chainCountMap.get(sequence);
 
@@ -52,19 +53,19 @@ public class SequenceCountOperation implements IJarScanOperation
 		}
 	}
 
-	public Map<OpcodeSequence, Integer> getSequenceScores()
+	public Map<InstructionSequence, Integer> getSequenceScores()
 	{
 		return chainCountMap;
 	}
 
-	public List<Map.Entry<OpcodeSequence, Integer>> getSortedData()
+	public List<Map.Entry<InstructionSequence, Integer>> getSortedData()
 	{
-		List<Map.Entry<OpcodeSequence, Integer>> result = new ArrayList<>(chainCountMap.entrySet());
+		List<Map.Entry<InstructionSequence, Integer>> result = new ArrayList<>(chainCountMap.entrySet());
 
-		Collections.sort(result, new Comparator<Map.Entry<OpcodeSequence, Integer>>()
+		Collections.sort(result, new Comparator<Map.Entry<InstructionSequence, Integer>>()
 		{
 			@Override
-			public int compare(Map.Entry<OpcodeSequence, Integer> o1, Map.Entry<OpcodeSequence, Integer> o2)
+			public int compare(Map.Entry<InstructionSequence, Integer> o1, Map.Entry<InstructionSequence, Integer> o2)
 			{
 				return o2.getValue().compareTo(o1.getValue());
 			}
@@ -102,11 +103,11 @@ public class SequenceCountOperation implements IJarScanOperation
 		boolean abandonChain = false;
 
 		Set<Integer> visitedBCI = new HashSet<>();
-
+				
 		while (chain.size() < maxLength)
 		{
 			BytecodeInstruction instruction = instructions.get(index);
-
+					
 			int instrBCI = instruction.getOffset();
 
 			visitedBCI.add(instrBCI);
@@ -210,9 +211,9 @@ public class SequenceCountOperation implements IJarScanOperation
 	{
 		StringBuilder builder = new StringBuilder();
 
-		for (Map.Entry<OpcodeSequence, Integer> entry : getSortedData())
+		for (Map.Entry<InstructionSequence, Integer> entry : getSortedData())
 		{
-			builder.append(entry.getKey().toString()).append(" : ").append(entry.getValue()).append(S_NEWLINE);
+			builder.append(entry.getKey().toString()).append(S_COMMA).append(entry.getValue()).append(S_NEWLINE);
 		}
 
 		return builder.toString();

@@ -3,20 +3,18 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.allocation;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+package org.adoptopenjdk.jitwatch.jarscan.allocationcount;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-public class OpcodeAllocCountMap
+public class InstructionAllocCountMap
 {
 	private Map<Opcode, AllocCountMap> opcodeMap = new EnumMap<>(Opcode.class);
 
-	public void count(Opcode opcode, String method)
+	public void count(Opcode opcode, String allocatedType)
 	{
 		AllocCountMap typeCountMap = opcodeMap.get(opcode);
 
@@ -26,7 +24,7 @@ public class OpcodeAllocCountMap
 			opcodeMap.put(opcode, typeCountMap);
 		}
 
-		typeCountMap.count(method);
+		typeCountMap.countAllocationOfType(allocatedType);
 	}
 
 	public String toString(int limitPerInvoke)
@@ -38,7 +36,7 @@ public class OpcodeAllocCountMap
 			Opcode opcode = entry.getKey();
 			AllocCountMap typeCountMap = entry.getValue();
 			
-			builder.append(typeCountMap.toString(opcode, limitPerInvoke)).append(S_NEWLINE);
+			builder.append(typeCountMap.toString(opcode, limitPerInvoke));
 		}
 
 		return builder.toString();

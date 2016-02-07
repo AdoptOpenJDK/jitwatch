@@ -3,10 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.allocation;
+package org.adoptopenjdk.jitwatch.jarscan.allocationcount;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 
 import java.util.List;
 
@@ -18,13 +20,13 @@ import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
 public class AllocationCountOperation implements IJarScanOperation
 {
-	private OpcodeAllocCountMap opcodeAllocCountMap;
+	private InstructionAllocCountMap opcodeAllocCountMap;
 
 	private int limitPerAllocOpcode;
 
 	public AllocationCountOperation(int limit)
 	{
-		opcodeAllocCountMap = new OpcodeAllocCountMap();
+		opcodeAllocCountMap = new InstructionAllocCountMap();
 		this.limitPerAllocOpcode = limit;
 	}
 
@@ -64,7 +66,7 @@ public class AllocationCountOperation implements IJarScanOperation
 			{
 				String comment = instruction.getComment();
 				String type = comment.substring("// class ".length(), comment.length());
-				type = type.replace(S_DOUBLE_QUOTE, S_EMPTY);
+				type = type.replace(S_DOUBLE_QUOTE, S_EMPTY).replace(S_SLASH, S_DOT);
 				count(opcode, type);
 			}
 				break;

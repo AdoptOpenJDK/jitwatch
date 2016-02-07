@@ -3,25 +3,23 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.jarscan.nextopcode;
+package org.adoptopenjdk.jitwatch.jarscan.nextinstruction;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class NextBytecodeList
+public class NextInstructionCountList
 {
-	private List<NextBytecode> list = new ArrayList<>();
+	private List<NextInstructionCount> list = new ArrayList<>();
 
-	private int sum = 0;
-
-	public List<NextBytecode> getList()
+	public List<NextInstructionCount> getList()
 	{
-		Collections.sort(list, new Comparator<NextBytecode>()
+		Collections.sort(list, new Comparator<NextInstructionCount>()
 		{
 			@Override
-			public int compare(NextBytecode o1, NextBytecode o2)
+			public int compare(NextInstructionCount o1, NextInstructionCount o2)
 			{
 				return Integer.compare(o2.getCount(), o1.getCount());
 			}
@@ -30,15 +28,8 @@ public class NextBytecodeList
 		return list;
 	}
 
-	public int getSum()
-	{
-		return sum;
-	}
-
-	public void add(NextBytecode nextBytecode)
+	public void add(NextInstructionCount nextBytecode)
 	{
 		list.add(nextBytecode);
-
-		sum += nextBytecode.getCount();
 	}
 }

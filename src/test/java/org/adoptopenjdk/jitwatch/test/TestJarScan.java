@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.jarscan.sequencecount.OpcodeSequence;
+import org.adoptopenjdk.jitwatch.jarscan.sequencecount.InstructionSequence;
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -117,7 +117,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -215,7 +215,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -252,25 +252,25 @@ public class TestJarScan
 		checkSequence(result, 1, Opcode.ISTORE, Opcode.ILOAD, Opcode.TABLESWITCH, Opcode.ALOAD_0, Opcode.ALOAD_1, Opcode.ALOAD_2);
 	}
 
-	private OpcodeSequence buildSequence(Opcode... opcodes)
+	private InstructionSequence buildSequence(Opcode... opcodes)
 	{
-		return new OpcodeSequence(Arrays.asList(opcodes));
+		return new InstructionSequence(Arrays.asList(opcodes));
 	}
 
-	private void checkSequence(Map<OpcodeSequence, Integer> scoreMap, int count, Opcode... opcodes)
+	private void checkSequence(Map<InstructionSequence, Integer> scoreMap, int count, Opcode... opcodes)
 	{
-		OpcodeSequence key = buildSequence(opcodes);
+		InstructionSequence key = buildSequence(opcodes);
 
 		int score = scoreMap.get(key);
 
 		assertEquals(count, score);
 	}
 
-	private void log(Map<OpcodeSequence, Integer> result)
+	private void log(Map<InstructionSequence, Integer> result)
 	{
 		if (SHOW_OUTPUT)
 		{
-			for (Map.Entry<OpcodeSequence, Integer> entry : result.entrySet())
+			for (Map.Entry<InstructionSequence, Integer> entry : result.entrySet())
 			{
 				System.out.println(entry.getValue() + "\t=>\t" + entry.getKey());
 			}
@@ -295,7 +295,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -327,7 +327,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -359,7 +359,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -390,7 +390,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -416,7 +416,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 
@@ -462,7 +462,7 @@ public class TestJarScan
 
 		counter.processInstructions("Foo", memberBytecode);
 
-		Map<OpcodeSequence, Integer> result = counter.getSequenceScores();
+		Map<InstructionSequence, Integer> result = counter.getSequenceScores();
 
 		log(result);
 

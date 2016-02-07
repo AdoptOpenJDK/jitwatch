@@ -14,13 +14,13 @@ import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 public class InvokeCountOperation implements IJarScanOperation
 {
-	private OpcodeInvokeCountMap opcodeInvokeCountMap;
+	private InvokeMethodCountMap opcodeInvokeCountMap;
 
 	private int limitPerInvoke;
 	
 	public InvokeCountOperation(int limitPerInvoke)
 	{
-		opcodeInvokeCountMap = new OpcodeInvokeCountMap();
+		opcodeInvokeCountMap = new InvokeMethodCountMap();
 		
 		this.limitPerInvoke = limitPerInvoke;
 	}
@@ -37,7 +37,7 @@ public class InvokeCountOperation implements IJarScanOperation
 		
 		String methodSig = ParseUtil.bytecodeMethodCommentToReadableString(className, comment);
 	
-		opcodeInvokeCountMap.count(instruction.getOpcode(), methodSig);
+		opcodeInvokeCountMap.countInvocationOfMethod(instruction.getOpcode(), methodSig);
 	}
 	
 	@Override
