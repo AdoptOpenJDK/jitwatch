@@ -5,11 +5,13 @@
  */
 package org.adoptopenjdk.jitwatch.jarscan;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT_CLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASTERISK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +25,11 @@ import java.util.zip.ZipFile;
 
 import org.adoptopenjdk.jitwatch.jarscan.allocationcount.AllocationCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.freqinlinesize.FreqInlineSizeOperation;
+import org.adoptopenjdk.jitwatch.jarscan.instructioncount.InstructionCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.invokecount.InvokeCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.nextinstruction.NextInstructionOperation;
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
+import org.adoptopenjdk.jitwatch.jarscan.sequencesearch.SequenceSearchOperation;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
@@ -33,6 +37,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 public class JarScan
 {
 	private List<IJarScanOperation> operations = new ArrayList<>();
+	private List<String> allowedPackagePrefixes = new ArrayList<>();
 
 	private Writer writer;
 
@@ -86,9 +91,37 @@ public class JarScan
 		}
 	}
 
-	private void process(List<String> classLocations, String className)
+	private boolean isAllowedPackage(String fqClassName)
 	{
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, className);
+		boolean allowed = false;
+
+		if (allowedPackagePrefixes.size() == 0)
+		{
+			allowed = true;
+		}
+		else
+		{
+			for (String allowedPrefix : allowedPackagePrefixes)
+			{
+				if (fqClassName.startsWith(allowedPrefix))
+				{
+					allowed = true;
+					break;
+				}
+			}
+		}
+
+		return allowed;
+	}
+
+	private void process(List<String> classLocations, String fqClassName)
+	{
+		if (!isAllowedPackage(fqClassName))
+		{
+			return;
+		}
+
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, fqClassName);
 
 		if (classBytecode != null)
 		{
@@ -98,12 +131,12 @@ public class JarScan
 				{
 					try
 					{
-						op.processInstructions(className, memberBytecode);
+						op.processInstructions(fqClassName, memberBytecode);
 					}
 					catch (Exception e)
 					{
-						System.err.println(
-								"Could not process " + className + " " + memberBytecode.getMemberSignatureParts().getMemberName());
+						System.err.println("Could not process " + fqClassName + " "
+								+ memberBytecode.getMemberSignatureParts().getMemberName());
 						System.err.println(memberBytecode.toString());
 						e.printStackTrace();
 						System.exit(-1);
@@ -113,7 +146,7 @@ public class JarScan
 		}
 		else
 		{
-			System.err.println("An error occurred while parsing " + className + ". Please see jitwatch.out for details");
+			System.err.println("An error occurred while parsing " + fqClassName);
 			System.exit(-1);
 		}
 	}
@@ -122,31 +155,48 @@ public class JarScan
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("JarScan --mode=<mode> [params] <jars>").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
+		builder.append("JarScan --mode=<mode> [--packages=a,b,c,...] [params] <jars>").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
 		builder.append("Available modes:").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
-		builder.append("  maxMethodSize          List every method with bytecode larger than specified limit.").append(S_NEWLINE);
-		builder.append("     --limit=n           Report methods larger than n bytes.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
-		builder.append("  sequenceCount          Count instruction sequences.").append(S_NEWLINE);
-		builder.append("     --length=n          Report sequences of length n.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
-		builder.append("  invokeCount            Count the most called methods for each invoke instruction.").append(S_NEWLINE);
-		builder.append("    [--limit=n]          Limit to top n results per invoke type.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
-		builder.append("  nextInstructionFreq    List the most popular next instruction for each bytecode instruction.").append(S_NEWLINE);
-		builder.append("    [--limit=n]          Limit to top n results per instruction.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------").append(S_NEWLINE);
-		builder.append("  allocationCount        Count the most allocated types.").append(S_NEWLINE);
-		builder.append("    [--limit=n]          Limit to top n results.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  maxMethodSize            List every method with bytecode larger than specified limit.").append(S_NEWLINE);
+		builder.append("     --limit=n             Report methods larger than n bytes.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  sequenceCount            Count instruction sequences.").append(S_NEWLINE);
+		builder.append("     --length=n            Report sequences of length n.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  invokeCount              Count the most called methods for each invoke instruction.").append(S_NEWLINE);
+		builder.append("    [--limit=n]            Limit to top n results per invoke type.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  nextInstructionFreq      List the most popular next instruction for each bytecode instruction.")
+				.append(S_NEWLINE);
+		builder.append("    [--limit=n]            Limit to top n results per instruction.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  allocationCount          Count the most allocated types.").append(S_NEWLINE);
+		builder.append("    [--limit=n]            Limit to top n results.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  instructionCount         Count occurences of each bytecode instruction.").append(S_NEWLINE);
+		builder.append("    [--limit=n]            Limit to top n results.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  sequenceSearch           List methods containing the specified bytecode sequence.").append(S_NEWLINE);
+		builder.append("     --sequence=a,b,c,...  Comma separated sequence of bytecode instructions.").append(S_NEWLINE);
 
 		System.err.println(builder.toString());
 	}
 
+	private static final String ARG_PACKAGES = "--packages=";
 	private static final String ARG_MODE = "--mode=";
 	private static final String ARG_LIMIT = "--limit=";
 	private static final String ARG_LENGTH = "--length=";
+	private static final String ARG_SEQUENCE = "--sequence=";
 
 	private static int getParam(String[] args, String paramName, boolean mandatory)
 	{
@@ -161,10 +211,8 @@ public class JarScan
 			result = -1;
 		}
 
-		if (args.length >= 2)
+		for (String param : args)
 		{
-			String param = args[1];
-
 			if (param.startsWith(paramName))
 			{
 				String argValue = param.substring(paramName.length(), param.length());
@@ -177,6 +225,24 @@ public class JarScan
 				{
 					System.err.println("Could not parse parameter " + paramName + " : " + argValue);
 				}
+
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	private static String getParamString(String[] args, String paramName)
+	{
+		String result = null;
+
+		for (String param : args)
+		{
+			if (param.startsWith(paramName))
+			{
+				result = param.substring(paramName.length(), param.length());
+				break;
 			}
 		}
 
@@ -187,62 +253,83 @@ public class JarScan
 	{
 		IJarScanOperation operation = null;
 
-		if (args.length >= 1)
+		String mode = getParamString(args, ARG_MODE);
+
+		if (mode != null)
 		{
-			String mode = args[0];
+			String modeParam = mode.toLowerCase();
 
-			if (mode.startsWith(ARG_MODE))
+			switch (modeParam)
 			{
-				String modeParam = mode.substring(ARG_MODE.length(), mode.length()).toLowerCase();
+			case "maxmethodsize":
+			{
+				int paramValue = getParam(args, ARG_LIMIT, true);
 
-				switch (modeParam)
+				if (paramValue > 0)
 				{
-				case "maxmethodsize":
+					operation = new FreqInlineSizeOperation(paramValue);
+				}
+				break;
+			}
+			case "sequencecount":
+			{
+				int paramValue = getParam(args, ARG_LENGTH, true);
+
+				if (paramValue > 0)
 				{
-					int paramValue = getParam(args, ARG_LIMIT, true);
-					if (paramValue > 0)
-					{
-						operation = new FreqInlineSizeOperation(paramValue);
-					}
+					operation = new SequenceCountOperation(paramValue);
 				}
-					break;
-				case "sequencecount":
+				break;
+			}
+			case "invokecount":
+			{
+				int paramValue = getParam(args, ARG_LIMIT, false);
+
+				if (paramValue >= 0)
 				{
-					int paramValue = getParam(args, ARG_LENGTH, true);
-					if (paramValue > 0)
-					{
-						operation = new SequenceCountOperation(paramValue);
-					}
+					operation = new InvokeCountOperation(paramValue);
 				}
-					break;
-				case "invokecount":
+				break;
+			}
+			case "nextinstructionfreq":
+			{
+				int paramValue = getParam(args, ARG_LIMIT, false);
+
+				if (paramValue >= 0)
 				{
-					int paramValue = getParam(args, ARG_LIMIT, false);
-					if (paramValue >= 0)
-					{
-						operation = new InvokeCountOperation(paramValue);
-					}
+					operation = new NextInstructionOperation(paramValue);
 				}
-					break;
-				case "nextinstructionfreq":
+			}
+				break;
+			case "allocationcount":
+			{
+				int paramValue = getParam(args, ARG_LIMIT, false);
+				if (paramValue >= 0)
 				{
-					int paramValue = getParam(args, ARG_LIMIT, false);
-					if (paramValue >= 0)
-					{
-						operation = new NextInstructionOperation(paramValue);
-					}
+					operation = new AllocationCountOperation(paramValue);
 				}
-					break;
-				case "allocationcount":
+				break;
+			}
+			case "instructioncount":
+			{
+				int paramValue = getParam(args, ARG_LIMIT, false);
+
+				if (paramValue >= 0)
 				{
-					int paramValue = getParam(args, ARG_LIMIT, false);
-					if (paramValue >= 0)
-					{
-						operation = new AllocationCountOperation(paramValue);
-					}
+					operation = new InstructionCountOperation(paramValue);
 				}
-					break;
+				break;
+			}
+			case "sequencesearch":
+			{
+				String sequence = getParamString(args, ARG_SEQUENCE);
+
+				if (sequence != null)
+				{
+					operation = new SequenceSearchOperation(sequence);
 				}
+				break;
+			}
 			}
 		}
 
@@ -265,6 +352,20 @@ public class JarScan
 
 		scanner.addOperation(operation);
 
+		String packages = getParamString(args, ARG_PACKAGES);
+
+		if (packages != null)
+		{
+			String[] prefixes = packages.split(S_COMMA);
+			
+			for (String prefix : prefixes)
+			{
+				prefix = prefix.replace(S_ASTERISK, S_EMPTY);
+								
+				scanner.allowedPackagePrefixes.add(prefix);
+			}
+		}
+
 		for (String arg : args)
 		{
 			if (arg.startsWith("--"))
@@ -276,11 +377,6 @@ public class JarScan
 
 			if (jarFile.exists() && jarFile.isFile())
 			{
-				writer.write(jarFile.getAbsolutePath());
-
-				writer.write(C_COLON);
-				writer.write(S_NEWLINE);
-
 				scanner.iterateJar(jarFile);
 
 				writer.write(S_NEWLINE);

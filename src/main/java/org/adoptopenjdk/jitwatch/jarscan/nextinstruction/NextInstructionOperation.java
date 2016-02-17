@@ -8,7 +8,11 @@ package org.adoptopenjdk.jitwatch.jarscan.nextinstruction;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.InstructionSequence;
@@ -73,8 +77,19 @@ public class NextInstructionOperation extends SequenceCountOperation
 		}
 
 		StringBuilder builder = new StringBuilder();
+		
+		List<Map.Entry<Opcode, NextInstructionCountList>> sortedList = new ArrayList<>(nextBytecodeMap.entrySet());
 
-		for (Map.Entry<Opcode, NextInstructionCountList> entry : nextBytecodeMap.entrySet())
+		Collections.sort(sortedList, new Comparator<Map.Entry<Opcode, NextInstructionCountList>>()
+		{
+			@Override
+			public int compare(Map.Entry<Opcode, NextInstructionCountList> o1, Map.Entry<Opcode, NextInstructionCountList> o2)
+			{
+				return o1.getKey().getMnemonic().compareTo(o2.getKey().getMnemonic());
+			}
+		});
+
+		for (Map.Entry<Opcode, NextInstructionCountList> entry : sortedList)
 		{
 			Opcode root = entry.getKey();
 

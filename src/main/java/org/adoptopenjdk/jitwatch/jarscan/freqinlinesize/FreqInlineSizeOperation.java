@@ -10,7 +10,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOUBLE_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.jarscan.IJarScanOperation;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
@@ -22,7 +27,7 @@ public class FreqInlineSizeOperation implements IJarScanOperation
 {
 	private int freqInlineSize;
 
-	private StringBuilder builder = new StringBuilder();
+	private Map<MemberSignatureParts, Integer> countMap = new HashMap<>();
 
 	public FreqInlineSizeOperation(int freqInlineSize)
 	{
@@ -31,12 +36,65 @@ public class FreqInlineSizeOperation implements IJarScanOperation
 
 	public String getReport()
 	{
+		List<Map.Entry<MemberSignatureParts, Integer>> sortedList = new ArrayList<>(countMap.entrySet());
+
+		Collections.sort(sortedList, new Comparator<Map.Entry<MemberSignatureParts, Integer>>()
+		{
+			@Override
+			public int compare(Map.Entry<MemberSignatureParts, Integer> o1, Map.Entry<MemberSignatureParts, Integer> o2)
+			{
+				return o2.getValue().compareTo(o1.getValue());
+			}
+		});
+
+		StringBuilder builder = new StringBuilder();
+
+		for (Map.Entry<MemberSignatureParts, Integer> entry : sortedList)
+		{
+			MemberSignatureParts msp = entry.getKey();
+			int bytecodeSize = entry.getValue();
+
+			String fqClassName = msp.getFullyQualifiedClassName();
+
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(StringUtil.getPackageName(fqClassName));
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(C_COMMA);
+
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(StringUtil.getUnqualifiedClassName(fqClassName));
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(C_COMMA);
+
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(msp.getMemberName());
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(C_COMMA);
+
+			builder.append(C_DOUBLE_QUOTE);
+
+			if (msp.getParamTypes().size() > 0)
+			{
+				for (String param : msp.getParamTypes())
+				{
+					builder.append(param).append(C_COMMA);
+				}
+
+				builder.deleteCharAt(builder.length() - 1);
+			}
+			builder.append(C_DOUBLE_QUOTE);
+			builder.append(C_COMMA);
+
+			builder.append(bytecodeSize);
+			builder.append(S_NEWLINE);
+		}
+
 		return builder.toString();
 	}
 
 	@Override
 	public void processInstructions(String className, MemberBytecode memberBytecode)
-	{		
+	{
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
 
 		if (instructions != null && instructions.size() > 0)
@@ -50,39 +108,7 @@ public class FreqInlineSizeOperation implements IJarScanOperation
 
 			if (bcSize >= freqInlineSize && !S_STATIC_INIT.equals(msp.getMemberName()))
 			{
-				String fqClassName = msp.getFullyQualifiedClassName();
-				
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(StringUtil.getPackageName(fqClassName));
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(C_COMMA);
-				
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(StringUtil.getUnqualifiedClassName(fqClassName));
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(C_COMMA);
-
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(msp.getMemberName());
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(C_COMMA);
-				
-				builder.append(C_DOUBLE_QUOTE);
-
-				if (msp.getParamTypes().size() > 0)
-				{
-					for (String param : msp.getParamTypes())
-					{
-						builder.append(param).append(C_COMMA);
-					}
-					
-					builder.deleteCharAt(builder.length() - 1);
-				}
-				builder.append(C_DOUBLE_QUOTE);
-				builder.append(C_COMMA);
-
-				builder.append(bcSize);
-				builder.append(S_NEWLINE);
+				countMap.put(msp, bcSize);
 			}
 		}
 	}

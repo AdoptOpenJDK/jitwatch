@@ -81,7 +81,7 @@ public final class JVMSUtil
 			}
 			catch (IOException ioe)
 			{
-				logger.error("", ioe);
+				logger.error("Could not save JVMS to disk", ioe);
 			}
 		}
 

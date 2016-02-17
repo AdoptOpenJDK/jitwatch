@@ -10,6 +10,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 public interface IJarScanOperation
 {
 	void processInstructions(String className, MemberBytecode memberBytecode);
-	
+		
 	String getReport();
 }
