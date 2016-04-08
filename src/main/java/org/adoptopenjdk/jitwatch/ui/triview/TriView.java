@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -942,8 +942,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		if (metaClass != null)
 		{
-			ClassBC classBytecode = metaClass.getClassBytecode(model, config.getConfiguredClassLocations());
-
 			BytecodeLabel bcLabel = (BytecodeLabel) viewerBytecode.getLabelAtIndex(index);
 
 			if (bcLabel != null)
@@ -955,6 +953,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 				int sourceHighlight = -1;
 				int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(metaClass.getFullyQualifiedName(), instruction);
 
+				ClassBC classBytecode = metaClass.getClassBytecode(model, config.getConfiguredClassLocations());
+				
 				if (classBytecode != null)
 				{
 					MemberBytecode memberBytecode = classBytecode.getMemberBytecode(currentMember);

@@ -128,12 +128,12 @@ public final class BytecodeLoader
 
 		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
 
-		ClassBC classBytecode = parsedByteCodeFrom(fqClassName, byteCodeString);
+		ClassBC classBytecode = parseByteCodeFromString(fqClassName, byteCodeString);
 
 		return classBytecode;
 	}
 
-	private static ClassBC parsedByteCodeFrom(String fqClassName, String byteCodeString)
+	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString)
 	{
 		ClassBC result = null;
 
@@ -145,9 +145,9 @@ public final class BytecodeLoader
 			{
 				result = parse(fqClassName, bytecodeLines);
 			}
-			catch (Exception ex)
+			catch (Throwable t)
 			{
-				logger.error("Exception parsing bytecode", ex);
+				logger.error("Exception parsing bytecode", t);
 			}
 		}
 
