@@ -27,6 +27,7 @@ import org.adoptopenjdk.jitwatch.jarscan.allocationcount.AllocationCountOperatio
 import org.adoptopenjdk.jitwatch.jarscan.freqinlinesize.FreqInlineSizeOperation;
 import org.adoptopenjdk.jitwatch.jarscan.instructioncount.InstructionCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.invokecount.InvokeCountOperation;
+import org.adoptopenjdk.jitwatch.jarscan.methodsizehisto.MethodSizeHistoOperation;
 import org.adoptopenjdk.jitwatch.jarscan.nextinstruction.NextInstructionOperation;
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.sequencesearch.SequenceSearchOperation;
@@ -188,6 +189,10 @@ public class JarScan
 				.append(S_NEWLINE);
 		builder.append("  sequenceSearch           List methods containing the specified bytecode sequence.").append(S_NEWLINE);
 		builder.append("     --sequence=a,b,c,...  Comma separated sequence of bytecode instructions.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  methodSizeHisto          List frequencies of method bytecode sizes.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------");
 
 		System.err.println(builder.toString());
 	}
@@ -330,6 +335,11 @@ public class JarScan
 				}
 				break;
 			}
+			case "methodsizehisto":
+			{
+				operation = new MethodSizeHistoOperation();
+				break;
+			}
 			}
 		}
 
@@ -357,11 +367,11 @@ public class JarScan
 		if (packages != null)
 		{
 			String[] prefixes = packages.split(S_COMMA);
-			
+
 			for (String prefix : prefixes)
 			{
 				prefix = prefix.replace(S_ASTERISK, S_EMPTY);
-								
+
 				scanner.allowedPackagePrefixes.add(prefix);
 			}
 		}
