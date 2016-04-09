@@ -27,6 +27,7 @@ import org.adoptopenjdk.jitwatch.jarscan.allocationcount.AllocationCountOperatio
 import org.adoptopenjdk.jitwatch.jarscan.freqinlinesize.FreqInlineSizeOperation;
 import org.adoptopenjdk.jitwatch.jarscan.instructioncount.InstructionCountOperation;
 import org.adoptopenjdk.jitwatch.jarscan.invokecount.InvokeCountOperation;
+import org.adoptopenjdk.jitwatch.jarscan.methodlength.MethodLengthOperation;
 import org.adoptopenjdk.jitwatch.jarscan.methodsizehisto.MethodSizeHistoOperation;
 import org.adoptopenjdk.jitwatch.jarscan.nextinstruction.NextInstructionOperation;
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
@@ -192,7 +193,12 @@ public class JarScan
 		builder.append("----------------------------------------------------------------------------------------------")
 				.append(S_NEWLINE);
 		builder.append("  methodSizeHisto          List frequencies of method bytecode sizes.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------");
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
+		builder.append("  methodLength             List methods of the given bytecode size.").append(S_NEWLINE);
+		builder.append("    [--length=n]           Size of methods to find.").append(S_NEWLINE);
+		builder.append("----------------------------------------------------------------------------------------------")
+				.append(S_NEWLINE);
 
 		System.err.println(builder.toString());
 	}
@@ -338,6 +344,16 @@ public class JarScan
 			case "methodsizehisto":
 			{
 				operation = new MethodSizeHistoOperation();
+				break;
+			}
+			case "methodlength":
+			{
+				int paramValue = getParam(args, ARG_LENGTH, true);
+
+				if (paramValue > 0)
+				{
+					operation = new MethodLengthOperation(paramValue);
+				}
 				break;
 			}
 			}
