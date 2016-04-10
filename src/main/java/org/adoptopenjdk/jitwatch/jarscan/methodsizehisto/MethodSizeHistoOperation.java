@@ -38,7 +38,7 @@ public class MethodSizeHistoOperation implements IJarScanOperation
 			@Override
 			public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2)
 			{
-				return o2.getKey().compareTo(o1.getKey());
+				return o2.getValue().compareTo(o1.getValue());
 			}
 		});
 

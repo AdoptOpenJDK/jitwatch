@@ -166,7 +166,7 @@ public class HistoPlotter extends Application
 		hBox.getChildren().addAll(label, tfLimit);
 		hBox.setSpacing(10);
 
-		Scene scene = UserInterfaceUtil.getScene(borderPane, 800, 600);
+		Scene scene = UserInterfaceUtil.getScene(borderPane, 800, 480);
 
 		borderPane.setTop(hBox);
 		borderPane.setCenter(buildChart());
@@ -175,7 +175,7 @@ public class HistoPlotter extends Application
 
 		updateObservable();
 
-		stage.setTitle("Histo Plotter");
+		stage.setTitle("JarScan Histo Plotter by @chriswhocodes");
 		stage.setScene(scene);
 		stage.show();
 	}

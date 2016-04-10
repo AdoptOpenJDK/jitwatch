@@ -196,7 +196,7 @@ public class JarScan
 		builder.append("----------------------------------------------------------------------------------------------")
 				.append(S_NEWLINE);
 		builder.append("  methodLength             List methods of the given bytecode size.").append(S_NEWLINE);
-		builder.append("    [--length=n]           Size of methods to find.").append(S_NEWLINE);
+		builder.append("    --length=n             Size of methods to find.").append(S_NEWLINE);
 		builder.append("----------------------------------------------------------------------------------------------")
 				.append(S_NEWLINE);
 
