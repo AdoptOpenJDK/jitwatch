@@ -15,16 +15,16 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.chart.Axis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -142,7 +142,7 @@ public class HistoPlotter extends Application
 
 		Label label = new Label("Limit:");
 
-		TextField tfLimit = new TextField();
+		final TextField tfLimit = new TextField();
 
 		tfLimit.setText(Integer.toString(limit));
 
