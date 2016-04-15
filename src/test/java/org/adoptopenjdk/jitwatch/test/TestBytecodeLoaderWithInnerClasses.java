@@ -129,10 +129,10 @@ public class TestBytecodeLoaderWithInnerClasses
 			fail();
 		}
 
-		classBytecodeForOuter = BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameOuter);
+		classBytecodeForOuter = BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameOuter, true);
 
-		BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameInner1);
-		BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameInner2);
+		BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameInner1, true);
+		BytecodeLoader.fetchBytecodeForClass(classpathLocations, classNameInner2, true);
 
 		List<ClassBC> classBytecodeListForOuter = SourceMapper.getClassBytecodeList(classBytecodeForOuter);
 

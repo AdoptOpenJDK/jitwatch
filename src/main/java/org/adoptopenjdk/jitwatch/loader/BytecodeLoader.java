@@ -107,7 +107,7 @@ public final class BytecodeLoader
 		return null;
 	}
 
-	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName)
+	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, boolean cacheBytecode)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -128,12 +128,12 @@ public final class BytecodeLoader
 
 		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
 
-		ClassBC classBytecode = parseByteCodeFromString(fqClassName, byteCodeString);
+		ClassBC classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
 
 		return classBytecode;
 	}
 
-	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString)
+	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString, boolean cacheBytecode)
 	{
 		ClassBC result = null;
 
@@ -143,7 +143,7 @@ public final class BytecodeLoader
 
 			try
 			{
-				result = parse(fqClassName, bytecodeLines);
+				result = parse(fqClassName, bytecodeLines, cacheBytecode);
 			}
 			catch (Throwable t)
 			{
@@ -173,7 +173,7 @@ public final class BytecodeLoader
 		}
 		catch (IOException ioe)
 		{
-			logger.error("", ioe);
+			logger.error("IOException in JavapTask", ioe);
 		}
 
 		return byteCodeString;
@@ -205,7 +205,7 @@ public final class BytecodeLoader
 	}
 
 	// TODO refactor this class - better stateful than all statics
-	public static ClassBC parse(String fqClassName, String[] bytecodeLines)
+	public static ClassBC parse(String fqClassName, String[] bytecodeLines, boolean cacheBytecode)
 	{
 		ClassBC classBytecode = new ClassBC(fqClassName);
 
@@ -295,7 +295,10 @@ public final class BytecodeLoader
 				{
 					classBytecode.setSourceFile(getSourceFile(line));
 
-					SourceMapper.addSourceClassMapping(classBytecode);
+					if (cacheBytecode)
+					{
+						SourceMapper.addSourceClassMapping(classBytecode);
+					}
 				}
 				break;
 			case INNERCLASSES:

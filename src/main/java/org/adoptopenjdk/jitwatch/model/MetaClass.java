@@ -105,7 +105,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 		if (classBytecode == null)
 		{
-			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName());
+			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName(), true);
 
 			if (classBytecode != null)
 			{

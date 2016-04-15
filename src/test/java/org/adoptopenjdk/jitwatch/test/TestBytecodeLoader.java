@@ -41,7 +41,7 @@ public class TestBytecodeLoader
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(fqClassName, methodName, params, char.class);
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), fqClassName);
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), fqClassName, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -395,7 +395,7 @@ public class TestBytecodeLoader
 		IMetaMember member = UnitTestUtil
 				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class }, int.class);
 
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -449,7 +449,7 @@ public class TestBytecodeLoader
 		"major version: 51",
 		"flags: ACC_PUBLIC, ACC_SUPER"};
 
-		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines);
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines, false);
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -470,7 +470,7 @@ public class TestBytecodeLoader
 		"major version: 51",
 		"flags: ACC_PUBLIC, ACC_SUPER"};
 
-		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines);
+		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines, false);
 		assertEquals(1, classBytecode.getMinorVersion());
 		assertEquals(51, classBytecode.getMajorVersion());
 	}
@@ -503,7 +503,7 @@ public class TestBytecodeLoader
 		"      0: #35()",
 		"      0: #35()"};
 
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), bcSig);
 
@@ -634,7 +634,7 @@ public class TestBytecodeLoader
 				"                            line 44: 60",
 				"                            line 45: 74" };
 
-		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines);
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(),
 				S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
@@ -656,7 +656,7 @@ public class TestBytecodeLoader
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[]{java.lang.String.class}, void.class);
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -677,7 +677,7 @@ public class TestBytecodeLoader
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class }, void.class);
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className);
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 

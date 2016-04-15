@@ -123,7 +123,9 @@ public class JarScan
 			return;
 		}
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, fqClassName);
+		boolean cacheBytecode = false;
+		
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, fqClassName, cacheBytecode);
 
 		if (classBytecode != null)
 		{
