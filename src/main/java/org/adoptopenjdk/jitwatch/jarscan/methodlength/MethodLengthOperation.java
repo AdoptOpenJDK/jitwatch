@@ -34,6 +34,7 @@ public class MethodLengthOperation implements IJarScanOperation
 		this.findSize = findSize;
 	}
 
+	@Override
 	public String getReport()
 	{
 		List<Map.Entry<MemberSignatureParts, Integer>> sortedList = new ArrayList<>(methodMap.entrySet());

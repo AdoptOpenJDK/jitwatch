@@ -26,4 +26,4 @@ CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
 CLASSPATH=$CLASSPATH:target/jitwatch-1.0.0-SNAPSHOT.jar
 
-"$JAVA_HOME/bin/java" -Djava.library.path=$JAVA_HOME/lib/amd64 -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.visualiser.HistoPlotter $1
+"$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.visualiser.HistoPlotter $1

@@ -38,19 +38,30 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public class JarScan
 {
-	private List<IJarScanOperation> operations = new ArrayList<>();
+	private IJarScanOperation operation;
 	private List<String> allowedPackagePrefixes = new ArrayList<>();
 
-	private Writer writer;
-
-	public JarScan(Writer writer)
+	public JarScan(IJarScanOperation operation)
 	{
-		this.writer = writer;
+		this.operation = operation;
 	}
 
-	public void addOperation(IJarScanOperation op)
+	public void writeReport()
 	{
-		operations.add(op);
+		Writer writer = new PrintWriter(System.out);
+
+		String report = operation.getReport();
+
+		try
+		{
+			writer.write(report);
+			writer.flush();
+			writer.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void iterateJar(File jarFile) throws IOException
@@ -77,19 +88,6 @@ public class JarScan
 					process(classLocations, fqName);
 				}
 			}
-		}
-
-		createReport();
-	}
-
-	private void createReport() throws IOException
-	{
-		for (IJarScanOperation op : operations)
-		{
-			String report = op.getReport();
-
-			writer.write(report);
-			writer.flush();
 		}
 	}
 
@@ -124,28 +122,27 @@ public class JarScan
 		}
 
 		boolean cacheBytecode = false;
-		
+
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, fqClassName, cacheBytecode);
 
 		if (classBytecode != null)
 		{
 			for (MemberBytecode memberBytecode : classBytecode.getMemberBytecodeList())
 			{
-				for (IJarScanOperation op : operations)
+
+				try
 				{
-					try
-					{
-						op.processInstructions(fqClassName, memberBytecode);
-					}
-					catch (Exception e)
-					{
-						System.err.println("Could not process " + fqClassName + " "
-								+ memberBytecode.getMemberSignatureParts().getMemberName());
-						System.err.println(memberBytecode.toString());
-						e.printStackTrace();
-						System.exit(-1);
-					}
+					operation.processInstructions(fqClassName, memberBytecode);
 				}
+				catch (Exception e)
+				{
+					System.err.println(
+							"Could not process " + fqClassName + " " + memberBytecode.getMemberSignatureParts().getMemberName());
+					System.err.println(memberBytecode.toString());
+					e.printStackTrace();
+					System.exit(-1);
+				}
+
 			}
 		}
 		else
@@ -159,48 +156,43 @@ public class JarScan
 	{
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("JarScan --mode=<mode> [--packages=a,b,c,...] [params] <jars>").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
+		String SEPARATOR = "---------------------------------------------------------------------------------------------------";
+
+		builder.append("JarScan --mode=<mode> [options] [params] <jars>").append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
+		builder.append("Options:").append(S_NEWLINE);
+		builder.append("     --packages=a,b,c     Only include methods from named packages. E.g. --packages=java.util.*")
 				.append(S_NEWLINE);
-		builder.append("Available modes:").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
+		builder.append("Modes:").append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  maxMethodSize            List every method with bytecode larger than specified limit.").append(S_NEWLINE);
 		builder.append("     --limit=n             Report methods larger than n bytes.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  sequenceCount            Count instruction sequences.").append(S_NEWLINE);
 		builder.append("     --length=n            Report sequences of length n.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  invokeCount              Count the most called methods for each invoke instruction.").append(S_NEWLINE);
 		builder.append("    [--limit=n]            Limit to top n results per invoke type.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  nextInstructionFreq      List the most popular next instruction for each bytecode instruction.")
 				.append(S_NEWLINE);
 		builder.append("    [--limit=n]            Limit to top n results per instruction.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  allocationCount          Count the most allocated types.").append(S_NEWLINE);
 		builder.append("    [--limit=n]            Limit to top n results.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  instructionCount         Count occurences of each bytecode instruction.").append(S_NEWLINE);
 		builder.append("    [--limit=n]            Limit to top n results.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  sequenceSearch           List methods containing the specified bytecode sequence.").append(S_NEWLINE);
 		builder.append("     --sequence=a,b,c,...  Comma separated sequence of bytecode instructions.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  methodSizeHisto          List frequencies of method bytecode sizes.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("  methodLength             List methods of the given bytecode size.").append(S_NEWLINE);
 		builder.append("    --length=n             Size of methods to find.").append(S_NEWLINE);
-		builder.append("----------------------------------------------------------------------------------------------")
-				.append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
 
 		System.err.println(builder.toString());
 	}
@@ -374,11 +366,7 @@ public class JarScan
 			System.exit(-1);
 		}
 
-		Writer writer = new PrintWriter(System.out);
-
-		JarScan scanner = new JarScan(writer);
-
-		scanner.addOperation(operation);
+		JarScan scanner = new JarScan(operation);
 
 		String packages = getParamString(args, ARG_PACKAGES);
 
@@ -406,8 +394,6 @@ public class JarScan
 			if (jarFile.exists() && jarFile.isFile())
 			{
 				scanner.iterateJar(jarFile);
-
-				writer.write(S_NEWLINE);
 			}
 			else
 			{
@@ -415,7 +401,6 @@ public class JarScan
 			}
 		}
 
-		writer.flush();
-		writer.close();
+		scanner.writeReport();
 	}
 }

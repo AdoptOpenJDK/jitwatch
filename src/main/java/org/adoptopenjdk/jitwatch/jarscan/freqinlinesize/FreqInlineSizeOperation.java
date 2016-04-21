@@ -34,6 +34,7 @@ public class FreqInlineSizeOperation implements IJarScanOperation
 		this.freqInlineSize = freqInlineSize;
 	}
 
+	@Override
 	public String getReport()
 	{
 		List<Map.Entry<MemberSignatureParts, Integer>> sortedList = new ArrayList<>(countMap.entrySet());

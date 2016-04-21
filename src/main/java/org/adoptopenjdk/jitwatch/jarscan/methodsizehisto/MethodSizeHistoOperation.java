@@ -29,6 +29,7 @@ public class MethodSizeHistoOperation implements IJarScanOperation
 	{
 	}
 
+	@Override
 	public String getReport()
 	{
 		List<Map.Entry<Integer, Integer>> sortedList = new ArrayList<>(methodSizeMap.entrySet());
@@ -84,7 +85,6 @@ public class MethodSizeHistoOperation implements IJarScanOperation
 				{
 					methodSizeMap.put(bcSize, existingCount + 1);
 				}
-
 			}
 		}
 	}
