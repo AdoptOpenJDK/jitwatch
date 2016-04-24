@@ -1,6 +1,7 @@
 package org.adoptopenjdk.jitwatch.jarscan.visualiser;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class HistoPlotter extends Application
 
 			String inputPath = unnamedParameters.get(0);
 
-			lines = Files.readAllLines(Paths.get(inputPath));
+			lines = Files.readAllLines(Paths.get(inputPath),StandardCharsets.UTF_8);
 		}
 		catch (IOException e)
 		{
