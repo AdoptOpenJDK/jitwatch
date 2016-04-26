@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.adoptopenjdk.jitwatch</groupId>
+    <groupId>com.chrisnewland</groupId>
     <artifactId>jitwatch</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
@@ -78,6 +78,9 @@
         <contributor>
             <name>Alex Bertram</name>
         </contributor>
+        <contributor>
+            <name>Alex Blewitt</name>
+        </contributor>
     </contributors>
 
     <issueManagement>
@@ -87,7 +90,7 @@
 
     <ciManagement>
         <system>Jenkins</system>
-        <url>https://adopt-openjdk.ci.cloudbees.com/job/jitwatch/</url>
+        <url>http://chriswhocodes.com/jenkins/jitwatch/</url>
     </ciManagement>
 
     <mailingLists>
@@ -97,6 +100,26 @@
             <unsubscribe>jitwatch+unsubscribe@googlegroups.com</unsubscribe>
         </mailingList>
     </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
+        <developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
+        <url>${project.url}</url>
+        <tag>HEAD</tag>
+    </scm>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -126,7 +149,15 @@
                     <version>${jdk.version}</version>
                     <systemPath>${tools.jar}</systemPath>
                     <scope>system</scope>
-                </dependency>
+		</dependency>
+            <!-- System dependencies -->
+		<dependency>
+                	<groupId>com.oracle</groupId>
+	                <artifactId>javafx</artifactId>
+	                <version>${javafx.version}</version>
+	                <systemPath>${jfxrt.jar}</systemPath>
+	                <scope>system</scope>
+		</dependency>
             </dependencies>
         </profile>
         
@@ -162,7 +193,6 @@
                 <jdk>[1.9,9]</jdk>
             </activation>
             <properties>
-                <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
                 <jdk.version>1.9</jdk.version>
                 <!-- Generic version number as Oracle doesn't release separate jars -->
                 <javafx.version>9</javafx.version>
@@ -222,15 +252,6 @@
                 <version>${logback.version}</version>
             </dependency>
             
-            <!-- System dependencies -->
-            <dependency>
-                <groupId>com.oracle</groupId>
-                <artifactId>javafx</artifactId>
-                <version>${javafx.version}</version>
-                <systemPath>${jfxrt.jar}</systemPath>
-                <scope>system</scope>
-            </dependency>
-            
             <!-- Test dependencies -->
             <dependency>
                 <groupId>junit</groupId>
@@ -253,10 +274,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>javafx</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -514,24 +531,4 @@
             <roots> <root>src/main/java</root> <root>src/test/java</root> </roots> <verbose>false</verbose> 
             </configuration> </execution> </executions> </plugin> </plugins> -->
     </build>
-
-    <scm>
-        <connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
-        <developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
-        <url>${project.url}</url>
-        <tag>HEAD</tag>
-    </scm>
-    
-    <distributionManagement>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 </project>
