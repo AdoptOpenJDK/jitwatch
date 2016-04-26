@@ -1,20 +1,27 @@
 package org.adoptopenjdk.jitwatch.jarscan.visualiser;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
@@ -23,6 +30,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -33,9 +41,15 @@ public class HistoPlotter extends Application
 {
 	private List<XYChart.Data<Number, Number>> values = new ArrayList<>();
 
+	private Scene scene;
+
 	private ScatterChart<Number, Number> chart;
 
 	private int limit;
+
+	private static final String PARAM_SCREENSHOT = "screenshot";
+
+	private int screenshot = -1;
 
 	public HistoPlotter()
 	{
@@ -56,7 +70,15 @@ public class HistoPlotter extends Application
 
 			String inputPath = unnamedParameters.get(0);
 
-			lines = Files.readAllLines(Paths.get(inputPath),StandardCharsets.UTF_8);
+			lines = Files.readAllLines(Paths.get(inputPath), StandardCharsets.UTF_8);
+
+			Map<String, String> namedParameters = parameters.getNamed();
+			
+			if (namedParameters.containsKey(PARAM_SCREENSHOT))
+			{
+				screenshot = Integer.parseInt(namedParameters.get(PARAM_SCREENSHOT));
+			}
+
 		}
 		catch (IOException e)
 		{
@@ -110,17 +132,37 @@ public class HistoPlotter extends Application
 			for (final XYChart.Data<Number, Number> data : chartSeries.getData())
 			{
 				Tooltip tooltip = new Tooltip();
-				tooltip.setText(data.getYValue().toString() + " instances of value " + data.getXValue().toString() );
+				tooltip.setText(data.getYValue().toString() + " instances of value " + data.getXValue().toString());
 				Tooltip.install(data.getNode(), tooltip);
+			}
+		}
+	}
+
+	private void doScreenshot()
+	{		
+		if (screenshot != -1)
+		{	
+			WritableImage imageSnap = new WritableImage((int)chart.getWidth(), (int)chart.getHeight());
+
+			chart.snapshot(new SnapshotParameters(), imageSnap);
+			
+            try
+			{            	
+            	ImageIO.write(SwingFXUtils.fromFXImage(imageSnap, null), "png", new File("snapshot.png"));
+				Platform.exit();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
 			}
 		}
 	}
 
 	public HistoPlotter(String[] args)
 	{
-		if (args.length != 1)
+		if (args.length < 1)
 		{
-			System.err.println("HistoPlotter <histo CSV>");
+			System.err.println("HistoPlotter <histo CSV> [--" + PARAM_SCREENSHOT + "=limit]");
 			System.exit(-1);
 		}
 
@@ -138,7 +180,16 @@ public class HistoPlotter extends Application
 				stage.close();
 			}
 		});
-
+		
+		stage.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<WindowEvent>()
+		{
+			@Override
+			public void handle(WindowEvent window)
+			{
+				doScreenshot();
+			}
+		});
+		
 		BorderPane borderPane = new BorderPane();
 
 		Label label = new Label("Limit:");
@@ -167,7 +218,7 @@ public class HistoPlotter extends Application
 		hBox.getChildren().addAll(label, tfLimit);
 		hBox.setSpacing(10);
 
-		Scene scene = UserInterfaceUtil.getScene(borderPane, 800, 480);
+		scene = UserInterfaceUtil.getScene(borderPane, 800, 480);
 
 		borderPane.setTop(hBox);
 		borderPane.setCenter(buildChart());

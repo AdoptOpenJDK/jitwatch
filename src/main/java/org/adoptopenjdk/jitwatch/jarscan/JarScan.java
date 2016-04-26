@@ -129,7 +129,6 @@ public class JarScan
 		{
 			for (MemberBytecode memberBytecode : classBytecode.getMemberBytecodeList())
 			{
-
 				try
 				{
 					operation.processInstructions(fqClassName, memberBytecode);
@@ -148,7 +147,6 @@ public class JarScan
 		else
 		{
 			System.err.println("An error occurred while parsing " + fqClassName);
-			System.exit(-1);
 		}
 	}
 
