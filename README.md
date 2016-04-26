@@ -18,6 +18,9 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 <h2>gradle</h2>
 <pre>gradlew clean build run</pre>
 
+<h2>Jenkins CI</h2>
+<h3>http://chriswhocodes.com:8080/</h3>
+
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code first with ant / maven / IDE
 ./makeDemoLogFile.sh</pre>
