@@ -17,3 +17,8 @@ Button {
   -fx-base: #eeeeff;
   -fx-padding: 3 9 4 9;
 }
+
+.chart-title {
+  -fx-text-fill: blue;
+  -fx-font-size: 16px;
+}

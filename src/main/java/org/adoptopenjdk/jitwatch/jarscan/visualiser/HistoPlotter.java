@@ -45,11 +45,15 @@ public class HistoPlotter extends Application
 
 	private ScatterChart<Number, Number> chart;
 
-	private int limit;
+	private int limit = -1;
 
 	private static final String PARAM_SCREENSHOT = "screenshot";
 
-	private int screenshot = -1;
+	private static final String PARAM_LIMIT = "limit";
+
+	private String screenshotFilename;
+
+	private String filename;
 
 	public HistoPlotter()
 	{
@@ -68,15 +72,20 @@ public class HistoPlotter extends Application
 
 			List<String> unnamedParameters = parameters.getUnnamed();
 
-			String inputPath = unnamedParameters.get(0);
+			filename = unnamedParameters.get(0);
 
-			lines = Files.readAllLines(Paths.get(inputPath), StandardCharsets.UTF_8);
+			lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
 
 			Map<String, String> namedParameters = parameters.getNamed();
-			
+
 			if (namedParameters.containsKey(PARAM_SCREENSHOT))
 			{
-				screenshot = Integer.parseInt(namedParameters.get(PARAM_SCREENSHOT));
+				screenshotFilename = namedParameters.get(PARAM_SCREENSHOT);
+			}
+
+			if (namedParameters.containsKey(PARAM_LIMIT))
+			{
+				limit = Integer.parseInt(namedParameters.get(PARAM_LIMIT));
 			}
 
 		}
@@ -104,7 +113,10 @@ public class HistoPlotter extends Application
 			}
 		}
 
-		limit = maxSize;
+		if (limit == -1)
+		{
+			limit = maxSize;
+		}
 	}
 
 	private void updateObservable()
@@ -136,19 +148,21 @@ public class HistoPlotter extends Application
 				Tooltip.install(data.getNode(), tooltip);
 			}
 		}
+		
+		chart.setTitle(getTitle());
 	}
 
 	private void doScreenshot()
-	{		
-		if (screenshot != -1)
-		{	
-			WritableImage imageSnap = new WritableImage((int)chart.getWidth(), (int)chart.getHeight());
+	{
+		if (screenshotFilename != null)
+		{
+			WritableImage imageSnap = new WritableImage((int) chart.getWidth(), (int) chart.getHeight());
 
 			chart.snapshot(new SnapshotParameters(), imageSnap);
-			
-            try
-			{            	
-            	ImageIO.write(SwingFXUtils.fromFXImage(imageSnap, null), "png", new File("snapshot.png"));
+
+			try
+			{
+				ImageIO.write(SwingFXUtils.fromFXImage(imageSnap, null), "png", new File(screenshotFilename));
 				Platform.exit();
 			}
 			catch (IOException e)
@@ -162,7 +176,7 @@ public class HistoPlotter extends Application
 	{
 		if (args.length < 1)
 		{
-			System.err.println("HistoPlotter <histo CSV> [--" + PARAM_SCREENSHOT + "=limit]");
+			System.err.println("HistoPlotter <histo CSV> [--" + PARAM_LIMIT + "=limit] [--" + PARAM_SCREENSHOT + "=outputFilename]");
 			System.exit(-1);
 		}
 
@@ -180,7 +194,7 @@ public class HistoPlotter extends Application
 				stage.close();
 			}
 		});
-		
+
 		stage.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<WindowEvent>()
 		{
 			@Override
@@ -189,7 +203,7 @@ public class HistoPlotter extends Application
 				doScreenshot();
 			}
 		});
-		
+
 		BorderPane borderPane = new BorderPane();
 
 		Label label = new Label("Limit:");
@@ -223,19 +237,35 @@ public class HistoPlotter extends Application
 		borderPane.setTop(hBox);
 		borderPane.setCenter(buildChart());
 
-		borderPane.setPadding(new Insets(10, 10, 10, 10));
-
 		updateObservable();
 
 		stage.setTitle("JarScan Histo Plotter by @chriswhocodes");
 		stage.setScene(scene);
 		stage.show();
 	}
+	
+	private String getTitle()
+	{
+		String chartTitle = null;
+
+		int lastSlash = filename.lastIndexOf(File.separator);
+
+		if (lastSlash != -1)
+		{
+			chartTitle = filename.substring(lastSlash + 1);
+		}
+		else
+		{
+			chartTitle = filename;
+		}
+		
+		return "Input file: " + chartTitle + "    limit: " + limit;
+	}
 
 	private ScatterChart<Number, Number> buildChart()
 	{
 		Axis<Number> xAxis = new NumberAxis();
-		xAxis.setLabel("Method Bytecode Size (bytes)");
+		xAxis.setLabel("Method bytecode size (bytes)");
 
 		Axis<Number> yAxis = new NumberAxis();
 		yAxis.setLabel("Frequency");
@@ -243,6 +273,8 @@ public class HistoPlotter extends Application
 		chart = new ScatterChart<>(xAxis, yAxis);
 		chart.setAnimated(false);
 		chart.setLegendVisible(false);
+		chart.setPadding(new Insets(10, 20, 10, 10));
+		chart.setTitle(getTitle());
 
 		return chart;
 	}
