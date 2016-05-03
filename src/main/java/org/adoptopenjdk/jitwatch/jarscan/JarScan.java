@@ -91,6 +91,11 @@ public class JarScan
 		}
 	}
 
+	public void addAllowedPackagePrefix(String prefix)
+	{
+		allowedPackagePrefixes.add(prefix);
+	}
+
 	private boolean isAllowedPackage(String fqClassName)
 	{
 		boolean allowed = false;
@@ -375,8 +380,7 @@ public class JarScan
 			for (String prefix : prefixes)
 			{
 				prefix = prefix.replace(S_ASTERISK, S_EMPTY);
-
-				scanner.allowedPackagePrefixes.add(prefix);
+				scanner.addAllowedPackagePrefix(prefix);
 			}
 		}
 
