@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,6 +26,7 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
 import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
@@ -44,6 +45,9 @@ public class Sandbox
 	public static final Path SANDBOX_DIR;
 	public static final Path SANDBOX_SOURCE_DIR;
 	public static final Path SANDBOX_CLASS_DIR;
+	
+	public static final Path PATH_STD_ERR;
+	public static final Path PATH_STD_OUT;
 
 	private static final String SANDBOX_LOGFILE = "sandbox.log";
 
@@ -52,6 +56,8 @@ public class Sandbox
 	private ILogParser logParser;
 
 	private LanguageManager languageManager;
+	
+	private IExternalProcess lastProcess;
 
 	static
 	{
@@ -60,6 +66,9 @@ public class Sandbox
 		SANDBOX_DIR = Paths.get(userDir, "sandbox");
 		SANDBOX_SOURCE_DIR = Paths.get(userDir, "sandbox", "sources");
 		SANDBOX_CLASS_DIR = Paths.get(userDir, "sandbox", "classes");
+		
+		PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
+		PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
 
 		initialise();
 	}
@@ -141,6 +150,8 @@ public class Sandbox
 
 		logListener.log("Compiling: " + StringUtil.listToString(compileList));
 
+		lastProcess = compiler;
+		
 		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
 				logListener);
 
@@ -150,6 +161,8 @@ public class Sandbox
 		{
 			String fqClassNameToRun = runtime.getClassToExecute(fileToRun);
 
+			lastProcess = runtime;
+			
 			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
 
 			logListener.log("Execution success: " + executionSuccess);
@@ -167,13 +180,18 @@ public class Sandbox
 			}
 			else
 			{
-				sandboxStage.showError(AbstractProcess.getErrorStream());
+				sandboxStage.showError(runtime.getErrorStream());
 			}
 		}
 		else
 		{
-			sandboxStage.showError(AbstractProcess.getErrorStream());
+			sandboxStage.showError(compiler.getErrorStream());
 		}
+	}
+	
+	public IExternalProcess getLastProcess()
+	{
+		return lastProcess;
 	}
 
 	private List<String> buildUniqueClasspath(JITWatchConfig config)

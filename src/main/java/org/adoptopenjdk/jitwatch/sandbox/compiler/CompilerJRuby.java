@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -17,8 +17,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
+import org.adoptopenjdk.jitwatch.process.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class CompilerJRuby extends AbstractProcess implements ICompiler
 {
@@ -31,6 +32,8 @@ public class CompilerJRuby extends AbstractProcess implements ICompiler
 
 	public CompilerJRuby(String languageHomeDir) throws FileNotFoundException
 	{
+		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+
 		compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
 
 		if (!compilerPath.toFile().exists())

@@ -86,7 +86,7 @@ public class TestCompilationUtil
 
 			if (!success)
 			{
-				System.err.println(CompilerJava.getErrorStream());
+				System.err.println(compiler.getErrorStream());
 				fail();
 			}
 

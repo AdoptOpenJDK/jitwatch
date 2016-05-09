@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox;
+package org.adoptopenjdk.jitwatch.process;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
@@ -16,16 +16,23 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractProcess
+public abstract class AbstractProcess implements IExternalProcess
 {
 	protected static final Logger logger = LoggerFactory.getLogger(RuntimeJava.class);
 
-	public static final Path PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
-	public static final Path PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
+	private Path stdErr;
+	private Path stdOut;
+	
+	public AbstractProcess(Path stdErr, Path stdOut)
+	{
+		this.stdErr = stdErr;
+		this.stdOut = stdOut;
+	}
 
 	public String getExecutableSuffix()
 	{
@@ -42,15 +49,16 @@ public abstract class AbstractProcess
 		return System.getProperty("os.name", S_EMPTY).contains("Windows");
 	}
 
-	public static String getOutputStream()
+	@Override
+	public String getOutputStream()
 	{
 		String result = null;
 
-		if (PATH_STD_OUT.toFile().exists())
+		if (stdOut.toFile().exists())
 		{
 			try
 			{
-				result = new String(Files.readAllBytes(PATH_STD_OUT), StandardCharsets.UTF_8);
+				result = new String(Files.readAllBytes(stdOut), StandardCharsets.UTF_8);
 			}
 			catch (IOException ioe)
 			{
@@ -61,15 +69,16 @@ public abstract class AbstractProcess
 		return result;
 	}
 
-	public static String getErrorStream()
+	@Override
+	public String getErrorStream()
 	{
 		String result = null;
 
-		if (PATH_STD_ERR.toFile().exists())
+		if (stdErr.toFile().exists())
 		{
 			try
 			{
-				result = new String(Files.readAllBytes(PATH_STD_ERR), StandardCharsets.UTF_8);
+				result = new String(Files.readAllBytes(stdErr), StandardCharsets.UTF_8);
 			}
 			catch (IOException ioe)
 			{
@@ -135,8 +144,8 @@ public abstract class AbstractProcess
 				pb.directory(workingDirectory);
 			}
 
-			pb.redirectError(PATH_STD_ERR.toFile());
-			pb.redirectOutput(PATH_STD_OUT.toFile());
+			pb.redirectError(stdErr.toFile());
+			pb.redirectOutput(stdOut.toFile());
 
 			Process proc = pb.start();
 

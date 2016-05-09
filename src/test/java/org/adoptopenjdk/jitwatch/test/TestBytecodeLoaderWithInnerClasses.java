@@ -118,7 +118,7 @@ public class TestBytecodeLoaderWithInnerClasses
 
 			if (!success)
 			{
-				System.err.println(CompilerJava.getErrorStream());
+				System.err.println(compiler.getErrorStream());
 				fail();
 			}
 		}

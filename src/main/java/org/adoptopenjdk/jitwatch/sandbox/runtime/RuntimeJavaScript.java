@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,8 +12,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
+import org.adoptopenjdk.jitwatch.process.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 {
@@ -23,6 +24,8 @@ public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 
 	public RuntimeJavaScript(String languageHomeDir) throws FileNotFoundException
 	{
+		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+
 		runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
 
 		if (!runtimePath.toFile().exists())

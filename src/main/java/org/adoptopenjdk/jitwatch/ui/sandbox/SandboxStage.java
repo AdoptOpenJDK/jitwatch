@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -55,7 +55,7 @@ import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
+import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
@@ -279,7 +279,20 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			@Override
 			public void handle(ActionEvent e)
 			{
-				showOutput(AbstractProcess.getOutputStream());
+				IExternalProcess lastProcess = sandbox.getLastProcess();
+				
+				String outputString;
+				
+				if (lastProcess != null)
+				{
+					outputString = lastProcess.getOutputStream();
+				}
+				else
+				{
+					outputString = "No output";
+				}
+				
+				showOutput(outputString);
 			}
 		});
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
-import org.adoptopenjdk.jitwatch.sandbox.AbstractProcess;
+import org.adoptopenjdk.jitwatch.process.AbstractProcess;
 import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerKotlin;
@@ -31,6 +31,8 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 
 	public RuntimeKotlin(String languageHomeDir) throws FileNotFoundException
 	{
+		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+
 		// Kotlin is executed on the current running Java VM
 		runtimePath = Paths.get(System.getProperty("java.home"), "bin", RUNTIME_NAME);
 
