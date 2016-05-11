@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox.runtime;
+package org.adoptopenjdk.jitwatch.process.runtime;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerKotlin;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerKotlin;
 
 public class RuntimeKotlin extends AbstractProcess implements IRuntime
 {
@@ -31,7 +31,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 
 	public RuntimeKotlin(String languageHomeDir) throws FileNotFoundException
 	{
-		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+		super();
 
 		// Kotlin is executed on the current running Java VM
 		runtimePath = Paths.get(System.getProperty("java.home"), "bin", RUNTIME_NAME);
@@ -45,7 +45,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ISandboxLogListener logListener)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 

@@ -36,11 +36,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,12 +57,10 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
+import org.adoptopenjdk.jitwatch.process.javap.JavapProcess;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.tools.javap.JavapTask;
-import com.sun.tools.javap.JavapTask.BadArgs;
 
 public final class BytecodeLoader
 {
@@ -116,21 +110,22 @@ public final class BytecodeLoader
 			logger.info("Class locations: {}", StringUtil.listToString(classLocations));
 		}
 
-		String[] args = buildClassPathFromClassLocations(classLocations, fqClassName);
-
-		if (DEBUG_LOGGING_BYTECODE)
+		try
 		{
-			for (String arg : args)
-			{
-				logger.debug("arg: {}", arg);
-			}
+			JavapProcess javapProcess = new JavapProcess();
+
+			javapProcess.execute(classLocations, fqClassName);
+
+			String byteCodeString = javapProcess.getOutputStream();
+
+			return parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
 		}
 
-		String byteCodeString = createJavapTaskFromArguments(fqClassName, args);
-
-		ClassBC classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
-
-		return classBytecode;
+		return null;
 	}
 
 	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString, boolean cacheBytecode)
@@ -152,56 +147,6 @@ public final class BytecodeLoader
 		}
 
 		return result;
-	}
-
-	private static String createJavapTaskFromArguments(String fqClassName, String[] args)
-	{
-		String byteCodeString = null;
-
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(65536))
-		{
-			JavapTask task = new JavapTask();
-			task.setLog(baos);
-			task.handleOptions(args);
-			task.call();
-
-			byteCodeString = baos.toString();
-		}
-		catch (BadArgs ba)
-		{
-			logger.error("Could not obtain bytecode for class: {}", fqClassName, ba);
-		}
-		catch (IOException ioe)
-		{
-			logger.error("IOException in JavapTask", ioe);
-		}
-
-		return byteCodeString;
-	}
-
-	private static String[] buildClassPathFromClassLocations(Collection<String> classLocations, String fqClassName)
-	{
-		String[] args;
-
-		if (classLocations == null || classLocations.size() == 0)
-		{
-			args = new String[] { "-c", "-p", "-v", fqClassName };
-		}
-		else
-		{
-			StringBuilder classPathBuilder = new StringBuilder();
-
-			for (String cp : classLocations)
-			{
-				classPathBuilder.append(cp).append(File.pathSeparatorChar);
-			}
-
-			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
-
-			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
-		}
-
-		return args;
 	}
 
 	// TODO refactor this class - better stateful than all statics

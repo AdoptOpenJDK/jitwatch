@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
+import org.adoptopenjdk.jitwatch.logger.NullLogListener;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJava;
 import org.junit.Test;
 
 public class TestExecutionUtil
@@ -70,14 +70,7 @@ public class TestExecutionUtil
 		{
 			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-			boolean success = executor.execute(MakeHotSpotLog.class.getCanonicalName(), cp, options,
-					new ISandboxLogListener()
-					{
-						@Override
-						public void log(String msg)
-						{
-						}
-					});
+			boolean success = executor.execute(MakeHotSpotLog.class.getCanonicalName(), cp, options, new NullLogListener());
 
 			assertTrue(success);
 		}

@@ -23,12 +23,12 @@ import java.util.Set;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
+import org.adoptopenjdk.jitwatch.logger.NullLogListener;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerJava;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,14 +108,7 @@ public class TestBytecodeLoaderWithInnerClasses
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, pathToTempClassDir.toFile(), new ISandboxLogListener()
-			{
-				@Override
-				public void log(String msg)
-				{
-				}
-			});
-
+			boolean success = compiler.compile(sources, compileClasspath, pathToTempClassDir.toFile(), new NullLogListener());
 			if (!success)
 			{
 				System.err.println(compiler.getErrorStream());

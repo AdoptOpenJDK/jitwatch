@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox.compiler;
+package org.adoptopenjdk.jitwatch.process.compiler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,9 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class CompilerJava extends AbstractProcess implements ICompiler
 {
@@ -26,7 +25,7 @@ public class CompilerJava extends AbstractProcess implements ICompiler
 
 	public CompilerJava(String languageHomeDir) throws FileNotFoundException
 	{
-		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+		super();
 
 		compilerPath = Paths.get(languageHomeDir, "..", "bin", COMPILER_NAME);
 
@@ -44,7 +43,7 @@ public class CompilerJava extends AbstractProcess implements ICompiler
 	}
 
 	@Override
-	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, ISandboxLogListener logListener)
+	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, ILogListener logListener)
 			throws IOException
 	{
 		List<String> commands = new ArrayList<>();

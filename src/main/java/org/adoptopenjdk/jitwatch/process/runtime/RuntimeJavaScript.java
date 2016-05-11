@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox.runtime;
+package org.adoptopenjdk.jitwatch.process.runtime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,9 +12,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 {
@@ -24,7 +23,7 @@ public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 
 	public RuntimeJavaScript(String languageHomeDir) throws FileNotFoundException
 	{
-		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+		super();
 
 		runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
 
@@ -37,7 +36,7 @@ public class RuntimeJavaScript extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ISandboxLogListener logListener)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 

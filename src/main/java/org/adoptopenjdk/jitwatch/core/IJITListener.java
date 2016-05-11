@@ -5,9 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.core;
 
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 
-public interface IJITListener extends IMainLogListener
+public interface IJITListener extends ILogListener
 {
 	void handleJITEvent(JITEvent event);
 	void handleReadStart();

@@ -54,9 +54,9 @@ import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.process.IExternalProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
 import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
@@ -70,7 +70,7 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ISandboxLogListener, ILogParseErrorListener
+public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ILogListener, ILogParseErrorListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
@@ -581,6 +581,18 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 		}
 	}
 
+	@Override
+	public void handleLogEntry(String text)
+	{
+		log(text);
+	}
+	
+	@Override
+	public void handleErrorEntry(String text)
+	{
+		log(text);
+	}
+	
 	@Override
 	public void log(final String text)
 	{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -30,6 +30,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
+import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.junit.Test;
 
 public class TestFindOptimizedVirtualCall
@@ -276,7 +277,7 @@ public class TestFindOptimizedVirtualCall
 				.getOptimizedVirtualCallSiteOrNull());
 	}
 
-	private static final int sourceLine = 283; // update if call to test2() changes line!
+	private static final int sourceLine = 284; // TODO this must match call to test2() within test1() method
 
 	public void test1()
 	{
@@ -287,10 +288,10 @@ public class TestFindOptimizedVirtualCall
 	{
 		System.out.println("Raise the anchor, bring it on home");
 	}
-
+	
 	@Test
 	public void testCallSiteFoundMultiLineComment() throws ClassNotFoundException
-	{
+	{	
 		String fqClassName = getClass().getName();
 
 		String annotation = null;
@@ -340,7 +341,7 @@ public class TestFindOptimizedVirtualCall
 		IMetaMember memberTest1 = metaClass.getMemberForSignature(mspTest1);
 		IMetaMember memberTest2 = metaClass.getMemberForSignature(mspTest2);
 
-		List<String> classLocations = new ArrayList<>();
+		List<String> classLocations = ClassUtil.getCurrentClasspathElements();
 
 		OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(model, classLocations);
 

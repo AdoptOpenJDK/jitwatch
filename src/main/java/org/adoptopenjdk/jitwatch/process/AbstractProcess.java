@@ -16,8 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +28,17 @@ public abstract class AbstractProcess implements IExternalProcess
 	private Path stdErr;
 	private Path stdOut;
 	
-	public AbstractProcess(Path stdErr, Path stdOut)
+	public AbstractProcess()
 	{
-		this.stdErr = stdErr;
-		this.stdOut = stdOut;
+		try
+		{
+			stdErr = Files.createTempFile("stream", ".err");
+			stdOut = Files.createTempFile("stream", ".out");
+		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
 	}
 
 	public String getExecutableSuffix()
@@ -106,13 +113,13 @@ public abstract class AbstractProcess implements IExternalProcess
 		return cpBuilder.toString();
 	}
 
-	protected boolean runCommands(List<String> commands, ISandboxLogListener logListener)
+	protected boolean runCommands(List<String> commands, ILogListener logListener)
 	{
 		return runCommands(commands, null, null, logListener);
 	}
 
 	protected boolean runCommands(List<String> commands, File workingDirectory, Map<String, String> environment,
-			ISandboxLogListener logListener)
+			ILogListener logListener)
 	{
 		StringBuilder cmdBuilder = new StringBuilder();
 
@@ -121,8 +128,11 @@ public abstract class AbstractProcess implements IExternalProcess
 			cmdBuilder.append(part).append(C_SPACE);
 		}
 
-		logListener.log("Running: " + cmdBuilder.toString());
-
+		if (logListener != null)
+		{
+			logListener.handleLogEntry("Running: " + cmdBuilder.toString());
+		}
+		
 		int result = -1;
 
 		try
@@ -153,7 +163,11 @@ public abstract class AbstractProcess implements IExternalProcess
 		}
 		catch (Exception e)
 		{
-			logListener.log("Could not run external process:" + e);
+			if (logListener != null)
+			{
+				logListener.handleErrorEntry("Could not run external process:" + e);
+			}
+			
 			logger.error("Could not run external process:", e);
 		}
 

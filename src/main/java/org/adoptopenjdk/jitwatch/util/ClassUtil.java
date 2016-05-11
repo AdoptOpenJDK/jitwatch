@@ -10,8 +10,10 @@ import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class ClassUtil
@@ -50,5 +52,14 @@ public final class ClassUtil
 	public static Class<?> loadClassWithoutInitialising(String fqClassName, ClassLoader classLoader) throws ClassNotFoundException
 	{
 		return Class.forName(fqClassName, false, classLoader);
+	}
+	
+	public static List<String> getCurrentClasspathElements()
+	{		
+		String classPath = System.getProperty("java.class.path");
+		
+		String[] parts = classPath.split(File.pathSeparator);
+		
+		return Arrays.asList(parts);
 	}
 }

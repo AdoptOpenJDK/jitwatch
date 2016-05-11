@@ -21,27 +21,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerGroovy;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJRuby;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJava;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerJavaScript;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerKotlin;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.CompilerScala;
-import org.adoptopenjdk.jitwatch.sandbox.compiler.ICompiler;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.IRuntime;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeGroovy;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJRuby;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJava;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeJavaScript;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeKotlin;
-import org.adoptopenjdk.jitwatch.sandbox.runtime.RuntimeScala;
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerGroovy;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerJRuby;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerJava;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerJavaScript;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerKotlin;
+import org.adoptopenjdk.jitwatch.process.compiler.CompilerScala;
+import org.adoptopenjdk.jitwatch.process.compiler.ICompiler;
+import org.adoptopenjdk.jitwatch.process.runtime.IRuntime;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeGroovy;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJRuby;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJava;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJavaScript;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeKotlin;
+import org.adoptopenjdk.jitwatch.process.runtime.RuntimeScala;
 
 public class LanguageManager
 {
 	private JITWatchConfig config;
-	private ISandboxLogListener logListener;
+	private ILogListener logListener;
 
-	public LanguageManager(JITWatchConfig config, ISandboxLogListener logListener)
+	public LanguageManager(JITWatchConfig config, ILogListener logListener)
 	{
 		this.config = config;
 		this.logListener = logListener;
@@ -83,7 +84,7 @@ public class LanguageManager
 			}
 			catch (FileNotFoundException fnfe)
 			{
-				logListener.log("Could not find " + vmLanguage + " compiler in '" + languageHomeDir + "'");
+				logListener.handleErrorEntry("Could not find " + vmLanguage + " compiler in '" + languageHomeDir + "'");
 			}
 		}
 
@@ -126,7 +127,7 @@ public class LanguageManager
 			}
 			catch (FileNotFoundException fnfe)
 			{
-				logListener.log("Could not find " + vmLanguage + " runtime in '" + languageHomeDir + "'");
+				logListener.handleErrorEntry("Could not find " + vmLanguage + " runtime in '" + languageHomeDir + "'");
 			}
 		}
 

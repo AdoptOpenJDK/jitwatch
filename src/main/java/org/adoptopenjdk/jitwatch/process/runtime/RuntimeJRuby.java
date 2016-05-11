@@ -3,10 +3,10 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox.runtime;
+package org.adoptopenjdk.jitwatch.process.runtime;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,19 +15,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
-public class RuntimeScala extends AbstractProcess implements IRuntime
+public class RuntimeJRuby extends AbstractProcess implements IRuntime
 {
 	private Path runtimePath;
 
-	private final String RUNTIME_NAME = "scala";
+	private final String RUNTIME_NAME = "jruby" + (isWindows() ? ".bat" : S_EMPTY);
 
-	public RuntimeScala(String languageHomeDir) throws FileNotFoundException
+	public RuntimeJRuby(String languageHomeDir) throws FileNotFoundException
 	{
-		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+		super();
 
 		runtimePath = Paths.get(languageHomeDir, "bin", RUNTIME_NAME);
 
@@ -40,15 +39,15 @@ public class RuntimeScala extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ISandboxLogListener logListener)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 
 		commands.add(runtimePath.toString());
 
-		for (String vmOption : vmOptions)
+		if (vmOptions.size() > 0)
 		{
-			commands.add(vmOption.replace("-XX:", "-J-XX:"));
+			commands.addAll(vmOptions);
 		}
 
 		if (classpathEntries.size() > 0)
@@ -67,13 +66,12 @@ public class RuntimeScala extends AbstractProcess implements IRuntime
 	public String getClassToExecute(File fileToRun)
 	{
 		String filename = fileToRun.getName();
-		return filename.substring(0, filename.length() - (VM_LANGUAGE_SCALA.length() + 1));
+		return filename.substring(0, filename.length() - (VM_LANGUAGE_JAVA.length() + 1));
 	}
 
 	@Override
 	public String getClassForTriView(File fileToRun)
 	{
-		// http://stackoverflow.com/questions/9350528/how-to-work-with-javap-for-scala-java-interoperability
-		return getClassToExecute(fileToRun) + C_DOLLAR;
+		return getClassToExecute(fileToRun);
 	}
 }

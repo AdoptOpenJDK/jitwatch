@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.sandbox.compiler;
+package org.adoptopenjdk.jitwatch.process.compiler;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
@@ -17,9 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import org.adoptopenjdk.jitwatch.sandbox.ISandboxLogListener;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class CompilerJRuby extends AbstractProcess implements ICompiler
 {
@@ -32,7 +31,7 @@ public class CompilerJRuby extends AbstractProcess implements ICompiler
 
 	public CompilerJRuby(String languageHomeDir) throws FileNotFoundException
 	{
-		super(Sandbox.PATH_STD_ERR, Sandbox.PATH_STD_OUT);
+		super();
 
 		compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
 
@@ -45,7 +44,7 @@ public class CompilerJRuby extends AbstractProcess implements ICompiler
 	}
 
 	@Override
-	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, ISandboxLogListener logListener)
+	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, ILogListener logListener)
 			throws IOException
 	{
 		List<String> commands = new ArrayList<>();
