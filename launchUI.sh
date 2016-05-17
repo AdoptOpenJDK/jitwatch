@@ -24,6 +24,6 @@ CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
-CLASSPATH=$CLASSPATH:target/jitwatch-1.0.0-SNAPSHOT.jar
+CLASSPATH=$CLASSPATH:target/classes
 
 "$JAVA_HOME/bin/java" -Djava.library.path=$JAVA_HOME/lib/amd64 -cp "$CLASSPATH" $@ org.adoptopenjdk.jitwatch.launch.LaunchUI
