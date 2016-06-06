@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -69,10 +69,10 @@ public final class SuggestionTableUtil
 			}
 		});
 
-		score.prefWidthProperty().bind(tv.widthProperty().multiply(0.07));
-		type.prefWidthProperty().bind(tv.widthProperty().multiply(0.08));
+		score.prefWidthProperty().bind(tv.widthProperty().multiply(0.05));
+		type.prefWidthProperty().bind(tv.widthProperty().multiply(0.1));
 		caller.prefWidthProperty().bind(tv.widthProperty().multiply(0.35));
-		suggestion.prefWidthProperty().bind(tv.widthProperty().multiply(0.48));
+		suggestion.prefWidthProperty().bind(tv.widthProperty().multiply(0.50));
 
 		tv.getColumns().add(score);
 		tv.getColumns().add(type);

@@ -46,6 +46,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// written during parse, make copy for graphing as needs sort
 	private List<Tag> codeCacheTagList = new ArrayList<>();
+	
+	private Tag endOfLog;
 
 	private String vmVersionRelease;
 
@@ -305,6 +307,18 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			codeCacheTagList.add(tag);
 		}
 	}
+	
+	public void setEndOfLog(Tag tag)
+	{
+		this.endOfLog = tag;
+	}
+	
+	@Override
+	public Tag getEndOfLogTag()
+	{
+		return endOfLog;
+	}
+	
 
 	@Override
 	public List<Tag> getCodeCacheTags()

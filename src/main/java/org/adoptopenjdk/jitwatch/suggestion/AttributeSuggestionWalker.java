@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,6 +15,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_UNLOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
@@ -24,6 +25,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
@@ -42,6 +44,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
@@ -91,8 +94,12 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_NODE_COUNT_INLINING_CUTOFF = "NodeCountInliningCutoff";
 	private static final String REASON_UNLOADED_SIGNATURE_CLASSES = "unloaded signature classes";
 
+	private static final String CODE_CACHE_FULL = "Code cache full, no further JIT compilation is possible";
+
 	static
 	{
+		scoreMap.put(CODE_CACHE_FULL, 1.0);
+
 		scoreMap.put(REASON_HOT_METHOD_TOO_BIG, 1.0);
 
 		scoreMap.put(REASON_INLINING_IS_TOO_DEEP, 0.8);
@@ -123,9 +130,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
 
-		explanationMap
-				.put(REASON_HOT_METHOD_TOO_BIG,
-						"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
+		explanationMap.put(REASON_HOT_METHOD_TOO_BIG,
+				"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
 		explanationMap.put(REASON_TOO_BIG, "The callee method is not 'hot' but is too big to be inlined into the caller method.");
 		explanationMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD,
 				"The callee method has already been compiled into a 'big' method somewhere else");
@@ -159,10 +165,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
-		
+
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
-		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_DEPENDENCY);
 		ignoreTags.add(TAG_PARSE_DONE);
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_PHASE_DONE);
@@ -173,6 +179,26 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		ignoreTags.add(TAG_VIRTUAL_CALL);
 		ignoreTags.add(TAG_CAST_UP);
 		ignoreTags.add(TAG_OBSERVE);
+	}
+
+	protected void findNonMemberSuggestions()
+	{
+		checkIfCodeCacheFull();
+	}
+
+	private void checkIfCodeCacheFull()
+	{
+		List<Tag> codeCacheTags = model.getCodeCacheTags();
+
+		for (Tag tag : codeCacheTags)
+		{
+			switch (tag.getName())
+			{
+			case TAG_CODE_CACHE_FULL:
+				handleCodeCacheFull(tag);
+				break;
+			}
+		}
 	}
 
 	@Override
@@ -343,6 +369,37 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		}
 	}
 
+	private void handleCodeCacheFull(Tag tag)
+	{
+		String reason = CODE_CACHE_FULL;
+
+		double score = 0;
+
+		if (scoreMap.containsKey(reason))
+		{
+			score = scoreMap.get(reason);
+		}
+		else
+		{
+			logger.warn("No score is set for reason: {}", reason);
+		}
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(reason).append(C_NEWLINE);
+		builder.append("Occurred at ").append(tag.getAttribute(ATTR_STAMP)).append(" seconds").append(C_NEWLINE);
+		builder.append(
+				"The code cache is a memory region in the VM where JIT-compiled methods are stored. Once this becomes full no further JIT compilation is possible and uncompiled methods will run in the interpreter which may cause performance issues for your application.")
+				.append(C_NEWLINE);
+		builder.append("You can control the code cache size with -XX:ReservedCodeCacheSize=<size>m");
+
+		Suggestion suggestion = new Suggestion(null, -1, builder.toString(), SuggestionType.CODE_CACHE, (int) Math.ceil(score));
+
+		if (!suggestionList.contains(suggestion))
+		{
+			suggestionList.add(suggestion);
+		}
+	}
+
 	private void handleBranchTag(Map<String, String> attrs, int currentBytecode, IMetaMember caller)
 	{
 		String countStr = attrs.get(ATTR_BRANCH_COUNT);
@@ -405,8 +462,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append(count);
 			reasonBuilder.append(" times and is taken with probability ");
 			reasonBuilder.append(probability);
-			reasonBuilder
-					.append(".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
+			reasonBuilder.append(
+					".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
 			Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
 					(int) Math.ceil(score));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -30,12 +30,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CLOSE_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMAND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CLOSE_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_START_COMPILE_THREAD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_SWEEPER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
@@ -44,6 +46,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOTSPOT_LOG_DONE;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -557,6 +560,15 @@ public class HotSpotLogParser implements ILogParser
 			handleTagTask(tag);
 			break;
 
+		case TAG_SWEEPER:
+		case TAG_CODE_CACHE_FULL:
+			model.addCodeCacheTag(tag);
+			break;
+
+		case TAG_HOTSPOT_LOG_DONE:
+			model.setEndOfLog(tag);
+			break;
+
 		case TAG_START_COMPILE_THREAD:
 			handleStartCompileThread(tag);
 			break;
@@ -639,18 +651,18 @@ public class HotSpotLogParser implements ILogParser
 	private void renameCompilationCompletedTimestamp(Tag tag)
 	{
 		String compilationCompletedStamp = tag.getAttribute(ATTR_STAMP);
-		
+
 		if (compilationCompletedStamp != null)
 		{
 			tag.getAttributes().remove(ATTR_STAMP);
 			tag.getAttributes().put(ATTR_STAMP_COMPLETED, compilationCompletedStamp);
 		}
 	}
-	
+
 	private void handleTagNMethod(Tag tag)
 	{
 		String attrCompiler = tag.getAttribute(ATTR_COMPILER);
-		
+
 		renameCompilationCompletedTimestamp(tag);
 
 		if (attrCompiler != null)
@@ -729,7 +741,7 @@ public class HotSpotLogParser implements ILogParser
 	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-		
+
 		long stampTime = ParseUtil.getStamp(attrs);
 
 		if (metaMember != null)
@@ -881,7 +893,8 @@ public class HotSpotLogParser implements ILogParser
 			errorDialogTitle = "UnsupportedClassVersionError for class " + fqClassName;
 			errorDialogBody = "Could not load " + fqClassName + " as the class file version is too recent for this JVM.";
 
-			logError("UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
+			logError(
+					"UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
 			logger.error("Class file for {} created in a later JVM version", fqClassName, ucve);
 		}
 		catch (Throwable t)

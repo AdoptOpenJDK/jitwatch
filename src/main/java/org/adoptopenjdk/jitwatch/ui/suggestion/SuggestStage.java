@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,6 +9,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,11 +26,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class SuggestStage extends Stage
 {
@@ -104,7 +104,8 @@ public class SuggestStage extends Stage
 				{
 					for (String allowedPackage : filterPackageSet)
 					{
-						if (suggestion.getCaller().getFullyQualifiedMemberName().startsWith(allowedPackage.trim()))
+						if (suggestion.getCaller() != null
+								&& suggestion.getCaller().getFullyQualifiedMemberName().startsWith(allowedPackage.trim()))
 						{
 							show = true;
 						}

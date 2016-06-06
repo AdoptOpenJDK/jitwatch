@@ -16,6 +16,8 @@ public interface IReadOnlyJITDataModel
     List<JITEvent> getEventListCopy();
 
     List<Tag> getCodeCacheTags();
+    
+    Tag getEndOfLogTag();
 
     String getVmVersionRelease();
     

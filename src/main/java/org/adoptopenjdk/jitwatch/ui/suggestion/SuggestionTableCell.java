@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -30,7 +30,7 @@ class SuggestionTableCell extends TableCell<SuggestTableRow, String>
 			int rows = suggestion.split(S_NEWLINE).length;
 
 			textArea.setText(suggestion);
-			textArea.setPrefHeight(70 + rows * 10);
+			textArea.setPrefHeight(100 + rows * 10);
 			textArea.setVisible(true);
 		}
 		else

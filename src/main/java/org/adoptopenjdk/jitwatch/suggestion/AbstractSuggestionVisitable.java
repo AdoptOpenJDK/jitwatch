@@ -29,6 +29,8 @@ public abstract class AbstractSuggestionVisitable extends AbstractJournalVisitab
 	public List<Suggestion> getSuggestionList()
 	{
 		TreeVisitor.walkTree(model, this);
+		
+		findNonMemberSuggestions();
 
 		Collections.sort(suggestionList, new Comparator<Suggestion>()
 		{
@@ -41,6 +43,9 @@ public abstract class AbstractSuggestionVisitable extends AbstractJournalVisitab
 
 		return suggestionList;
 	}
+	
+	protected abstract void findNonMemberSuggestions();
+
 
 	@Override
 	public void reset()

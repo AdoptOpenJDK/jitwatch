@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -17,7 +17,13 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+
+import java.util.Map;
+
+import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -47,6 +53,8 @@ public abstract class AbstractGraphStage extends Stage
 	protected long maxXQ;
 	protected long minYQ;
 	protected long maxYQ;
+	
+	protected double endOfXAxis;
 
 	private boolean xAxisTime = false;
 	
@@ -142,6 +150,36 @@ public abstract class AbstractGraphStage extends Stage
 
 		drawYAxis();
 	}
+	
+	protected long getStampFromTag(Tag tag)
+	{
+		Map<String, String> attrs = tag.getAttributes();
+		return ParseUtil.parseStamp(attrs.get(ATTR_STAMP));
+	}
+	
+	protected void continueLineToEndOfXAxis(double lastX, double lastY, Color color, double lineWidth)
+	{
+		gc.setStroke(color);
+		gc.setLineWidth(lineWidth);
+		gc.strokeLine(fix(lastX), fix(lastY), endOfXAxis, fix(lastY));
+	}
+	
+	protected void drawLabel(String text, double xPos, double yPos, Color backgroundColour)
+	{
+		double boxPad = 4;
+
+		double boxWidth = getApproximateStringWidth(text) + boxPad * 2;
+		double boxHeight = getStringHeight() + boxPad * 2;
+
+		gc.setFill(backgroundColour);
+
+		setStrokeForAxis();
+		gc.fillRect(fix(xPos), fix(yPos), fix(boxWidth), fix(boxHeight));
+		gc.strokeRect(fix(xPos), fix(yPos), fix(boxWidth), fix(boxHeight));
+
+		setStrokeForText();
+		gc.fillText(text, fix(xPos + boxPad), fix(yPos));
+	}
 
 	private void drawXAxisTime()
 	{
@@ -159,14 +197,16 @@ public abstract class AbstractGraphStage extends Stage
 			
 			setStrokeForAxis();
 			gc.strokeLine(fix(x), fix(graphGapTop), fix(x), fix(graphGapTop + chartHeight));
-
+			
 			boolean showMillis = maxX  < 5000;
 
 			setStrokeForText();
 			gc.fillText(StringUtil.formatTimestamp(gridX, showMillis), fix(x), fix(graphGapTop + chartHeight + 2));
 
-			gridX += xInc;
+			gridX += xInc;						
 		}
+		
+		endOfXAxis = fix(graphGapLeft + normaliseX(gridX));
 	}
 
 	private void drawXAxis()
@@ -191,6 +231,8 @@ public abstract class AbstractGraphStage extends Stage
 
 			gridX += xInc;
 		}
+		
+		endOfXAxis = fix(graphGapLeft + normaliseX(gridX));
 	}
 
 	private void drawYAxis()
@@ -205,9 +247,9 @@ public abstract class AbstractGraphStage extends Stage
 
 		int maxYLabelWidth = StringUtil.formatThousands(Long.toString(maxYQ)).length();
 
-		graphGapLeft = Math.max(40.5, maxYLabelWidth*7);
+		graphGapLeft = Math.max(40.5, maxYLabelWidth*9);
 
-		double yLabelX = graphGapLeft - (1 + maxYLabelWidth) * 6;
+		double yLabelX = graphGapLeft - (1 + maxYLabelWidth) * 8;
 
 		while (gridY <= maxYQ)
 		{

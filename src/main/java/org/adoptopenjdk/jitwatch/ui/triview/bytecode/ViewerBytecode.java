@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,14 +10,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -41,6 +33,14 @@ import org.adoptopenjdk.jitwatch.util.JVMSUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
+import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 
 public class ViewerBytecode extends Viewer
 {
@@ -109,7 +109,7 @@ public class ViewerBytecode extends Viewer
 	{
 		offsetMismatchDetected = false;
 		instructions.clear();
-		
+
 		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode();
 
 		if (metaClassBytecode != null)
@@ -173,7 +173,7 @@ public class ViewerBytecode extends Viewer
 
 	private void checkIfExistingSuggestionForMember(IMetaMember member)
 	{
-		if (lastSuggestion != null && lastSuggestion.getCaller().equals(member))
+		if (lastSuggestion != null && lastSuggestion.getCaller() != null && lastSuggestion.getCaller().equals(member))
 		{
 			highlightBytecodeForSuggestion(lastSuggestion);
 		}
@@ -206,14 +206,13 @@ public class ViewerBytecode extends Viewer
 
 				for (LineAnnotation annotation : annotationList)
 				{
-					if (annotation.getType() != lastAnnotationType
-						|| lastAnnotationType != BCAnnotationType.UNCOMMON_TRAP)
+					if (annotation.getType() != lastAnnotationType || lastAnnotationType != BCAnnotationType.UNCOMMON_TRAP)
 					{
 						instructionToolTipBuilder.append(S_NEWLINE);
 					}
-					
+
 					lastAnnotationType = annotation.getType();
-					
+
 					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
 				}
 			}
@@ -391,8 +390,8 @@ public class ViewerBytecode extends Viewer
 			@Override
 			public void run()
 			{
-				stageAccessProxy
-						.openBrowser("Downloading Failed", "Unable to download a local copy of the JVM Specification", null);
+				stageAccessProxy.openBrowser("Downloading Failed", "Unable to download a local copy of the JVM Specification",
+						null);
 			}
 		});
 	}

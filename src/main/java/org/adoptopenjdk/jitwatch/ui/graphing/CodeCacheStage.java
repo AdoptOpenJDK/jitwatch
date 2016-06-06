@@ -1,19 +1,22 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_FREE_CODE_CACHE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_SWEEPER;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.scene.Scene;
@@ -23,6 +26,8 @@ import javafx.stage.StageStyle;
 
 public class CodeCacheStage extends AbstractGraphStage
 {
+	private boolean labelLeft = true;
+
 	public CodeCacheStage(JITWatchUI parent)
 	{
 		super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, true);
@@ -50,6 +55,8 @@ public class CodeCacheStage extends AbstractGraphStage
 	{
 		super.baseRedraw();
 
+		labelLeft = true;
+		
 		List<Tag> codeCacheTags = parent.getJITDataModel().getCodeCacheTags();
 
 		Collections.sort(codeCacheTags, new Comparator<Tag>()
@@ -64,10 +71,20 @@ public class CodeCacheStage extends AbstractGraphStage
 		if (codeCacheTags.size() > 0)
 		{
 			Tag firstTag = codeCacheTags.get(0);
-			Tag lastTag = codeCacheTags.get(codeCacheTags.size() - 1);
-
 			minX = getStampFromTag(firstTag);
-			maxX = getStampFromTag(lastTag);
+
+			Tag endOfLogTag = parent.getJITDataModel().getEndOfLogTag();
+
+			if (endOfLogTag != null)
+			{
+				maxX = getStampFromTag(endOfLogTag);
+
+			}
+			else
+			{
+				Tag lastTag = codeCacheTags.get(codeCacheTags.size() - 1);
+				maxX = getStampFromTag(lastTag);
+			}
 
 			minY = getFreeCodeCacheFromTag(firstTag);
 			maxY = getFreeCodeCacheFromTag(firstTag);
@@ -92,29 +109,45 @@ public class CodeCacheStage extends AbstractGraphStage
 			double lastCX = graphGapLeft + normaliseX(minX);
 			double lastCY = graphGapTop + normaliseY(getFreeCodeCacheFromTag(firstTag));
 
-			gc.setStroke(Color.BLACK);
-
 			Color colourLine = Color.BLUE;
-
-			gc.setFill(colourLine);
-			gc.setStroke(colourLine);
-			gc.setLineWidth(2.0);
+			double lineWidth = 2.0;
 
 			for (Tag ccTag : codeCacheTags)
 			{
 				long stamp = getStampFromTag(ccTag);
-				long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
 
 				double x = graphGapLeft + normaliseX(stamp);
-				double y = graphGapTop + normaliseY(freeCodeCache);
+				double y = lastCY;
 
-				gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+				switch (ccTag.getName())
+				{
+				case TAG_CODE_CACHE:
+					long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
 
-				lastCX = x;
+					y = graphGapTop + normaliseY(freeCodeCache);
+
+					gc.setFill(colourLine);
+					gc.setStroke(colourLine);
+					gc.setLineWidth(lineWidth);
+
+					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+
+					break;
+
+				case TAG_SWEEPER:
+					showLabel("Sweep", Color.WHITE, x, y);
+					break;
+					
+				case TAG_CODE_CACHE_FULL:
+					showLabel("Code Cache Full", Color.RED, x, y);
+					break;
+				}
+
 				lastCY = y;
+				lastCX = x;
 			}
 
-			gc.setLineWidth(1.0);
+			continueLineToEndOfXAxis(lastCX, lastCY, colourLine, lineWidth);
 		}
 		else
 		{
@@ -122,16 +155,31 @@ public class CodeCacheStage extends AbstractGraphStage
 		}
 	}
 
-	private long getStampFromTag(Tag tag)
+	private void showLabel(String text, Color background, double x, double y)
 	{
-		Map<String, String> attrs = tag.getAttributes();
-		return ParseUtil.parseStamp(attrs.get(JITWatchConstants.ATTR_STAMP));
+		double labelX;
+		double labelY;
 
+		if (labelLeft)
+		{
+			labelX = x - getApproximateStringWidth(text) - 16;
+			labelY = Math.min(y - getStringHeight(), graphGapTop + chartHeight - 32);
+
+		}
+		else
+		{
+			labelX = x + 8;
+			labelY = Math.min(y, graphGapTop + chartHeight - 32);
+		}
+
+		drawLabel(text, labelX, labelY, background);
+
+		labelLeft = !labelLeft;
 	}
 
 	private long getFreeCodeCacheFromTag(Tag tag)
 	{
 		Map<String, String> attrs = tag.getAttributes();
-		return Long.parseLong(attrs.get(JITWatchConstants.ATTR_FREE_CODE_CACHE));
+		return Long.parseLong(attrs.get(ATTR_FREE_CODE_CACHE));
 	}
 }

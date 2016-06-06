@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -125,9 +125,21 @@ public class TimeLineStage extends AbstractGraphStage
 				}
 			});
 
-			minX = 0;
-			maxX = events.get(events.size() - 1).getStamp();
-			maxX *= 1.2;
+			JITEvent firstEvent = events.get(0);
+			minX = firstEvent.getStamp();
+
+			Tag endOfLogTag = parent.getJITDataModel().getEndOfLogTag();
+			
+			if (endOfLogTag != null)
+			{
+				maxX = getStampFromTag(endOfLogTag);
+
+			}
+			else
+			{
+				JITEvent lastEvent = events.get(events.size() - 1);
+				maxX = lastEvent.getStamp();
+			}	
 
 			minY = 0;
 
@@ -236,23 +248,6 @@ public class TimeLineStage extends AbstractGraphStage
 		drawLabel(text, xPos, yPos, Color.WHITE);
 	}
 	
-	private void drawLabel(String text, double xPos, double yPos, Color backgroundColour)
-	{
-		double boxPad = 4;
-
-		double boxWidth = getApproximateStringWidth(text) + boxPad * 2;
-		double boxHeight = getStringHeight() + boxPad * 2;
-
-		gc.setFill(backgroundColour);
-
-		setStrokeForAxis();
-		gc.fillRect(fix(xPos), fix(yPos), fix(boxWidth), fix(boxHeight));
-		gc.strokeRect(fix(xPos), fix(yPos), fix(boxWidth), fix(boxHeight));
-
-		setStrokeForText();
-		gc.fillText(text, fix(xPos + boxPad), fix(yPos));
-	}
-
 	private String buildLabel(Tag nextJournalEvent, long journalEventTime)
 	{
 		StringBuilder selectedItemBuilder = new StringBuilder();
@@ -311,6 +306,7 @@ public class TimeLineStage extends AbstractGraphStage
 	private void drawEvents(List<JITEvent> events)
 	{
 		Color colourMarker = Color.BLUE;
+		double lineWidth = 2.0;
 
 		int cumC = 0;
 
@@ -333,12 +329,14 @@ public class TimeLineStage extends AbstractGraphStage
 			}
 
 			gc.setStroke(colourMarker);
-			gc.setLineWidth(2);
+			gc.setLineWidth(lineWidth);
 			gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
 
 			lastCX = x;
 			lastCY = y;
 		}
+		
+		continueLineToEndOfXAxis(lastCX, lastCY, colourMarker, lineWidth);
 
 		showStatsLegend(gc);
 	}

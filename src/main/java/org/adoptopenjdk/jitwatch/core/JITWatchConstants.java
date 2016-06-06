@@ -74,6 +74,10 @@ public final class JITWatchConstants
 	public static final String TAG_RELEASE = "release";
 	public static final String TAG_TWEAK_VM = "TweakVM";
 
+	public static final String TAG_SWEEPER = "sweeper";
+	public static final String TAG_CODE_CACHE_FULL = "code_cache_full";
+	public static final String TAG_HOTSPOT_LOG_DONE = "hotspot_log_done";
+
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
 	public static final String TAG_TASK = "task";
