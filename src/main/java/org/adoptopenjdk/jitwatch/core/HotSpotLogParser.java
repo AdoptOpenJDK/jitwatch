@@ -52,9 +52,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -848,6 +850,14 @@ public class HotSpotLogParser implements ILogParser
 		if (originalLocation != null && originalLocation.startsWith(S_FILE_COLON))
 		{
 			originalLocation = originalLocation.substring(S_FILE_COLON.length());
+
+			try
+			{
+				originalLocation = URLDecoder.decode(originalLocation, "UTF-8");
+			}
+			catch (UnsupportedEncodingException e) {
+				// ignore
+			}
 
 			getParsedClasspath().addClassLocation(originalLocation);
 		}
