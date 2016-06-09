@@ -213,10 +213,6 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 						if (instr != null)
 						{
-							StringBuilder builder = new StringBuilder();
-							builder.append("Object does not escape method.\n");
-							builder.append("Heap allocation has been eliminated.\n");
-
 							String typeID = tag.getAttribute(ATTR_TYPE);
 
 							String typeOrKlassName = null;
@@ -225,16 +221,14 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 							{
 								typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
 
-								if (typeOrKlassName != null)
-								{
-									builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
-								}
 							}
+
+							String annotation = buildEliminatedAllocationAnnotation(typeOrKlassName);
 
 							if (instr.getOpcode() == Opcode.NEW)
 							{
 								bcAnnotations.addAnnotation(bciValue,
-										new LineAnnotation(builder.toString(), BCAnnotationType.ELIMINATED_ALLOCATION));
+										new LineAnnotation(annotation, BCAnnotationType.ELIMINATED_ALLOCATION));
 
 								instr.setEliminated(true);
 							}
@@ -432,8 +426,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				}
 
 				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = TooltipUtil.buildInlineAnnotationText(true, reason, callAttrs, methodAttrs,
-						parseDictionary);
+				String annotationText = buildInlineAnnotation(parseDictionary, methodAttrs, callAttrs, reason, true);
 
 				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
 
@@ -450,8 +443,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				}
 
 				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = TooltipUtil.buildInlineAnnotationText(false, reason, callAttrs, methodAttrs,
-						parseDictionary);
+				String annotationText = buildInlineAnnotation(parseDictionary, methodAttrs, callAttrs, reason, false);
 
 				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 
@@ -530,7 +522,27 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		}
 	}
 
-	private String buildBranchAnnotation(Map<String, String> tagAttrs)
+	protected String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
+																				 Map<String, String> callAttrs, String reason, boolean inlined)
+	{
+		return TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs,
+				parseDictionary);
+	}
+
+	protected String buildEliminatedAllocationAnnotation(String typeOrKlassName)
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("Object does not escape method.\n");
+		builder.append("Heap allocation has been eliminated.\n");
+
+		if (typeOrKlassName != null)
+		{
+			builder.append("Eliminated allocation was of type ").append(typeOrKlassName);
+		}
+		return builder.toString();
+	}
+
+	protected String buildBranchAnnotation(Map<String, String> tagAttrs)
 	{
 		String count = tagAttrs.get(ATTR_BRANCH_COUNT);
 		String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);
