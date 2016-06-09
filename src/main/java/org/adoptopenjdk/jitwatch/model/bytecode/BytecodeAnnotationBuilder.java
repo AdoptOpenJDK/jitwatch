@@ -358,8 +358,9 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 		int currentBytecode = -1;
 
-		Map<String, String> methodAttrs = new HashMap<>();
+		Map<String, Map<String, String>> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
+		Map<String, String> lastMethodAttrs = new HashMap<>();
 
 		String currentMethodID = parseTag.getAttribute(ATTR_METHOD);
 
@@ -406,14 +407,27 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				callAttrs.clear();
 				callAttrs.putAll(tagAttrs);
 
+				lastMethodAttrs.clear();
+				String calleeId = tagAttrs.get("method");
+				if (calleeId != null)
+				{
+					Map<String, String> calleeAttrs = methodAttrs.get(calleeId);
+					if (calleeAttrs != null)
+					{
+						lastMethodAttrs.putAll(calleeAttrs);
+					}
+				}
+
 				break;
 			}
 
 			case TAG_METHOD:
 			{
-				methodAttrs.clear();
-				methodAttrs.putAll(tagAttrs);
-
+				String methodId = tagAttrs.get("id");
+				if (methodId != null)
+				{
+					methodAttrs.put(methodId, tagAttrs);
+				}
 				break;
 			}
 
@@ -426,7 +440,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				}
 
 				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = buildInlineAnnotation(parseDictionary, methodAttrs, callAttrs, reason, true);
+				String annotationText = buildInlineAnnotation(parseDictionary, lastMethodAttrs, callAttrs, reason, true);
 
 				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
 
@@ -443,7 +457,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				}
 
 				String reason = tagAttrs.get(ATTR_REASON);
-				String annotationText = buildInlineAnnotation(parseDictionary, methodAttrs, callAttrs, reason, false);
+				String annotationText = buildInlineAnnotation(parseDictionary, lastMethodAttrs, callAttrs, reason, false);
 
 				bcAnnotations.addAnnotation(currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
 
