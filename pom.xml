@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.chrisnewland</groupId>
-	<artifactId>jitwatch</artifactId>
+	<artifactId>jitwatch-parent</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
@@ -14,7 +14,7 @@
 		<module>ui</module>
 	</modules>
 
-	<name>JITWatch</name>
+	<name>JITWatch Parent</name>
 	<description>Visualisation of JIT behaviour</description>
 	<url>https://github.com/AdoptOpenJDK/jitwatch</url>
 	<inceptionYear>2013</inceptionYear>
@@ -88,6 +88,9 @@
 		</contributor>
 		<contributor>
 			<name>Alex Blewitt</name>
+		</contributor>
+		<contributor>
+			<name>John Patrick</name>
 		</contributor>
 	</contributors>
 
@@ -378,9 +381,9 @@
 					<version>2.17</version>
 				</plugin>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-war-plugin</artifactId>
-					<version>2.4</version>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

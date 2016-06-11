@@ -1,0 +1,100 @@
+<project name="jitwatch" default="all" basedir=".">
+	<property name="main_src" value="src/main/java" />
+	<property name="test_src" value="src/test/java" />
+	<property name="resources" value="src/main/resources" />
+	<property name="target" location="target" />
+	<property name="main_classes" location="${target}/classes" />
+	<property name="test_classes" location="${target}/test-classes" />
+	<property name="lib" value="../lib" />
+	<property environment="env" />
+
+	<property name="core_main_classes" location="../core/target/classes" />
+	<property name="core_test_classes" location="../core/target/test-classes" />
+
+	<target name="clean">
+		<delete quiet="true" dir="${target}" />
+		<mkdir dir="${target}" />
+	</target>
+
+	<path id="classpath">
+		<fileset dir="${lib}" includes="**/*.jar" />
+		<filelist>
+			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
+			<!-- Java 8 stores jfxrt in a different location -->
+			<file name="${env.JAVA_HOME}/jre/lib/ext/jfxrt.jar" />
+			<file name="${env.JAVA_HOME}/lib/tools.jar" />
+		</filelist>
+	</path>
+
+	<target name="compile">
+		<mkdir dir="${main_classes}" />
+		<javac srcdir="${main_src}" destdir="${main_classes}" includeantruntime="false">
+			<classpath>
+				<path refid="classpath" />
+				<dirset dir="${core_main_classes}" />
+			</classpath>
+		</javac>
+
+		<mkdir dir="${test_classes}" />
+		<javac srcdir="${test_src}" destdir="${test_classes}" includeantruntime="false">
+			<classpath>
+				<path refid="classpath" />
+				<dirset dir="${main_classes}" />
+				<dirset dir="${core_main_classes}" />
+				<dirset dir="${core_test_classes}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="test" depends="compile, doTest" />
+
+	<target name="doTest">
+		<mkdir dir="target/test-output" />
+		<junit printsummary="yes">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement path="${main_classes}" />
+				<pathelement path="${test_classes}" />
+				<fileset dir="${core_main_classes}" />
+				<fileset dir="${core_test_classes}" />
+			</classpath>
+
+			<formatter type="plain" />
+
+			<batchtest fork="yes" todir="target/test-output">
+				<fileset dir="${test_src}" includes="**/Test*.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="jar" depends="test, doJar" />
+
+	<target name="doJar">
+		<jar destfile="${target}/jitwatch-ui-1.0.0-SNAPSHOT.jar">
+			<fileset dir="${main_classes}">
+				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="${resources}">
+				<include name="images/**" />
+				<include name="*.xml" />
+				<include name="*.css" />
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="org.adoptopenjdk.jitwatch.launch.LaunchUI" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="run" depends="jar, doRun" />
+
+	<target name="doRun">
+		<java classname="org.adoptopenjdk.jitwatch.launch.LaunchUI" classpathref="classpath">
+			<classpath>
+				<pathelement location="../core/target/jitwatch-1.0.0-SNAPSHOT.jar" />
+				<pathelement location="${target}/jitwatch-ui-1.0.0-SNAPSHOT.jar" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="all" depends="jar" />
+</project>
