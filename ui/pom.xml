@@ -3,127 +3,22 @@
 0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.chrisnewland</groupId>
-	<artifactId>jitwatch</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<parent>
+		<groupId>com.chrisnewland</groupId>
+		<artifactId>jitwatch</artifactId>
+		<version>1.0.1-SNAPSHOT</version>
+	</parent>
 
-	<packaging>pom</packaging>
+	<artifactId>jitwatch-ui</artifactId>
 
-	<modules>
-		<module>core</module>
-		<module>ui</module>
-	</modules>
-
-	<name>JITWatch</name>
-	<description>Visualisation of JIT behaviour</description>
-	<url>https://github.com/AdoptOpenJDK/jitwatch</url>
-	<inceptionYear>2013</inceptionYear>
-
-	<prerequisites>
-		<maven>3.2.1</maven>
-	</prerequisites>
-
-	<licenses>
-		<license>
-			<name>Simplified BSD License</name>
-			<url>http://opensource.org/licenses/BSD-2-Clause</url>
-			<distribution>repo</distribution>
-			<comments>Simplified BSD License</comments>
-		</license>
-	</licenses>
-
-	<developers>
-		<developer>
-			<name>Chris Newland</name>
-			<url>http://www.chrisnewland.com</url>
-			<email>chris@chrisnewland.com</email>
-			<timezone>GMT</timezone>
-		</developer>
-	</developers>
-
-	<contributors>
-		<contributor>
-			<name>Martijn Verburg</name>
-			<timezone>GMT</timezone>
-		</contributor>
-		<contributor>
-			<name>Mani Sarkar</name>
-			<timezone>GMT</timezone>
-		</contributor>
-		<contributor>
-			<name>Stefan Ferstl</name>
-		</contributor>
-		<contributor>
-			<name>Philip Aston</name>
-		</contributor>
-		<contributor>
-			<name>Marshall Pierce</name>
-		</contributor>
-		<contributor>
-			<name>Ben Evans</name>
-		</contributor>
-		<contributor>
-			<name>David Schlosnagle</name>
-		</contributor>
-		<contributor>
-			<name>Trask Stalnaker</name>
-		</contributor>
-		<contributor>
-			<name>Chris Vest</name>
-		</contributor>
-		<contributor>
-			<name>Jean-Philippe BEMPEL</name>
-		</contributor>
-		<contributor>
-			<name>Sebastian Sickelmann</name>
-		</contributor>
-		<contributor>
-			<name>Rafael Winterhalter</name>
-		</contributor>
-		<contributor>
-			<name>Andres Almiray</name>
-		</contributor>
-		<contributor>
-			<name>Alex Bertram</name>
-		</contributor>
-		<contributor>
-			<name>Alex Blewitt</name>
-		</contributor>
-	</contributors>
-
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/chriswhocodes/jitwatch/issues</url>
-	</issueManagement>
-
-	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://chriswhocodes.com/jenkins/jitwatch/</url>
-	</ciManagement>
-
-	<mailingLists>
-		<mailingList>
-			<name>General</name>
-			<post>jitwatch@googlegroups.com</post>
-			<unsubscribe>jitwatch+unsubscribe@googlegroups.com</unsubscribe>
-		</mailingList>
-	</mailingLists>
-
-	<scm>
-		<connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git
-		</connection>
-		<developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git
-		</developerConnection>
-		<url>${project.url}</url>
-		<tag>jitwatch-1.0.1</tag>
-	</scm>
+	<name>JITWatch Ui</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.7</slf4j.version>
 		<logback.version>1.1.2</logback.version>
 		<main.class>org.adoptopenjdk.jitwatch.launch.LaunchUI</main.class>
-		<exec.skip>true</exec.skip>
+		<exec.skip>false</exec.skip>
 	</properties>
 
 	<profiles>
@@ -133,13 +28,24 @@
 			<activation>
 				<jdk>1.7</jdk>
 			</activation>
-			<properties>
-				<tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-				<jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
-				<jdk.version>1.7</jdk.version>
-				<!-- Actually 2.2.x depending on what Java 7 you have -->
-				<javafx.version>2.2</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>tools</artifactId>
+					<version>${jdk.version}</version>
+					<systemPath>${tools.jar}</systemPath>
+					<scope>system</scope>
+				</dependency>
+				<!-- System dependencies -->
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>javafx</artifactId>
+					<version>${javafx.version}</version>
+					<systemPath>${jfxrt.jar}</systemPath>
+					<scope>system</scope>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 8 Profile ======== -->
@@ -148,13 +54,16 @@
 			<activation>
 				<jdk>1.8</jdk>
 			</activation>
-			<properties>
-				<tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-				<jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
-				<jdk.version>1.8</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
-				<javafx.version>8</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>tools</artifactId>
+					<version>${jdk.version}</version>
+					<systemPath>${tools.jar}</systemPath>
+					<scope>system</scope>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 9 Profile ======== -->
@@ -163,11 +72,7 @@
 			<activation>
 				<jdk>[1.9,9]</jdk>
 			</activation>
-			<properties>
-				<jdk.version>1.9</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
-				<javafx.version>9</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
 		</profile>
 
 		<!-- ======== Profile for deploying to Sonatype staging repository ======== -->
@@ -241,6 +146,11 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>jitwatch-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -353,6 +263,18 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>${main.class}</mainClass>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>2.10.1</version>
 					<configuration>
@@ -381,6 +303,11 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -503,7 +430,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<skip>true</skip>
+							<skip>false</skip>
 							<mainClass>${main.class}</mainClass>
 							<cleanupDaemonThreads>false</cleanupDaemonThreads>
 							<classpathScope>compile</classpathScope>

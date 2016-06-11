@@ -3,18 +3,15 @@
 0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.chrisnewland</groupId>
-	<artifactId>jitwatch</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<parent>
+		<groupId>com.chrisnewland</groupId>
+		<artifactId>jitwatch</artifactId>
+		<version>1.0.1-SNAPSHOT</version>
+	</parent>
 
-	<packaging>pom</packaging>
+	<artifactId>jitwatch-core</artifactId>
 
-	<modules>
-		<module>core</module>
-		<module>ui</module>
-	</modules>
-
-	<name>JITWatch</name>
+	<name>JITWatch Core</name>
 	<description>Visualisation of JIT behaviour</description>
 	<url>https://github.com/AdoptOpenJDK/jitwatch</url>
 	<inceptionYear>2013</inceptionYear>
@@ -119,10 +116,6 @@
 	</scm>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<slf4j.version>1.7.7</slf4j.version>
-		<logback.version>1.1.2</logback.version>
-		<main.class>org.adoptopenjdk.jitwatch.launch.LaunchUI</main.class>
 		<exec.skip>true</exec.skip>
 	</properties>
 
@@ -133,13 +126,16 @@
 			<activation>
 				<jdk>1.7</jdk>
 			</activation>
-			<properties>
-				<tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-				<jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
-				<jdk.version>1.7</jdk.version>
-				<!-- Actually 2.2.x depending on what Java 7 you have -->
-				<javafx.version>2.2</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>tools</artifactId>
+					<version>${jdk.version}</version>
+					<systemPath>${tools.jar}</systemPath>
+					<scope>system</scope>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 8 Profile ======== -->
@@ -148,13 +144,16 @@
 			<activation>
 				<jdk>1.8</jdk>
 			</activation>
-			<properties>
-				<tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-				<jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
-				<jdk.version>1.8</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
-				<javafx.version>8</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>tools</artifactId>
+					<version>${jdk.version}</version>
+					<systemPath>${tools.jar}</systemPath>
+					<scope>system</scope>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 9 Profile ======== -->
@@ -163,11 +162,7 @@
 			<activation>
 				<jdk>[1.9,9]</jdk>
 			</activation>
-			<properties>
-				<jdk.version>1.9</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
-				<javafx.version>9</javafx.version>
-			</properties>
+			<!-- properties inherited from parent -->
 		</profile>
 
 		<!-- ======== Profile for deploying to Sonatype staging repository ======== -->

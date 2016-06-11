@@ -4,7 +4,7 @@
 	<property name="target" value="target" />
 	<property name="resources" value="src/main/resources" />
 	<property name="classes" value="${target}/classes" />
-	<property name="lib" value="lib" />
+	<property name="../lib" value="../lib" />
 	<property environment="env" />
 
 	<target name="clean">
