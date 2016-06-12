@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,6 +9,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ACTION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMMENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
 
@@ -50,11 +52,13 @@ public class UncommonTrap
 	public static UncommonTrap parse(Tag tag)
 	{
 		UncommonTrap trap = null;
+		
+		Map<String, String> tagAttributes = tag.getAttributes();
 
-		String bci = tag.getAttribute(ATTR_BCI);
-		String reason = tag.getAttribute(ATTR_REASON);
-		String action = tag.getAttribute(ATTR_ACTION);
-		String comment = tag.getAttribute(ATTR_COMMENT);
+		String bci = tagAttributes.get(ATTR_BCI);
+		String reason = tagAttributes.get(ATTR_REASON);
+		String action = tagAttributes.get(ATTR_ACTION);
+		String comment = tagAttributes.get(ATTR_COMMENT);
 
 		if (bci != null)
 		{

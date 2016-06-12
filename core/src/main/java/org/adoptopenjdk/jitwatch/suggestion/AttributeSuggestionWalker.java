@@ -304,9 +304,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		if (callee != null)
 		{
 			Tag methodTag = parseDictionary.getMethod(methodID);
+			
+			Map<String, String> methodTagAttributes = methodTag.getAttributes();
 
-			String methodBytecodes = methodTag.getAttribute(ATTR_BYTES);
-			String invocations = methodTag.getAttribute(ATTR_IICOUNT);
+			String methodBytecodes = methodTagAttributes.get(ATTR_BYTES);
+			String invocations = methodTagAttributes.get(ATTR_IICOUNT);
 
 			if (invocations != null)
 			{
@@ -357,7 +359,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 					}
 				}
 			}
-			else if (methodTag.containsAttribute(ATTR_UNLOADED) && "1".equals(methodTag.getAttribute(ATTR_UNLOADED)))
+			else if ("1".equals(methodTagAttributes.get(ATTR_UNLOADED)))
 			{
 				logger.debug("method {} has unloaded attribute of 1", callee.toStringUnqualifiedMethodName(false));
 			}
@@ -383,10 +385,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		{
 			logger.warn("No score is set for reason: {}", reason);
 		}
-
+		
 		StringBuilder builder = new StringBuilder();
 		builder.append(reason).append(C_NEWLINE);
-		builder.append("Occurred at ").append(tag.getAttribute(ATTR_STAMP)).append(" seconds").append(C_NEWLINE);
+		builder.append("Occurred at ").append(tag.getAttributes().get(ATTR_STAMP)).append(" seconds").append(C_NEWLINE);
 		builder.append(
 				"The code cache is a memory region in the VM where JIT-compiled methods are stored. Once this becomes full no further JIT compilation is possible and uncompiled methods will run in the interpreter which may cause performance issues for your application.")
 				.append(C_NEWLINE);

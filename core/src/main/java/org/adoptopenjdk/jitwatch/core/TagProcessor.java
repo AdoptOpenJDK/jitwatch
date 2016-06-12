@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -174,19 +174,19 @@ public class TagProcessor
 
 		String name = line.substring(1, indexEndName);
 
-		String remainder = line.substring(indexEndName);
+		String attributeString = line.substring(indexEndName);
 
-		Map<String, String> attrs = StringUtil.getLineAttributes(remainder);
+		Map<String, String> attrs = StringUtil.getLineAttributes(attributeString);
 		
 		Tag nextTag;
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			nextTag = new Task(name, attrs, selfClosing);
+			nextTag = new Task(name, attributeString, selfClosing);
 		}
 		else
 		{
-			nextTag = new Tag(name, attrs, selfClosing);
+			nextTag = new Tag(name, attributeString, selfClosing);
 		}
 
 		if (DEBUG_LOGGING_TAGPROCESSOR)

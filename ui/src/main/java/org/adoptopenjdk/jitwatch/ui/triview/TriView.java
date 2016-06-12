@@ -23,6 +23,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
@@ -630,9 +631,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				if (index == tagIndex)
 				{
-					String level = tag.getAttribute(ATTR_LEVEL);
-					String compiler = tag.getAttribute(ATTR_COMPILER);
-					String compileKind = tag.getAttribute(ATTR_COMPILE_KIND);
+					Map<String, String> tagAttributes = tag.getAttributes();
+					
+					String level = tagAttributes.get(ATTR_LEVEL);
+					String compiler = tagAttributes.get(ATTR_COMPILER);
+					String compileKind = tagAttributes.get(ATTR_COMPILE_KIND);
 										
 					builder.append("  (").append(compiler);
 					
@@ -672,8 +675,10 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				if (compilation == tagIndex)
 				{
-					String nativeSize = tag.getAttribute(ATTR_SIZE); // nmethod tag has size attr, task_done has nmsize
-					String compileMillis = tag.getAttribute(ATTR_COMPILE_MILLIS);
+					Map<String, String> tagAttributes = tag.getAttributes();
+
+					String nativeSize = tagAttributes.get(ATTR_SIZE); // nmethod tag has size attr, task_done has nmsize
+					String compileMillis = tagAttributes.get(ATTR_COMPILE_MILLIS);
 					
 					memberInfo.setAssemblyDetails(nativeSize, compileMillis);
 					

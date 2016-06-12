@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,12 +16,13 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPTIMIZER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -158,7 +159,7 @@ public final class JournalUtil
 
 				if (TAG_NMETHOD.equals(tagName))
 				{
-					if (C2N.equals(tag.getAttribute(ATTR_COMPILE_KIND)))
+					if (C2N.equals(tag.getAttributes().get(ATTR_COMPILE_KIND)))
 					{
 						result = true;
 					}
@@ -195,7 +196,9 @@ public final class JournalUtil
 
 		if (methodTag != null)
 		{
-			String klassID = methodTag.getAttribute(ATTR_HOLDER);
+			Map<String, String> methodTagAttributes = methodTag.getAttributes();
+			
+			String klassID = methodTagAttributes.get(ATTR_HOLDER);
 
 			Tag klassTag = parseDictionary.getKlass(klassID);
 
@@ -206,8 +209,8 @@ public final class JournalUtil
 					logger.debug("klass tag: {}", klassTag.toString(false));
 				}
 
-				String klassAttrName = klassTag.getAttribute(ATTR_NAME);
-				String methodAttrName = StringUtil.replaceXMLEntities(methodTag.getAttribute(ATTR_NAME));
+				String klassAttrName = klassTag.getAttributes().get(ATTR_NAME);
+				String methodAttrName = StringUtil.replaceXMLEntities(methodTagAttributes.get(ATTR_NAME));
 
 				if (klassAttrName != null)
 				{

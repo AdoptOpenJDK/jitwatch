@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -14,32 +14,28 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class Tag
 {
 	private String name;
-	private Map<String, String> attrs = new HashMap<>();
+	private String attributeString;
 	private List<Tag> children = new ArrayList<>();
 	private Tag parent = null;
 	private boolean selfClosing = false;
 	private boolean isFragment = false;
 	private String textContent = null;
-	private String closingTag;
 	
 	private static final String INDENT = "  ";
 
-	public Tag(String name, Map<String, String> attrs, boolean selfClosing)
+	public Tag(String name, String attributeString, boolean selfClosing)
 	{
 		this.name = name;
-		this.attrs = attrs;
+		this.attributeString = attributeString;
 		this.selfClosing = selfClosing;
-		
-		StringBuilder builder = new StringBuilder();
-		builder.append(C_OPEN_ANGLE).append(C_SLASH).append(name).append(C_CLOSE_ANGLE);
-		closingTag = builder.toString();
 	}
 
 	public void addTextContent(String text)
@@ -76,8 +72,11 @@ public class Tag
 	}
 	
 	public String getClosingTag()
-	{
-		return closingTag;
+	{		
+		StringBuilder builder = new StringBuilder();
+		builder.append(C_OPEN_ANGLE).append(C_SLASH).append(name).append(C_CLOSE_ANGLE);
+		
+		return builder.toString();
 	}
 
 	public Tag getFirstNamedChild(String name)
@@ -117,13 +116,14 @@ public class Tag
 		{
 			if (child.getName().equals(tagName))
 			{
-				if (child.containsAttribute(attrName) && child.getAttribute(attrName).equals(attrValue))
+				Map<String, String> attributes = child.getAttributes();
+				
+				if (attrValue != null && attrValue.equals(attributes.get(attrName)))
 				{
 					result.add(child);
 				}
 			}
 		}
-		
 
 		return result;
 	}
@@ -142,20 +142,10 @@ public class Tag
 	{
 		return name;
 	}
-	
-	public boolean containsAttribute(String name)
-	{
-		return attrs.containsKey(name);
-	}
 
 	public Map<String, String> getAttributes()
 	{
-		return attrs;
-	}
-
-	public String getAttribute(String name)
-	{
-		return attrs.get(name);
+		return StringUtil.getLineAttributes(attributeString);
 	}
 
 	private int getDepth(Tag tag)
@@ -188,6 +178,8 @@ public class Tag
 		}
 
 		builder.append(C_OPEN_ANGLE).append(name);
+		
+		Map<String,String> attrs = getAttributes();
 
 		if (attrs.size() > 0)
 		{
@@ -257,7 +249,7 @@ public class Tag
 		{
 			return false;
 		}
-        if (attrs != null ? !attrs.equals(tag.attrs) : tag.attrs != null)
+        if (attributeString != null ? !attributeString.equals(tag.attributeString) : tag.attributeString != null)
 		{
 			return false;
 		}
@@ -284,7 +276,7 @@ public class Tag
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
+        result = 31 * result + (attributeString != null ? attributeString.hashCode() : 0);
         result = 31 * result + (children != null ? children.hashCode() : 0);
         result = 31 * result + (parent != null ? parent.hashCode() : 0);
         result = 31 * result + (selfClosing ? 1 : 0);

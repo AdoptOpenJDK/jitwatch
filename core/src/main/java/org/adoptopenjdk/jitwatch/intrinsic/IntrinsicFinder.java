@@ -1,11 +1,34 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.intrinsic;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,8 +113,11 @@ public final class IntrinsicFinder extends AbstractJournalVisitable
 				String methodID = attrs.get(ATTR_METHOD);
 
 				Tag methodTag = parseDictionary.getMethod(methodID);
-				currentMethod = methodTag.getAttribute(ATTR_NAME);
-				holder = methodTag.getAttribute(ATTR_HOLDER);
+				
+				Map<String, String> methodTagAttributes = methodTag.getAttributes();
+				
+				currentMethod = methodTagAttributes.get(ATTR_NAME);
+				holder = methodTagAttributes.get(ATTR_HOLDER);
 				break;
 			}
 
@@ -101,11 +127,11 @@ public final class IntrinsicFinder extends AbstractJournalVisitable
 				{
 					Tag klassTag = parseDictionary.getKlass(holder);
 
-					String intrinsic = child.getAttribute(ATTR_ID);
+					String intrinsic = child.getAttributes().get(ATTR_ID);
 
 					if (klassTag != null)
 					{
-						String fqName = klassTag.getAttribute(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT + currentMethod;
+						String fqName = klassTag.getAttributes().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT + currentMethod;
 
 						result.put(fqName, intrinsic);
 					}

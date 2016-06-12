@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,9 +26,9 @@ public class Task extends Tag
 
 	private IParseDictionary parseDictionary;
 
-	public Task(String name, Map<String, String> attrs, boolean selfClosing)
+	public Task(String name, String attributeString, boolean selfClosing)
 	{
-		super(name, attrs, selfClosing);
+		super(name, attributeString, selfClosing);
 
 		parseDictionary = new ParseDictionary();
 	}
@@ -73,18 +73,22 @@ public class Task extends Tag
 		StringBuilder builder = new StringBuilder();
 
 		Tag methodTag = parseDictionary.getMethod(method);
+		
+		Map<String, String> methodTagAttrs = methodTag.getAttributes();
 
-		String returnTypeID = methodTag.getAttribute(JITWatchConstants.ATTR_RETURN);
+		String returnTypeID = methodTagAttrs.get(JITWatchConstants.ATTR_RETURN);
 
-		String args = methodTag.getAttribute(JITWatchConstants.ATTR_ARGUMENTS);
+		String args = methodTagAttrs.get(JITWatchConstants.ATTR_ARGUMENTS);
 
-		String methodName = methodTag.getAttribute(JITWatchConstants.ATTR_NAME);
+		String methodName = methodTagAttrs.get(JITWatchConstants.ATTR_NAME);
 
-		String klassId = methodTag.getAttribute(JITWatchConstants.ATTR_HOLDER);
+		String klassId = methodTagAttrs.get(JITWatchConstants.ATTR_HOLDER);
 
 		Tag klassTag = parseDictionary.getKlass(klassId);
 
-		String klassName = klassTag.getAttribute(JITWatchConstants.ATTR_NAME);
+		Map<String, String> klassTagAttrs = klassTag.getAttributes();
+		
+		String klassName = klassTagAttrs.get(JITWatchConstants.ATTR_NAME);
 		klassName = klassName.replace(S_SLASH, S_DOT);
 
 		builder.append(" <!-- ");
@@ -125,13 +129,13 @@ public class Task extends Tag
 
 			if (klassTag != null)
 			{
-				result = klassTag.getAttribute(JITWatchConstants.ATTR_NAME);
+				result = klassTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
 				result = result.replace(S_SLASH, S_DOT);
 			}
 		}
 		else
 		{
-			result = typeTag.getAttribute(JITWatchConstants.ATTR_NAME);
+			result = typeTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
 		}
 
 		if (result == null)

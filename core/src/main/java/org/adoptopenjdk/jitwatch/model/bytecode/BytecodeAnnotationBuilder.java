@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_COUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_NOT_TAKEN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
@@ -14,7 +15,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
@@ -25,6 +25,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_LOCK;
@@ -34,15 +35,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,9 +54,9 @@ import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.TooltipUtil;
@@ -172,7 +172,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 	private void visitTagParse(Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
-		String methodID = tag.getAttribute(ATTR_METHOD);
+		String methodID = tag.getAttributes().get(ATTR_METHOD);
 		
 		if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 		{
@@ -197,11 +197,13 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 		for (Tag tagJVMS : childrenJVMS)
 		{
-			String methodID = tagJVMS.getAttribute(ATTR_METHOD);
+			Map<String, String> tagJVMSAttributes = tagJVMS.getAttributes();
+			
+			String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
 			if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 			{
-				String bci = tagJVMS.getAttribute(ATTR_BCI);
+				String bci = tagJVMSAttributes.get(ATTR_BCI);
 
 				if (bci != null)
 				{
@@ -213,7 +215,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 						if (instr != null)
 						{
-							String typeID = tag.getAttribute(ATTR_TYPE);
+							String typeID = tag.getAttributes().get(ATTR_TYPE);
 
 							String typeOrKlassName = null;
 
@@ -277,11 +279,13 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 			for (Tag tagJVMS : childrenJVMS)
 			{
-				String methodID = tagJVMS.getAttribute(ATTR_METHOD);
+				Map<String, String> tagJVMSAttributes = tagJVMS.getAttributes();
+				
+				String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
 				if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 				{
-					String bci = tagJVMS.getAttribute(ATTR_BCI);
+					String bci = tagJVMSAttributes.get(ATTR_BCI);
 
 					if (bci != null)
 					{
@@ -362,7 +366,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		Map<String, String> callAttrs = new HashMap<>();
 		Map<String, String> lastMethodAttrs = new HashMap<>();
 
-		String currentMethodID = parseTag.getAttribute(ATTR_METHOD);
+		String currentMethodID = parseTag.getAttributes().get(ATTR_METHOD);
 
 		BytecodeInstruction currentInstruction = null;
 
@@ -503,7 +507,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 
 			case TAG_UNCOMMON_TRAP:
 			{
-				String trapMethod = child.getAttribute(ATTR_METHOD);
+				String trapMethod = child.getAttributes().get(ATTR_METHOD);
 
 				if (trapMethod == null || currentMethodID.equals(trapMethod))
 				{

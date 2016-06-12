@@ -32,6 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CLOSE_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMAND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOTSPOT_LOG_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CLOSE_CDATA;
@@ -46,7 +47,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOTSPOT_LOG_DONE;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -273,6 +273,14 @@ public class HotSpotLogParser implements ILogParser
 		}
 
 		parseLogFile();
+		
+		cleanup();
+	}
+	
+	private void cleanup()
+	{
+		splitLog.clear();
+		splitLog = new SplitLog();
 	}
 
 	private void parseLogFile()
@@ -652,7 +660,7 @@ public class HotSpotLogParser implements ILogParser
 
 	private void renameCompilationCompletedTimestamp(Tag tag)
 	{
-		String compilationCompletedStamp = tag.getAttribute(ATTR_STAMP);
+		String compilationCompletedStamp = tag.getAttributes().get(ATTR_STAMP);
 
 		if (compilationCompletedStamp != null)
 		{
@@ -663,7 +671,9 @@ public class HotSpotLogParser implements ILogParser
 
 	private void handleTagNMethod(Tag tag)
 	{
-		String attrCompiler = tag.getAttribute(ATTR_COMPILER);
+		Map<String, String> tagAttributes = tag.getAttributes();
+		
+		String attrCompiler = tagAttributes.get(ATTR_COMPILER);
 
 		renameCompilationCompletedTimestamp(tag);
 
@@ -684,7 +694,7 @@ public class HotSpotLogParser implements ILogParser
 		}
 		else
 		{
-			String attrCompileKind = tag.getAttribute(ATTR_COMPILE_KIND);
+			String attrCompileKind = tagAttributes.get(ATTR_COMPILE_KIND);
 
 			if (attrCompileKind != null && C2N.equals(attrCompileKind))
 			{
@@ -707,7 +717,7 @@ public class HotSpotLogParser implements ILogParser
 		{
 			// copy timestamp from parent <task> tag used for graphing code
 			// cache
-			String stamp = tag.getAttribute(ATTR_STAMP);
+			String stamp = tag.getAttributes().get(ATTR_STAMP);
 			tagCodeCache.getAttributes().put(ATTR_STAMP, stamp);
 
 			model.addCodeCacheTag(tagCodeCache);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jean Phillipe BEMPEL
+ * Copyright (c) 2015-2016 Jean Phillipe BEMPEL
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -158,7 +158,7 @@ public class InlineVisitor implements ITreeVisitable
                             if (inlineFailureInfo == null)
                             {
                                 Tag methodTag = parseDictionary.getMethod(methodID);
-                                int byteCodeSize = Integer.parseInt(methodTag.getAttribute(ATTR_BYTES));
+                                int byteCodeSize = Integer.parseInt(methodTag.getAttributes().get(ATTR_BYTES));
                                 inlineFailureInfo = new InlineFailureInfo(memberName, byteCodeSize);
                                 inlineFailureInfos.put(memberName, inlineFailureInfo);
                             }

@@ -22,12 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
-import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.stage.StageStyle;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
@@ -37,6 +32,12 @@ import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
+import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.stage.StageStyle;
 
 public class TimeLineStage extends AbstractGraphStage
 {
@@ -217,7 +218,7 @@ public class TimeLineStage extends AbstractGraphStage
 		
 		if (TAG_NMETHOD.equals(tagName))
 		{
-			if (tag.containsAttribute(ATTR_DECOMPILES))
+			if (tag.getAttributes().containsKey(ATTR_DECOMPILES))
 			{
 				result = Color.ORANGERED;
 			}
@@ -260,7 +261,9 @@ public class TimeLineStage extends AbstractGraphStage
 		}
 		else
 		{
-			if (nextJournalEvent.getAttribute(ATTR_DECOMPILES) != null)
+			Map<String, String> eventAttributes = nextJournalEvent.getAttributes();
+			
+			if (eventAttributes.containsKey(ATTR_DECOMPILES))
 			{
 				selectedItemBuilder.append("Recompiled");
 			}
@@ -269,7 +272,7 @@ public class TimeLineStage extends AbstractGraphStage
 				selectedItemBuilder.append("Compiled");
 			}
 
-			String compiler = nextJournalEvent.getAttribute(ATTR_COMPILER);
+			String compiler = eventAttributes.get(ATTR_COMPILER);
 
 			if (compiler == null)
 			{
@@ -278,14 +281,14 @@ public class TimeLineStage extends AbstractGraphStage
 
 			selectedItemBuilder.append(" by ").append(compiler);
 
-			String compileKind = nextJournalEvent.getAttribute(ATTR_COMPILE_KIND);
+			String compileKind = eventAttributes.get(ATTR_COMPILE_KIND);
 
 			if (compileKind != null)
 			{
 				selectedItemBuilder.append(C_SPACE).append(C_OPEN_PARENTHESES).append(compileKind.toUpperCase()).append(C_CLOSE_PARENTHESES);
 			}
 
-			String level = nextJournalEvent.getAttribute(ATTR_LEVEL);
+			String level = eventAttributes.get(ATTR_LEVEL);
 
 			if (level != null)
 			{

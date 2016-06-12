@@ -875,7 +875,7 @@ public final class ParseUtil
 
 	public static String getMethodTagReturn(Tag methodTag, IParseDictionary parseDictionary)
 	{
-		String returnTypeId = methodTag.getAttribute(ATTR_RETURN);
+		String returnTypeId = methodTag.getAttributes().get(ATTR_RETURN);
 
 		String returnType = lookupType(returnTypeId, parseDictionary);
 
@@ -886,7 +886,7 @@ public final class ParseUtil
 	{
 		List<String> result = new ArrayList<>();
 
-		String argumentsTypeId = methodTag.getAttribute(ATTR_ARGUMENTS);
+		String argumentsTypeId = methodTag.getAttributes().get(ATTR_ARGUMENTS);
 
 		if (argumentsTypeId != null)
 		{
@@ -909,7 +909,7 @@ public final class ParseUtil
 
 		if (methodTag != null)
 		{
-			String methodName = methodTag.getAttribute(ATTR_NAME);
+			String methodName = methodTag.getAttributes().get(ATTR_NAME);
 
 			result = StringUtil.replaceXMLEntities(methodName);
 		}
@@ -925,15 +925,17 @@ public final class ParseUtil
 
 		if (methodTag != null)
 		{
-			String methodName = methodTag.getAttribute(ATTR_NAME);
+			Map<String, String> methodTagAttributes = methodTag.getAttributes();
+			
+			String methodName = methodTagAttributes.get(ATTR_NAME);
 
 			methodName = StringUtil.replaceXMLEntities(methodName);
 
-			String klassId = methodTag.getAttribute(ATTR_HOLDER);
+			String klassId = methodTagAttributes.get(ATTR_HOLDER);
 
 			Tag klassTag = parseDictionary.getKlass(klassId);
 
-			String metaClassName = klassTag.getAttribute(ATTR_NAME);
+			String metaClassName = klassTag.getAttributes().get(ATTR_NAME);
 
 			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
 
@@ -1030,7 +1032,7 @@ public final class ParseUtil
 
 			if (typeTag != null)
 			{
-				String typeAttrName = typeTag.getAttribute(ATTR_NAME);
+				String typeAttrName = typeTag.getAttributes().get(ATTR_NAME);
 
 				if (typeAttrName != null)
 				{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -50,11 +50,23 @@ import org.junit.After;
 import org.junit.Test;
 
 public class TestBytecodeAnnotationBuilder
-{
+{	
 	@After
 	public void checkUnhandledTags()
 	{
 		assertEquals(0, JournalUtil.getUnhandledTagCount());
+	}
+	
+	private Tag createTag(String tag, Map<String, String> attrs, boolean selfClosing)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (Map.Entry<String, String> entry : attrs.entrySet())
+		{
+			builder.append(entry.getKey()).append("='").append(entry.getValue()).append("' ");	
+		}
+		
+		return new Tag(tag, builder.toString().trim(), selfClosing);
 	}
 
 	@Test
@@ -1058,7 +1070,7 @@ public class TestBytecodeAnnotationBuilder
 		attrsTypeInt.put(ATTR_ID, idInt);
 		attrsTypeInt.put(ATTR_NAME, nameInt);
 
-		Tag tagTypeInt = new Tag(TAG_TYPE, attrsTypeInt, true);
+		Tag tagTypeInt = createTag(TAG_TYPE, attrsTypeInt, true);
 
 		String methodID = "123";
 		String klassID = "456";
@@ -1068,14 +1080,14 @@ public class TestBytecodeAnnotationBuilder
 		attrsMethod.put(ATTR_HOLDER, klassID);
 		attrsMethod.put(ATTR_RETURN, idInt);
 
-		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
+		Tag tagMethod = createTag(TAG_METHOD, attrsMethod, true);
 
 		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
 		attrsKlass.put(ATTR_ID, klassID);
-		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
+		Tag tagKlass = createTag(TAG_KLASS, attrsKlass, true);
 
 		attrsParse.put(ATTR_METHOD, methodID);
-		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
 		IParseDictionary parseDictionary = new ParseDictionary();
 		parseDictionary.setKlass(klassID, tagKlass);
@@ -1084,7 +1096,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, new Class[0], int.class);
 
-		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+		String tagMethodID = tagParse.getAttributes().get(ATTR_METHOD);
 
 		assertTrue(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
 	}
@@ -1171,8 +1183,8 @@ public class TestBytecodeAnnotationBuilder
 		attrsTypeVoid.put(ATTR_ID, idVoid);
 		attrsTypeVoid.put(ATTR_NAME, nameVoid);
 
-		Tag tagTypeString = new Tag(TAG_TYPE, attrsTypeString, true);
-		Tag tagTypeVoid = new Tag(TAG_TYPE, attrsTypeVoid, true);
+		Tag tagTypeString = createTag(TAG_TYPE, attrsTypeString, true);
+		Tag tagTypeVoid = createTag(TAG_TYPE, attrsTypeVoid, true);
 
 		String methodID = "123";
 		String klassID = "456";
@@ -1183,14 +1195,14 @@ public class TestBytecodeAnnotationBuilder
 		attrsMethod.put(ATTR_ARGUMENTS, idString);
 		attrsMethod.put(ATTR_RETURN, idVoid);
 
-		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
+		Tag tagMethod = createTag(TAG_METHOD, attrsMethod, true);
 
 		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
 		attrsKlass.put(ATTR_ID, klassID);
-		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
+		Tag tagKlass = createTag(TAG_KLASS, attrsKlass, true);
 
 		attrsParse.put(ATTR_METHOD, methodID);
-		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
 		IParseDictionary parseDictionary = new ParseDictionary();
 		parseDictionary.setKlass(klassID, tagKlass);
@@ -1200,7 +1212,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params, void.class);
 
-		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+		String tagMethodID = tagParse.getAttributes().get(ATTR_METHOD);
 
 		assertTrue(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
 	}
@@ -1232,8 +1244,8 @@ public class TestBytecodeAnnotationBuilder
 		attrsTypeVoid.put(ATTR_ID, idVoid);
 		attrsTypeVoid.put(ATTR_NAME, nameVoid);
 
-		Tag tagTypeString = new Tag(TAG_TYPE, attrsTypeString, true);
-		Tag tagTypeVoid = new Tag(TAG_TYPE, attrsTypeVoid, true);
+		Tag tagTypeString = createTag(TAG_TYPE, attrsTypeString, true);
+		Tag tagTypeVoid = createTag(TAG_TYPE, attrsTypeVoid, true);
 
 		String methodID = "123";
 		String klassID = "456";
@@ -1244,14 +1256,14 @@ public class TestBytecodeAnnotationBuilder
 		attrsMethod.put(ATTR_ARGUMENTS, idString);
 		attrsMethod.put(ATTR_RETURN, idVoid);
 
-		Tag tagMethod = new Tag(TAG_METHOD, attrsMethod, true);
+		Tag tagMethod = createTag(TAG_METHOD, attrsMethod, true);
 
 		attrsKlass.put(ATTR_NAME, klassName.replace(C_DOT, C_SLASH));
 		attrsKlass.put(ATTR_ID, klassID);
-		Tag tagKlass = new Tag(TAG_KLASS, attrsKlass, true);
+		Tag tagKlass = createTag(TAG_KLASS, attrsKlass, true);
 
 		attrsParse.put(ATTR_METHOD, methodID);
-		Tag tagParse = new Tag(TAG_PARSE, attrsParse, false);
+		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
 		IParseDictionary parseDictionary = new ParseDictionary();
 		parseDictionary.setKlass(klassID, tagKlass);
@@ -1261,7 +1273,7 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params, void.class);
 
-		String tagMethodID = tagParse.getAttribute(ATTR_METHOD);
+		String tagMethodID = tagParse.getAttributes().get(ATTR_METHOD);
 
 		assertFalse(JournalUtil.memberMatchesMethodID(member, tagMethodID, parseDictionary));
 	}

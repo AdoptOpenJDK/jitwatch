@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -38,11 +38,11 @@ public class TestTagProcessor
 
 		assertEquals(3, tag.getAttributes().size());
 
-		assertEquals("632", tag.getAttribute("id"));
+		assertEquals("632", tag.getAttributes().get("id"));
 
-		assertEquals("java/lang/String", tag.getAttribute("name"));
+		assertEquals("java/lang/String", tag.getAttributes().get("name"));
 
-		assertEquals("17", tag.getAttribute("flags"));
+		assertEquals("17", tag.getAttributes().get("flags"));
 
 		assertTrue(!tp.wasFragmentSeen());
 	}
@@ -65,9 +65,9 @@ public class TestTagProcessor
 
 		assertEquals(2, tag.getAttributes().size());
 
-		assertEquals("1012", tag.getAttribute("idx"));
+		assertEquals("1012", tag.getAttributes().get("idx"));
 
-		assertEquals("1", tag.getAttribute("inner_loop"));
+		assertEquals("1", tag.getAttributes().get("inner_loop"));
 	}
 
 	@Test
@@ -111,19 +111,19 @@ public class TestTagProcessor
 
 		Tag child01 = child0.getChildren().get(0);
 		assertEquals("loop", child01.getName());
-		assertEquals("1124", child01.getAttribute("idx"));
+		assertEquals("1124", child01.getAttributes().get("idx"));
 
 		Tag child02 = child0.getChildren().get(1);
 		assertEquals("loop", child02.getName());
-		assertEquals("1012", child02.getAttribute("idx"));
-		assertEquals("1", child02.getAttribute("inner_loop"));
+		assertEquals("1012", child02.getAttributes().get("idx"));
+		assertEquals("1", child02.getAttributes().get("inner_loop"));
 
 		Tag child1 = tag.getChildren().get(1);
 		assertEquals("phase_done", child1.getName());
 		assertEquals(2, child1.getAttributes().size());
 		assertEquals(0, child1.getChildren().size());
-		assertEquals("1144", child1.getAttribute("nodes"));
-		assertEquals("14.151", child1.getAttribute("stamp"));
+		assertEquals("1144", child1.getAttributes().get("nodes"));
+		assertEquals("14.151", child1.getAttributes().get("stamp"));
 	}
 
 	@Test
@@ -153,7 +153,7 @@ public class TestTagProcessor
 		assertNotNull(tag);
 
 		assertEquals(7, tag.getAttributes().size());
-		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttribute("method"));
+		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", tag.getAttributes().get("method"));
 	}
 
 	@Test
@@ -188,8 +188,8 @@ public class TestTagProcessor
 		assertEquals(3, children.size());
 
 		Tag firstChild = tag.getFirstNamedChild("b");
-		assertEquals("2", firstChild.getAttribute("foo"));
-		assertEquals("baz", firstChild.getAttribute("bar"));
+		assertEquals("2", firstChild.getAttributes().get("foo"));
+		assertEquals("baz", firstChild.getAttributes().get("bar"));
 
 		List<Tag> childrenWithAttr = tag.getNamedChildrenWithAttribute("b", "bar", "baz");
 		assertEquals(1, childrenWithAttr.size());
@@ -449,7 +449,7 @@ public class TestTagProcessor
 
 		assertEquals("z", tag.getName());
 		assertEquals(1, tag.getAttributes().size());
-		assertEquals("zzz", tag.getAttribute("attr0"));
+		assertEquals("zzz", tag.getAttributes().get("attr0"));
 		assertEquals(0, tag.getChildren().size());
 
 		tag = tp.processLine(lines.get(2)); // <a attr1='aaa'>
@@ -468,7 +468,7 @@ public class TestTagProcessor
 		assertNotNull(tag);
 
 		assertEquals("a", tag.getName());
-		assertEquals("aaa", tag.getAttribute("attr1"));
+		assertEquals("aaa", tag.getAttributes().get("attr1"));
 		assertEquals(3, tag.getChildren().size());
 
 		List<Tag> childrenB = tag.getNamedChildren("b");
@@ -476,16 +476,16 @@ public class TestTagProcessor
 
 		Tag firstChildB = tag.getFirstNamedChild("b");
 		assertEquals(2, firstChildB.getAttributes().size());
-		assertEquals("bbb", firstChildB.getAttribute("attr2"));
-		assertEquals("ccc", firstChildB.getAttribute("attr3"));
+		assertEquals("bbb", firstChildB.getAttributes().get("attr2"));
+		assertEquals("ccc", firstChildB.getAttributes().get("attr3"));
 
 		Tag firstChildC = tag.getFirstNamedChild("c");
 		assertEquals(1, firstChildC.getAttributes().size());
-		assertEquals("ddd", firstChildC.getAttribute("attr4"));
+		assertEquals("ddd", firstChildC.getAttributes().get("attr4"));
 
 		Tag firstChildD = tag.getFirstNamedChild("d");
 		assertEquals(1, firstChildD.getAttributes().size());
-		assertEquals("eee", firstChildD.getAttribute("attr5"));
+		assertEquals("eee", firstChildD.getAttributes().get("attr5"));
 
 		assertTrue(tp.wasFragmentSeen());
 	}
@@ -510,7 +510,7 @@ public class TestTagProcessor
 
 		assertEquals("z", tag.getName());
 		assertEquals(1, tag.getAttributes().size());
-		assertEquals("zzz", tag.getAttribute("attr0"));
+		assertEquals("zzz", tag.getAttributes().get("attr0"));
 		assertEquals(0, tag.getChildren().size());
 
 		tag = tp.processLine(lines.get(2)); // </fragment>
