@@ -11,6 +11,8 @@
 	<target name="clean">
 		<delete quiet="true" dir="${target}" />
 		<mkdir dir="${target}" />
+		<mkdir dir="${main_classes}" />
+		<mkdir dir="${test_classes}" />
 	</target>
 
 	<path id="classpath">
@@ -62,7 +64,7 @@
 	<target name="jar" depends="test, doJar" />
 
 	<target name="doJar">
-		<jar destfile="${target}/jitwatch-1.0.0-SNAPSHOT.jar">
+		<jar destfile="${target}/jitwatch-1.0.1-SNAPSHOT.jar">
 			<fileset dir="${main_classes}">
 				<include name="**/*.class" />
 			</fileset>
