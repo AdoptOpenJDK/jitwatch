@@ -17,3 +17,4 @@ jitwatch.properties
 jitwatch.i*
 build/
 .gradle
+hotspot_pid*

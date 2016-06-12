@@ -1,70 +1,28 @@
 <project name="jitwatch" default="all" basedir=".">
-	<property name="src" value="src/main/java" />
-	<property name="test" value="src/test/java" />
-	<property name="target" value="target" />
-	<property name="resources" value="src/main/resources" />
-	<property name="classes" value="${target}/classes" />
-	<property name="lib" value="lib" />
-	<property environment="env" />
 
 	<target name="clean">
-		<delete quiet="true" dir="${classes}" />
-		<mkdir dir="${classes}" />
+		<ant inheritAll="false" dir="core" target="clean" />
+		<ant inheritAll="false" dir="ui" target="clean" />
 	</target>
-
-	<path id="classpath">
-		<fileset dir="${lib}" includes="**/*.jar" />
-		<filelist>
-			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
-			<!-- Java 8 stores jfxrt in a different location -->
-			<file name="${env.JAVA_HOME}/jre/lib/ext/jfxrt.jar" />
-			<file name="${env.JAVA_HOME}/lib/tools.jar" />
-		</filelist>
-	</path>
 
 	<target name="compile">
-		<mkdir dir="${classes}" />
-		<javac srcdir="${src}" destdir="${classes}" classpathref="classpath" includeantruntime="false" />
-		<javac srcdir="${test}" destdir="${classes}" classpathref="classpath" includeantruntime="false" />
+		<ant inheritAll="false" dir="core" target="compile" />
+		<ant inheritAll="false" dir="ui" target="compile" />
 	</target>
 
-	<target name="test" depends="compile">
-		<junit printsummary="yes">
-			<classpath>
-				<path refid="classpath" />
-				<pathelement path="${classes}" />
-			</classpath>
-
-			<formatter type="plain" />
-
-			<batchtest fork="yes">
-				<fileset dir="${test}" includes="**/Test*.java" />
-			</batchtest>
-		</junit>
+	<target name="test">
+		<ant inheritAll="false" dir="core" target="doTest" />
+		<ant inheritAll="false" dir="ui" target="doTest" />
 	</target>
 
-	<target name="jar" depends="test">
-		<jar destfile="${target}/jitwatch-1.0.0-SNAPSHOT.jar">
-			<fileset dir="${classes}">
-				<include name="**/*.class" />
-			</fileset>
-			<fileset dir="${resources}">
-				<include name="images/**" />
-				<include name="*.xml" />
-				<include name="*.css" />
-			</fileset>
-			<manifest>
-				<attribute name="Main-Class" value="org.adoptopenjdk.jitwatch.launch.LaunchUI" />
-			</manifest>
-		</jar>
+	<target name="jar">
+		<ant inheritAll="false" dir="core" target="doJar" />
+		<ant inheritAll="false" dir="ui" target="doJar" />
 	</target>
 
 	<target name="run" depends="jar">
-		<java classname="org.adoptopenjdk.jitwatch.launch.LaunchUI" classpathref="classpath">
-			<classpath>
-				<pathelement location="${target}/jitwatch-1.0.0-SNAPSHOT.jar" />
-			</classpath>
-		</java>
+		<ant inheritAll="false" dir="core" target="doRun" />
+		<ant inheritAll="false" dir="ui" target="doRun" />
 	</target>
 
 	<target name="all" depends="jar" />
