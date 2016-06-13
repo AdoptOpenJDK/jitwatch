@@ -66,8 +66,8 @@ public class Sandbox
 		String userDir = System.getProperty("user.dir");
 
 		SANDBOX_DIR = Paths.get(userDir, "sandbox");
-		SANDBOX_SOURCE_DIR = Paths.get(userDir, "../sandbox", "sources");
-		SANDBOX_CLASS_DIR = Paths.get(userDir, "../sandbox", "classes");
+		SANDBOX_SOURCE_DIR = Paths.get(SANDBOX_DIR.toString(), "sources");
+		SANDBOX_CLASS_DIR = Paths.get(SANDBOX_DIR.toString(), "classes");
 		
 		PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
 		PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
