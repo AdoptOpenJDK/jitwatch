@@ -35,4 +35,6 @@ public interface ILogParser
 	boolean isTweakVMLog();
 	
 	String getVMCommand();
+	
+	void discardParsedLogs();
 }

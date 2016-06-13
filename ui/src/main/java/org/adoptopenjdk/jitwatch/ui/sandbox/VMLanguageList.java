@@ -16,7 +16,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
+import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
 import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.StageManager;
 

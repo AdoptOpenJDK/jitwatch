@@ -23,7 +23,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.adoptopenjdk.jitwatch.sandbox.LanguageManager;
+import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,12 +9,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.logger.NullLogListener;
 import org.adoptopenjdk.jitwatch.process.compiler.CompilerJava;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -22,29 +25,43 @@ import org.junit.Test;
 
 public class TestCompilationUtil
 {
-	private static final File TEST_SOURCE_FILE = new File(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "org" + File.separator + "adoptopenjdk"
-			+ File.separator + "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.java");
-
-	private static final File TEST_CLASS_FILE = new File(Sandbox.SANDBOX_CLASS_DIR.toFile(), "org" + File.separator + "adoptopenjdk" + File.separator
-			+ "jitwatch" + File.separator + "compiletest" + File.separator + "CompileTest.class");
+	private Path tempDirPath;
+	private File testSourceFile;
+	private File testClassFile;
 
 	@Before
 	public void setUp()
 	{
-		deleteFile(TEST_SOURCE_FILE);
-		deleteFile(TEST_CLASS_FILE);
+		try
+		{
+			tempDirPath = Files.createTempDirectory("test_compilation_util");
+			tempDirPath.toFile().deleteOnExit();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		testSourceFile = Paths.get(tempDirPath.toString(), "org", "adoptopenjdk", "jitwatch", "compiletest", "CompileTest.java")
+				.toFile();
+
+		testClassFile = Paths.get(tempDirPath.toString(), "org", "adoptopenjdk", "jitwatch", "compiletest", "CompileTest.class")
+				.toFile();
+
+		deleteFile(testSourceFile);
+		deleteFile(testClassFile);
 	}
 
 	@After
 	public void tearDown()
 	{
-		deleteFile(TEST_SOURCE_FILE);
-		deleteFile(TEST_CLASS_FILE);
+		deleteFile(testSourceFile);
+		deleteFile(testClassFile);
 	}
 
 	private void deleteFile(File file)
 	{
-		if (file.exists() && file.isFile())
+		if (file != null && file.exists() && file.isFile())
 		{
 			file.delete();
 		}
@@ -64,9 +81,10 @@ public class TestCompilationUtil
 
 		try
 		{
-			File f = FileUtil.writeSource(Sandbox.SANDBOX_SOURCE_DIR.toFile(), "org.adoptopenjdk.jitwatch.compiletest.CompileTest", builder.toString());
+			File f = FileUtil.writeSource(tempDirPath.toFile(), "org.adoptopenjdk.jitwatch.compiletest.CompileTest",
+					builder.toString());
 
-			assertTrue(TEST_SOURCE_FILE.exists());
+			assertTrue(testSourceFile.exists());
 
 			List<File> sources = new ArrayList<>();
 			sources.add(f);
@@ -75,7 +93,7 @@ public class TestCompilationUtil
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, Sandbox.SANDBOX_CLASS_DIR.toFile(),  new NullLogListener());
+			boolean success = compiler.compile(sources, compileClasspath, tempDirPath.toFile(), new NullLogListener());
 
 			if (!success)
 			{
@@ -83,7 +101,7 @@ public class TestCompilationUtil
 				fail();
 			}
 
-			assertTrue(TEST_CLASS_FILE.exists());
+			assertTrue(testClassFile.exists());
 		}
 		catch (Exception e)
 		{

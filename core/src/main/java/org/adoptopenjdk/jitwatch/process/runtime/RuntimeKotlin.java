@@ -19,13 +19,13 @@ import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
 import org.adoptopenjdk.jitwatch.process.compiler.CompilerKotlin;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 
 public class RuntimeKotlin extends AbstractProcess implements IRuntime
 {
 	private Path runtimePath;
 
-	private final Path pathToRuntimeJar = Paths.get(Sandbox.SANDBOX_CLASS_DIR.toString(), CompilerKotlin.KOTLIN_EXECUTABLE_JAR);
+	//TODO how did this used to work?
+	private final Path pathToRuntimeJar = Paths.get(CompilerKotlin.KOTLIN_EXECUTABLE_JAR);
 
 	private final String RUNTIME_NAME = "java" + getExecutableSuffix();
 

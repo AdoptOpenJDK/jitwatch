@@ -272,12 +272,11 @@ public class HotSpotLogParser implements ILogParser
 			logSplitStats();
 		}
 
-		parseLogFile();
-		
-		cleanup();
+		parseLogFile();		
 	}
 	
-	private void cleanup()
+	@Override
+	public void discardParsedLogs()
 	{
 		splitLog.clear();
 		splitLog = new SplitLog();

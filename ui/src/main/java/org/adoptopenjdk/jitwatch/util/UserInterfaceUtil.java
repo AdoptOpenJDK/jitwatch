@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,15 +7,15 @@ package org.adoptopenjdk.jitwatch.util;
 
 import java.io.InputStream;
 
+import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-
-import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class UserInterfaceUtil
 {
