@@ -16,6 +16,7 @@
 		<mkdir dir="${target}" />
                 <mkdir dir="${main_classes}" />
                 <mkdir dir="${test_classes}" />
+                <mkdir dir="${test_src}" /> <!-- needed while no UI tests -->
 	</target>
 
 	<path id="classpath">
