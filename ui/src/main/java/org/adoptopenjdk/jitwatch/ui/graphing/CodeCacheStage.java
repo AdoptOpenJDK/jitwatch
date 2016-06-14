@@ -5,24 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_FREE_CODE_CACHE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_SWEEPER;
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.stage.StageStyle;
+import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.stage.StageStyle;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class CodeCacheStage extends AbstractGraphStage
 {
@@ -122,19 +118,11 @@ public class CodeCacheStage extends AbstractGraphStage
 				switch (ccTag.getName())
 				{
 				case TAG_CODE_CACHE:
-					long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
-
-					y = graphGapTop + normaliseY(freeCodeCache);
-
-					gc.setFill(colourLine);
-					gc.setStroke(colourLine);
-					gc.setLineWidth(lineWidth);
-
-					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-
+					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, ccTag, x);
 					break;
 
 				case TAG_SWEEPER:
+					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, ccTag, x);
 					showLabel("Sweep", Color.WHITE, x, y);
 					break;
 					
@@ -153,6 +141,20 @@ public class CodeCacheStage extends AbstractGraphStage
 		{
 			gc.fillText("No code cache information in log", fix(10), fix(10));
 		}
+	}
+
+	private double addToGraph(double lastCX, double lastCY, Color colourLine, double lineWidth, Tag ccTag, double x) {
+		double y;
+		long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
+
+		y = graphGapTop + normaliseY(freeCodeCache);
+
+		gc.setFill(colourLine);
+		gc.setStroke(colourLine);
+		gc.setLineWidth(lineWidth);
+
+		gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+		return y;
 	}
 
 	private void showLabel(String text, Color background, double x, double y)
