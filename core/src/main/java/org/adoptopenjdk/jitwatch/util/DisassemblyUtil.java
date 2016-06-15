@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.util;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,17 +34,11 @@ public final class DisassemblyUtil
 	{
 		boolean found = false;
 
-		String jrePath = System.getProperty("java.home");
+		Path binaryPath = getDisassemblerFilePath();
 
-		File jreDir = new File(jrePath);
-
-		File hsdisFile = null;
-
-		if (jreDir.exists() && jreDir.isDirectory())
+		if (binaryPath != null)
 		{
-			String binaryPath = getDisassemblerFilePath();
-
-			hsdisFile = new File(jreDir, binaryPath);
+			File hsdisFile = binaryPath.toFile();
 
 			logger.debug("looking for hsdis binary: {}", hsdisFile);
 
@@ -55,36 +51,50 @@ public final class DisassemblyUtil
 		return found;
 	}
 
-	public static String getDisassemblerFilePath()
+	public static Path getDisassemblerFilePath()
 	{
-		StringBuilder builder = new StringBuilder();
+		String javaHome = System.getProperty("java.home");
 
-		builder.append("../lib");
+		Path hsdisPath = Paths.get(javaHome);
+
+		Path hsdisPathJRE = Paths.get(hsdisPath.toString(), "jre", "lib");
+
+		if (hsdisPathJRE.toFile().exists())
+		{
+			hsdisPath = hsdisPathJRE;
+		}
+		else
+		{
+			hsdisPath = Paths.get(hsdisPath.toString(), "lib");
+		}
 
 		OperatingSystem os = getOperatingSystem();
 		Architecture arch = getArchitecture();
 
+		String binaryName = null;
+
 		switch (arch)
 		{
 		case BIT32:
-			builder.append(File.separator);
-			builder.append("i386");
-			builder.append(File.separator);
-			builder.append("server");
-			builder.append(File.separator);
-			builder.append("hsdis-i386");
+		{
+			binaryName = "hsdis-i386";
+			hsdisPath = Paths.get(hsdisPath.toString(), "i386", "server");
 			break;
+		}
 		case BIT64:
+		{
+			binaryName = "hsdis-amd64";
+
 			if (os != null && !os.equals(OperatingSystem.MAC))
 			{
-				builder.append(File.separator);
-				builder.append("amd64");
+				hsdisPath = Paths.get(hsdisPath.toString(), "amd64", "server");
 			}
-			builder.append(File.separator);
-			builder.append("server");
-			builder.append(File.separator);
-			builder.append("hsdis-amd64");
+			else
+			{
+				hsdisPath = Paths.get(hsdisPath.toString(), "server");
+			}
 			break;
+		}
 		}
 
 		if (os != null)
@@ -92,18 +102,18 @@ public final class DisassemblyUtil
 			switch (os)
 			{
 			case WIN:
-				builder.append(".dll");
+				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".dll");
 				break;
 			case MAC:
-				builder.append(".dylib");
+				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".dylib");
 				break;
 			case LINUX:
-				builder.append(".so");
+				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".so");
 				break;
 			}
 		}
 
-		return builder.toString();
+		return hsdisPath;
 	}
 
 	private static OperatingSystem getOperatingSystem()

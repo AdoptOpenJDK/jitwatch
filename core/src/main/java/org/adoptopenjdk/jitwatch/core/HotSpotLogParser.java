@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.EventType;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
@@ -571,7 +572,7 @@ public class HotSpotLogParser implements ILogParser
 
 		case TAG_SWEEPER:
 		case TAG_CODE_CACHE_FULL:
-			model.addCodeCacheTag(tag);
+			storeCodeCacheEvent(tag);
 			break;
 
 		case TAG_HOTSPOT_LOG_DONE:
@@ -714,12 +715,7 @@ public class HotSpotLogParser implements ILogParser
 
 		if (tagCodeCache != null)
 		{
-			// copy timestamp from parent <task> tag used for graphing code
-			// cache
-			String stamp = tag.getAttributes().get(ATTR_STAMP);
-			tagCodeCache.getAttributes().put(ATTR_STAMP, stamp);
-
-			model.addCodeCacheTag(tagCodeCache);
+			storeCodeCacheEvent(tagCodeCache, tag.getAttributes().get(ATTR_STAMP));
 		}
 
 		Tag tagTaskDone = tag.getFirstNamedChild(TAG_TASK_DONE);
@@ -728,6 +724,18 @@ public class HotSpotLogParser implements ILogParser
 		{
 			handleTaskDone(tagTaskDone);
 		}
+	}
+	
+	private void storeCodeCacheEvent(Tag tag)
+	{		
+		storeCodeCacheEvent(tag, tag.getAttributes().get(ATTR_STAMP));
+	}
+	
+	private void storeCodeCacheEvent(Tag tag, String stamp)
+	{
+		CodeCacheEvent codeCacheEvent = new CodeCacheEvent(ParseUtil.parseStamp(stamp), tag);
+
+		model.addCodeCacheEvent(codeCacheEvent);
 	}
 
 	private void handleMethodLine(Tag tag, EventType eventType)

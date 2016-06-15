@@ -45,7 +45,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	private Map<String, Journal> journalMap = new HashMap<>();
 
 	// written during parse, make copy for graphing as needs sort
-	private List<Tag> codeCacheTagList = new ArrayList<>();
+	private List<CodeCacheEvent> codeCacheTagList = new ArrayList<>();
 	
 	private Tag endOfLog;
 
@@ -300,11 +300,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		return resultMetaClass;
 	}
 
-	public void addCodeCacheTag(Tag tag)
+	public void addCodeCacheEvent(CodeCacheEvent event)
 	{
 		synchronized (codeCacheTagList)
 		{
-			codeCacheTagList.add(tag);
+			codeCacheTagList.add(event);
 		}
 	}
 	
@@ -318,10 +318,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	{
 		return endOfLog;
 	}
-	
 
 	@Override
-	public List<Tag> getCodeCacheTags()
+	public List<CodeCacheEvent> getCodeCacheEvents()
 	{
 		synchronized (codeCacheTagList)
 		{

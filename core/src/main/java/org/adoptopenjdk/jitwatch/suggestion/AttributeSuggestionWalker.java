@@ -15,7 +15,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_UNLOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -188,14 +188,14 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private void checkIfCodeCacheFull()
 	{
-		List<Tag> codeCacheTags = model.getCodeCacheTags();
+		List<CodeCacheEvent> codeCacheEvents = model.getCodeCacheEvents();
 
-		for (Tag tag : codeCacheTags)
+		for (CodeCacheEvent event : codeCacheEvents)
 		{
-			switch (tag.getName())
+			switch (event.getTag().getName())
 			{
 			case TAG_CODE_CACHE_FULL:
-				handleCodeCacheFull(tag);
+				handleCodeCacheFull(event);
 				break;
 			}
 		}
@@ -371,7 +371,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		}
 	}
 
-	private void handleCodeCacheFull(Tag tag)
+	private void handleCodeCacheFull(CodeCacheEvent event)
 	{
 		String reason = CODE_CACHE_FULL;
 
@@ -388,7 +388,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		
 		StringBuilder builder = new StringBuilder();
 		builder.append(reason).append(C_NEWLINE);
-		builder.append("Occurred at ").append(tag.getAttributes().get(ATTR_STAMP)).append(" seconds").append(C_NEWLINE);
+		builder.append("Occurred at ").append(event.getStamp() / 1000).append(" seconds").append(C_NEWLINE);
 		builder.append(
 				"The code cache is a memory region in the VM where JIT-compiled methods are stored. Once this becomes full no further JIT compilation is possible and uncompiled methods will run in the interpreter which may cause performance issues for your application.")
 				.append(C_NEWLINE);

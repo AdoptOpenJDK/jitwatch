@@ -15,7 +15,7 @@ public interface IReadOnlyJITDataModel
 
     List<JITEvent> getEventListCopy();
 
-    List<Tag> getCodeCacheTags();
+    List<CodeCacheEvent> getCodeCacheEvents();
     
     Tag getEndOfLogTag();
 

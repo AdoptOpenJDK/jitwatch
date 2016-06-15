@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,15 +15,12 @@ public class JITEvent
     private long stamp;
     private EventType eventType;
     private IMetaMember eventMember;
-    private String stampString;
 
     public JITEvent(long stamp, EventType eventType, IMetaMember eventMember)
     {
         this.stamp = stamp;
         this.eventType = eventType;
         this.eventMember = eventMember;
-
-        this.stampString = StringUtil.formatTimestamp(stamp, true);
     }
 
     public long getStamp()
@@ -46,7 +43,7 @@ public class JITEvent
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(stampString).append(C_SPACE);
+        sb.append(StringUtil.formatTimestamp(stamp, true)).append(C_SPACE);
 
         sb.append(StringUtil.alignRight(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
      
