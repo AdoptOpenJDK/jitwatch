@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
@@ -56,22 +57,22 @@ public class CodeCacheStage extends AbstractGraphStage
 		super.baseRedraw();
 
 		labelLeft = true;
-		
-		List<Tag> codeCacheTags = parent.getJITDataModel().getCodeCacheTags();
 
-		Collections.sort(codeCacheTags, new Comparator<Tag>()
+		List<CodeCacheEvent> codeCacheEvents = parent.getJITDataModel().getCodeCacheEvents();
+
+		Collections.sort(codeCacheEvents, new Comparator<CodeCacheEvent>()
 		{
 			@Override
-			public int compare(Tag t1, Tag t2)
+			public int compare(CodeCacheEvent e1, CodeCacheEvent e2)
 			{
-				return Long.compare(getStampFromTag(t1), getStampFromTag(t2));
+				return Long.compare(e1.getStamp(), e2.getStamp());
 			}
 		});
 
-		if (codeCacheTags.size() > 0)
+		if (codeCacheEvents.size() > 0)
 		{
-			Tag firstTag = codeCacheTags.get(0);
-			minX = getStampFromTag(firstTag);
+			CodeCacheEvent firstEvent = codeCacheEvents.get(0);
+			minX = firstEvent.getStamp();
 
 			Tag endOfLogTag = parent.getJITDataModel().getEndOfLogTag();
 
@@ -82,17 +83,17 @@ public class CodeCacheStage extends AbstractGraphStage
 			}
 			else
 			{
-				Tag lastTag = codeCacheTags.get(codeCacheTags.size() - 1);
-				maxX = getStampFromTag(lastTag);
+				CodeCacheEvent lastEvent = codeCacheEvents.get(codeCacheEvents.size() - 1);
+				maxX = lastEvent.getStamp();
 			}
 
-			minY = getFreeCodeCacheFromTag(firstTag);
-			maxY = getFreeCodeCacheFromTag(firstTag);
+			minY = getFreeCodeCacheFromEvent(firstEvent);
+			maxY = getFreeCodeCacheFromEvent(firstEvent);
 
 			// find ranges
-			for (Tag ccTag : codeCacheTags)
+			for (CodeCacheEvent event : codeCacheEvents)
 			{
-				long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
+				long freeCodeCache = getFreeCodeCacheFromEvent(event);
 
 				if (freeCodeCache > maxY)
 				{
@@ -107,37 +108,29 @@ public class CodeCacheStage extends AbstractGraphStage
 			drawAxes();
 
 			double lastCX = graphGapLeft + normaliseX(minX);
-			double lastCY = graphGapTop + normaliseY(getFreeCodeCacheFromTag(firstTag));
+			double lastCY = graphGapTop + normaliseY(getFreeCodeCacheFromEvent(firstEvent));
 
 			Color colourLine = Color.BLUE;
 			double lineWidth = 2.0;
 
-			for (Tag ccTag : codeCacheTags)
+			for (CodeCacheEvent event : codeCacheEvents)
 			{
-				long stamp = getStampFromTag(ccTag);
+				long stamp = event.getStamp();
 
 				double x = graphGapLeft + normaliseX(stamp);
 				double y = lastCY;
 
-				switch (ccTag.getName())
+				switch (event.getTag().getName())
 				{
 				case TAG_CODE_CACHE:
-					long freeCodeCache = getFreeCodeCacheFromTag(ccTag);
-
-					y = graphGapTop + normaliseY(freeCodeCache);
-
-					gc.setFill(colourLine);
-					gc.setStroke(colourLine);
-					gc.setLineWidth(lineWidth);
-
-					gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
-
+					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, event, x);
 					break;
 
 				case TAG_SWEEPER:
+					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, event, x);
 					showLabel("Sweep", Color.WHITE, x, y);
 					break;
-					
+
 				case TAG_CODE_CACHE_FULL:
 					showLabel("Code Cache Full", Color.RED, x, y);
 					break;
@@ -153,6 +146,20 @@ public class CodeCacheStage extends AbstractGraphStage
 		{
 			gc.fillText("No code cache information in log", fix(10), fix(10));
 		}
+	}
+
+	private double addToGraph(double lastCX, double lastCY, Color colourLine, double lineWidth, CodeCacheEvent event, double x)
+	{
+		long freeCodeCache = getFreeCodeCacheFromEvent(event);
+
+		double y = graphGapTop + normaliseY(freeCodeCache);
+
+		gc.setFill(colourLine);
+		gc.setStroke(colourLine);
+		gc.setLineWidth(lineWidth);
+
+		gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
+		return y;
 	}
 
 	private void showLabel(String text, Color background, double x, double y)
@@ -177,9 +184,9 @@ public class CodeCacheStage extends AbstractGraphStage
 		labelLeft = !labelLeft;
 	}
 
-	private long getFreeCodeCacheFromTag(Tag tag)
+	private long getFreeCodeCacheFromEvent(CodeCacheEvent event)
 	{
-		Map<String, String> attrs = tag.getAttributes();
+		Map<String, String> attrs = event.getTag().getAttributes();
 		return Long.parseLong(attrs.get(ATTR_FREE_CODE_CACHE));
 	}
 }

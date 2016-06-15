@@ -154,6 +154,7 @@ public abstract class AbstractGraphStage extends Stage
 	protected long getStampFromTag(Tag tag)
 	{
 		Map<String, String> attrs = tag.getAttributes();
+				
 		return ParseUtil.parseStamp(attrs.get(ATTR_STAMP));
 	}
 	

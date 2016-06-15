@@ -108,7 +108,7 @@ public class Sandbox
 
 	private static void copyExamples()
 	{
-		File srcDir = new File("src/main/resources/examples");
+		File srcDir = new File("core/src/main/resources/examples");
 		File dstDir = SANDBOX_SOURCE_DIR.toFile();
 
 		logger.debug("Copying Sandbox examples from {} to {}", srcDir, dstDir);

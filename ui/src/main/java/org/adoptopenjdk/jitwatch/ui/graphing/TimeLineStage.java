@@ -134,7 +134,6 @@ public class TimeLineStage extends AbstractGraphStage
 			if (endOfLogTag != null)
 			{
 				maxX = getStampFromTag(endOfLogTag);
-
 			}
 			else
 			{

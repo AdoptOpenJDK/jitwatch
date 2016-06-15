@@ -51,7 +51,7 @@ public final class UserInterfaceUtil
 		}
 		else
 		{
-			logger.error("Could not load resource {}. If running in an IDE please add src/main/resources to your classpath", path);
+			logger.error("Could not load resource {}. If running in an IDE please add [ui,core]/src/main/resources to your classpath", path);
 		}
 
 		return result;
