@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 dependencies {
@@ -8,3 +9,21 @@ dependencies {
     if (jdk != 'jdk9') system files(toolsLocation)
 }
 
+publishing {
+    publications {
+        bintray(MavenPublication) {
+            from components.java
+            groupId project.group
+            artifactId project.name
+            version project.version
+
+            artifact sourceJar {
+                classifier 'sources'
+            }
+
+            artifact javadocJar {
+                classifier 'javadoc'
+            }
+        }
+    }
+}

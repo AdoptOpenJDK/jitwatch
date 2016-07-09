@@ -136,31 +136,14 @@ idea {
     }
 }
 
-task sourceJar(type: Jar, dependsOn: classes) {
-  from sourceSets.main.allJava
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  from javadoc.destinationDir
-}
-
-publishing {
-  publications {
-    bintray(MavenPublication) {
-      from components.java
-      groupId project.group
-      artifactId project.name
-      version project.version
-
-      artifact sourceJar {
-        classifier 'sources'
-      }
-
-      artifact javadocJar {
-        classifier 'javadoc'
-      }
+subprojects {
+    task sourceJar(type: Jar, dependsOn: classes) {
+        from sourceSets.main.allJava
     }
-  }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        from javadoc.destinationDir
+    }
 }
 
 bintray {

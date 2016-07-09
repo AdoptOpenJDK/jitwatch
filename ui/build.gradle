@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'  	// similar to mvn exec:java
     id 'com.github.johnrengelman.shadow' version '1.2.3'  // fat jar
+    id 'maven-publish'
 }
 
 // detect jfxrt.jar & tools.jar
@@ -56,5 +57,24 @@ shadowJar {
     baseName = 'jitwatch'
     if (jdk != 'jdk9') {
         from project.files(toolsLocation)
+    }
+}
+
+publishing {
+    publications {
+        bintray(MavenPublication) {
+            from components.java
+            groupId project.group
+            artifactId project.name
+            version project.version
+
+            artifact sourceJar {
+                classifier 'sources'
+            }
+
+            artifact javadocJar {
+                classifier 'javadoc'
+            }
+        }
     }
 }
