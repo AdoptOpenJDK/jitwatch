@@ -17,8 +17,6 @@ plugins {
    id 'pmd'			 	// code quality check plugin
    id 'jacoco'			// code coverage 
    id 'project-report'	// project reporting plugin
-   id 'application'  	// similar to mvn exec:java
-   id 'com.github.johnrengelman.shadow' version '1.2.2'  // fat jar
    id 'com.github.hierynomus.license' version '0.11.0'   // license checks
    id 'com.github.ben-manes.versions' version '0.11.3'   // version checks
    id 'com.jfrog.bintray' version '1.4'
@@ -29,8 +27,10 @@ plugins {
 group = 'org.adoptopenjdk.jitwatch'
 version = '1.0.0-SNAPSHOT'
 
-repositories {
-    jcenter()  // faster than mavenCentral()
+allprojects {
+    repositories {
+        jcenter()  // faster than mavenCentral()
+    }
 }
 
 //Code quality plugins configuration
@@ -69,83 +69,43 @@ if (!hasProperty('jdk')) {
     ext.jdk = 'jdk7' // lowest
 }
 
-// detect jfxrt.jar & tools.jar
-ext {
-	
-	//fx path on 1.7
-	jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/jfxrt.jar").absolutePath
-	toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
-	
-	switch (JavaVersion.current()){
-		case JavaVersion.VERSION_1_6 : 
-			throw new GradleException("Java FX is not supported by Java 1.6 upgrade to 1.7.")
-			break
-		case JavaVersion.VERSION_1_7 :
-			break
-		case JavaVersion.VERSION_1_8 : 
-			jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/ext/jfxrt.jar").absolutePath  
-			break
-		case JavaVersion.VERSION_1_9 :
-			break 
-		default: 
-			throw new GradleException("Can't get java version!")
-			break
-	}
-}
 
-for (location in ['lib/jfxrt.jar', 'jre/lib/jfxrt.jar', 'jre/lib/ext/jfxrt.jar']) {
+allprojects {
+    // detect tools.jar
+    ext {
+        toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
+    }
+
     File javaHome = new File(System.properties['java.home'])
     javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
-    File file = new File(javaHome, location)
+    File file = new File(javaHome, 'lib/tools.jar')
     if (file.exists()) {
-        jfxrtLocation = file.absolutePath
-        break
+        toolsLocation = file.absolutePath
+    }
+
+    configurations {
+        // gradle does not have a 'system' nor 'provided' scope
+        system
+
+        // fix classpaths due to missing 'system' scope
+        sourceSets {
+            main {
+                compileClasspath += configurations.system
+            }
+        }
+    }
+
+    compileJava {
+        //add required JavaFX libs to compile classpath
+        sourceSets.main.compileClasspath += configurations.system
+    }
+
+    test {
+        classpath += configurations.system
     }
 }
 
-File javaHome = new File(System.properties['java.home'])
-javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
-File file = new File(javaHome, 'lib/tools.jar')
-if (file.exists()) {
-    toolsLocation = file.absolutePath
-}
-
-configurations {
-    // gradle does not have a 'system' nor 'provided' scope
-    system
-    
-    // fix classpaths due to missing 'system' scope
-	sourceSets {
-    	main {
-        	compileClasspath += configurations.system
-   		}
-	}
-}
-
 apply from: "gradle/eclipse.gradle"
-
-dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.1.3', 'ch.qos.logback:logback-core:1.1.3'
-    testCompile 'junit:junit:4.12'
-    system files(jfxrtLocation)
-    if (jdk != 'jdk9') system files(toolsLocation)
-}
-
-compileJava {
-    //add required JavaFX libs to compile classpath
-    sourceSets.main.compileClasspath += configurations.system
-}
-
-run {
-    //add required JavaFX libs to runtime classpath
-	classpath += configurations.system
-}
-
-test {
-	classpath += configurations.system
-}
-
-mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
 
 license {
     header = rootProject.file('config/HEADER')
@@ -176,36 +136,13 @@ idea {
     }
 }
 
-task sourceJar(type: Jar, dependsOn: classes) {
-  from sourceSets.main.allJava
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  from javadoc.destinationDir
-}
-
-publishing {
-  publications {
-    bintray(MavenPublication) {
-      from components.java
-      groupId project.group
-      artifactId project.name
-      version project.version
-
-      artifact sourceJar {
-        classifier 'sources'
-      }
-
-      artifact javadocJar {
-        classifier 'javadoc'
-      }
+subprojects {
+    task sourceJar(type: Jar, dependsOn: classes) {
+        from sourceSets.main.allJava
     }
-  }
-}
 
-shadowJar {
-    if (jdk != 'jdk9') {
-        from project.files(toolsLocation)
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        from javadoc.destinationDir
     }
 }
 
