@@ -17,23 +17,41 @@ public final class LaunchUI
 
 	public static void main(String[] args)
 	{
-		try {
-            final Class<?> macFontFinderClass = Class.forName("com.sun.t2k.MacFontFinder");
-            final Field psNameToPathMap = macFontFinderClass.getDeclaredField("psNameToPathMap");
-            psNameToPathMap.setAccessible(true);
-            if (psNameToPathMap.get(null) == null) {
-                psNameToPathMap.set(
-                    null, new HashMap<String, String>());
-            }
-            final Field allAvailableFontFamilies = macFontFinderClass.getDeclaredField("allAvailableFontFamilies");
-            allAvailableFontFamilies.setAccessible(true);
-            if (allAvailableFontFamilies.get(null) == null) {
-                allAvailableFontFamilies.set(
-                    null, new String[] {});
-            }
-        } catch (final Exception e) {
-            // ignore
-        }
+		if (isMac()) {
+			initMacFont();
+		}
 		new JITWatchUI(args);
+	}
+
+	private static boolean isMac()
+	{
+		String OS = System.getProperty("os.name").toLowerCase();
+		if (OS != null && OS.indexOf("mac") >= 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * to see: https://bugs.openjdk.java.net/browse/JDK-8143907
+	 */
+	private static void initMacFont()
+	{
+		try {
+			final Class<?> macFontFinderClass = Class.forName("com.sun.t2k.MacFontFinder");
+			final Field psNameToPathMap = macFontFinderClass.getDeclaredField("psNameToPathMap");
+			psNameToPathMap.setAccessible(true);
+			if (psNameToPathMap.get(null) == null) {
+				psNameToPathMap.set(null, new HashMap<String, String>());
+			}
+			final Field allAvailableFontFamilies = macFontFinderClass.getDeclaredField("allAvailableFontFamilies");
+			allAvailableFontFamilies.setAccessible(true);
+			if (allAvailableFontFamilies.get(null) == null) {
+				allAvailableFontFamilies.set(null, new String[] {});
+			}
+		} catch (final Exception e) {
+			// ignore
+		}
 	}
 }
