@@ -48,6 +48,7 @@ import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
+import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -98,6 +99,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (version.contains(JAVA_VERSION_7))
 		{
 			IS_JAVA_FX2 = true;
+			
+			if (OSUtil.getOperatingSystem() == OSUtil.OperatingSystem.MAC)
+			{
+				UserInterfaceUtil.initMacFonts();
+			}
 		}
 		else
 		{

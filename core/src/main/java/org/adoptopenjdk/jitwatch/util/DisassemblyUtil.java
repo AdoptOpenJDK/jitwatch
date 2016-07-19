@@ -12,19 +12,13 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.adoptopenjdk.jitwatch.util.OSUtil;
+import org.adoptopenjdk.jitwatch.util.OSUtil.Architecture;
+import org.adoptopenjdk.jitwatch.util.OSUtil.OperatingSystem;
+
 public final class DisassemblyUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(DisassemblyUtil.class);
-
-	enum OperatingSystem
-	{
-		WIN, MAC, LINUX
-	}
-
-	enum Architecture
-	{
-		BIT32, BIT64
-	}
 
 	private DisassemblyUtil()
 	{
@@ -68,8 +62,8 @@ public final class DisassemblyUtil
 			hsdisPath = Paths.get(hsdisPath.toString(), "lib");
 		}
 
-		OperatingSystem os = getOperatingSystem();
-		Architecture arch = getArchitecture();
+		OperatingSystem os = OSUtil.getOperatingSystem();
+		Architecture arch = OSUtil.getArchitecture();
 
 		String binaryName = null;
 
@@ -114,45 +108,5 @@ public final class DisassemblyUtil
 		}
 
 		return hsdisPath;
-	}
-
-	private static OperatingSystem getOperatingSystem()
-	{
-		String osNameProperty = System.getProperty("os.name");
-
-		if (osNameProperty != null)
-		{
-			osNameProperty = osNameProperty.toLowerCase();
-
-			if (osNameProperty.contains("win"))
-			{
-				return OperatingSystem.WIN;
-			}
-			else if (osNameProperty.contains("mac"))
-			{
-				return OperatingSystem.MAC;
-			}
-			else if (osNameProperty.contains("linux") || osNameProperty.contains("nix"))
-			{
-				return OperatingSystem.LINUX;
-			}
-		}
-
-		logger.error("Unknown OS name: {}", osNameProperty);
-		return null;
-	}
-
-	private static Architecture getArchitecture()
-	{
-		String osArch = System.getProperty("os.arch");
-
-		if (osArch != null && osArch.contains("64"))
-		{
-			return Architecture.BIT64;
-		}
-		else
-		{
-			return Architecture.BIT32;
-		}
 	}
 }

@@ -6,6 +6,8 @@
 package org.adoptopenjdk.jitwatch.util;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
@@ -84,6 +86,36 @@ public final class UserInterfaceUtil
 			return Color.PURPLE;
 		default:
 			return Color.BLACK;
+		}
+	}
+	
+	public static void initMacFonts()
+	{
+		try
+		{
+			final Class<?> macFontFinderClass = Class.forName("com.sun.t2k.MacFontFinder");
+			
+			final Field psNameToPathMap = macFontFinderClass.getDeclaredField("psNameToPathMap");
+			
+			psNameToPathMap.setAccessible(true);
+			
+			if (psNameToPathMap.get(null) == null)
+			{
+				psNameToPathMap.set(null, new HashMap<String, String>());
+			}
+			
+			final Field allAvailableFontFamilies = macFontFinderClass.getDeclaredField("allAvailableFontFamilies");
+			
+			allAvailableFontFamilies.setAccessible(true);
+			
+			if (allAvailableFontFamilies.get(null) == null)
+			{
+				allAvailableFontFamilies.set(null, new String[] {});
+			}
+		} 
+		catch (Exception e)
+		{
+			logger.error("Could not initialise Mac fonts", e);
 		}
 	}
 }
