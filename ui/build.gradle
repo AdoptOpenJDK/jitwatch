@@ -49,6 +49,7 @@ dependencies {
 run {
     //add required JavaFX libs to runtime classpath
     classpath += configurations.system
+    workingDir = new File("..")
 }
 
 mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
