@@ -12,6 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -98,6 +99,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations)
 	{
+		return getClassBytecode(model, classLocations, null);
+	}
+
+	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations, Path javapPath)
+	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("getClassBytecode for {} existing? {}", getName(), classBytecode != null);
@@ -105,7 +111,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 		if (classBytecode == null)
 		{
-			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName(), true);
+			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName(), javapPath, true);
 
 			if (classBytecode != null)
 			{
