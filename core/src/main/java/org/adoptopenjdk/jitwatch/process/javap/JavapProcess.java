@@ -23,6 +23,11 @@ public class JavapProcess extends AbstractProcess
 
 	private final String EXECUTABLE_NAME = "javap" + getExecutableSuffix();
 
+	public JavapProcess(Path executablePath)
+	{
+		this.executablePath = executablePath;
+	}
+
 	public JavapProcess() throws FileNotFoundException
 	{
 		super();

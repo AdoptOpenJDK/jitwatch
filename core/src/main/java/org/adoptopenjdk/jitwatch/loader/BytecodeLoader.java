@@ -36,6 +36,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -103,6 +104,12 @@ public final class BytecodeLoader
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, boolean cacheBytecode)
 	{
+		return fetchBytecodeForClass(classLocations, fqClassName, null, cacheBytecode);
+	}
+
+	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, Path javapPath,
+																							boolean cacheBytecode)
+	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
@@ -112,7 +119,15 @@ public final class BytecodeLoader
 
 		try
 		{
-			JavapProcess javapProcess = new JavapProcess();
+			JavapProcess javapProcess;
+			if (javapPath != null)
+			{
+				javapProcess = new JavapProcess(javapPath);
+			}
+			else
+			{
+				javapProcess = new JavapProcess();
+			}
 
 			javapProcess.execute(classLocations, fqClassName);
 
