@@ -40,7 +40,7 @@ public class MakeHotSpotLog
 		intrinsicTest(iterations);
 		intrinsicTestMin(iterations);
 		tooBigToInline(iterations);
-		testSort();
+		testSort(iterations);
 		testCallChain(iterations);
 		testOptimizedVCall(iterations);
 
@@ -249,13 +249,13 @@ public class MakeHotSpotLog
 		return result;
 	}
 
-	private void testSort()
+	private void testSort(long iterations)
 	{
 
 		long sum = 0;
 
 		// ensure sort is JIT compiled
-		for (int i = 0; i < 20000; i++)
+		for (int i = 0; i < iterations; i++)
 		{
 			Random random = new Random();
 
