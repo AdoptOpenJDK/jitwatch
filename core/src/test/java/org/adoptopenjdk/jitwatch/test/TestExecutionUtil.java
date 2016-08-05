@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -13,6 +13,7 @@ import java.io.FilenameFilter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,22 +29,24 @@ public class TestExecutionUtil
 	{
 		List<String> cp = new ArrayList<>();
 		
+		String userDir = System.getProperty("user.dir");
+		
 		//path for maven build
-		Path path = FileSystems.getDefault().getPath("target", "classes");
+		Path path = FileSystems.getDefault().getPath(userDir, "target", "classes");
 		
 		if (Files.exists(path)){
 			cp.add(path.toString());
 		}
 		
 		// path for gradle build
-		path = FileSystems.getDefault().getPath("build", "classes", "main");
+		path = FileSystems.getDefault().getPath(userDir, "build", "classes", "main");
 		
 		if (Files.exists(path)){
 			cp.add(path.toString());
 		}
 
-		File libDir = new File("../lib");
-
+		File libDir = Paths.get(userDir, "../lib").toFile();
+		
 		assertTrue(libDir.exists());
 		assertTrue(libDir.isDirectory());
 
@@ -58,7 +61,7 @@ public class TestExecutionUtil
 
 		for (String jar : jarNames)
 		{
-			cp.add("../lib" + File.separatorChar + jar);
+			cp.add(libDir.getAbsolutePath() + File.separatorChar + jar);
 		}
 
 		List<String> options = new ArrayList<>();

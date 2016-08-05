@@ -27,14 +27,14 @@
 
 	<target name="compile">
 		<mkdir dir="${main_classes}" />
-		<javac srcdir="${main_src}" destdir="${main_classes}" includeantruntime="false">
+		<javac srcdir="${main_src}" destdir="${main_classes}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
 			<classpath>
 				<path refid="classpath" />
 			</classpath>
 		</javac>
 
 		<mkdir dir="${test_classes}" />
-		<javac srcdir="${test_src}" destdir="${test_classes}" includeantruntime="false">
+		<javac srcdir="${test_src}" destdir="${test_classes}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
 			<classpath>
 				<path refid="classpath" />
 				<dirset dir="${main_classes}" />
@@ -46,7 +46,8 @@
 
 	<target name="doTest">
 		<mkdir dir="target/test-output" />
-		<junit printsummary="yes">
+		<junit printsummary="yes" fork="yes">
+			<jvmarg value="-Duser.dir=${basedir}"/>
 			<classpath>
 				<path refid="classpath" />
 				<pathelement path="${main_classes}" />

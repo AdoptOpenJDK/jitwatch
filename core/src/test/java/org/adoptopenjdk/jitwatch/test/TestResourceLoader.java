@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -59,8 +59,8 @@ public class TestResourceLoader
 
 		JarOutputStream target = new JarOutputStream(new FileOutputStream(tempJarPath.toFile()), manifest);
 
-		File startingDirectory = Paths.get("src", "test", "java").toFile();
-
+		File startingDirectory = Paths.get(System.getProperty("user.dir"), "src", "test", "java").toFile();
+		
 		addFileToJar(startingDirectory, startingDirectory, target);
 
 		target.close();
@@ -100,7 +100,7 @@ public class TestResourceLoader
 			else
 			{
 				String name = fileOrDirectory.getPath().replace(S_BACKSLASH, S_SLASH);
-
+				
 				name = name.substring(startingDir.toString().length() + 1);
 
 				JarEntry entry = new JarEntry(name);
