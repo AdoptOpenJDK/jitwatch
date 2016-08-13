@@ -176,7 +176,7 @@ public class TagProcessor
 
 		String attributeString = line.substring(indexEndName);
 
-		Map<String, String> attrs = StringUtil.getLineAttributes(attributeString);
+		Map<String, String> attrs = StringUtil.attributeStringToMap(attributeString);
 		
 		Tag nextTag;
 

@@ -37,7 +37,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -54,14 +53,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	protected MetaClass metaClass;
 	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
-
+	private List<Compilation> compilations = null;//new ArrayList<>();
+	
 	private boolean isQueued = false;
 	private boolean isCompiled = false;
 
 	private Journal journal = new Journal();
 
-	private Map<String, String> queuedAttributes = new ConcurrentHashMap<>();
-	private Map<String, String> compiledAttributes = new ConcurrentHashMap<>();
+	private String queuedAttributes;
+	private String compiledAttributes;
 
 	protected boolean isVarArgs = false;
 	protected boolean isPolymorphicSignature = false;
@@ -297,26 +297,30 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getQueuedAttribute(String key)
 	{
-		return queuedAttributes.get(key);
+		return StringUtil.attributeStringToMap(queuedAttributes).get(key);
 	}
 
 	@Override
 	public String getCompiledAttribute(String key)
 	{
-		return compiledAttributes.get(key);
+		return StringUtil.attributeStringToMap(compiledAttributes).get(key);
 	}
 
 	@Override
 	public void addCompiledAttribute(String key, String value)
 	{
-		compiledAttributes.put(key, value);
+		Map<String, String> tempMap = StringUtil.attributeStringToMap(compiledAttributes);
+		
+		tempMap.put(key, value);
+		
+		compiledAttributes = StringUtil.attributeMapToString(tempMap);
 	}
 
 	@Override
 	public void setQueuedAttributes(Map<String, String> queuedAttributes)
 	{
 		isQueued = true;
-		this.queuedAttributes = queuedAttributes;
+		this.queuedAttributes = StringUtil.attributeMapToString(queuedAttributes);
 	}
 
 	@Override
@@ -330,7 +334,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		isCompiled = true;
 		isQueued = false;
-		this.compiledAttributes = compiledAttributes;
+		this.compiledAttributes = StringUtil.attributeMapToString(compiledAttributes);
 
 		// inform package tree it contains class with a compiled method
 		getMetaClass().getPackage().setHasCompiledClasses();
@@ -338,8 +342,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	@Override
 	public void addCompiledAttributes(Map<String, String> additionalAttrs)
-	{
-		compiledAttributes.putAll(additionalAttrs);
+	{		
+		Map<String, String> tempMap = StringUtil.attributeStringToMap(compiledAttributes);
+		
+		tempMap.putAll(additionalAttrs);
+		
+		compiledAttributes = StringUtil.attributeMapToString(tempMap);
 	}
 
 	@Override
@@ -351,13 +359,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public Map<String, String> getQueuedAttributes()
 	{
-		return queuedAttributes;
+		return StringUtil.attributeStringToMap(queuedAttributes);
 	}
 	
 	@Override
 	public Map<String, String> getCompiledAttributes()
 	{
-		return compiledAttributes;
+		return StringUtil.attributeStringToMap(compiledAttributes);
 	}
 	
 	@Override
@@ -408,6 +416,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 
 		assemblyMethods.add(asmMethod);
+	}
+	
+	@Override
+	public List<Compilation> getCompilations()
+	{
+		return compilations;
 	}
 
 	@Override

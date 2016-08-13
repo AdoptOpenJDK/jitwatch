@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -52,7 +52,7 @@ public class TestStringUtil
 
 		for (Map.Entry<String, Map<String, String>> entry : expected.entrySet())
 		{
-			Map<String, String> result = StringUtil.getLineAttributes(entry.getKey());
+			Map<String, String> result = StringUtil.attributeStringToMap(entry.getKey());
 
 			assertEquals(entry.getValue().size(), result.size());
 
@@ -69,7 +69,7 @@ public class TestStringUtil
 	{
 		String line = "<task compile_id='21' method='java/util/Properties loadConvert ([CII[C)Ljava/lang/String;' bytes='505' count='10000' backedge_count='5668' iicount='108' stamp='6.801'>";
 
-		Map<String, String> result = StringUtil.getLineAttributes(line);
+		Map<String, String> result = StringUtil.attributeStringToMap(line);
 
 		assertEquals("21", result.get("compile_id"));
 		assertEquals("java/util/Properties loadConvert ([CII[C)Ljava/lang/String;", result.get("method"));

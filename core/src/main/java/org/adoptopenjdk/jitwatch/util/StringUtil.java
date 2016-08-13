@@ -80,16 +80,17 @@ public final class StringUtil
 
 		return sb.toString();
 	}
-	
+
 	public static String replaceXMLEntities(String input)
 	{
 		String result = null;
-		
+
 		if (input != null)
 		{
-			result = input.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE).replace(S_ENTITY_APOS, S_APOSTROPHE);
+			result = input.replace(S_ENTITY_LT, S_OPEN_ANGLE).replace(S_ENTITY_GT, S_CLOSE_ANGLE).replace(S_ENTITY_APOS,
+					S_APOSTROPHE);
 		}
-		
+
 		return result;
 	}
 
@@ -234,7 +235,7 @@ public final class StringUtil
 
 		return result;
 	}
-	
+
 	public static String getUnqualifiedMemberName(String memberName)
 	{
 		return getUnqualifiedClassName(memberName);
@@ -259,7 +260,24 @@ public final class StringUtil
 		return alignRight(Integer.toString(number), maxWidth);
 	}
 
-	public static Map<String, String> getLineAttributes(String line)
+	public static String attributeMapToString(Map<String, String> map)
+	{
+		return attributeMapToString(map, C_QUOTE);
+	}
+
+	public static String attributeMapToString(Map<String, String> map, char quote)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (Map.Entry<String, String> entry : map.entrySet())
+		{
+			builder.append(entry.getKey()).append(C_EQUALS).append(quote).append(entry.getValue()).append(quote).append(C_SPACE);
+		}
+
+		return builder.toString().trim();
+	}
+
+	public static Map<String, String> attributeStringToMap(String line)
 	{
 		Map<String, String> result = new HashMap<>();
 
@@ -470,7 +488,7 @@ public final class StringUtil
 
 		return builder.toString();
 	}
-	
+
 	public static List<String> getSortedKeys(Map<String, ?> map)
 	{
 		List<String> attrList = new ArrayList<String>(map.keySet());

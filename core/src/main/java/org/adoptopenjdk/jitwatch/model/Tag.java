@@ -145,7 +145,7 @@ public class Tag
 
 	public Map<String, String> getAttributes()
 	{
-		return StringUtil.getLineAttributes(attributeString);
+		return StringUtil.attributeStringToMap(attributeString);
 	}
 
 	private int getDepth(Tag tag)

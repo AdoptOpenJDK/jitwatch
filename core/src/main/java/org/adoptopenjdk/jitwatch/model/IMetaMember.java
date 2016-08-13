@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,18 +23,7 @@ public interface IMetaMember
 	void addJournalEntry(Tag entry);
 	Journal getJournal();
 
-	String getQueuedAttribute(String key);
-	void setQueuedAttributes(Map<String, String> queuedAttributes);
-	boolean isQueued();
-
-	void setCompiledAttributes(Map<String, String> compiledAttributes);
-	void addCompiledAttributes(Map<String, String> additionalAttrs);	
-	Map<String, String> getQueuedAttributes();
-	Map<String, String> getCompiledAttributes();
 	
-	String getCompiledAttribute(String key);
-	void addCompiledAttribute(String key, String value);
-	boolean isCompiled();
 
 	String toStringUnqualifiedMethodName(boolean fqParamTypes);
 
@@ -49,9 +38,24 @@ public interface IMetaMember
 
 	boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly);
 
+	String getQueuedAttribute(String key);
+	void setQueuedAttributes(Map<String, String> queuedAttributes);
+	boolean isQueued();
+
+	void setCompiledAttributes(Map<String, String> compiledAttributes);
+	void addCompiledAttributes(Map<String, String> additionalAttrs);	
+	Map<String, String> getQueuedAttributes();
+	Map<String, String> getCompiledAttributes();
+	
+	String getCompiledAttribute(String key);
+	void addCompiledAttribute(String key, String value);
+	boolean isCompiled();
+	
 	List<AssemblyMethod> getAssemblyMethods();
 
 	void addAssembly(AssemblyMethod asmMethod);
+	
+	List<Compilation> getCompilations();
 
 	String getSignatureRegEx();
 }
