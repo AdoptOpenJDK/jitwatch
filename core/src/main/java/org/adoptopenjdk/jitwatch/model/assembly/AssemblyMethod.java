@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,10 +18,20 @@ public class AssemblyMethod
 
 	private List<AssemblyBlock> blocks = new ArrayList<>();
 	
-	public AssemblyMethod()
+	private String nativeAddress;
+	
+	private String assemblyMethodSignature;
+	
+	public AssemblyMethod(String assemblyMethodSignature)
 	{
+		this.assemblyMethodSignature = assemblyMethodSignature;
 	}
 
+	public String getAssemblyMethodSignature()
+	{
+		return assemblyMethodSignature;
+	}
+	
 	public void setHeader(String header)
 	{
 		this.header = header;
@@ -59,6 +69,16 @@ public class AssemblyMethod
 		return width;
 	}
 	
+	public String getNativeAddress()
+	{
+		return nativeAddress;
+	}
+
+	public void setNativeAddress(String nativeAddress)
+	{		
+		this.nativeAddress = nativeAddress;
+	}
+
 	@Override
 	public String toString()
 	{

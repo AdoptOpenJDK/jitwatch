@@ -10,17 +10,26 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -38,6 +47,15 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	public InlineSizeHistoVisitable(IReadOnlyJITDataModel model, long resolution)
 	{
 		super(model, resolution);
+		
+		ignoreTags.add(TAG_CALL);
+		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_BC);
+		ignoreTags.add(TAG_KLASS);
+		ignoreTags.add(TAG_PARSE_DONE);
+		ignoreTags.add(TAG_UNCOMMON_TRAP);
+		ignoreTags.add(TAG_TYPE);
+		ignoreTags.add(TAG_BRANCH);
 	}
 
 	@Override
@@ -50,10 +68,13 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	public void visit(IMetaMember metaMember)
 	{
 		if (metaMember != null && metaMember.isCompiled())
-		{
+		{			
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
+				for (Compilation compilation : metaMember.getCompilations())
+				{
+					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
+				}
 			}
 			catch (LogParseException e)
 			{

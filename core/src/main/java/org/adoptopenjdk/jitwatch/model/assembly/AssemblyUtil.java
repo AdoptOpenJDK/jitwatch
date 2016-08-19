@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -27,12 +27,11 @@ public final class AssemblyUtil
 	{
 	}
 
-	public static AssemblyMethod parseAssembly(final String asm)
+	public static AssemblyMethod parseAssembly(final String assemblyString)
 	{
-		AssemblyMethod method = new AssemblyMethod();
 		final AssemblyLabels labels = new AssemblyLabels();
 
-		String[] lines = asm.split(S_NEWLINE);
+		String[] lines = assemblyString.split(S_NEWLINE);
 
 		StringBuilder headerBuilder = new StringBuilder();
 
@@ -41,11 +40,19 @@ public final class AssemblyUtil
 		AssemblyInstruction lastInstruction = null;
 
 		String lastLine = null;
+
+		AssemblyMethod method = null;
+
 		for (int i = 0; i < lines.length; i++)
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("line: '{}'", lines[i]);
+			}
+
+			if (i == 0)
+			{
+				method = new AssemblyMethod(lines[i]);
 			}
 
 			String line = lines[i].replace(S_ENTITY_APOS, S_QUOTE);
@@ -87,9 +94,7 @@ public final class AssemblyUtil
 			{
 				AssemblyInstruction instr = createInstruction(labels, line);
 
-				if (instr == null
-						&& lastLine.trim().startsWith(S_HASH)
-						&& !line.startsWith(S_ASSEMBLY_ADDRESS)
+				if (instr == null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_ASSEMBLY_ADDRESS)
 						&& !line.contains(' ' + S_ASSEMBLY_ADDRESS))
 				{
 					// remove last newline
@@ -97,16 +102,16 @@ public final class AssemblyUtil
 
 					headerBuilder.append(line).append(S_NEWLINE);
 
-					// update untrimmedLine since it is used to update lastUntrimmedLine at end of loop
+					// update untrimmedLine since it is used to update
+					// lastUntrimmedLine at end of loop
 					line = lastLine + line;
 				}
-				else if (instr == null
-						&& lastLine.trim().startsWith(S_SEMICOLON)
-						&& lastInstruction != null)
+				else if (instr == null && lastLine.trim().startsWith(S_SEMICOLON) && lastInstruction != null)
 				{
 					lastInstruction.appendToLastCommentLine(line);
 
-					// update untrimmedLine since it is used to update lastUntrimmedLine at end of loop
+					// update untrimmedLine since it is used to update
+					// lastUntrimmedLine at end of loop
 					line = lastLine + line;
 				}
 				else
@@ -118,7 +123,8 @@ public final class AssemblyUtil
 						String nextUntrimmedLine = lines[i + 1].replace(S_ENTITY_APOS, S_QUOTE);
 
 						instr = createInstruction(labels, line + nextUntrimmedLine);
-						if (instr != null) {
+						if (instr != null)
+						{
 							i++;
 						}
 					}
@@ -164,8 +170,7 @@ public final class AssemblyUtil
 		return method;
 	}
 
-	public static AssemblyInstruction createInstruction(
-		final AssemblyLabels labels, final String inLine)
+	public static AssemblyInstruction createInstruction(final AssemblyLabels labels, final String inLine)
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
@@ -264,7 +269,7 @@ public final class AssemblyUtil
 			{
 				trimmedAddress = trimmedAddress.substring(S_ASSEMBLY_ADDRESS.length());
 			}
-			
+
 			if (trimmedAddress.endsWith(HEXA_POSTFIX))
 			{
 				trimmedAddress = trimmedAddress.substring(0, trimmedAddress.length() - 1);

@@ -20,7 +20,7 @@ import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.inline.InlineVisitor;
+import org.adoptopenjdk.jitwatch.inline.HeadlessInlineVisitor;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 //import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
@@ -225,7 +225,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 		if (showInlineFailedCalls)
 		{
-			InlineVisitor inlineVisitor = new InlineVisitor(parser.getModel());
+			HeadlessInlineVisitor inlineVisitor = new HeadlessInlineVisitor(parser.getModel());
 			TreeVisitor.walkTree(parser.getModel(), inlineVisitor);
 			inlineVisitor.printFailedList(System.out);
 		}

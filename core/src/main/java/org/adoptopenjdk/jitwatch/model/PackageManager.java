@@ -43,7 +43,7 @@ public class PackageManager
 	}
 
 	public void addMetaClass(MetaClass metaClass)
-	{
+	{		
 		metaClasses.put(metaClass.getFullyQualifiedName(), metaClass);
 	}
 
@@ -55,7 +55,7 @@ public class PackageManager
 		{
 			result = metaClasses.get(className);
 		}
-
+		
 		return result;
 	}
 
@@ -113,7 +113,7 @@ public class PackageManager
 					parent.addChildPackage(mp);
 				}
 
-				metaPackages.put(nameBuild, mp);
+				storePackage(nameBuild, mp);
 			}
 
 			parent = mp;
@@ -125,10 +125,15 @@ public class PackageManager
 		{
 			// default package ""
 			mp = new MetaPackage(S_EMPTY);
-			metaPackages.put(S_EMPTY, mp);
+			storePackage(S_EMPTY, mp);
 		}
-
+		
 		return mp;
+	}
+	
+	private void storePackage(String name, MetaPackage metaPackage)
+	{
+		metaPackages.put(name, metaPackage);
 	}
 
 	public List<MetaPackage> getRootPackages()

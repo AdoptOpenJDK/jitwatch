@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.histo.AttributeNameHistoWalker;
+import org.adoptopenjdk.jitwatch.histo.CompileTimeHistoWalker;
 import org.adoptopenjdk.jitwatch.histo.Histo;
 import org.adoptopenjdk.jitwatch.histo.IHistoVisitable;
 import org.adoptopenjdk.jitwatch.histo.InlineSizeHistoVisitable;
+import org.adoptopenjdk.jitwatch.histo.NativeSizeHistoWalker;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
@@ -44,9 +46,9 @@ public class HistoStage extends AbstractGraphStage
 
 		final Map<String, IHistoVisitable> attrMap = new HashMap<>();
 
-		attrMap.put("JIT Compilation Times", new AttributeNameHistoWalker(model, true, ATTR_COMPILE_MILLIS, 10));
-        attrMap.put("Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_BYTES, 10));
-        attrMap.put("Native Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_NMSIZE, 10));
+		attrMap.put("JIT Compilation Times", new CompileTimeHistoWalker(model, 1));
+        attrMap.put("Bytes per Compiled Method", new AttributeNameHistoWalker(model, true, ATTR_BYTES, 1));
+        attrMap.put("Native Bytes per Compiled Method", new NativeSizeHistoWalker(model, 1));
         attrMap.put("Inlined Method Sizes", new InlineSizeHistoVisitable(model, 1));
 
         VBox vbox = new VBox();
@@ -149,7 +151,7 @@ public class HistoStage extends AbstractGraphStage
             xPos += 5;
             yPos += 5;
 
-            for (double percent : new double[] { 50, 75, 80, 85, 90, 95, 98, 99, 99.5, 99.9, 100 })
+            for (double percent : new double[] { 50, 90, 95, 99, 99.9, 99.99, 99.999, 100 })
             {
         		setStrokeForText();
                 gc.fillText(percent + "% : " + histo.getPercentile(percent), fix(xPos), fix(yPos));

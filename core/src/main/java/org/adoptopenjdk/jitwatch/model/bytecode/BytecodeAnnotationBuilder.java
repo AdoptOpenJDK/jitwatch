@@ -48,13 +48,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
@@ -63,7 +63,7 @@ import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
+public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeAnnotationBuilder.class);
 
@@ -104,11 +104,13 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				return bcAnnotations;
 			}
 
+			Compilation compilation = member.getSelectedCompilation();
+			
 			try
 			{
-				buildParseTagAnnotations(vmVersion, member.getJournal());
+				buildParseTagAnnotations(vmVersion, compilation);
 
-				buildEliminationTagAnnotations(vmVersion, member.getJournal());
+				buildEliminationTagAnnotations(vmVersion, compilation);
 			}
 			catch (LogParseException e)
 			{
@@ -130,20 +132,20 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 		return bcAnnotations;
 	}
 
-	private void buildParseTagAnnotations(String vmVersion, Journal journal) throws LogParseException
+	private void buildParseTagAnnotations(String vmVersion, Compilation compilation) throws LogParseException
 	{
-		JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
+		CompilationUtil.visitParseTagsOfCompilation(compilation, this);
 	}
 
-	private void buildEliminationTagAnnotations(String vmVersion, Journal journal) throws LogParseException
+	private void buildEliminationTagAnnotations(String vmVersion, Compilation compilation) throws LogParseException
 	{
 		if (vmVersion != null && vmVersion.startsWith("1.9"))
 		{
-			JournalUtil.visitEliminationTagsOfLastTask(member.getJournal(), this);
+			CompilationUtil.visitEliminationTagsOfCompilation(compilation, this);
 		}
 		else
 		{
-			JournalUtil.visitOptimizerTagsOfLastTask(member.getJournal(), this);
+			CompilationUtil.visitOptimizerTagsOfCompilation(compilation, this);
 		}
 	}
 
@@ -174,7 +176,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 	{
 		String methodID = tag.getAttributes().get(ATTR_METHOD);
 		
-		if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
+		if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 		{
 			try
 			{
@@ -201,7 +203,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 			
 			String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
-			if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
+			if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 			{
 				String bci = tagJVMSAttributes.get(ATTR_BCI);
 
@@ -283,7 +285,7 @@ public class BytecodeAnnotationBuilder extends AbstractJournalVisitable
 				
 				String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
-				if (JournalUtil.memberMatchesMethodID(member, methodID, parseDictionary))
+				if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 				{
 					String bci = tagJVMSAttributes.get(ATTR_BCI);
 

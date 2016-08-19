@@ -58,7 +58,7 @@ public class CodeCacheStage extends AbstractGraphStage
 
 		labelLeft = true;
 
-		List<CodeCacheEvent> codeCacheEvents = parent.getJITDataModel().getCodeCacheEvents();
+		List<CodeCacheEvent> codeCacheEvents = mainUI.getJITDataModel().getCodeCacheEvents();
 
 		Collections.sort(codeCacheEvents, new Comparator<CodeCacheEvent>()
 		{
@@ -74,7 +74,7 @@ public class CodeCacheStage extends AbstractGraphStage
 			CodeCacheEvent firstEvent = codeCacheEvents.get(0);
 			minX = firstEvent.getStamp();
 
-			Tag endOfLogTag = parent.getJITDataModel().getEndOfLogTag();
+			Tag endOfLogTag = mainUI.getJITDataModel().getEndOfLogTag();
 
 			if (endOfLogTag != null)
 			{

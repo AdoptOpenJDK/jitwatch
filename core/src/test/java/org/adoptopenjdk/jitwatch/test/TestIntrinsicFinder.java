@@ -1,21 +1,17 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.core.TagProcessor;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.intrinsic.IntrinsicFinder;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.Tag;
 import org.junit.After;
 import org.junit.Test;
 
@@ -24,13 +20,16 @@ public class TestIntrinsicFinder
 	@After
 	public void checkUnhandledTags()
 	{
-		assertEquals(0, JournalUtil.getUnhandledTagCount());
+		assertEquals(0, CompilationUtil.getUnhandledTagCount());
 	}
-	
+
 	@Test
 	public void testRegressionIntrinsicFinderNeedParseDictionary()
 	{
-		String[] lines = new String[] {
+		String[] logLines = new String[] {
+				"<task_queued compile_id='3557' method='org/eclipse/jdt/internal/compiler/util/SimpleLookupTable get (Ljava/lang/Object;)Ljava/lang/Object;' bytes='55' count='520' backedge_count='5000' iicount='520' stamp='0.083' comment='count' hot_count='520'/>",
+				"<nmethod compile_id='3557' compiler='C2' entry='0x000000010744c060' size='1256' address='0x000000010744bf10' relocation_offset='296' insts_offset='336' stub_offset='688' scopes_data_offset='720' scopes_pcs_offset='832' dependencies_offset='1232' nul_chk_table_offset='1240' method='org/eclipse/jdt/internal/compiler/util/SimpleLookupTable get (Ljava/lang/Object;)Ljava/lang/Object;' bytes='55' count='546' backedge_count='5389' iicount='546' stamp='0.105'/>",
+			
 				"<task compile_id='3557' method='org/eclipse/jdt/internal/compiler/util/SimpleLookupTable get (Ljava/lang/Object;)Ljava/lang/Object;' bytes='59' count='4064' backedge_count='5293' iicount='4722' stamp='597.034'>",
 				"<phase name='parse' nodes='3' live='3' stamp='597.034'>",
 				"<klass id='645' name='java/lang/Object' flags='1'/>",
@@ -57,27 +56,12 @@ public class TestIntrinsicFinder
 				"<phase_done name='parse' nodes='390' live='281' stamp='597.035'/>",
 				"</phase>",
 				"<code_cache total_blobs='3752' nmethods='3051' adapters='652' free_code_cache='40367872' largest_free_block='40161088'/>",
-				"<task_done success='1' nmsize='632' count='4078' backedge_count='5353' stamp='597.038'/>", "</task>" };
-
-		TagProcessor tp = new TagProcessor();
-
-		int count = 0;
-
-		Tag tag = null;
-
-		for (String line : lines)
-		{
-			tag = tp.processLine(line);
-			if (count++ < lines.length - 1)
-			{
-				assertNull(tag);
-			}
-		}
-
-		assertNotNull(tag);
+				"<task_done success='1' nmsize='632' count='4078' backedge_count='5353' stamp='597.038'/>",
+				"</task>" };
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember();
-		member.addJournalEntry(tag);
+
+		UnitTestUtil.processLogLines(member, logLines);
 
 		IntrinsicFinder finder = new IntrinsicFinder();
 
@@ -94,7 +78,9 @@ public class TestIntrinsicFinder
 	@Test
 	public void testRegressionIntrinsicFinderCallTagChangesContext()
 	{
-		String[] lines = new String[] {
+		String[] logLines = new String[] {
+				"<task_queued compile_id='1564' method='java/util/TimSort mergeLo (IIII)V' bytes='55' count='520' backedge_count='5000' iicount='520' stamp='0.083' comment='count' hot_count='520'/>",
+				"<nmethod compile_id='1564' compiler='C2' entry='0x000000010744c060' size='1256' address='0x000000010744bf10' relocation_offset='296' insts_offset='336' stub_offset='688' scopes_data_offset='720' scopes_pcs_offset='832' dependencies_offset='1232' nul_chk_table_offset='1240' method='java/util/TimSort mergeLo (IIII)V' bytes='55' count='546' backedge_count='5389' iicount='546' stamp='0.105'/>",
 				"<task compile_id='1564' method='java/util/TimSort mergeLo (IIII)V' bytes='655' count='84' backedge_count='5110' iicount='88' stamp='22.534'>",
 				"<phase name='parse' nodes='3' live='3' stamp='22.534'>",
 				"<type id='636' name='void'/>",
@@ -355,27 +341,12 @@ public class TestIntrinsicFinder
 				"<phase_done name='output' nodes='2701' live='2260' stamp='22.559'/>",
 				"</phase>",
 				"<code_cache total_blobs='2037' nmethods='1386' adapters='603' free_code_cache='45737472' largest_free_block='45650432'/>",
-				"<task_done success='1' nmsize='5136' count='5000' backedge_count='5045' stamp='22.559'/>", "</task>" };
-
-		TagProcessor tp = new TagProcessor();
-
-		int count = 0;
-
-		Tag tag = null;
-
-		for (String line : lines)
-		{
-			tag = tp.processLine(line);
-			if (count++ < lines.length - 1)
-			{
-				assertNull(tag);
-			}
-		}
-
-		assertNotNull(tag);
+				"<task_done success='1' nmsize='5136' count='5000' backedge_count='5045' stamp='22.559'/>",
+				"</task>" };
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember();
-		member.addJournalEntry(tag);
+
+		UnitTestUtil.processLogLines(member, logLines);
 
 		IntrinsicFinder finder = new IntrinsicFinder();
 

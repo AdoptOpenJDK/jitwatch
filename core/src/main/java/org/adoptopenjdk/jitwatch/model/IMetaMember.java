@@ -20,11 +20,6 @@ public interface IMetaMember
 	
 	List<BytecodeInstruction> getInstructions();
 
-	void addJournalEntry(Tag entry);
-	Journal getJournal();
-
-	
-
 	String toStringUnqualifiedMethodName(boolean fqParamTypes);
 
 	String getMemberName();
@@ -39,23 +34,28 @@ public interface IMetaMember
 	boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly);
 
 	String getQueuedAttribute(String key);
-	void setQueuedAttributes(Map<String, String> queuedAttributes);
-	boolean isQueued();
-
-	void setCompiledAttributes(Map<String, String> compiledAttributes);
-	void addCompiledAttributes(Map<String, String> additionalAttrs);	
 	Map<String, String> getQueuedAttributes();
-	Map<String, String> getCompiledAttributes();
+	
+	void setTagTaskQueued(Tag tagTaskQueued);
+	void setTagNMethod(Tag tagNMethod);
+	void setTagTask(Task tagTask);
+	void setTagTaskDone(String compileID, Tag tagTaskDone);
 	
 	String getCompiledAttribute(String key);
-	void addCompiledAttribute(String key, String value);
+	Map<String, String> getCompiledAttributes();
+
+	Compilation getCompilationByCompileID(String compileID);
+	Compilation getCompilationByNativeAddress(String address);
+	
 	boolean isCompiled();
 	
-	List<AssemblyMethod> getAssemblyMethods();
-
 	void addAssembly(AssemblyMethod asmMethod);
 	
+	void setSelectedCompilation(int index);
+	Compilation getSelectedCompilation();
 	List<Compilation> getCompilations();
-
+	Compilation getCompilation(int index);
+	Compilation getLastCompilation();
+	
 	String getSignatureRegEx();
 }

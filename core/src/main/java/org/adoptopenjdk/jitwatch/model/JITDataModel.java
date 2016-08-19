@@ -6,8 +6,8 @@
 package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
@@ -24,11 +24,9 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +34,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
 
-	private PackageManager pm;
+	private PackageManager packageManager;
 	private JITStats stats;
 
 	// Not using CopyOnWriteArrayList as writes will vastly out number reads
 	private List<JITEvent> jitEvents = new ArrayList<>();
-
-	private Map<String, Journal> journalMap = new HashMap<>();
 
 	// written during parse, make copy for graphing as needs sort
 	private List<CodeCacheEvent> codeCacheTagList = new ArrayList<>();
@@ -53,7 +49,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	public JITDataModel()
 	{
-		pm = new PackageManager();
+		packageManager = new PackageManager();
 		stats = new JITStats();
 	}
 
@@ -75,13 +71,11 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			logger.debug("JITDataModel.reset()");
 		}
 
-		pm.clear();
+		packageManager.clear();
 
 		stats.reset();
 
 		jitEvents.clear();
-
-		journalMap.clear();
 
 		codeCacheTagList.clear();
 	}
@@ -89,7 +83,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	@Override
 	public PackageManager getPackageManager()
 	{
-		return pm;
+		return packageManager;
 	}
 
 	@Override
@@ -121,7 +115,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		stats.addNativeBytes(count);
 	}
 
-	public void updateStats(IMetaMember member)
+	public void updateStats(IMetaMember member, Map<String, String> attrs)
 	{
 		String fullSignature = member.toString();
 
@@ -129,11 +123,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		{
 			if (fullSignature.contains(modifier + S_SPACE))
 			{
-				// use Java7 MethodHandle on JITStats object to increment
-				// correct counter
-				// maybe slower than a set of 'if' statements but more
-				// elegant :)
-
 				String incMethodName = "incCount" + modifier.substring(0, 1).toUpperCase() + modifier.substring(1);
 
 				try
@@ -151,7 +140,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		String compiler = member.getCompiledAttribute(ATTR_COMPILER);
+		String compiler = attrs.get(ATTR_COMPILER);
 
 		if (compiler != null)
 		{
@@ -165,7 +154,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		String compileKind = member.getCompiledAttribute(ATTR_COMPILE_KIND);
+		String compileKind = attrs.get(ATTR_COMPILE_KIND);
 
 		if (compileKind != null)
 		{
@@ -179,23 +168,33 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 		}
 
-		long queueStamp = ParseUtil.getStamp(member.getQueuedAttributes());
-		long compileStamp = ParseUtil.getStamp(member.getCompiledAttributes());
-				
-		if (queueStamp != 0 && compileStamp != 0)
+		String compileID = attrs.get(ATTR_COMPILE_ID);
+
+		Compilation compilation = member.getCompilationByCompileID(compileID);
+
+		if (compilation != null)
 		{
-			long delayMillis = compileStamp - queueStamp;
-
-			member.addCompiledAttribute(ATTR_COMPILE_MILLIS, Long.toString(delayMillis));
-
-			stats.recordDelay(delayMillis);
+			long compileTime = compilation.getCompileTime();
+			
+			if (compileTime > 0)
+			{
+				stats.recordDelay(compileTime);
+			}
+			else
+			{
+				logger.warn("no compile time set on compilation");
+			}
+		}
+		else
+		{
+			logger.warn("Didn't find compilation with ID {}", compileID);
 		}
 	}
 
 	@Override
 	public IMetaMember findMetaMember(MemberSignatureParts msp)
 	{
-		MetaClass metaClass = pm.getMetaClass(msp.getFullyQualifiedClassName());
+		MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
 
 		IMetaMember result = null;
 
@@ -225,7 +224,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	@Override
 	public MetaClass buildAndGetMetaClass(Class<?> clazz)
-	{
+	{	
 		MetaClass resultMetaClass = null;
 
 		String fqClassName = clazz.getName();
@@ -246,18 +245,18 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			className = fqClassName;
 		}
 
-		MetaPackage mp = pm.getMetaPackage(packageName);
+		MetaPackage metaPackage = packageManager.getMetaPackage(packageName);
 
-		if (mp == null)
+		if (metaPackage == null)
 		{
-			mp = pm.buildPackage(packageName);
+			metaPackage = packageManager.buildPackage(packageName);
 		}
 
-		resultMetaClass = new MetaClass(mp, className);
+		resultMetaClass = new MetaClass(metaPackage, className);
 
-		pm.addMetaClass(resultMetaClass);
+		packageManager.addMetaClass(resultMetaClass);
 
-		mp.addClass(resultMetaClass);
+		metaPackage.addClass(resultMetaClass);
 
 		stats.incCountClass();
 

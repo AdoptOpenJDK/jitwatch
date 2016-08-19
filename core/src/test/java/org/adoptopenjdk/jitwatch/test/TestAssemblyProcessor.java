@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,6 +7,8 @@ package org.adoptopenjdk.jitwatch.test;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -16,8 +18,6 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.core.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
@@ -61,45 +61,25 @@ public class TestAssemblyProcessor
 		return a + b;
 	}
 
-	private IMetaMember setUpTestMember(String fqClassName, String memberName, Class<?> returnType, Class<?>[] params)
-			throws ClassNotFoundException
-	{
-		MetaClass metaClass = model.getPackageManager().getMetaClass(fqClassName);
 
-		if (metaClass == null)
-		{
-			metaClass = UnitTestUtil.createMetaClassFor(model, fqClassName);
-		}
-
-		List<String> paramList = new ArrayList<>();
-
-		for (Class<?> clazz : params)
-		{
-			paramList.add(clazz.getName());
-		}
-
-		MemberSignatureParts msp = MemberSignatureParts.fromParts(fqClassName, memberName, returnType.getName(), paramList);
-
-		IMetaMember createdMember = metaClass.getMemberForSignature(msp);
-
-		return createdMember;
-	}
 
 	@Test
 	public void testSingleAsmMethod() throws ClassNotFoundException
 	{
 		String[] lines = SINGLE_ASSEMBLY_METHOD;
+		
+		String nmethodAddress = "0x00007f7d73364190";
 
-		IMetaMember createdMember = setUpTestMember(getClass().getName(), "dummyMethod", void.class, new Class<?>[0]);
+		IMetaMember createdMember = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod", void.class, new Class<?>[0], nmethodAddress);
 
 		performAssemblyParsingOn(lines);
-
-		List<AssemblyMethod> assemblyMethods = createdMember.getAssemblyMethods();
-
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		
+		AssemblyMethod assemblyMethod = createdMember.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
 
+		assertEquals(nmethodAddress, assemblyMethod.getNativeAddress());
+		
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 
 		assertEquals(1, asmBlocks.size());
@@ -113,7 +93,7 @@ public class TestAssemblyProcessor
 
 	private void performAssemblyParsingOn(String[] lines)
 	{
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(model.getPackageManager());
+		AssemblyProcessor asmProcessor = new AssemblyProcessor();
 
 		for (String line : lines)
 		{
@@ -126,6 +106,9 @@ public class TestAssemblyProcessor
 		}
 
 		asmProcessor.complete();
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+
 	}
 
 	@Test
@@ -152,17 +135,19 @@ public class TestAssemblyProcessor
 				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}",
 				"  0x00007f7d733640cd: data32 xchg %ax,%ax" };
 
-		IMetaMember member = setUpTestMember(getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class });
+		String nmethodAddress = "0x00007f7d73363f90";
+
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class }, nmethodAddress);
 
 		performAssemblyParsingOn(lines);
 
 		assertNotNull(member);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-		
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
+				
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress, assemblyMethod.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 
@@ -213,17 +198,21 @@ public class TestAssemblyProcessor
 				"  0x00007f7d733640c7: jne    0x00007f7d7333b960  ;   {runtime_call}",
 				"  0x00007f7d733640cd: data32 xchg %ax,%ax" };
 
-		IMetaMember member = setUpTestMember(getClass().getName(), "dummyMethod2", void.class,
-				new Class<?>[] { Class.forName("[Ljava.lang.String;") });
+		String nmethodAddress1 = "0x00007f7d73364190";
+		String nmethodAddress2 = "0x00007f7d73363f90";
 
-		IMetaMember member2 = setUpTestMember(getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class });
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod2", void.class,
+				new Class<?>[] { Class.forName("[Ljava.lang.String;") }, nmethodAddress1);
+
+		IMetaMember member2 = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class }, nmethodAddress2);
 
 		performAssemblyParsingOn(lines);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-		
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
+
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress1, assemblyMethod.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 
@@ -235,10 +224,11 @@ public class TestAssemblyProcessor
 
 		assertEquals(5, instructions.size());
 
-		List<AssemblyMethod> assemblyMethods2 = member2.getAssemblyMethods();
-		AssemblyMethod assemblyMethod2 = assemblyMethods2.get(assemblyMethods2.size() - 1);
-		
+		AssemblyMethod assemblyMethod2 = member2.getLastCompilation().getAssembly();
+
 		assertNotNull(assemblyMethod2);
+		
+		assertEquals(nmethodAddress2, assemblyMethod2.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks2 = assemblyMethod2.getBlocks();
 
@@ -249,7 +239,6 @@ public class TestAssemblyProcessor
 		List<AssemblyInstruction> instructions2 = block2.getInstructions();
 
 		assertEquals(4, instructions2.size());
-
 	}
 
 	@Test
@@ -296,14 +285,17 @@ public class TestAssemblyProcessor
 				"                    0x00007f25cd0fefce: jne    0x00007f25cd0ff0bf  ;*ifne",
 				"                                                                  ; - java.lang.String::hashCode@6 (line 1454)" };
 
-		IMetaMember member = setUpTestMember("java.lang.String", "hashCode", int.class, new Class<?>[0]);
+		String nmethodAddress1 = "0x00007f25cd0fedd0";
+
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, "java.lang.String", "hashCode", int.class, new Class<?>[0], nmethodAddress1);
 
 		performAssemblyParsingOn(lines);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 		
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress1, assemblyMethod.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 
@@ -355,17 +347,20 @@ public class TestAssemblyProcessor
 				"  1.41%             0x00007f25cd19c8bb: vmovsd (%rsp),%xmm1",
 				"  5.43%             0x00007f25cd19c8c0: add    $0x8,%rsp          ;*invokestatic log" };
 
+		String nmethodAddress1 = "0x00007f25cd19c690";
+		
 		// had to modify test class due to strong typed matching
-		IMetaMember member = setUpTestMember(getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class });
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
 		performAssemblyParsingOn(lines);
 
 		assertNotNull(member);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-		
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
+
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress1, assemblyMethod.getNativeAddress());
 
 		assertEquals(19, assemblyMethod.getMaxAnnotationWidth());
 
@@ -410,15 +405,18 @@ public class TestAssemblyProcessor
 				"<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288'/>",
 				"<writer thread='140418643298048'/>" };
 
-		IMetaMember member = setUpTestMember(getClass().getName(), "dummyMethod2", void.class,
-				new Class<?>[] { Class.forName("[Ljava.lang.String;") });
+		String nmethodAddress1 = "0x00007f7d73364190";
+		
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod2", void.class,
+				new Class<?>[] { Class.forName("[Ljava.lang.String;") }, nmethodAddress1);
 
 		performAssemblyParsingOn(lines);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-		
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
+
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress1, assemblyMethod.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 
@@ -471,14 +469,17 @@ public class TestAssemblyProcessor
 				"  0x00007f1eaad25eab: retq   ",
 				"  0x00007f1eaad25eac: hlt    " };
 
-		IMetaMember member = setUpTestMember(getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class });
+		String nmethodAddress1 = "0x00007f1eaad25d50";
+
+		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class, new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
 		performAssemblyParsingOn(lines);
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
-		AssemblyMethod assemblyMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-		
+		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
+
 		assertNotNull(assemblyMethod);
+		
+		assertEquals(nmethodAddress1, assemblyMethod.getNativeAddress());
 
 		List<AssemblyBlock> asmBlocks = assemblyMethod.getBlocks();
 

@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_MAX_INLINE_SIZE;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import java.util.Map;
+
+import org.adoptopenjdk.jitwatch.model.Compilation;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class MemberInfo extends HBox
+public class CompilationInfo extends HBox
 {
 	private Label lblBytecodeSize;
 	private Label lblBytecodeSizeVal;
@@ -32,7 +32,7 @@ public class MemberInfo extends HBox
 	private static final String STYLE_VALUE = "-fx-border-color: black; -fx-border-width: 1px; text-align: center; ";
 	private static final String NA = "n/a";
 
-	public MemberInfo()
+	public CompilationInfo()
 	{
 		double valueWidth = 110;
 
@@ -69,7 +69,7 @@ public class MemberInfo extends HBox
 		lblAssemblySize.setText("Native size");
 		lblCompileTime.setText("Compile time");
 
-		setMember(null);
+		setCompilation(null);
 
 		vBoxBytecode.getChildren().add(lblBytecodeSize);
 		vBoxBytecode.getChildren().add(lblBytecodeSizeVal);
@@ -85,16 +85,16 @@ public class MemberInfo extends HBox
 		getChildren().add(vBoxCompileTime);		
 	}
 
-	public void setMember(IMetaMember member)
+	public void setCompilation(Compilation compilation)
 	{
-		lblBytecodeSizeVal.setText(getAttrOrNA(member, false, ATTR_BYTES));
-
-		lblAssemblySizeVal.setText(getAttrOrNA(member, true, ATTR_NMSIZE));
-
-		lblCompileTimeVal.setText(getAttrOrNA(member, true, ATTR_COMPILE_MILLIS));
-
-		if (member != null)
+		if (compilation != null)
 		{
+			lblBytecodeSizeVal.setText(getAttrOrNA(compilation.getQueuedAttributes(), ATTR_BYTES));
+
+			lblAssemblySizeVal.setText(Integer.toString(compilation.getNativeSize()));
+
+			lblCompileTimeVal.setText(compilation.getCompileTime() + "ms");
+			
 			try
 			{
 				int bytecodeSize = Integer.parseInt(lblBytecodeSizeVal.getText());
@@ -121,38 +121,23 @@ public class MemberInfo extends HBox
 				Tooltip.uninstall(lblBytecodeSizeVal, lblBytecodeSizeVal.getTooltip());
 			}
 		}
-	}
-	
-	public void setAssemblyDetails(String nativeSize, String compileMillis)
-	{	
-		lblAssemblySizeVal.setText(nativeSize == null ? NA : nativeSize);
-
-		lblCompileTimeVal.setText(compileMillis == null ? NA : (compileMillis + "ms"));
-	}
-
-	private String getAttrOrNA(IMetaMember member, boolean compiled, String attribute)
-	{
-		String result = null;
-
-		if (member != null)
+		else
 		{
-			if (compiled)
-			{
-				result = member.getCompiledAttribute(attribute);
-			}
-			else
-			{
-				result = member.getQueuedAttribute(attribute);
-			}
+			lblBytecodeSizeVal.setText(NA);
+
+			lblAssemblySizeVal.setText(NA);
+
+			lblCompileTimeVal.setText(NA);
 		}
+	}
+
+	private String getAttrOrNA(Map<String, String> attributes, String key)
+	{
+		String result = attributes.get(key);
 
 		if (result == null)
 		{
 			result = NA;
-		}
-		else if (ATTR_COMPILE_MILLIS.equals(attribute))
-		{
-			result += "ms";
 		}
 
 		return result;

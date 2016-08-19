@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,11 +23,15 @@ public class TestLogSplitting
 	@Test
 	public void testCanParseAssemblyAndNMethodMangled() throws Exception
 	{
-		String nmethodTag = "<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288'/>";
+		String nmethodTag = "<nmethod compile_id='999' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x0000aaaaaaaaa' relocation_offset='288' method='java/lang/String hashCode ()I' />";
 
 		String[] lines = new String[] {
+				"<task_queued compile_id='1' method='java/lang/String length ()I' bytes='55' count='520' backedge_count='5000' iicount='520' stamp='0.083' comment='count' hot_count='520'/>",
+				"<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288' method='java/lang/String length ()I' />",
+				"<task compile_id='1' method='java/lang/String length ()I' bytes='55' count='521' backedge_count='5000' iicount='521' stamp='0.083'>",
+				"<task_done success='1' nmsize='376' count='546' backedge_count='5389' stamp='0.105'/>",
 				"[Loaded java.lang.String from /home/chris/jdk1.9.0/jre/lib/rt.jar]",
-				"Decoding compiled method 0x00007f7d73364190:",
+				"Decoding compiled method 0x00007fb5ad0fe290:",
 				"Code:",
 				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
 				"[Entry Point]",
@@ -43,17 +47,17 @@ public class TestLogSplitting
 				"0x00007fb5ad0fe96e: hlt",
 				"0x00007fb5ad0fe96f: hlt " + nmethodTag,
 				"<writer thread='140418643298048'/>" };
-
+		
 		Path path = writeLinesToTempFileAndReturnPath(lines);
 
 		ILogParser parser = new HotSpotLogParser(UnitTestUtil.getNoOpJITListener());
-
+		
 		parser.processLogFile(path.toFile(), UnitTestUtil.getNoOpParseErrorListener());
 
 		SplitLog log = parser.getSplitLog();
 
 		assertEquals(15, log.getAssemblyLines().size());
-		assertEquals(2, log.getLogCompilationLines().size());
+		assertEquals(6, log.getLogCompilationLines().size());
 	}
 
 	private Path writeLinesToTempFileAndReturnPath(String[] lines) throws IOException

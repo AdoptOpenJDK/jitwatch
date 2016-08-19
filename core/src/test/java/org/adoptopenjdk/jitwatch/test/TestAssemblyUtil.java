@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -416,8 +416,5 @@ public class TestAssemblyUtil
 		
 		assertEquals("%eax", operands.get(0));	
 		assertEquals("-0x14000(%rsp)", operands.get(1));		
-
 	}
-	
-	
 }

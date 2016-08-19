@@ -31,7 +31,7 @@ public abstract class AbstractGraphStage extends Stage
 {
 	protected Canvas canvas;
 	protected GraphicsContext gc;
-	protected JITWatchUI parent;
+	protected JITWatchUI mainUI;
 
 	protected double graphGapLeft = 20.5;
 	protected final double graphGapRight = 20.5;
@@ -80,7 +80,7 @@ public abstract class AbstractGraphStage extends Stage
 
 	public AbstractGraphStage(final JITWatchUI parent, int width, int height, boolean xAxisTime)
 	{
-		this.parent = parent;
+		this.mainUI = parent;
 		this.width = width;
 		this.height = height;
 		this.xAxisTime = xAxisTime;

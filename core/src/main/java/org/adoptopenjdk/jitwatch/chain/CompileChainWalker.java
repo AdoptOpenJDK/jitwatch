@@ -31,18 +31,18 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CompileChainWalker extends AbstractJournalVisitable
+public class CompileChainWalker extends AbstractCompilationVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
 
@@ -65,13 +65,13 @@ public class CompileChainWalker extends AbstractJournalVisitable
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
 	}
 
-	public CompileNode buildCallTree(Journal journal)
+	public CompileNode buildCallTree(Compilation compilation)
 	{
 		this.root = null;
 
 		try
 		{
-			JournalUtil.visitParseTagsOfLastTask(journal, this);
+			CompilationUtil.visitParseTagsOfCompilation(compilation, this);
 		}
 		catch (LogParseException lpe)
 		{

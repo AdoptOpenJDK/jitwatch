@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
@@ -18,10 +17,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
+import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 
 public class HeadlessUtil
 {
@@ -40,7 +41,7 @@ public class HeadlessUtil
 		builder.append("Bytecode Size").append(HEADLESS_SEPARATOR);
 		builder.append("Native Size").append(HEADLESS_SEPARATOR);
 		builder.append("Decompiles");
-		
+
 		builder.append(S_NEWLINE);
 
 		List<MetaPackage> roots = model.getPackageManager().getRootPackages();
@@ -81,58 +82,74 @@ public class HeadlessUtil
 					builder.append(isCompiled ? "Y" : "N").append(HEADLESS_SEPARATOR);
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_COMPILER, S_HYPEN)).append(HEADLESS_SEPARATOR);
-					
+
 					builder.append(getQueuedAttributeOrNA(member, ATTR_STAMP, S_HYPEN)).append(HEADLESS_SEPARATOR);
-					
+
 					builder.append(getCompiledAttributeOrNA(member, ATTR_STAMP, S_HYPEN)).append(HEADLESS_SEPARATOR);
-					
-					builder.append(getCompiledAttributeOrNA(member, ATTR_COMPILE_MILLIS, S_HYPEN)).append(HEADLESS_SEPARATOR);
+
+					long lastCompilationTime = getLastCompilationTime(member);
+
+					builder.append(lastCompilationTime).append(HEADLESS_SEPARATOR);
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_BYTES, S_HYPEN)).append(HEADLESS_SEPARATOR);
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_NMSIZE, S_HYPEN)).append(HEADLESS_SEPARATOR);
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_DECOMPILES, "0"));
-					
+
 					builder.append(S_NEWLINE);
 				}
 			}
 		}
 	}
-	
+
+	private static long getLastCompilationTime(IMetaMember member)
+	{
+		long compileTime = 0;
+
+		int compilationCount = member.getCompilations().size();
+
+		if (compilationCount > 0)
+		{
+			compileTime = member.getCompilations().get(compilationCount - 1).getCompileTime();
+		}
+		
+		return compileTime;
+	}
+
 	private static String getQueuedAttributeOrNA(IMetaMember member, String attributeName, String defaultValue)
 	{
 		String result = defaultValue;
-		
+
 		if (member != null)
 		{
 			result = getAttributeOrNA(member.getQueuedAttributes(), attributeName, defaultValue);
 		}
-		
+
 		return result;
 	}
-	
+
 	private static String getCompiledAttributeOrNA(IMetaMember member, String attributeName, String defaultValue)
 	{
 		String result = defaultValue;
-		
+
 		if (member != null)
 		{
 			result = getAttributeOrNA(member.getCompiledAttributes(), attributeName, defaultValue);
 		}
-		
+
 		return result;
 	}
-	
+
 	private static String getAttributeOrNA(Map<String, String> attrs, String attributeName, String defaultValue)
 	{
 		String result = defaultValue;
-		
+
 		if (attrs.containsKey(attributeName))
 		{
 			result = attrs.get(attributeName);
 		}
-		
+
 		return result;
 	}
 }

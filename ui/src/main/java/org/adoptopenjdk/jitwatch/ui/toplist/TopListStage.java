@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -8,9 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.toplist;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
 
 import java.util.ArrayList;
@@ -37,11 +35,13 @@ import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.CompileTimeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
 import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.NativeMethodSizeTopListVisitable;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -70,8 +70,8 @@ public class TopListStage extends Stage
 		int width = 800;
 		int height = 480;
 
-		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_NMSIZE, true), new String[] { "Bytes", MEMBER });
+		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new NativeMethodSizeTopListVisitable(
+				parent.getJITDataModel(), true), new String[] { "Bytes", MEMBER });
 		
 		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(
 				parent.getJITDataModel(), true), new String[] { "Count", "Reason" });
@@ -83,7 +83,7 @@ public class TopListStage extends Stage
 				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
 		
 		TopListWrapper tlSlowestCompilation = new TopListWrapper("Slowest Compilation Times",
-				new CompiledAttributeTopListVisitable(parent.getJITDataModel(), ATTR_COMPILE_MILLIS, true), new String[] {
+				new CompileTimeTopListVisitable(parent.getJITDataModel(), true), new String[] {
 						"Milliseconds",
 						MEMBER });
 		

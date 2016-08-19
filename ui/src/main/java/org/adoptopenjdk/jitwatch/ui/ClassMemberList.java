@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -87,7 +87,6 @@ public class ClassMemberList extends VBox
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, getEventHandlerContextMenu(menuCompiled, menuUncompiled));
 
-
 		memberList.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>()
 		{
 			@Override
@@ -97,7 +96,6 @@ public class ClassMemberList extends VBox
 				menuUncompiled.hide();
 			}
 		});
-
 
 		getChildren().add(cbOnlyCompiled);
 		getChildren().add(memberList);
@@ -135,21 +133,17 @@ public class ClassMemberList extends VBox
 		final ContextMenu menu = new ContextMenu();
 
 		MenuItem menuItemTriView = new MenuItem("Show TriView");
-		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
 		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
 		MenuItem menuItemOptimizedVCalls = new MenuItem("Show optimized virtual calls");
 
 		menu.getItems().add(menuItemTriView);
-		menu.getItems().add(menuItemJournal);
 		menu.getItems().add(menuItemIntrinsics);
 		menu.getItems().add(menuItemCallChain);
 		menu.getItems().add(menuItemOptimizedVCalls);
 
 
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
-
-		menuItemJournal.setOnAction(getEventHandlerMenuItemJournal(parent));
 
 		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
 
@@ -166,14 +160,10 @@ public class ClassMemberList extends VBox
 		ContextMenu menu = new ContextMenu();
 
 		MenuItem menuItemTriView = new MenuItem("Show TriView");
-		MenuItem menuItemJournal = new MenuItem("Show JIT journal");
 
 		menu.getItems().add(menuItemTriView);
-		menu.getItems().add(menuItemJournal);
 
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
-
-		menuItemJournal.setOnAction(getEventHandlerMenuItemJournal(parent));
 
 		return menu;
 	}
@@ -186,20 +176,6 @@ public class ClassMemberList extends VBox
 			public void handle(ActionEvent e)
 			{
 				parent.openTriView(memberList.getSelectionModel().getSelectedItem(), false);
-			}
-		};
-	}
-
-	private EventHandler<ActionEvent> getEventHandlerMenuItemJournal(final JITWatchUI parent)
-	{
-		return new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				IMetaMember member = memberList.getSelectionModel().getSelectedItem();
-
-				parent.openJournalViewer("JIT Journal for " + member.toString(), member);
 			}
 		};
 	}

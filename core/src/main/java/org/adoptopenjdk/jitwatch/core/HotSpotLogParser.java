@@ -6,8 +6,10 @@
 package org.adoptopenjdk.jitwatch.core;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP_COMPLETED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
@@ -68,10 +70,12 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.NumberedLine;
 import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.SplitLog;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -255,8 +259,8 @@ public class HotSpotLogParser implements ILogParser
 		processLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
-
-		asmProcessor = new AssemblyProcessor(model.getPackageManager());
+		
+		asmProcessor = new AssemblyProcessor();
 	}
 
 	@Override
@@ -273,9 +277,9 @@ public class HotSpotLogParser implements ILogParser
 			logSplitStats();
 		}
 
-		parseLogFile();		
+		parseLogFile();
 	}
-	
+
 	@Override
 	public void discardParsedLogs()
 	{
@@ -382,6 +386,10 @@ public class HotSpotLogParser implements ILogParser
 		}
 
 		asmProcessor.complete();
+
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+
+		asmProcessor.clear();
 	}
 
 	private void splitLogFile(File hotspotLog)
@@ -551,7 +559,7 @@ public class HotSpotLogParser implements ILogParser
 	private void handleTag(Tag tag)
 	{
 		String tagName = tag.getName();
-
+		
 		switch (tagName)
 		{
 		case TAG_VM_VERSION:
@@ -672,7 +680,7 @@ public class HotSpotLogParser implements ILogParser
 	private void handleTagNMethod(Tag tag)
 	{
 		Map<String, String> tagAttributes = tag.getAttributes();
-		
+
 		String attrCompiler = tagAttributes.get(ATTR_COMPILER);
 
 		renameCompilationCompletedTimestamp(tag);
@@ -725,12 +733,12 @@ public class HotSpotLogParser implements ILogParser
 			handleTaskDone(tagTaskDone);
 		}
 	}
-	
+
 	private void storeCodeCacheEvent(Tag tag)
-	{		
+	{
 		storeCodeCacheEvent(tag, tag.getAttributes().get(ATTR_STAMP));
 	}
-	
+
 	private void storeCodeCacheEvent(Tag tag, String stamp)
 	{
 		CodeCacheEvent codeCacheEvent = new CodeCacheEvent(ParseUtil.parseStamp(stamp), tag);
@@ -739,37 +747,32 @@ public class HotSpotLogParser implements ILogParser
 	}
 
 	private void handleMethodLine(Tag tag, EventType eventType)
-	{
+	{		
 		Map<String, String> attrs = tag.getAttributes();
 
 		String attrMethod = attrs.get(ATTR_METHOD);
-
+		
 		if (attrMethod != null)
 		{
 			attrMethod = attrMethod.replace(S_SLASH, S_DOT);
 
-			IMetaMember member = handleMember(attrMethod, attrs, eventType);
-
-			if (member != null)
-			{
-				member.addJournalEntry(tag);
-			}
+			handleMember(attrMethod, attrs, eventType, tag);
 		}
 	}
 
-	private IMetaMember handleMember(String signature, Map<String, String> attrs, EventType type)
+	private void handleMember(String signature, Map<String, String> attrs, EventType type, Tag tag)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
 
 		long stampTime = ParseUtil.getStamp(attrs);
 
 		if (metaMember != null)
-		{
+		{			
 			switch (type)
 			{
 			case QUEUE:
 			{
-				metaMember.setQueuedAttributes(attrs);
+				metaMember.setTagTaskQueued(tag);
 				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(queuedEvent);
 				logEvent(queuedEvent);
@@ -779,9 +782,9 @@ public class HotSpotLogParser implements ILogParser
 			case NMETHOD_C2:
 			case NMETHOD_C2N:
 			{
-				metaMember.setCompiledAttributes(attrs);
+				metaMember.setTagNMethod(tag);
 				metaMember.getMetaClass().incCompiledMethodCount();
-				model.updateStats(metaMember);
+				model.updateStats(metaMember, attrs);
 
 				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(compiledEvent);
@@ -790,29 +793,48 @@ public class HotSpotLogParser implements ILogParser
 				break;
 			case TASK:
 			{
-				metaMember.addCompiledAttributes(attrs);
+				metaMember.setTagTask((Task)tag);
 				currentMember = metaMember;
 			}
 				break;
 			}
 		}
-
-		return metaMember;
 	}
 
-	private void handleTaskDone(Tag tag)
+	private void handleTaskDone(Tag tagTaskDone)
 	{
-		Map<String, String> attrs = tag.getAttributes();
+		Map<String, String> attrs = tagTaskDone.getAttributes();
 
-		if (attrs.containsKey("nmsize"))
+		if (attrs.containsKey(ATTR_NMSIZE))
 		{
-			long nmsize = Long.parseLong(attrs.get("nmsize"));
+			long nmsize = Long.parseLong(attrs.get(ATTR_NMSIZE));
 			model.addNativeBytes(nmsize);
 		}
 
 		if (currentMember != null)
 		{
-			currentMember.addCompiledAttributes(attrs);
+			Tag parent = tagTaskDone.getParent();
+						
+			String compileID = null;
+			
+			if (TAG_TASK.equals(parent.getName()))
+			{
+				compileID = parent.getAttributes().get(ATTR_COMPILE_ID);
+
+				if (compileID != null)
+				{
+					currentMember.setTagTaskDone(compileID, tagTaskDone);
+				}
+				else
+				{
+					logger.warn("No compile_id attribute found on task");
+				}
+			}
+			else
+			{
+				logger.warn("Unexpected parent of task_done: {}", parent.getName());
+			}
+			
 
 			// prevents attr overwrite by next task_done if next member not
 			// found due to classpath issues
@@ -872,7 +894,8 @@ public class HotSpotLogParser implements ILogParser
 			{
 				originalLocation = URLDecoder.decode(originalLocation, "UTF-8");
 			}
-			catch (UnsupportedEncodingException e) {
+			catch (UnsupportedEncodingException e)
+			{
 				// ignore
 			}
 
@@ -893,7 +916,14 @@ public class HotSpotLogParser implements ILogParser
 	private void addToClassModel(String fqClassName)
 	{
 		Class<?> clazz = null;
-
+		
+		MetaClass metaClass = model.getPackageManager().getMetaClass(fqClassName);
+		
+		if (metaClass != null)
+		{
+			return;
+		}
+		
 		try
 		{
 			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);

@@ -14,11 +14,12 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.junit.After;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class TestCompileChain
 	@After
 	public void checkUnhandledTags()
 	{
-		assertEquals(0, JournalUtil.getUnhandledTagCount());
+		assertEquals(0, CompilationUtil.getUnhandledTagCount());
 	}
 	
 	@Test
@@ -902,12 +903,12 @@ public class TestCompileChain
 
 		assertNotNull(tag);
 
-		Journal journal = new Journal();
-		journal.addEntry(tag);
+		Compilation compilation = new Compilation(0);
+		compilation.setTagTask((Task)tag);
 
 		CompileChainWalker walker = new CompileChainWalker(new JITDataModel());
 
-		CompileNode root = walker.buildCallTree(journal);
+		CompileNode root = walker.buildCallTree(compilation);
 
 		assertNotNull(root);
 

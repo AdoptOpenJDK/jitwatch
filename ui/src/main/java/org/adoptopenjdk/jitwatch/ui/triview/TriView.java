@@ -5,12 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_MILLIS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_SIZE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
@@ -20,19 +14,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRI
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
-
 import java.util.List;
-import java.util.Map;
-
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
@@ -107,12 +96,12 @@ public class TriView extends Stage implements ITriView, ILineListener
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
 	private ComboBox<IMetaMember> comboMember;
 
-	private ObservableList<String> comboAssemblyMethodList = FXCollections.observableArrayList();
-	private ComboBox<String> comboAssemblyMethod;
+	private ObservableList<String> comboCompilationList = FXCollections.observableArrayList();
+	private ComboBox<String> comboSelectedCompilation;
 
 	private ClassSearch classSearch;
 
-	private MemberInfo memberInfo;
+	private CompilationInfo compilationInfo;
 
 	private Label lblMemberInfo;
 
@@ -169,7 +158,16 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				if (currentMember != null)
 				{
-					parent.openJournalViewer("JIT Journal for " + currentMember.toString(), currentMember);
+					String windowTitle = "JIT Journal for " + currentMember.toString();
+
+					Compilation selectedCompilation = currentMember.getSelectedCompilation();
+
+					if (selectedCompilation != null)
+					{
+						windowTitle += " - Compilation " + selectedCompilation.getSignature();
+					}
+
+					parent.openJournalViewer(windowTitle, currentMember);
 				}
 			}
 		});
@@ -191,7 +189,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		});
 		btnLineTable.setTooltip(new Tooltip("Show LineNumberTable for current bytecode"));
 
-		memberInfo = new MemberInfo();
+		compilationInfo = new CompilationInfo();
 
 		Region spacerTop = new Region();
 		HBox.setHgrow(spacerTop, Priority.ALWAYS);
@@ -207,7 +205,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		hBoxToolBarButtons.getChildren().add(btnLineTable);
 		hBoxToolBarButtons.getChildren().add(checkMouseover);
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
-		hBoxToolBarButtons.getChildren().add(memberInfo);
+		hBoxToolBarButtons.getChildren().add(compilationInfo);
 
 		Label lblClass = new Label("Class:");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
@@ -380,29 +378,36 @@ public class TriView extends Stage implements ITriView, ILineListener
 			{
 				config.setLocalAsmLabels(newVal);
 				config.saveConfig();
-				
+
 				if (currentMember != null)
 				{
-					setAssemblyPaneContent(0);
+					setCompilation();
 				}
 			}
 		});
 
 		hbox.getChildren().add(checkLocalLabels);
 
-		comboAssemblyMethod = new ComboBox<>(comboAssemblyMethodList);
-		comboAssemblyMethod.setStyle("-fx-font-size: 10px");
+		comboSelectedCompilation = new ComboBox<>(comboCompilationList);
+		comboSelectedCompilation.setStyle("-fx-font-size: 10px");
 
-		comboAssemblyMethod.valueProperty().addListener(new ChangeListener<String>()
+		comboSelectedCompilation.valueProperty().addListener(new ChangeListener<String>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
 			{
-				setAssemblyPaneContent(comboAssemblyMethod.getSelectionModel().getSelectedIndex());
+				int index = comboSelectedCompilation.getSelectionModel().getSelectedIndex();
+
+				if (index >= 0 && index < currentMember.getCompilations().size())
+				{
+					currentMember.setSelectedCompilation(index);
+
+					setCompilation();
+				}
 			}
 		});
 
-		hbox.getChildren().add(comboAssemblyMethod);
+		hbox.getChildren().add(comboSelectedCompilation);
 
 		return hbox;
 	}
@@ -555,8 +560,6 @@ public class TriView extends Stage implements ITriView, ILineListener
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
 
-		memberInfo.setMember(member);
-
 		List<String> allClassLocations = config.getAllClassLocations();
 
 		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(model, allClassLocations);
@@ -593,103 +596,31 @@ public class TriView extends Stage implements ITriView, ILineListener
 		updateStatusBarIfCompiled(statusBarBuilder);
 		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
-		viewerBytecode.setContent(currentMember);
+		comboSelectedCompilation.getSelectionModel().clearSelection();
+		comboCompilationList.clear();
 
-		comboAssemblyMethod.getSelectionModel().clearSelection();
-		comboAssemblyMethodList.clear();
+		List<Compilation> compilations = currentMember.getCompilations();
 
-		List<AssemblyMethod> assemblyMethods = currentMember.getAssemblyMethods();
-		int numAssemblyMethods = assemblyMethods.size();
+		int compilationCount = compilations.size();
 
-		for (int i = 0; i < numAssemblyMethods; i++)
+		for (Compilation compilation : compilations)
 		{
-			comboAssemblyMethodList.add("#" + (i+1) + getCompilationDetail(i));
+			comboCompilationList.add(compilation.getSignature());
 		}
 
-		int selectedAssembly = numAssemblyMethods - 1;
-		
-		comboAssemblyMethod.getSelectionModel().select(selectedAssembly);
-		
-		comboAssemblyMethod.setVisible(numAssemblyMethods > 0);
+		Compilation selectedCompilation = currentMember.getSelectedCompilation();
 
-		setAssemblyPaneContent(selectedAssembly);
-		
+		if (selectedCompilation != null)
+		{
+			int selectedCompilationIndex = selectedCompilation.getIndex();
+			comboSelectedCompilation.getSelectionModel().select(selectedCompilationIndex);
+		}
+
+		comboSelectedCompilation.setVisible(compilationCount > 0);
+
+		setCompilation();
+
 		lblMemberInfo.setText(statusBarBuilder.toString());
-	}
-
-	private String getCompilationDetail(int index)
-	{
-		Journal journal = currentMember.getJournal();
-
-		StringBuilder builder = new StringBuilder();
-
-		int tagIndex = 0;
-
-		for (Tag tag : journal.getEntryList())
-		{
-			if (TAG_NMETHOD.equals(tag.getName()))
-			{
-				if (index == tagIndex)
-				{
-					Map<String, String> tagAttributes = tag.getAttributes();
-					
-					String level = tagAttributes.get(ATTR_LEVEL);
-					String compiler = tagAttributes.get(ATTR_COMPILER);
-					String compileKind = tagAttributes.get(ATTR_COMPILE_KIND);
-										
-					builder.append("  (").append(compiler);
-					
-					if (compileKind != null)
-					{
-						builder.append(" / ").append(compileKind.toUpperCase());
-					}
-					
-					if (level != null)
-					{
-						builder.append(" / Level ").append(level);
-					}
-					
-					builder.append(")");
-										
-					break;
-				}
-				else
-				{
-					tagIndex++;
-				}
-			}
-		}
-
-		return builder.toString();
-	}
-	
-	private void setMemberInfoAssemblyDetails(int compilation)
-	{
-		Journal journal = currentMember.getJournal();
-
-		int tagIndex = 0;
-
-		for (Tag tag : journal.getEntryList())
-		{
-			if (TAG_NMETHOD.equals(tag.getName()))
-			{
-				if (compilation == tagIndex)
-				{
-					Map<String, String> tagAttributes = tag.getAttributes();
-
-					String nativeSize = tagAttributes.get(ATTR_SIZE); // nmethod tag has size attr, task_done has nmsize
-					String compileMillis = tagAttributes.get(ATTR_COMPILE_MILLIS);
-					
-					memberInfo.setAssemblyDetails(nativeSize, compileMillis);
-					
-					break;
-				}
-				else
-				{
-					tagIndex++;
-				}
-			}
-		}
 	}
 
 	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)
@@ -717,24 +648,31 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void setAssemblyPaneContent(int index)
+	private void setCompilation()
 	{
-		AssemblyMethod asmMethod = null;
+		Compilation compilation = currentMember.getSelectedCompilation();
+
+		compilationInfo.setCompilation(compilation);
+
+		viewerBytecode.setContent(currentMember);
 
 		if (currentMember.isCompiled())
 		{
-			List<AssemblyMethod> assemblyMethods = currentMember.getAssemblyMethods();
+			AssemblyMethod asmMethod = null;
 
-			if (index >= 0 && index < assemblyMethods.size())
+			if (compilation != null)
 			{
-				setMemberInfoAssemblyDetails(index);
-
-				asmMethod = assemblyMethods.get(index);
+				asmMethod = compilation.getAssembly();
 			}
 
 			if (asmMethod == null)
 			{
-				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?"; // TODO
+																						// check
+																						// if
+																						// -XX:+PrintAssembly
+																						// was
+																						// used
 				viewerAssembly.setContent(msg, false);
 			}
 			else
@@ -757,20 +695,11 @@ public class TriView extends Stage implements ITriView, ILineListener
 		{
 			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
 
-			String attrCompiler = currentMember.getCompiledAttribute(ATTR_COMPILER);
-
-			if (attrCompiler != null)
+			Compilation compilation = currentMember.getSelectedCompilation();
+			
+			if (compilation != null)
 			{
-				statusBarBuilder.append(" compiled with ").append(attrCompiler);
-			}
-			else
-			{
-				String attrCompileKind = currentMember.getCompiledAttribute(ATTR_COMPILE_KIND);
-
-				if (attrCompileKind != null && C2N.equals(attrCompileKind))
-				{
-					statusBarBuilder.append(" compiled native wrapper");
-				}
+				statusBarBuilder.append(" compiled with ").append(compilation.getCompiler());
 			}
 		}
 	}
@@ -959,7 +888,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				int assemblyHighlight = viewerAssembly.getIndexForBytecodeOffset(metaClass.getFullyQualifiedName(), instruction);
 
 				ClassBC classBytecode = metaClass.getClassBytecode(model, config.getConfiguredClassLocations());
-				
+
 				if (classBytecode != null)
 				{
 					MemberBytecode memberBytecode = classBytecode.getMemberBytecode(currentMember);
@@ -1004,9 +933,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 					try
 					{
 						int sourceHighlight = Integer.parseInt(sourceLine) - 1;
-						
+
 						viewerSource.highlightLine(sourceHighlight);
-						
+
 						if (bci != null)
 						{
 							try

@@ -10,12 +10,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
+import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.treevisitor.ITreeVisitable;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 
-public abstract class AbstractSuggestionVisitable extends AbstractJournalVisitable implements ITreeVisitable
+public abstract class AbstractSuggestionVisitable extends AbstractCompilationVisitable implements ITreeVisitable
 {
     protected IReadOnlyJITDataModel model;
     protected List<Suggestion> suggestionList;

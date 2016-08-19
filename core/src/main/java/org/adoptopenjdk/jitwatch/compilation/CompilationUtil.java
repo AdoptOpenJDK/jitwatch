@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.journal;
+package org.adoptopenjdk.jitwatch.compilation;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BUILDIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
@@ -24,9 +24,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
-import org.adoptopenjdk.jitwatch.model.Journal;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
@@ -35,134 +35,136 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class JournalUtil
+public final class CompilationUtil
 {
-	private static final Logger logger = LoggerFactory.getLogger(JournalUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(CompilationUtil.class);
 
 	private static int unhandledTagCount = 0;
 
-	private JournalUtil()
+	private CompilationUtil()
 	{
 	}
 
-	public static void visitParseTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
+	public static void visitParseTagsOfCompilation(Compilation compilation, ICompilationVisitable visitable)
+			throws LogParseException
 	{
-		Task lastTask = getLastTask(journal);
-
-		if (lastTask == null)
+		if (compilation != null)
 		{
-			if (!isJournalForCompile2NativeMember(journal))
-			{
-				logger.warn("No Task found in Journal");
+			Task tagTask = compilation.getTagTask();
 
-				if (journal != null && journal.getEntryList().size() > 0)
+			if (tagTask == null)
+			{
+				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
 				{
-					logger.warn(journal.toString());
+					logger.warn("No Task found in Compilation");
+				}
+			}
+			else
+			{
+				IParseDictionary parseDictionary = tagTask.getParseDictionary();
+
+				Tag parsePhase = getParsePhase(tagTask);
+
+				if (parsePhase != null)
+				{
+					List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
+
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("About to visit {} parse tags in last <task> of Journal", parseTags.size());
+					}
+
+					for (Tag parseTag : parseTags)
+					{
+						visitable.visitTag(parseTag, parseDictionary);
+					}
 				}
 			}
 		}
 		else
 		{
-			IParseDictionary parseDictionary = lastTask.getParseDictionary();
-			
-			Tag parsePhase = getParsePhase(lastTask);
-
-			if (parsePhase != null)
-			{
-				List<Tag> parseTags = parsePhase.getNamedChildren(TAG_PARSE);
-
-				if (DEBUG_LOGGING)
-				{
-					logger.debug("About to visit {} parse tags in last <task> of Journal", parseTags.size());
-				}
-
-				for (Tag parseTag : parseTags)
-				{
-					visitable.visitTag(parseTag, parseDictionary);
-				}
-			}
+			logger.warn("Compilation is null");
 		}
 	}
 
-	public static void visitOptimizerTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
+	public static void visitOptimizerTagsOfCompilation(Compilation compilation, ICompilationVisitable visitable)
+			throws LogParseException
 	{
-		Task lastTask = getLastTask(journal);
-
-		if (lastTask == null)
+		if (compilation != null)
 		{
-			if (!isJournalForCompile2NativeMember(journal))
-			{
-				logger.warn("No Task found in Journal");
+			Task tagTask = compilation.getTagTask();
 
-				if (journal != null && journal.getEntryList().size() > 0)
+			if (tagTask == null)
+			{
+				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
 				{
-					logger.warn(journal.toString());
+					logger.warn("No Task found in Compilation");
+				}
+			}
+			else
+			{
+				IParseDictionary parseDictionary = tagTask.getParseDictionary();
+
+				Tag optimizerPhase = getOptimizerPhase(tagTask);
+
+				if (optimizerPhase != null)
+				{
+					for (Tag child : optimizerPhase.getChildren())
+					{
+						visitable.visitTag(child, parseDictionary);
+					}
 				}
 			}
 		}
 		else
 		{
-			IParseDictionary parseDictionary = lastTask.getParseDictionary();
+			logger.warn("Compilation is null");
+		}
+	}
 
-			Tag optimizerPhase = getOptimizerPhase(lastTask);
+	public static void visitEliminationTagsOfCompilation(Compilation compilation, ICompilationVisitable visitable)
+			throws LogParseException
+	{
+		if (compilation != null)
+		{
+			Task tagTask = compilation.getTagTask();
 
-			if (optimizerPhase != null)
+			if (tagTask == null)
 			{
-				for (Tag child : optimizerPhase.getChildren())
+				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
+				{
+					logger.warn("No Task found in Compilation");
+				}
+			}
+			else
+			{
+				IParseDictionary parseDictionary = tagTask.getParseDictionary();
+
+				for (Tag child : tagTask.getNamedChildren(TAG_ELIMINATE_ALLOCATION))
 				{
 					visitable.visitTag(child, parseDictionary);
 				}
 			}
 		}
-	}
-
-	public static void visitEliminationTagsOfLastTask(Journal journal, IJournalVisitable visitable) throws LogParseException
-	{
-		Task lastTask = getLastTask(journal);
-
-		if (lastTask == null)
-		{
-			if (!isJournalForCompile2NativeMember(journal))
-			{
-				logger.warn("No Task found in Journal");
-
-				if (journal != null && journal.getEntryList().size() > 0)
-				{
-					logger.warn(journal.toString());
-				}
-			}
-		}
 		else
 		{
-			IParseDictionary parseDictionary = lastTask.getParseDictionary();
-
-			for (Tag child : lastTask.getNamedChildren(TAG_ELIMINATE_ALLOCATION))
-			{
-				visitable.visitTag(child, parseDictionary);
-			}
+			logger.warn("Compilation is null");
 		}
 	}
 
-	public static boolean isJournalForCompile2NativeMember(Journal journal)
+	public static boolean isJournalForCompile2NativeMember(Tag tag)
 	{
 		boolean result = false;
 
-		if (journal != null)
+		if (tag != null)
 		{
-			List<Tag> entryList = journal.getEntryList();
+			String tagName = tag.getName();
 
-			if (entryList.size() >= 1)
+			if (TAG_NMETHOD.equals(tagName))
 			{
-				Tag tag = entryList.get(0);
-
-				String tagName = tag.getName();
-
-				if (TAG_NMETHOD.equals(tagName))
+				if (C2N.equals(tag.getAttributes().get(ATTR_COMPILE_KIND)))
 				{
-					if (C2N.equals(tag.getAttributes().get(ATTR_COMPILE_KIND)))
-					{
-						result = true;
-					}
+					result = true;
 				}
 			}
 		}
@@ -186,7 +188,7 @@ public final class JournalUtil
 	public static boolean memberMatchesMethodID(IMetaMember member, String methodID, IParseDictionary parseDictionary)
 	{
 		boolean result = false;
-		
+
 		Tag methodTag = parseDictionary.getMethod(methodID);
 
 		if (DEBUG_LOGGING)
@@ -197,7 +199,7 @@ public final class JournalUtil
 		if (methodTag != null)
 		{
 			Map<String, String> methodTagAttributes = methodTag.getAttributes();
-			
+
 			String klassID = methodTagAttributes.get(ATTR_HOLDER);
 
 			Tag klassTag = parseDictionary.getKlass(klassID);
@@ -278,26 +280,8 @@ public final class JournalUtil
 				}
 			}
 		}
-		
+
 		return result;
-	}
-
-	public static Task getLastTask(Journal journal)
-	{
-		Task lastTask = null;
-
-		if (journal != null)
-		{
-			for (Tag tag : journal.getEntryList())
-			{
-				if (tag instanceof Task)
-				{
-					lastTask = (Task) tag;
-				}
-			}
-		}
-
-		return lastTask;
 	}
 
 	private static Tag getParsePhase(Task lastTask)
@@ -306,11 +290,12 @@ public final class JournalUtil
 
 		if (lastTask != null)
 		{
-			// for C1 look for 	<phase name='buildIR' stamp='18.121'>
-			// for C2 look for 	<phase name='parse' nodes='3' live='3' stamp='11.237'>
+			// for C1 look for <phase name='buildIR' stamp='18.121'>
+			// for C2 look for <phase name='parse' nodes='3' live='3'
+			// stamp='11.237'>
 
 			List<Tag> phasesBuildIR = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_BUILDIR);
-			
+
 			if (phasesBuildIR.size() == 1)
 			{
 				parsePhase = phasesBuildIR.get(0);
@@ -318,16 +303,17 @@ public final class JournalUtil
 			else
 			{
 				List<Tag> phasesParse = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
-				
+
 				if (phasesParse.size() == 1)
 				{
 					parsePhase = phasesParse.get(0);
 				}
 				else
 				{
-					logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(), phasesParse.size() );
-					
-					// possible JDK9 new format with no wrapping tag so return the whole task tag
+					logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(), phasesParse.size());
+
+					// possible JDK9 new format with no wrapping tag so return
+					// the whole task tag
 					parsePhase = lastTask;
 				}
 			}
@@ -359,7 +345,7 @@ public final class JournalUtil
 		return optimizerPhase;
 	}
 
-	public static void unhandledTag(IJournalVisitable visitable, Tag child)
+	public static void unhandledTag(ICompilationVisitable visitable, Tag child)
 	{
 		unhandledTagCount++;
 		logger.warn("{} did not handle {}", visitable.getClass().getName(), child.toString(false));

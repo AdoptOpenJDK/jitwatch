@@ -30,7 +30,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -70,7 +71,10 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		{
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
+				for (Compilation compilation : metaMember.getCompilations())
+				{
+					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
+				}   
 			}
 			catch (LogParseException e)
 			{

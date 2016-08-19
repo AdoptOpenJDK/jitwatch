@@ -134,7 +134,6 @@ public final class JITWatchConstants
 	public static final String ATTR_NMSIZE = "nmsize";
 	public static final String ATTR_BYTES = "bytes";
 	public static final String ATTR_IICOUNT = "iicount";
-	public static final String ATTR_COMPILE_MILLIS = "compileMillis";
 	public static final String ATTR_DECOMPILES = "decompiles";
 	public static final String ATTR_PARSE = S_PARSE;
 	public static final String ATTR_TYPE = S_TYPE;
@@ -153,6 +152,7 @@ public final class JITWatchConstants
 	public static final String ATTR_PROF_FACTOR = "prof_factor";
 	public static final String ATTR_ACTION = "action";
 	public static final String ATTR_COMMENT = "comment";
+	public static final String ATTR_ADDRESS = "address";
 
 	public static final String ALWAYS = "always";
 	public static final String NEVER = "never";

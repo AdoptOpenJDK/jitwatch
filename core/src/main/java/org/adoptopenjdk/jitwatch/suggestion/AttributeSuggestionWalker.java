@@ -46,8 +46,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -210,7 +211,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), this);
+				for (Compilation compilation : metaMember.getCompilations())
+				{
+					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
+				}   
 			}
 			catch (LogParseException e)
 			{

@@ -24,9 +24,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
-import org.adoptopenjdk.jitwatch.journal.IJournalVisitable;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
+import org.adoptopenjdk.jitwatch.compilation.ICompilationVisitable;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -37,14 +38,14 @@ import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InlineVisitor implements ITreeVisitable
+public class HeadlessInlineVisitor implements ITreeVisitable
 {
-    private static final Logger logger = LoggerFactory.getLogger(InlineVisitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadlessInlineVisitor.class);
 
     private final Map<String, Map<String, InlineFailureInfo>> failures = new HashMap<>();
     private final IReadOnlyJITDataModel model;
 
-    public InlineVisitor(IReadOnlyJITDataModel model)
+    public HeadlessInlineVisitor(IReadOnlyJITDataModel model)
     {
         this.model = model;
     }
@@ -56,15 +57,21 @@ public class InlineVisitor implements ITreeVisitable
         {
             return;
         }
+        
         if (!metaMember.isCompiled())
         {
             return;
         }
+        
         try
         {
             String callerName = metaMember.toString();
             InlineJournalVisitor inlineJournalVisitor = new InlineJournalVisitor(failures,  model, callerName);
-            JournalUtil.visitParseTagsOfLastTask(metaMember.getJournal(), inlineJournalVisitor);
+            
+			for (Compilation compilation : metaMember.getCompilations())
+			{
+				CompilationUtil.visitParseTagsOfCompilation(compilation, inlineJournalVisitor);
+			}            
         }
         catch (LogParseException e)
         {
@@ -91,7 +98,7 @@ public class InlineVisitor implements ITreeVisitable
         }
     }
 
-    private static class InlineJournalVisitor extends AbstractJournalVisitable  implements IJournalVisitable
+    private static class InlineJournalVisitor extends AbstractCompilationVisitable  implements ICompilationVisitable
     {
         private final Map<String, Map<String, InlineFailureInfo>> failures;
         private final IReadOnlyJITDataModel model;

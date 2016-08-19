@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.journal;
+package org.adoptopenjdk.jitwatch.compilation;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
 
-public abstract class AbstractJournalVisitable implements IJournalVisitable
+public abstract class AbstractCompilationVisitable implements ICompilationVisitable
 {	
 	protected Set<String> ignoreTags = new HashSet<>();
 
@@ -18,7 +18,7 @@ public abstract class AbstractJournalVisitable implements IJournalVisitable
 	{		
 		if (!ignoreTags.contains(tag.getName()))
 		{
-			JournalUtil.unhandledTag(this, tag);
+			CompilationUtil.unhandledTag(this, tag);
 		}
 	}
 }

@@ -30,6 +30,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_PA
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_POLYMORPHIC_SIGNATURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -52,16 +55,10 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractMetaMember.class);
 
 	protected MetaClass metaClass;
-	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
-	private List<Compilation> compilations = null;//new ArrayList<>();
-	
-	private boolean isQueued = false;
+	private List<Compilation> compilations;
+	private int selectedCompilation;
+
 	private boolean isCompiled = false;
-
-	private Journal journal = new Journal();
-
-	private String queuedAttributes;
-	private String compiledAttributes;
 
 	protected boolean isVarArgs = false;
 	protected boolean isPolymorphicSignature = false;
@@ -73,8 +70,10 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public AbstractMetaMember(String memberName)
 	{
 		this.memberName = memberName;
+
+		compilations = new ArrayList<>();
 	}
-	
+
 	protected void checkPolymorphicSignature(Method method)
 	{
 		for (Annotation anno : method.getAnnotations())
@@ -121,16 +120,17 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
-			logger.debug("nameMatches this.memberName: '{}' fq: '{}' other '{}' fq: '{}'", memberName, getFullyQualifiedMemberName(), msp.getMemberName(), msp.getFullyQualifiedClassName());
+			logger.debug("nameMatches this.memberName: '{}' fq: '{}' other '{}' fq: '{}'", memberName,
+					getFullyQualifiedMemberName(), msp.getMemberName(), msp.getFullyQualifiedClassName());
 		}
-		
-		boolean match =  memberName.equals(msp.getMemberName());
+
+		boolean match = memberName.equals(msp.getMemberName());
 
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
 			logger.debug("nameMatches {}", match);
 		}
-		
+
 		return match;
 	}
 
@@ -139,7 +139,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		boolean matched = false;
 
 		String returnTypeClassName = msp.applyGenericSubstitutionsForClassLoading(msp.getReturnType());
-		
+
 		if (returnTypeClassName != null)
 		{
 			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(returnTypeClassName);
@@ -254,17 +254,17 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public MemberBytecode getMemberBytecode()
 	{
 		MemberBytecode result = null;
-		
+
 		if (metaClass != null)
 		{
 			ClassBC classBytecode = metaClass.getClassBytecode();
-			
+
 			if (classBytecode != null)
 			{
 				result = classBytecode.getMemberBytecode(this);
 			}
 		}
-				
+
 		return result;
 	}
 
@@ -272,9 +272,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public List<BytecodeInstruction> getInstructions()
 	{
 		List<BytecodeInstruction> result = null;
-		
+
 		MemberBytecode memberBytecode = getMemberBytecode();
-		
+
 		if (memberBytecode != null)
 		{
 			result = memberBytecode.getInstructions();
@@ -283,10 +283,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			result = new ArrayList<>();
 		}
-		
+
 		return result;
 	}
-
 
 	@Override
 	public MetaClass getMetaClass()
@@ -297,57 +296,134 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getQueuedAttribute(String key)
 	{
-		return StringUtil.attributeStringToMap(queuedAttributes).get(key);
+		return getLastCompilation() == null ? null : getLastCompilation().getQueuedAttribute(key);
 	}
 
 	@Override
 	public String getCompiledAttribute(String key)
 	{
-		return StringUtil.attributeStringToMap(compiledAttributes).get(key);
+		return getLastCompilation() == null ? null : getLastCompilation().getCompiledAttribute(key);
 	}
 
 	@Override
-	public void addCompiledAttribute(String key, String value)
+	public void setTagTaskQueued(Tag tagTaskQueued)
 	{
-		Map<String, String> tempMap = StringUtil.attributeStringToMap(compiledAttributes);
-		
-		tempMap.put(key, value);
-		
-		compiledAttributes = StringUtil.attributeMapToString(tempMap);
+		Compilation compilation = createCompilation();
+
+		compilation.setTagTaskQueued(tagTaskQueued);
+
+		compilations.add(compilation);
 	}
 
 	@Override
-	public void setQueuedAttributes(Map<String, String> queuedAttributes)
+	public Compilation getCompilationByCompileID(String compileID)
 	{
-		isQueued = true;
-		this.queuedAttributes = StringUtil.attributeMapToString(queuedAttributes);
+		Compilation result = null;
+
+		for (Compilation compilation : compilations)
+		{
+			if (compileID.equals(compilation.getCompileID()))
+			{
+				result = compilation;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	@Override
-	public boolean isQueued()
+	public Compilation getCompilationByNativeAddress(String address)
 	{
-		return isQueued;
+		Compilation result = null;
+
+		for (Compilation compilation : compilations)
+		{
+			if (address.equals(compilation.getNativeAddress()))
+			{
+				result = compilation;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	@Override
-	public void setCompiledAttributes(Map<String, String> compiledAttributes)
+	public void setTagNMethod(Tag tagNMethod)
 	{
 		isCompiled = true;
-		isQueued = false;
-		this.compiledAttributes = StringUtil.attributeMapToString(compiledAttributes);
+
+		String compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
+
+		Compilation compilation = getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagNMethod(tagNMethod);
+		}
+		else
+		{
+			// check if C2N stub
+			String compileKind = tagNMethod.getAttributes().get(ATTR_COMPILE_KIND);
+
+			if (C2N.equals(compileKind))
+			{
+				compilation = createCompilation();
+				
+				compilation.setTagNMethod(tagNMethod);
+
+				compilations.add(compilation);
+			}
+			else
+			{
+				logger.warn("Didn't find compilation with ID {}", compileID);
+			}
+		}
 
 		// inform package tree it contains class with a compiled method
 		getMetaClass().getPackage().setHasCompiledClasses();
 	}
+	
+	private Compilation createCompilation()
+	{
+		int nextIndex = compilations.size();
+
+		selectedCompilation = nextIndex;
+		
+		return new Compilation(nextIndex);		
+	}
 
 	@Override
-	public void addCompiledAttributes(Map<String, String> additionalAttrs)
-	{		
-		Map<String, String> tempMap = StringUtil.attributeStringToMap(compiledAttributes);
-		
-		tempMap.putAll(additionalAttrs);
-		
-		compiledAttributes = StringUtil.attributeMapToString(tempMap);
+	public void setTagTask(Task tagTask)
+	{
+		String compileID = tagTask.getAttributes().get(ATTR_COMPILE_ID);
+
+		Compilation compilation = getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagTask(tagTask);
+		}
+		else
+		{
+			logger.warn("Didn't find compilation with ID {}", compileID);
+		}
+	}
+
+	@Override
+	public void setTagTaskDone(String compileID, Tag tagTaskDone)
+	{
+		Compilation compilation = getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagTaskDone(tagTaskDone);
+		}
+		else
+		{
+			logger.warn("Didn't find compilation with ID {}", compileID);
+		}
 	}
 
 	@Override
@@ -359,15 +435,15 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public Map<String, String> getQueuedAttributes()
 	{
-		return StringUtil.attributeStringToMap(queuedAttributes);
+		return getLastCompilation() == null ? null : getLastCompilation().getQueuedAttributes();
 	}
-	
+
 	@Override
 	public Map<String, String> getCompiledAttributes()
 	{
-		return StringUtil.attributeStringToMap(compiledAttributes);
+		return getLastCompilation() == null ? null : getLastCompilation().getCompiledAttributes();
 	}
-	
+
 	@Override
 	public String toStringUnqualifiedMethodName(boolean fqParamTypes)
 	{
@@ -402,12 +478,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public List<AssemblyMethod> getAssemblyMethods()
-	{
-		return assemblyMethods;
-	}
-
-	@Override
 	public void addAssembly(AssemblyMethod asmMethod)
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
@@ -415,9 +485,18 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
 		}
 
-		assemblyMethods.add(asmMethod);
+		Compilation compilation = getCompilationByNativeAddress(asmMethod.getNativeAddress());
+
+		if (compilation != null)
+		{
+			compilation.setAssembly(asmMethod);
+		}
+		else
+		{
+			logger.warn("Didn't find compilation to attach assembly for address {}", asmMethod.getNativeAddress());
+		}
 	}
-	
+
 	@Override
 	public List<Compilation> getCompilations()
 	{
@@ -523,6 +602,45 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
+	public Compilation getLastCompilation()
+	{
+		int compilationCount = compilations.size();
+
+		Compilation result = null;
+
+		if (compilationCount > 0)
+		{
+			result = compilations.get(compilationCount - 1);
+		}
+
+		return result;
+	}
+
+	public Compilation getCompilation(int index)
+	{
+		Compilation result = null;
+
+		if (index >= 0 && index < compilations.size())
+		{
+			result = compilations.get(index);
+		}
+
+		return result;
+	}
+
+	@Override
+	public void setSelectedCompilation(int index)
+	{
+		this.selectedCompilation = index;
+	}
+
+	@Override
+	public Compilation getSelectedCompilation()
+	{
+		return getCompilation(selectedCompilation);
+	}
+
+	@Override
 	public int compareTo(IMetaMember other)
 	{
 		if (other == null)
@@ -533,17 +651,5 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			return getMemberName().compareTo(other.getMemberName());
 		}
-	}
-
-	@Override
-	public Journal getJournal()
-	{
-		return journal;
-	}
-
-	@Override
-	public void addJournalEntry(Tag entry)
-	{
-		journal.addEntry(entry);
 	}
 }

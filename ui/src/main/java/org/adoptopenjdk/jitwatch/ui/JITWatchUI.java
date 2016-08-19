@@ -29,6 +29,7 @@ import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
@@ -49,7 +50,6 @@ import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +59,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -118,8 +120,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private ClassTree classTree;
 	private ClassMemberList classMemberList;
 
-	private TableView<AttributeTableRow> attributeTableView;
-	private ObservableList<AttributeTableRow> memberAttrList;
+	private TableView<CompilationTableRow> compilationTable;
+	private ObservableList<CompilationTableRow> compilationRowList;
 
 	private TextArea textAreaLog;
 
@@ -573,20 +575,34 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnSuggest);
 		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
-		memberAttrList = FXCollections.observableArrayList();
-		attributeTableView = TableUtil.buildTableMemberAttributes(memberAttrList);
-		attributeTableView.setPlaceholder(new Text("Select a JIT-compiled class member to view compilation attributes."));
+		compilationRowList = FXCollections.observableArrayList();
+		compilationTable = TableUtil.buildTableMemberAttributes(compilationRowList);
+		compilationTable.setPlaceholder(new Text("Select a JIT-compiled class member to view compilations."));
 
+		compilationTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<CompilationTableRow>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal, CompilationTableRow newVal)
+			{
+				if (selectedMember != null && newVal != null)
+				{
+					selectedMember.setSelectedCompilation(newVal.getIndex());
+					
+					openTriView(selectedMember, true);					
+				}
+			}
+		});
+		
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
 		classMemberList = new ClassMemberList(this, getConfig());
 
 		spMethodInfo.getItems().add(classMemberList);
-		spMethodInfo.getItems().add(attributeTableView);
+		spMethodInfo.getItems().add(compilationTable);
 
 		classMemberList.prefHeightProperty().bind(scene.heightProperty());
-		attributeTableView.prefHeightProperty().bind(scene.heightProperty());
+		compilationTable.prefHeightProperty().bind(scene.heightProperty());
 
 		classTree = new ClassTree(this, getConfig());
 		classTree.prefWidthProperty().bind(scene.widthProperty());
@@ -867,7 +883,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			CompileNode root = walker.buildCallTree(member.getJournal());
+			CompileNode root = walker.buildCallTree(member.getLastCompilation());
 
 			if (root != null)
 			{
@@ -918,7 +934,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		if (member.isCompiled())
 		{
-			JournalViewerStage jvs = new JournalViewerStage(this, title, member.getJournal());
+			JournalViewerStage jvs = new JournalViewerStage(this, title, member.getSelectedCompilation());
 			StageManager.addAndShow(this.stage, jvs);
 		}
 		else
@@ -929,7 +945,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 					"Can only display JIT Journal if the method has been JIT-compiled.\n"
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
-
 	}
 
 	private void chooseHotSpotFile()
@@ -975,7 +990,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				logger.debug("Reverting to non-sandbox config for loaded log file");
 				logParser.getConfig().switchFromSandbox();
 			}
-
 		}
 	}
 
@@ -1019,7 +1033,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	void setSelectedMetaMember(IMetaMember member)
 	{
-		memberAttrList.clear();
+		compilationRowList.clear();
 
 		if (member == null)
 		{
@@ -1033,18 +1047,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		selectedMember = member;
 
-		List<String> queuedAttrKeys = StringUtil.getSortedKeys(member.getQueuedAttributes());
-
-		for (String key : queuedAttrKeys)
+		for (Compilation compilation : member.getCompilations())
 		{
-			memberAttrList.add(new AttributeTableRow("Queued", key, member.getQueuedAttribute(key)));
-		}
-
-		List<String> compiledAttrKeys = StringUtil.getSortedKeys(member.getCompiledAttributes());
-
-		for (String key : compiledAttrKeys)
-		{
-			memberAttrList.add(new AttributeTableRow("Compiled", key, member.getCompiledAttribute(key)));
+			compilationRowList.add(new CompilationTableRow(compilation));
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
@@ -234,10 +235,17 @@ public class OptimizedVirtualCallFinder
 
 		Set<OptimizedVirtualCall> squashDuplicatesSet = new HashSet<>();
 
-		List<AssemblyMethod> assemblyMethods = member.getAssemblyMethods();
+		List<Compilation> compilations = member.getCompilations();
 		
-		AssemblyMethod asmMethod = assemblyMethods.get(assemblyMethods.size() - 1);
-
+		int compilationCount = compilations.size();
+		
+		AssemblyMethod asmMethod = null;
+		
+		if (compilationCount > 0)
+		{
+			asmMethod = compilations.get(compilationCount - 1).getAssembly();
+		}
+		
 		if (DEBUG_LOGGING_OVC)
 		{
 			logger.debug("Member assembly\n{}", asmMethod);

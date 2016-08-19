@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.core;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_METHOD_MARK;
@@ -14,6 +13,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_APOSTROPHE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
@@ -38,11 +42,28 @@ public class AssemblyProcessor
 
 	private String previousLine = null;
 
-	private PackageManager packageManager;
+	private String nativeAddress = null;
 
-	public AssemblyProcessor(PackageManager packageManager)
+	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
+
+	public AssemblyProcessor()
 	{
-		this.packageManager = packageManager;
+	}
+
+	public List<AssemblyMethod> getAssemblyMethods()
+	{
+		return assemblyMethods;
+	}
+
+	public void clear()
+	{
+		assemblyMethods.clear();
+		builder.delete(0, builder.length());
+		nativeAddress = null;
+		previousLine = null;
+		assemblyStarted = false;
+		methodStarted = false;
+		methodInterrupted = false;
 	}
 
 	public void handleLine(final String inLine)
@@ -79,6 +100,8 @@ public class AssemblyProcessor
 			{
 				complete();
 			}
+
+			nativeAddress = StringUtil.getSubstringBetween(line, NATIVE_CODE_START, S_COLON).trim();
 		}
 		else if (assemblyStarted)
 		{
@@ -128,32 +151,47 @@ public class AssemblyProcessor
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
-			//logger.debug("completed assembly\n{}", builder.toString());
+			// logger.debug("completed assembly\n{}", builder.toString());
 		}
 
-		String asmString = builder.toString();
+		String asmString = builder.toString().trim();
 
-		int firstLineEnd = asmString.indexOf(C_NEWLINE);
-
-		if (firstLineEnd != -1)
+		if (asmString.length() > 0)
 		{
-			String firstLine = asmString.substring(0, firstLineEnd);
+			AssemblyMethod assemblyMethod = AssemblyUtil.parseAssembly(asmString);
 
+			assemblyMethod.setNativeAddress(nativeAddress);
+
+			assemblyMethods.add(assemblyMethod);
+		}
+
+		builder.delete(0, builder.length());
+
+		methodStarted = false;
+		methodInterrupted = false;
+	}
+
+	public void attachAssemblyToMembers(PackageManager packageManager)
+	{
+		for (AssemblyMethod assemblyMethod : assemblyMethods)
+		{
+			String asmSignature = assemblyMethod.getAssemblyMethodSignature();
+			
 			MemberSignatureParts msp = null;
 
 			IMetaMember currentMember = null;
 
 			try
 			{
-				msp = MemberSignatureParts.fromAssembly(firstLine);
+				msp = MemberSignatureParts.fromAssembly(asmSignature);
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Parsed assembly sig {}\nfrom {}", msp, firstLine);
+					logger.debug("Parsed assembly sig {}\nfrom {}", msp, asmSignature);
 				}
 
 				MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
-
+				
 				if (metaClass != null)
 				{
 					currentMember = metaClass.getMemberForSignature(msp);
@@ -168,7 +206,7 @@ public class AssemblyProcessor
 			}
 			catch (LogParseException e)
 			{
-				logger.error("Could not parse MSP from line: {}", firstLine, e);
+				logger.error("Could not parse MSP from line: {}", asmSignature, e);
 			}
 
 			if (currentMember != null)
@@ -177,14 +215,12 @@ public class AssemblyProcessor
 				{
 					logger.debug("Found member {}", currentMember);
 				}
-
-				AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(asmString);
-
-				currentMember.addAssembly(asmMethod);
+				
+				currentMember.addAssembly(assemblyMethod);
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.info("Set assembly on {} {}", currentMember, asmString.length());
+					logger.info("Set assembly on {} {}", currentMember, assemblyMethod.toString());
 				}
 			}
 			else
@@ -195,10 +231,5 @@ public class AssemblyProcessor
 				}
 			}
 		}
-
-		builder.delete(0, builder.length());
-
-		methodStarted = false;
-		methodInterrupted = false;
 	}
 }

@@ -34,8 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.journal.AbstractJournalVisitable;
-import org.adoptopenjdk.jitwatch.journal.JournalUtil;
+import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
+import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
@@ -43,7 +44,7 @@ import org.adoptopenjdk.jitwatch.model.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class IntrinsicFinder extends AbstractJournalVisitable
+public final class IntrinsicFinder extends AbstractCompilationVisitable
 {
 	private Map<String, String> result;
 
@@ -74,7 +75,10 @@ public final class IntrinsicFinder extends AbstractJournalVisitable
 		{
 			try
 			{
-				JournalUtil.visitParseTagsOfLastTask(member.getJournal(), this);
+				for (Compilation compilation : member.getCompilations())
+				{
+					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
+				}   
 			}
 			catch (LogParseException e)
 			{
