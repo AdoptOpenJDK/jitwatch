@@ -49,7 +49,6 @@ import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
-import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -266,14 +265,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 		
-		cleanup();
-	}
-
-	public void cleanup()
-	{
 		logParser.discardParsedLogs();
-
-		ClassUtil.clear();
 	}
 
 	private void buildSuggestions()

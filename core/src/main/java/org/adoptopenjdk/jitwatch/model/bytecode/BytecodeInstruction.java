@@ -34,18 +34,6 @@ public class BytecodeInstruction
 
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeInstruction.class);
 
-	private boolean isEliminated = false;
-
-	public void setEliminated(boolean eliminated)
-	{
-		isEliminated = eliminated;
-	}
-
-	public boolean isEliminated()
-	{
-		return isEliminated;
-	}
-
 	public int getOffset()
 	{
 		return offset;

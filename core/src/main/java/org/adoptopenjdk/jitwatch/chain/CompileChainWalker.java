@@ -26,6 +26,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +66,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		ignoreTags.add(TAG_PHASE_DONE);
 		ignoreTags.add(TAG_BRANCH);
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
+		ignoreTags.add(TAG_INTRINSIC);
 	}
 
 	public CompileNode buildCallTree(Compilation compilation)

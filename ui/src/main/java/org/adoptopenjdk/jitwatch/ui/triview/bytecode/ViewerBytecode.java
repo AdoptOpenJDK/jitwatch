@@ -147,7 +147,7 @@ public class ViewerBytecode extends Viewer
 			int lineIndex = 0;
 
 			for (final BytecodeInstruction instruction : instructions)
-			{
+			{				
 				int labelLines = instruction.getLabelLines();
 
 				if (labelLines == 0)
@@ -190,6 +190,8 @@ public class ViewerBytecode extends Viewer
 
 		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
 
+		boolean hasEliminationAnnotation = false;
+		
 		if (bcAnnotations != null)
 		{
 			List<LineAnnotation> annotationList = bcAnnotations.getAnnotationsForBCI(offset);
@@ -210,6 +212,11 @@ public class ViewerBytecode extends Viewer
 					{
 						instructionToolTipBuilder.append(S_NEWLINE);
 					}
+					
+					if (annotation.getType() == BCAnnotationType.ELIMINATED_ALLOCATION || annotation.getType() == BCAnnotationType.LOCK_ELISION)
+					{
+						hasEliminationAnnotation = true;
+					}
 
 					lastAnnotationType = annotation.getType();
 
@@ -220,7 +227,7 @@ public class ViewerBytecode extends Viewer
 
 		lblLine.setUnhighlightedStyle(unhighlightedStyle);
 
-		if (instruction.isEliminated())
+		if (hasEliminationAnnotation)
 		{
 			lblLine.getStyleClass().add("eliminated-allocation");
 		}

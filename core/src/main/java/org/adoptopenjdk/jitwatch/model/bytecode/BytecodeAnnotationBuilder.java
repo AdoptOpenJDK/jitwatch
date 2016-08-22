@@ -105,7 +105,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 			}
 
 			Compilation compilation = member.getSelectedCompilation();
-			
+
 			try
 			{
 				buildParseTagAnnotations(vmVersion, compilation);
@@ -151,7 +151,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 	@Override
 	public void visitTag(Tag tag, IParseDictionary parseDictionary) throws LogParseException
-	{	
+	{
 		switch (tag.getName())
 		{
 		case TAG_PARSE:
@@ -175,7 +175,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 	private void visitTagParse(Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String methodID = tag.getAttributes().get(ATTR_METHOD);
-		
+
 		if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
 		{
 			try
@@ -202,7 +202,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		for (Tag tagJVMS : childrenJVMS)
 		{
 			Map<String, String> tagJVMSAttributes = tagJVMS.getAttributes();
-			
+
 			String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
 			if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
@@ -226,7 +226,6 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 							if (typeID != null)
 							{
 								typeOrKlassName = ParseUtil.lookupType(typeID, parseDictionary);
-
 							}
 
 							String annotation = buildEliminatedAllocationAnnotation(typeOrKlassName);
@@ -235,8 +234,6 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 							{
 								bcAnnotations.addAnnotation(bciValue,
 										new LineAnnotation(annotation, BCAnnotationType.ELIMINATED_ALLOCATION));
-
-								instr.setEliminated(true);
 							}
 							else
 							{
@@ -289,7 +286,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 			for (Tag tagJVMS : childrenJVMS)
 			{
 				Map<String, String> tagJVMSAttributes = tagJVMS.getAttributes();
-				
+
 				String methodID = tagJVMSAttributes.get(ATTR_METHOD);
 
 				if (CompilationUtil.memberMatchesMethodID(member, methodID, parseDictionary))
@@ -324,13 +321,6 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 							{
 								bcAnnotations.addAnnotation(bciValue,
 										new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
-
-								BytecodeInstruction instr = getInstructionAtIndex(bciValue);
-
-								if (instr != null && instr.isLock())
-								{
-									instr.setEliminated(true);
-								}
 							}
 						}
 						catch (NumberFormatException nfe)
@@ -343,7 +333,8 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 				{
 					logger.warn("Parse tag does not appear to be for member {}", member.toString());
 					logger.warn("Method ID: {}\nTag was: {}", methodID, tag.toString(true));
-					logger.warn("Dictionary: {}", parseDictionary.toString());				}
+					logger.warn("Dictionary: {}", parseDictionary.toString());
+				}
 			}
 		}
 	}
@@ -358,11 +349,12 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 	}
 
-	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, IParseDictionary parseDictionary) throws AnnotationException
+	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, IParseDictionary parseDictionary)
+			throws AnnotationException
 	{
 		// Only interested in annotating the current method so
 		// do not recurse into method or parse tags
-		
+
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("Building parse tag annotations");
@@ -551,10 +543,9 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 	}
 
 	protected String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
-																				 Map<String, String> callAttrs, String reason, boolean inlined)
+			Map<String, String> callAttrs, String reason, boolean inlined)
 	{
-		return TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs,
-				parseDictionary);
+		return TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);
 	}
 
 	protected String buildEliminatedAllocationAnnotation(String typeOrKlassName)

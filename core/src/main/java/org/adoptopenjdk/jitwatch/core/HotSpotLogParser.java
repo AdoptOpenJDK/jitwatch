@@ -232,6 +232,8 @@ public class HotSpotLogParser implements ILogParser
 			logger.debug("HotSpotLogParser.reset()");
 		}
 
+		ClassUtil.clear();
+		
 		getModel().reset();
 
 		splitLog.clear();
