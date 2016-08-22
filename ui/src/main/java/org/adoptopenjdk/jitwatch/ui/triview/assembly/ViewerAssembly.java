@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,6 +15,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESE
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PERCENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,9 +43,19 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class ViewerAssembly extends Viewer
 {
+	private DecimalFormat formatThousandsUnderscore;
+
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);
+
+		formatThousandsUnderscore = (DecimalFormat) NumberFormat.getInstance();
+
+		DecimalFormatSymbols symbols = formatThousandsUnderscore.getDecimalFormatSymbols();
+
+		symbols.setGroupingSeparator('_');
+
+		formatThousandsUnderscore.setDecimalFormatSymbols(symbols);
 	}
 
 	public void setAssemblyMethod(AssemblyMethod asmMethod, boolean showLocalLabels)
@@ -130,8 +143,7 @@ public class ViewerAssembly extends Viewer
 			}
 			else if (op1.startsWith(S_DOLLAR))
 			{
-				builder.append("Constant ");
-				builder.append(op1);
+				builder.append(getConstantLabel(op1));
 			}
 			else if (op1.startsWith(S_ASSEMBLY_ADDRESS) || (op1.contains(S_OPEN_PARENTHESES) && op1.contains(S_CLOSE_PARENTHESES)))
 			{
@@ -151,8 +163,7 @@ public class ViewerAssembly extends Viewer
 				}
 				else if (op1.startsWith(S_DOLLAR))
 				{
-					builder.append("Constant ");
-					builder.append(op2);
+					builder.append(getConstantLabel(op1));
 				}
 				else if (op2.startsWith(S_ASSEMBLY_ADDRESS)
 						|| (op2.contains(S_OPEN_PARENTHESES) && op2.contains(S_CLOSE_PARENTHESES)))
@@ -161,6 +172,28 @@ public class ViewerAssembly extends Viewer
 					builder.append(op2);
 				}
 			}
+		}
+
+		return builder.toString();
+	}
+
+	private String getConstantLabel(String operand)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("Constant ");
+		builder.append(operand);
+
+		try
+		{
+			long decimal = Long.decode(operand.substring(1, operand.length()));
+
+			builder.append(S_SPACE).append(S_OPEN_PARENTHESES).append("Decimal: ").append(formatThousandsUnderscore.format(decimal))
+					.append(S_CLOSE_PARENTHESES);
+		}
+		catch (NumberFormatException nfe)
+		{
+			// e.g. $0xffffffffffffffff - ignore it
 		}
 
 		return builder.toString();
