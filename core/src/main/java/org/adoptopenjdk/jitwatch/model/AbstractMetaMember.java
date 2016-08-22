@@ -68,7 +68,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected List<Class<?>> paramTypes;
 
 	public AbstractMetaMember(String memberName)
-	{
+	{		
 		this.memberName = memberName;
 
 		compilations = new ArrayList<>();
@@ -152,7 +152,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 		else
 		{
-			matched = (this instanceof MetaConstructor);
+			matched = (isConstructor());
 
 			if (DEBUG_LOGGING_SIG_MATCH)
 			{
@@ -502,6 +502,12 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		return compilations;
 	}
+	
+	@Override
+	public 	boolean isConstructor()
+	{
+		return (this instanceof MetaConstructor);
+	}
 
 	@Override
 	public String getSignatureRegEx()
@@ -519,7 +525,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 
 		// return type of constructor is not declared in signature
-		if (!(this instanceof MetaConstructor) && returnType != null)
+		if (!isConstructor() && returnType != null)
 		{
 			String rt = expandParamRegEx(returnType.getName());
 
@@ -527,7 +533,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(C_SPACE);
 		}
 
-		if (this instanceof MetaConstructor)
+		if (isConstructor())
 		{
 			builder.append(REGEX_UNICODE_PACKAGE_NAME);
 			builder.append(StringUtil.getUnqualifiedClassName(memberName));

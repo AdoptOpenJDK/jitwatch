@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -66,6 +66,8 @@ public class Viewer extends VBox
 	private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
+	
+	private double lastKnownGoodLineHeight = 15;
 
 	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
 			+ "px;";
@@ -228,12 +230,14 @@ public class Viewer extends VBox
 		setUpContextMenu();
 	}
 
-	public void setContent(String inSource, boolean showLineNumbers)
+	public void setContent(String inSource, boolean showLineNumbers, boolean canHighlight)
 	{
 		String source = inSource;
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
-
+		
+		isHighlighting = canHighlight;
+		
 		if (source == null)
 		{
 			source = "Empty";
@@ -278,6 +282,11 @@ public class Viewer extends VBox
 		vBoxRows.getChildren().addAll(items);
 
 		int pos = 0;
+		
+		if (!isHighlighting)
+		{
+			clearAllHighlighting();
+		}
 
 		for (final Label label : items)
 		{
@@ -531,7 +540,7 @@ public class Viewer extends VBox
 			lastScrollIndex = index;
 
 			scrollIndex = index;
-
+			
 			if (setScrollbar)
 			{
 				setScrollBar();
@@ -596,19 +605,29 @@ public class Viewer extends VBox
 			double scrollMax = scrollPane.getVmax();
 			double scrollPaneHeight = scrollPane.getHeight();
 			double lineHeight = vBoxRows.getChildren().get(0).getBoundsInParent().getHeight();
+			
+			if (lineHeight == 0.0)
+			{
+				lineHeight = lastKnownGoodLineHeight;
+			}
+			else
+			{
+				lastKnownGoodLineHeight = lineHeight;
+			}
+						
 			double visibleLines = scrollPaneHeight / lineHeight;
 
 			double count = vBoxRows.getChildren().size() - visibleLines;
 
 			double scrollPercent = 0;
-
+			
 			if (count > 0)
 			{
 				scrollPercent = Math.max(scrollIndex - (visibleLines / 2), 0) / count;
 			}
-
+			
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
-
+			
 			scrollPane.setVvalue(scrollPos);
 		}
 	}

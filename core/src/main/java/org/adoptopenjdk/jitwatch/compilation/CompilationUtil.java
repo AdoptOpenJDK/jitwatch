@@ -20,6 +20,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALL
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_REASON_STALE_TASK;
 
 import java.util.List;
 import java.util.Map;
@@ -54,9 +57,9 @@ public final class CompilationUtil
 
 			if (tagTask == null)
 			{
-				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
+				if (!compilation.isC2N())
 				{
-					logger.warn("No Task found in Compilation");
+					logger.warn("No Task found in Compilation {}", compilation.getCompileID());
 				}
 			}
 			else
@@ -96,9 +99,9 @@ public final class CompilationUtil
 
 			if (tagTask == null)
 			{
-				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
+				if (!compilation.isC2N())
 				{
-					logger.warn("No Task found in Compilation");
+					logger.warn("No Task found in Compilation {}", compilation.getCompileID());
 				}
 			}
 			else
@@ -131,9 +134,9 @@ public final class CompilationUtil
 
 			if (tagTask == null)
 			{
-				if (!isJournalForCompile2NativeMember(compilation.getTagNMethod()))
+				if (!compilation.isC2N())
 				{
-					logger.warn("No Task found in Compilation");
+					logger.warn("No Task found in Compilation {}", compilation.getCompileID());
 				}
 			}
 			else
@@ -235,7 +238,14 @@ public final class CompilationUtil
 
 				if (S_CONSTRUCTOR_INIT.equals(methodAttrName))
 				{
-					nameMatches = member.getMemberName().equals(klassAttrName);
+					if (DEBUG_LOGGING)
+					{
+						logger.debug("Looks like a constructor. Checking {} vs {}", member.getMemberName(), klassAttrName);
+					}
+					
+					String unqualifiedClassName = StringUtil.getUnqualifiedClassName(klassAttrName);	
+					
+					nameMatches = member.getMemberName().equals(unqualifiedClassName);
 				}
 				else
 				{
@@ -284,17 +294,17 @@ public final class CompilationUtil
 		return result;
 	}
 
-	private static Tag getParsePhase(Task lastTask)
+	private static Tag getParsePhase(Task task)
 	{
 		Tag parsePhase = null;
 
-		if (lastTask != null)
+		if (task != null)
 		{
 			// for C1 look for <phase name='buildIR' stamp='18.121'>
 			// for C2 look for <phase name='parse' nodes='3' live='3'
 			// stamp='11.237'>
 
-			List<Tag> phasesBuildIR = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_BUILDIR);
+			List<Tag> phasesBuildIR = task.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_BUILDIR);
 
 			if (phasesBuildIR.size() == 1)
 			{
@@ -302,7 +312,7 @@ public final class CompilationUtil
 			}
 			else
 			{
-				List<Tag> phasesParse = lastTask.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
+				List<Tag> phasesParse = task.getNamedChildrenWithAttribute(TAG_PHASE, ATTR_NAME, ATTR_PARSE);
 
 				if (phasesParse.size() == 1)
 				{
@@ -310,16 +320,46 @@ public final class CompilationUtil
 				}
 				else
 				{
-					logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(), phasesParse.size());
+					if (!isStaleTask(task))
+					{
+						logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(),
+								phasesParse.size());
 
-					// possible JDK9 new format with no wrapping tag so return
-					// the whole task tag
-					parsePhase = lastTask;
+						if(DEBUG_LOGGING)
+						{
+							logger.debug("Task {}", task);
+						}
+						
+						// possible JDK9 new format with no wrapping tag so
+						// return
+						// the whole task tag
+						parsePhase = task;
+					}
 				}
 			}
 		}
 
 		return parsePhase;
+	}
+	
+	private static boolean isStaleTask(Task task)
+	{
+		List<Tag> failureChildren = task.getNamedChildren(TAG_FAILURE);
+		
+		boolean stale = false;
+		
+		for (Tag failure : failureChildren)
+		{
+			String reason = failure.getAttributes().get(ATTR_REASON);
+			
+			if (S_REASON_STALE_TASK.equals(reason))
+			{
+				stale = true;
+				break;
+			}
+		}
+		
+		return stale;
 	}
 
 	private static Tag getOptimizerPhase(Task lastTask)

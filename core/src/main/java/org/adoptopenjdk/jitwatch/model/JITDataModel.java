@@ -155,6 +155,8 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 
 		String compileKind = attrs.get(ATTR_COMPILE_KIND);
+		
+		boolean isC2N = false;
 
 		if (compileKind != null)
 		{
@@ -165,6 +167,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			else if (C2N.equalsIgnoreCase(compileKind))
 			{
 				stats.incCountC2N();
+				isC2N = true;
 			}
 		}
 
@@ -174,20 +177,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 		if (compilation != null)
 		{
-			long compileTime = compilation.getCompileTime();
-			
-			if (compileTime > 0)
+			if (!isC2N)
 			{
-				stats.recordDelay(compileTime);
-			}
-			else
-			{
-				logger.warn("no compile time set on compilation");
+				stats.recordDelay(compilation.getCompileTime());
 			}
 		}
 		else
 		{
-			logger.warn("Didn't find compilation with ID {}", compileID);
+			logger.warn("Didn't find compilation with ID {} on member {}", compileID, member.getFullyQualifiedMemberName());
 		}
 	}
 

@@ -873,4 +873,81 @@ public class TestParseUtil
 		assertEquals("I", parts[2]);
 		assertEquals("V", parts[3]);
 	}
+	
+	@Test
+	public void testGetClassTypesPrimitive() throws LogParseException
+	{
+		Class<?>[] result = ParseUtil.getClassTypes("I");
+		
+		assertEquals(1, result.length);
+		assertEquals(int.class, result[0]);
+	}
+	
+	@Test
+	public void testGetClassTypesClass() throws LogParseException
+	{
+		Class<?>[] result = ParseUtil.getClassTypes("Ljava.lang.String;");
+		
+		assertEquals(1, result.length);
+		assertEquals(java.lang.String.class, result[0]);
+	}
+	
+	@Test
+	public void testGetClassTypesPrimitiveArray() throws LogParseException
+	{
+		Class<?>[] result = ParseUtil.getClassTypes("[C");
+		
+		assertEquals(1, result.length);
+		assertEquals(char[].class, result[0]);
+	}
+	
+	@Test
+	public void testGetClassTypesClassArray() throws LogParseException
+	{
+		Class<?>[] result = ParseUtil.getClassTypes("[Ljava.math.BigInteger;");
+		
+		assertEquals(1, result.length);
+		assertEquals(java.math.BigInteger[].class, result[0]);
+	}
+	
+	@Test
+	public void testExpandParseDictionaryTypeNameClass() throws LogParseException
+	{
+		String result = ParseUtil.expandParseDictionaryTypeName("java/math/BigInteger");
+		
+		assertEquals("java.math.BigInteger", result);
+	}
+	
+	@Test
+	public void testExpandParseDictionaryTypeNamePrimitive() throws LogParseException
+	{
+		String result = ParseUtil.expandParseDictionaryTypeName("int");
+		
+		assertEquals("int", result);
+	}
+	
+	@Test
+	public void testExpandParseDictionaryTypeNamePrimitiveArray() throws LogParseException
+	{
+		String result = ParseUtil.expandParseDictionaryTypeName("[C");
+		
+		assertEquals("char[]", result);
+	}
+	
+	@Test
+	public void testMemberSignaturePartsNativeSignature() throws LogParseException
+	{
+		MemberSignatureParts msp = MemberSignatureParts
+				.fromLogCompilationSignature("java.lang.System arraycopy (Ljava/lang/Object;ILjava/lang/Object;II)V");
+
+		assertEquals("java.lang.System", msp.getFullyQualifiedClassName());
+		assertEquals("arraycopy", msp.getMemberName());
+		assertEquals("void", msp.getReturnType());
+		assertEquals(5, msp.getParamTypes().size());
+		assertEquals("java.lang.Object", msp.getParamTypes().get(0));
+		assertEquals("int", msp.getParamTypes().get(1));
+		assertEquals("java.lang.Object", msp.getParamTypes().get(2));
+		assertEquals("int", msp.getParamTypes().get(3));
+		assertEquals("int", msp.getParamTypes().get(4));
+	}
 }

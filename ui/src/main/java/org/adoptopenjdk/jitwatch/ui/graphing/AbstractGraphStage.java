@@ -18,6 +18,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import java.util.Map;
 
@@ -351,12 +352,6 @@ public abstract class AbstractGraphStage extends Stage
 		}
 
 		return result;
-	}
-
-	// prevent blurry lines in JavaFX
-	protected double fix(double pixel)
-	{
-		return 0.5 + (int) pixel;
 	}
 	
 	protected void setStrokeForAxis()

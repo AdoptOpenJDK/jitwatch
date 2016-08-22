@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -185,6 +185,9 @@ public class ClassBC
 
 		switch (majorVersion)
 		{
+		case 53:
+			result = "Java 9";
+			break;
 		case 52:
 			result = "Java 8";
 			break;

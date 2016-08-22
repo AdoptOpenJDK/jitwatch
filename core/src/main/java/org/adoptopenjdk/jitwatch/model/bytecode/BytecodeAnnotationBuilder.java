@@ -189,7 +189,9 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 		else
 		{
-			logger.warn("Parse tag does not appear to be for member {}", member.getFullyQualifiedMemberName());
+			logger.warn("Parse tag does not appear to be for member {}", member.toString());
+			logger.warn("Method ID: {}\nTag was: {}", methodID, tag.toString(true));
+			logger.warn("Dictionary: {}", parseDictionary.toString());
 		}
 	}
 
@@ -253,7 +255,12 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 					logger.info("Elimination not for member");
 				}
 			}
-
+			else
+			{
+				logger.warn("Parse tag does not appear to be for member {}", member.toString());
+				logger.warn("Method ID: {}\nTag was: {}", methodID, tag.toString(true));
+				logger.warn("Dictionary: {}", parseDictionary.toString());
+			}
 		}
 	}
 
@@ -334,8 +341,9 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 				}
 				else
 				{
-					logger.info("Elimination not for member");
-				}
+					logger.warn("Parse tag does not appear to be for member {}", member.toString());
+					logger.warn("Method ID: {}\nTag was: {}", methodID, tag.toString(true));
+					logger.warn("Dictionary: {}", parseDictionary.toString());				}
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public final class ClassUtil
 		{
 			logger.debug("loadClassWithoutInitialising '{}'", fqClassName);
 		}
-		
+
 		return Class.forName(fqClassName, false, disposableClassLoader);
 	}
 
@@ -53,13 +54,26 @@ public final class ClassUtil
 	{
 		return Class.forName(fqClassName, false, classLoader);
 	}
-	
+
 	public static List<String> getCurrentClasspathElements()
-	{		
+	{
 		String classPath = System.getProperty("java.class.path");
-		
+
 		String[] parts = classPath.split(File.pathSeparator);
-		
+
 		return Arrays.asList(parts);
+	}
+
+	public static void clear()
+	{
+		try
+		{
+			disposableClassLoader.close();
+		}
+		catch (IOException e)
+		{
+			logger.warn("Could not close the DisposableURLClassLoader", e);
+		}
+		disposableClassLoader = null;
 	}
 }

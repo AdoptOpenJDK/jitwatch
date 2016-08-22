@@ -5,7 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.chain;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
@@ -49,6 +48,8 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 	private IReadOnlyJITDataModel model;
 
 	private CompileNode root = null;
+	
+	private Compilation compilation;
 
 	public CompileChainWalker(IReadOnlyJITDataModel model)
 	{
@@ -68,6 +69,8 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 	public CompileNode buildCallTree(Compilation compilation)
 	{
 		this.root = null;
+		
+		this.compilation = compilation;
 
 		try
 		{
@@ -188,7 +191,6 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		String tooltip = TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);
 		
 		childNode.setInlined(inlined);
-		childNode.setCompiled(methodAttrs.containsKey(ATTR_COMPILE_ID));
 		childNode.setTooltipText(tooltip);
 		
 		return childNode;
@@ -204,7 +206,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		// is detected
 		if (root == null)
 		{
-			root = CompileNode.createRootNode(methodID, parseDictionary, model);
+			root = CompileNode.createRootNode(compilation, methodID, parseDictionary, model);
 		}
 
 		processParseTag(parseTag, root, parseDictionary);

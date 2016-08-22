@@ -41,6 +41,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CAL
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -180,6 +181,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		ignoreTags.add(TAG_VIRTUAL_CALL);
 		ignoreTags.add(TAG_CAST_UP);
 		ignoreTags.add(TAG_OBSERVE);
+		ignoreTags.add(TAG_ASSERT_NULL);
 	}
 
 	protected void findNonMemberSuggestions()

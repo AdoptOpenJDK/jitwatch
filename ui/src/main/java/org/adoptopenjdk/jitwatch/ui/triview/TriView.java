@@ -227,7 +227,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				{
 					if (newVal != null)
 					{
-						TriView.this.setMember(newVal, false);
+						TriView.this.setMember(newVal, true);
 					}
 				}
 			}
@@ -381,7 +381,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 				if (currentMember != null)
 				{
-					setCompilation();
+					updateBytecodeAndAssembly(false);
 				}
 			}
 		});
@@ -402,7 +402,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 				{
 					currentMember.setSelectedCompilation(index);
 
-					setCompilation();
+					updateBytecodeAndAssembly(false);
 				}
 			}
 		});
@@ -580,14 +580,18 @@ public class TriView extends Stage implements ITriView, ILineListener
 					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
 				}
 			}
-
-			viewerSource.setContent(source, true);
-		}
-
-		if (jumpToSource)
-		{
-			viewerSource.jumpTo(currentMember);
-			viewerSource.setScrollBar();
+			
+			boolean lineNumbers = true;
+			boolean canHighlight = true;
+			
+			if (source == null)
+			{
+				source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
+				lineNumbers = false;
+				canHighlight = false;
+			}
+			
+			viewerSource.setContent(source, lineNumbers, canHighlight);
 		}
 
 		StringBuilder statusBarBuilder = new StringBuilder();
@@ -609,7 +613,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 
 		Compilation selectedCompilation = currentMember.getSelectedCompilation();
-
+		
 		if (selectedCompilation != null)
 		{
 			int selectedCompilationIndex = selectedCompilation.getIndex();
@@ -618,7 +622,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		comboSelectedCompilation.setVisible(compilationCount > 0);
 
-		setCompilation();
+		updateBytecodeAndAssembly(jumpToSource);
 
 		lblMemberInfo.setText(statusBarBuilder.toString());
 	}
@@ -639,7 +643,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 					public void run()
 					{
 						Dialogs.showOKDialog(TriView.this, "Wrong classes mounted for log file?",
-								"Uh-oh, the bytecode for this class does not match the bytecode offsets in your HotSpot log."
+								"Warning! The bytecode for this class does not match the bytecode offsets in your HotSpot log."
 										+ S_NEWLINE
 										+ "Are the mounted classes the same ones used at runtime when the log was created?");
 					}
@@ -648,13 +652,37 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void setCompilation()
+	private void updateBytecodeAndAssembly(boolean selectSourceLine)
 	{
 		Compilation compilation = currentMember.getSelectedCompilation();
 
 		compilationInfo.setCompilation(compilation);
 
 		viewerBytecode.setContent(currentMember);
+		
+		if (selectSourceLine)
+		{
+			MemberBytecode memberBytecode = currentMember.getMemberBytecode();
+
+			int memberSourceStartLine = -1;
+			
+			if (memberBytecode != null)
+			{
+				LineTable lineTable = memberBytecode.getLineTable();
+
+				memberSourceStartLine = lineTable.findSourceLineForBytecodeOffset(0);				
+			}
+			
+			if (memberSourceStartLine != -1)
+			{
+				viewerSource.highlightLine(memberSourceStartLine - 1);
+			}
+			else
+			{
+				viewerSource.jumpTo(currentMember);
+				viewerSource.setScrollBar();
+			}
+		}
 
 		if (currentMember.isCompiled())
 		{
@@ -667,13 +695,9 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 			if (asmMethod == null)
 			{
-				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?"; // TODO
-																						// check
-																						// if
-																						// -XX:+PrintAssembly
-																						// was
-																						// used
-				viewerAssembly.setContent(msg, false);
+				// TODO check if -XX:+PrintAssembly was used
+				String msg = "Assembly not found. Was -XX:+PrintAssembly option used?";
+				viewerAssembly.setContent(msg, false, false);
 			}
 			else
 			{
@@ -683,7 +707,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		else
 		{
 			String msg = "Not JIT-compiled";
-			viewerAssembly.setContent(msg, false);
+			viewerAssembly.setContent(msg, false, false);
 
 			lblMemberInfo.setText(S_EMPTY);
 		}
@@ -696,7 +720,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
 
 			Compilation compilation = currentMember.getSelectedCompilation();
-			
+
 			if (compilation != null)
 			{
 				statusBarBuilder.append(" compiled with ").append(compilation.getCompiler());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.ui;
 
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -56,10 +55,5 @@ public abstract class AbstractTextViewerStage extends Stage
 
 		setWidth(x * 12);
 		setHeight(y * 19);
-	}
-
-	public void jumpTo(IMetaMember member)
-	{
-		viewer.jumpTo(member);
 	}
 }

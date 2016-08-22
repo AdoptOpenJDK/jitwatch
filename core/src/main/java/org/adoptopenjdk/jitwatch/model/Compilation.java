@@ -38,11 +38,11 @@ public class Compilation
 
 	private long compiledStamp;
 
+	private boolean isC2N;
+
 	private String nativeAddress;
 
 	private int index;
-	
-	//TODO mem saving: remove attributes from strings / maps once copied into above local fields
 
 	public Compilation(int index)
 	{
@@ -97,7 +97,18 @@ public class Compilation
 
 	public Map<String, String> getCompiledAttributes()
 	{
-		return tagNMethod.getAttributes();
+		Map<String, String> result = null;
+
+		if (tagNMethod != null)
+		{
+			result = tagNMethod.getAttributes();
+		}
+		else
+		{
+			result = new HashMap<>();
+		}
+
+		return result;
 	}
 
 	public String getCompiledAttribute(String key)
@@ -126,12 +137,14 @@ public class Compilation
 
 		compiledStamp = ParseUtil.getStamp(attrs);
 
-		if (!C2N.equals(compileKind))
+		if (C2N.equals(compileKind))
 		{
-			if (queuedStamp != 0 && compiledStamp != 0)
-			{
-				compileTime = compiledStamp - queuedStamp;
-			}
+			isC2N = true;
+			this.compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
+		}
+		else
+		{
+			compileTime = compiledStamp - queuedStamp;
 		}
 	}
 
@@ -185,6 +198,11 @@ public class Compilation
 		}
 
 		return result;
+	}
+
+	public boolean isC2N()
+	{
+		return isC2N;
 	}
 
 	public long getQueuedStamp()

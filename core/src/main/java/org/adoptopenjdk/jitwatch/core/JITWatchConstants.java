@@ -19,7 +19,7 @@ public final class JITWatchConstants
 
 	// Enable debugging for specific functionality
 	// DEBUG level logging requires editing src/main/resources/logback.xml
-	public static final boolean DEBUG_LOGGING = false;
+	public static final boolean DEBUG_LOGGING = true;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
 	public static final boolean DEBUG_LOGGING_CLASSPATH = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
@@ -110,6 +110,8 @@ public final class JITWatchConstants
 	public static final String TAG_VIRTUAL_CALL = "virtual_call";
 	public static final String TAG_DEPENDENCY = "dependency";
 	public static final String TAG_OBSERVE  = "observe";
+	public static final String TAG_ASSERT_NULL  = "assert_null";
+	public static final String TAG_FAILURE  = "failure";
 
 	public static final String TAG_COMMAND = "command";
 
@@ -248,6 +250,7 @@ public final class JITWatchConstants
 	public static final String S_OPTIMIZER = "optimizer";
 	public static final String S_SAFEPOINT_POLL = "{poll}";
 	public static final String S_SAFEPOINT_POLL_RETURN = "{poll_return}";
+	public static final String S_REASON_STALE_TASK="stale task";
 		
 	public static final String S_TYPE_NAME_SHORT = "short";
 	public static final String S_TYPE_NAME_CHARACTER = "char";

@@ -24,6 +24,15 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
+
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +65,13 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
 		ignoreTags.add(TAG_TYPE);
 		ignoreTags.add(TAG_BRANCH);
+		ignoreTags.add(TAG_DIRECT_CALL);
+		ignoreTags.add(TAG_PREDICTED_CALL);
+		ignoreTags.add(TAG_OBSERVE);
+		ignoreTags.add(TAG_VIRTUAL_CALL);
+		ignoreTags.add(TAG_INTRINSIC);
+		ignoreTags.add(TAG_CAST_UP);
+		ignoreTags.add(TAG_ASSERT_NULL);
 	}
 
 	@Override

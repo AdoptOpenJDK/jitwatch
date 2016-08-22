@@ -89,6 +89,12 @@ public final class UserInterfaceUtil
 		}
 	}
 	
+	// prevent blurry lines in JavaFX
+	public static double fix(double pixel)
+	{
+		return 0.5 + (int) pixel;
+	}
+	
 	public static void initMacFonts()
 	{
 		try

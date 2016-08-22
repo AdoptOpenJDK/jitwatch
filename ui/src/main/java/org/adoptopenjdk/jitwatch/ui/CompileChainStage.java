@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -21,7 +21,9 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 public class CompileChainStage extends Stage
 {
@@ -51,7 +53,7 @@ public class CompileChainStage extends Stage
 	public CompileChainStage(final JITWatchUI parent, CompileNode root)
 	{
 		initStyle(StageStyle.DECORATED);
-		
+
 		this.parent = parent;
 
 		this.rootNode = root;
@@ -62,8 +64,8 @@ public class CompileChainStage extends Stage
 		scrollPane.setContent(pane);
 
 		Scene scene = UserInterfaceUtil.getScene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-			
-		setTitle("Compile Chain: " + root.getMemberName());
+
+		setTitle("Compile Chain: " + root.getMemberName() + " " + root.getCompilation().getSignature());
 
 		setScene(scene);
 
@@ -85,13 +87,12 @@ public class CompileChainStage extends Stage
 
 		show(rootNode, X_OFFSET, Y_OFFSET, 0);
 
-		if (rootNode.getChildren().size() == 0)
+		if (rootNode.getChildren().isEmpty())
 		{
-			
-			
 			Text text = new Text("No method calls made by " + rootNode.getMemberName() + " were inlined or JIT compiled");
-			text.setX(X_OFFSET);
-			text.setY(y);
+			text.setX(fix(X_OFFSET));
+			text.setY(fix(y));
+			text.setStrokeWidth(1.0);
 
 			pane.getChildren().add(text);
 		}
@@ -115,23 +116,21 @@ public class CompileChainStage extends Stage
 		keyY += 20;
 
 		Text text = new Text("Key");
-		text.setX(keyX + 75);
-		text.setY(keyY);
+		text.setX(fix(keyX + 75));
+		text.setY(fix(keyY));
 
 		pane.getChildren().add(text);
 
 		keyY += 15;
 
-		buildNode("Not Compiled or Inlined", keyX, keyY, false, false);
+		buildNode("Inlined", keyX, keyY, true, false);
 		keyY += 35;
 
-		buildNode("Compiled Only", keyX, keyY, false, true);
+		buildNode("Compiled", keyX, keyY, false, true);
 		keyY += 35;
 
-		buildNode("Inlined Only", keyX, keyY, true, false);
+		buildNode("Not Compiled", keyX, keyY, false, false);
 		keyY += 35;
-
-		buildNode("Compiled and Inlined", keyX, keyY, true, true);
 	}
 
 	private void show(CompileNode node, double x, double parentY, int depth)
@@ -152,9 +151,24 @@ public class CompileChainStage extends Stage
 
 	private String getLabelText(CompileNode node)
 	{
-		String memberName = node.getMemberName();
+		IMetaMember member = node.getMember();
 
-		return memberName == null ? "Unknown" : memberName;
+		String result = null;
+
+		if (member == null)
+		{
+			result = "Unknown";
+		}
+		else if (member.isConstructor())
+		{
+			result = member.getMetaClass().getFullyQualifiedName() + "()";
+		}
+		else
+		{
+			result = member.getFullyQualifiedMemberName() + "()";
+		}
+
+		return result;
 	}
 
 	private double plotNode(final CompileNode node, final double x, final double parentY, final int depth)
@@ -207,16 +221,16 @@ public class CompileChainStage extends Stage
 		rect.setArcWidth(16);
 		rect.setArcHeight(16);
 
-		text.setX(x + (rectWidth / 2 - textWidth / 2));
+		text.setX(fix(x + (rectWidth / 2 - textWidth / 2)));
+		text.setY(fix(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2));
 
-		// text plot from bottom left
-		text.setY(y + RECT_HEIGHT - STROKE_WIDTH - (RECT_HEIGHT - textHeight) / 2);
-
-		text.setFill(getColorForInlining(inlined));
+		text.setStrokeWidth(0.5);
+		text.setFill(Color.WHITE);
+		text.setStroke(Color.WHITE);
 
 		rect.setStroke(Color.BLACK);
 		rect.setStrokeWidth(STROKE_WIDTH);
-		rect.setFill(getColourForCompilation(compiled));
+		rect.setFill(getColourForCompilation(compiled, inlined));
 
 		pane.getChildren().add(rect);
 		pane.getChildren().add(text);
@@ -228,27 +242,19 @@ public class CompileChainStage extends Stage
 		return result;
 	}
 
-	private Color getColourForCompilation(boolean isCompiled)
-	{
-		if (isCompiled)
-		{
-			return Color.GREEN;
-		}
-		else
-		{
-			return Color.RED;
-		}
-	}
-
-	private Color getColorForInlining(boolean isInlined)
+	private Color getColourForCompilation(boolean isCompiled, boolean isInlined)
 	{
 		if (isInlined)
 		{
-			return Color.YELLOW;
+			return Color.GREEN;
+		}
+		else if (isCompiled)
+		{
+			return Color.RED;
 		}
 		else
 		{
-			return Color.BLACK;
+			return Color.GRAY;
 		}
 	}
 
@@ -263,5 +269,4 @@ public class CompileChainStage extends Stage
 			}
 		});
 	}
-
 }

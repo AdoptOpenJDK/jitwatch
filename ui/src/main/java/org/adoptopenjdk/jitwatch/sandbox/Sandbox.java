@@ -341,7 +341,7 @@ public class Sandbox
 			classLocations.add(sandboxClassDirString);
 		}
 
-		File jdkSrcZip = JITWatchConfig.getJDKSourceZip();
+		File jdkSrcZip = FileUtil.getJDKSourceZip();
 
 		if (jdkSrcZip != null)
 		{

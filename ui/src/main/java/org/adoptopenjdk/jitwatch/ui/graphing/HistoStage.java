@@ -18,6 +18,7 @@ import org.adoptopenjdk.jitwatch.histo.NativeSizeHistoWalker;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import javafx.beans.value.ChangeListener;

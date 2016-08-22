@@ -49,6 +49,7 @@ import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
+import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -101,7 +102,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		if (version.contains(JAVA_VERSION_7))
 		{
 			IS_JAVA_FX2 = true;
-			
+
 			if (OSUtil.getOperatingSystem() == OSUtil.OperatingSystem.MAC)
 			{
 				UserInterfaceUtil.initMacFonts();
@@ -251,8 +252,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public void handleReadComplete()
 	{
 		log("Finished reading log file.");
-		
-		logParser.discardParsedLogs();
 
 		isReadingLogFile = false;
 
@@ -266,6 +265,15 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				updateButtons();
 			}
 		});
+		
+		cleanup();
+	}
+
+	public void cleanup()
+	{
+		logParser.discardParsedLogs();
+
+		ClassUtil.clear();
 	}
 
 	private void buildSuggestions()
@@ -504,8 +512,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			{
 				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
 
-				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable.buildOptimizedCalleeReport(
-						logParser.getModel(), getConfig().getAllClassLocations());
+				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable
+						.buildOptimizedCalleeReport(logParser.getModel(), getConfig().getAllClassLocations());
 
 				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
 
@@ -582,17 +590,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		compilationTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<CompilationTableRow>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal, CompilationTableRow newVal)
+			public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
+					CompilationTableRow newVal)
 			{
 				if (selectedMember != null && newVal != null)
 				{
 					selectedMember.setSelectedCompilation(newVal.getIndex());
-					
-					openTriView(selectedMember, true);					
+
+					openTriView(selectedMember, true);
 				}
 			}
 		});
-		
+
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
@@ -720,7 +729,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		return triViewStage;
 	}
-	
+
 	@Override
 	public ITriView openTriView(IMetaMember member, boolean force, double width, double height)
 	{
@@ -730,7 +739,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 			triViewStage.setWidth(width);
 			triViewStage.setHeight(height);
-			
+
 			StageManager.addAndShow(this.stage, triViewStage);
 
 			btnTriView.setDisable(true);
@@ -883,7 +892,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
 
-			CompileNode root = walker.buildCallTree(member.getLastCompilation());
+			CompileNode root = walker.buildCallTree(member.getSelectedCompilation());
 
 			if (root != null)
 			{
@@ -898,9 +907,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 		else
 		{
-			Dialogs.showOKDialog(
-					stage,
-					"Root method is not compiled",
+			Dialogs.showOKDialog(stage, "Root method is not compiled",
 					"Can only display compile chain where the root method has been JIT-compiled.\n"
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
@@ -910,8 +917,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		if (member.isCompiled())
 		{
-			OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(logParser.getModel(), getConfig()
-					.getAllClassLocations());
+			OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(logParser.getModel(),
+					getConfig().getAllClassLocations());
 
 			List<OptimizedVirtualCall> optimizedVirtualCalls = finder.findOptimizedCalls(member);
 
@@ -922,9 +929,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 		else
 		{
-			Dialogs.showOKDialog(
-					stage,
-					"Root method is not compiled",
+			Dialogs.showOKDialog(stage, "Root method is not compiled",
 					"Can only display optimized virtual calls where the root method has been JIT-compiled.\n"
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
@@ -939,9 +944,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 		else
 		{
-			Dialogs.showOKDialog(
-					stage,
-					"Method is not compiled",
+			Dialogs.showOKDialog(stage, "Method is not compiled",
 					"Can only display JIT Journal if the method has been JIT-compiled.\n"
 							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
 		}
@@ -1049,7 +1052,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		for (Compilation compilation : member.getCompilations())
 		{
-			compilationRowList.add(new CompilationTableRow(compilation));
+			CompilationTableRow row = new CompilationTableRow(compilation);
+
+			compilationRowList.add(row);
 		}
 	}
 

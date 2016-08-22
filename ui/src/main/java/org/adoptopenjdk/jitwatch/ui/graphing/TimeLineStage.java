@@ -16,6 +16,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHES
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -71,8 +73,6 @@ public class TimeLineStage extends AbstractGraphStage
 		if (selectedMember != null)
 		{
 			memberCompilations = selectedMember.getCompilations();
-
-			System.out.println("compilations: " + memberCompilations.size());
 		}
 		else
 		{
@@ -83,6 +83,8 @@ public class TimeLineStage extends AbstractGraphStage
 	@Override
 	public final void redraw()
 	{
+		labelLeft = true;
+		
 		super.baseRedraw();
 
 		gc.setFont(STANDARD_FONT);
@@ -151,41 +153,36 @@ public class TimeLineStage extends AbstractGraphStage
 			return;
 		}
 
-		System.out.println("Getting compilation " + compilationIndex + " stamp: " + stamp);
-		
 		Compilation compilation = memberCompilations.get(compilationIndex);
 
-		Tag tagTaskQueued = compilation.getTagTaskQueued();
-
-		if (tagTaskQueued != null)
+		if (!compilation.isC2N())
 		{
-			long tagTime = ParseUtil.getStamp(tagTaskQueued.getAttributes());
+			Tag tagTaskQueued = compilation.getTagTaskQueued();
 
-			System.out.println("queued stamp " + tagTime);
-			
-			if (tagTime == stamp)
+			if (tagTaskQueued != null)
 			{
-				drawMemberEvent(compilation, tagTaskQueued, stamp, yPos);
-				
-				//TODO this is dumb, just overlay events afterwards
+				long tagTime = compilation.getQueuedStamp();
+
+				if (tagTime == stamp)
+				{
+					drawMemberEvent(compilation, tagTaskQueued, stamp, yPos);
+				}
+			}
+
+			Tag tagNMethod = compilation.getTagNMethod();
+
+			if (tagNMethod != null)
+			{
+				long tagTime = compilation.getCompiledStamp();
+
+				if (tagTime == stamp)
+				{
+					drawMemberEvent(compilation, tagNMethod, stamp, yPos);
+
+					compilationIndex++;
+				}
 			}
 		}
-		
-		Tag tagNMethod = compilation.getTagNMethod();
-
-		if (tagNMethod != null)
-		{
-			long tagTime = ParseUtil.getStamp(tagNMethod.getAttributes());
-
-			System.out.println("nmethod stamp " + tagTime);
-
-			if (tagTime == stamp)
-			{
-				drawMemberEvent(compilation, tagNMethod, stamp, yPos);
-				
-				compilationIndex++;
-			}
-		}		
 	}
 
 	private void drawMemberEvent(Compilation compilation, Tag tag, long stamp, double yPos)
@@ -309,9 +306,10 @@ public class TimeLineStage extends AbstractGraphStage
 				selectedItemBuilder.append(" (Level ").append(level).append(C_CLOSE_PARENTHESES);
 			}
 
-			long compiletime = compilation.getCompileTime();
-
-			selectedItemBuilder.append(" in ").append(compiletime).append("ms");
+			if (!compilation.isC2N())
+			{
+				selectedItemBuilder.append(" in ").append(compilation.getCompileTime()).append("ms");
+			}
 		}
 
 		return selectedItemBuilder.toString();

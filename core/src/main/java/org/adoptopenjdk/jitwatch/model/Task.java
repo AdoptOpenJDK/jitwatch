@@ -45,7 +45,7 @@ public class Task extends Tag
 			logger.debug("Adding type: {}", type);
 		}
 
-		parseDictionary.setType(type, tag);
+		parseDictionary.putType(type, tag);
 	}
 
 	public void addDictionaryMethod(String method, Tag tag)
@@ -55,7 +55,7 @@ public class Task extends Tag
 			logger.debug("Adding method: {}", method);
 		}
 
-		parseDictionary.setMethod(method, tag);
+		parseDictionary.putMethod(method, tag);
 	}
 
 	public void addDictionaryKlass(String klass, Tag tag)
@@ -65,7 +65,7 @@ public class Task extends Tag
 			logger.debug("Adding klass: {}", klass);
 		}
 
-		parseDictionary.setKlass(klass, tag);
+		parseDictionary.putKlass(klass, tag);
 	}
 
 	public String decodeParseMethod(String method)

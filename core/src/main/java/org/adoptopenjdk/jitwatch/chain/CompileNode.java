@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.chain;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -17,8 +18,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class CompileNode
 {	
-	private boolean compiled = false;
 	private boolean inlined = false;
+	
 	private String tooltip;
 	
 	private List<CompileNode> children;
@@ -28,17 +29,26 @@ public class CompileNode
 	private String methodID = null;
 	
 	private IParseDictionary parseDictionary;
+	
 	private IReadOnlyJITDataModel model;
 
-	public static CompileNode createRootNode(String methodID, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
+	private Compilation compilation;
+	
+	public static CompileNode createRootNode(Compilation compilation, String methodID, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
 		CompileNode root = new CompileNode(methodID);
+		root.compilation = compilation;
 		root.parseDictionary = parseDictionary;
 		root.model = model;
 		
 		return root;
 	}
 	
+	public Compilation getCompilation()
+	{
+		return compilation;
+	}
+
 	public CompileNode(String methodID)
 	{
 		this.methodID = methodID;
@@ -56,11 +66,6 @@ public class CompileNode
 		this.inlined = inlined;
 	}
 	
-	public void setCompiled(boolean compiled)
-	{
-		this.compiled = compiled;
-	}
-	
 	public boolean isInlined()
 	{
 		return inlined;
@@ -68,7 +73,7 @@ public class CompileNode
 	
 	public boolean isCompiled()
 	{
-		return compiled;
+		return getMember().isCompiled();
 	}
 	
 	public void addChild(CompileNode child)

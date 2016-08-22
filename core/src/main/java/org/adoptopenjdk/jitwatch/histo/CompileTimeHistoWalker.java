@@ -21,11 +21,9 @@ public class CompileTimeHistoWalker extends AbstractHistoVisitable
 	{
 		for (Compilation compilation : mm.getCompilations())
 		{
-			long compileTime = compilation.getCompileTime();
-	
-			if (compileTime != 0)
+			if (!compilation.isC2N())
 			{
-				histo.addValue(compileTime);
+				histo.addValue(compilation.getCompileTime());
 			}
 		}
 	}

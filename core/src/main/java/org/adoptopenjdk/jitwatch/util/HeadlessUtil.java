@@ -22,7 +22,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
-import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 
 public class HeadlessUtil
 {
@@ -107,11 +106,11 @@ public class HeadlessUtil
 	{
 		long compileTime = 0;
 
-		int compilationCount = member.getCompilations().size();
-
-		if (compilationCount > 0)
+		Compilation lastCompilation = member.getLastCompilation();
+		
+		if (lastCompilation != null)
 		{
-			compileTime = member.getCompilations().get(compilationCount - 1).getCompileTime();
+			compileTime = lastCompilation.getCompileTime();
 		}
 		
 		return compileTime;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -33,19 +33,19 @@ public class ParseDictionary implements IParseDictionary
 	}
 
 	@Override
-	public void setType(String id, Tag type)
+	public void putType(String id, Tag type)
 	{
 		typeMap.put(id, type);
 	}
 
 	@Override
-	public void setKlass(String id, Tag klass)
+	public void putKlass(String id, Tag klass)
 	{
 		klassMap.put(id, klass);
 	}
 
 	@Override
-	public void setMethod(String id, Tag method)
+	public void putMethod(String id, Tag method)
 	{
 		methodMap.put(id, method);
 	}

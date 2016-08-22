@@ -185,7 +185,9 @@ public final class ParseUtil
 	}
 
 	/*
-	 * [C => char[] [[I => int[][] [Ljava.lang.Object; => java.lang.Object[]
+	 * [C => char[]
+	 * [[I => int[][]
+	 * [Ljava.lang.Object; => java.lang.Object[]
 	 */
 	public static String expandParameterType(String name)
 	{
@@ -267,11 +269,9 @@ public final class ParseUtil
 			String paramTypes = matcher.group(3).replace(S_OPEN_PARENTHESES, S_EMPTY).replace(S_CLOSE_PARENTHESES, S_EMPTY);
 			String returnType = matcher.group(4);
 
-			return new String[] {
-					className, methodName, paramTypes, returnType
-			};
+			return new String[] { className, methodName, paramTypes, returnType };
 		}
-		
+
 		logger.debug("Could not apply {} to {}", PATTERN_LOG_SIGNATURE, logSignature);
 
 		throw new LogParseException("Could not split signature with regex: '" + logSignature + C_QUOTE);
@@ -314,6 +314,11 @@ public final class ParseUtil
 
 	public static Class<?> findClassForLogCompilationParameter(String param) throws ClassNotFoundException
 	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("findClassForLogCompilationParameter:{}", param);
+		}		
+		
 		StringBuilder builder = new StringBuilder();
 
 		if (isPrimitive(param))
@@ -758,7 +763,7 @@ public final class ParseUtil
 			int modifier = member.getModifier();
 			String returnTypeName = member.getReturnTypeName();
 			String[] paramTypeNames = member.getParamTypeNames();
-
+			
 			int bestScore = 0;
 
 			for (int i = 0; i < lines.size(); i++)
@@ -774,9 +779,8 @@ public final class ParseUtil
 						logger.debug("Comparing {} with {}", line, member);
 					}
 
-					MemberSignatureParts msp = MemberSignatureParts
-							.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
-
+					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
+				
 					if (!memberName.equals(msp.getMemberName()))
 					{
 						continue;
@@ -886,11 +890,11 @@ public final class ParseUtil
 	{
 		List<String> result = new ArrayList<>();
 
-		String argumentsTypeId = methodTag.getAttributes().get(ATTR_ARGUMENTS);
+		String arguments = methodTag.getAttributes().get(ATTR_ARGUMENTS);
 
-		if (argumentsTypeId != null)
+		if (arguments != null)
 		{
-			String[] typeIDs = argumentsTypeId.split(S_SPACE);
+			String[] typeIDs = arguments.split(S_SPACE);
 
 			for (String typeID : typeIDs)
 			{
@@ -926,7 +930,7 @@ public final class ParseUtil
 		if (methodTag != null)
 		{
 			Map<String, String> methodTagAttributes = methodTag.getAttributes();
-			
+
 			String methodName = methodTagAttributes.get(ATTR_NAME);
 
 			methodName = StringUtil.replaceXMLEntities(methodName);
@@ -1033,14 +1037,25 @@ public final class ParseUtil
 			if (typeTag != null)
 			{
 				String typeAttrName = typeTag.getAttributes().get(ATTR_NAME);
-
-				if (typeAttrName != null)
-				{
-					result = typeAttrName.replace(S_SLASH, S_DOT);
-				}
+				
+				result = expandParseDictionaryTypeName(typeAttrName);
 			}
 		}
 
+		return result;
+	}
+	
+	public static String expandParseDictionaryTypeName(String typeName)
+	{
+		String result = null;
+		
+		if (typeName != null)
+		{
+			result = typeName.replace(S_SLASH, S_DOT);
+			
+			result = expandParameterType(result);
+		}
+		
 		return result;
 	}
 
@@ -1097,12 +1112,12 @@ public final class ParseUtil
 	}
 
 	public static String bytecodeMethodCommentToReadableString(String className, String comment)
-	{		
+	{
 		StringBuilder builder = new StringBuilder();
 
 		if (bytecodeMethodCommentHasNoClassPrefix(comment))
 		{
-			comment = className.replace(S_DOT,  S_SLASH) + C_DOT + comment;
+			comment = className.replace(S_DOT, S_SLASH) + C_DOT + comment;
 		}
 
 		String logCompilationSignature = bytecodeCommentSignatureToLogCompilationSignature(comment);
@@ -1137,7 +1152,7 @@ public final class ParseUtil
 		}
 		catch (LogParseException e)
 		{
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 
 		return builder.toString();

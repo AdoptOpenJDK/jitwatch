@@ -18,7 +18,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
@@ -77,8 +76,9 @@ public class ViewerBytecode extends Viewer
 
 			if (tooltip != null)
 			{
-				ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
 				Tooltip.uninstall(labelAtIndex, tooltip);
+
+				ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
 			}
 
 			ttBuilder.append("Suggestion:\n");
@@ -91,8 +91,13 @@ public class ViewerBytecode extends Viewer
 			}
 
 			ttBuilder.append(text);
+			
+			String toolTipString = ttBuilder.toString();
+						
+			toolTipString = StringUtil.replaceXMLEntities(toolTipString);
 
-			tooltip = new Tooltip(ttBuilder.toString());
+			tooltip = new Tooltip(toolTipString);
+			
 			labelAtIndex.setTooltip(tooltip);
 		}
 
@@ -110,16 +115,11 @@ public class ViewerBytecode extends Viewer
 		offsetMismatchDetected = false;
 		instructions.clear();
 
-		ClassBC metaClassBytecode = member.getMetaClass().getClassBytecode();
+		MemberBytecode memberBytecode = member.getMemberBytecode();
 
-		if (metaClassBytecode != null)
+		if (memberBytecode != null)
 		{
-			MemberBytecode memberBytecode = metaClassBytecode.getMemberBytecode(member);
-
-			if (memberBytecode != null)
-			{
-				instructions.addAll(memberBytecode.getInstructions());
-			}
+			instructions.addAll(memberBytecode.getInstructions());
 		}
 
 		BytecodeAnnotations bcAnnotations = null;
@@ -233,11 +233,14 @@ public class ViewerBytecode extends Viewer
 
 		if (instructionToolTipBuilder.length() > 0)
 		{
-			Tooltip toolTip = new Tooltip(instructionToolTipBuilder.toString().trim());
+			String toolTipString = StringUtil.replaceXMLEntities(instructionToolTipBuilder.toString().trim());
+			
+			Tooltip toolTip = new Tooltip(toolTipString);
 
 			toolTip.setStyle("-fx-strikethrough: false;");
 			toolTip.getStyleClass().clear();
 			toolTip.getStyleClass().add("tooltip");
+						
 			lblLine.setTooltip(toolTip);
 		}
 

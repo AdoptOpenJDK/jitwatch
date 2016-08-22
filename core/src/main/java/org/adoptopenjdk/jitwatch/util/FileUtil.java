@@ -145,4 +145,39 @@ public final class FileUtil
 			}
 		}
 	}
+	
+	public static File getJDKSourceZip()
+	{
+		String jrePath = System.getProperty("java.home");
+
+		File jreDir = new File(jrePath);
+
+		File result = null;
+
+		if (jreDir.exists() && jreDir.isDirectory())
+		{
+			File srcZipFile = new File(jreDir, "src.zip");
+
+			if (srcZipFile.exists() && srcZipFile.isFile())
+			{
+				result = srcZipFile;
+			}
+			else
+			{
+				File parentDir = jreDir.getParentFile();
+
+				if (parentDir.exists() && parentDir.isDirectory())
+				{
+					srcZipFile = new File(parentDir, "src.zip");
+
+					if (srcZipFile.exists() && srcZipFile.isFile())
+					{
+						result = srcZipFile;
+					}
+				}
+			}
+		}
+
+		return result;
+	}
 }

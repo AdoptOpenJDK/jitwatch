@@ -227,12 +227,12 @@ public class TestMemberSignatureParts
 		assertEquals("int", paramTypes.get(1));
 		assertEquals("java.lang.Class<? extends T[]>", paramTypes.get(2));
 	}
-	
+
 	@Test
 	public void testSignatureWithGenericRegressionReturnTypeHasGenerics()
 	{
 		String sig = "public static <T extends java.lang.Object> java.lang.Class<T> asWrapperType(java.lang.Class<T>)";
-		
+
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("sun.invoke.util.Wrapper", sig);
 		
 		List<String> modList = msp.getModifiers();
@@ -357,55 +357,94 @@ public class TestMemberSignatureParts
 
 	}
 
-	/* TODO: class initialiser <clinit> does not appear in
-	 * Class.getDeclared{Methods|Constructors}()
-	 * Need to detect access and return dummy member.
-	 * Bytecode for <clinit> is available via ClassBC
-	@Test
-	public void testMatchStaticInitialiser()
-	{
-		JITDataModel model = new JITDataModel();
+	/*
+	 * TODO: class initialiser <clinit> does not appear in
+	 * Class.getDeclared{Methods|Constructors}() Need to detect access and
+	 * return dummy member. Bytecode for <clinit> is available via ClassBC
+	 * 
+	 * @Test public void testMatchStaticInitialiser() { JITDataModel model = new
+	 * JITDataModel();
+	 * 
+	 * MetaClass metaClassThis = model.buildAndGetMetaClass(getClass());
+	 * 
+	 * MemberSignatureParts msp =
+	 * MemberSignatureParts.fromBytecodeSignature(getClass().getName(),
+	 * ParseUtil.STATIC_BYTECODE_SIGNATURE);
+	 * 
+	 * IMetaMember memberFromSig = metaClassThis.getMemberFromSignature(msp);
+	 * 
+	 * ClassBC classBC = metaClassThis.getClassBytecode(null);
+	 * 
+	 * for (String sig : classBC.getBytecodeMethodSignatures()) {
+	 * System.out.println("BC: " + sig); }
+	 * 
+	 * assertNotNull(memberFromSig);
+	 * 
+	 * }
+	 */
 
-		MetaClass metaClassThis = model.buildAndGetMetaClass(getClass());
-
-		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), ParseUtil.STATIC_BYTECODE_SIGNATURE);
-
-		IMetaMember memberFromSig = metaClassThis.getMemberFromSignature(msp);
-
-		ClassBC classBC = metaClassThis.getClassBytecode(null);
-
-		for (String sig : classBC.getBytecodeMethodSignatures())
-		{
-			System.out.println("BC: " + sig);
-		}
-
-		assertNotNull(memberFromSig);
-
-	}
-	*/
-	
 	@Test
 	public void testNashornSignatureWithColon()
 	{
 		String bcSig = "public static jdk.nashorn.internal.runtime.ScriptFunction :createProgramFunction(jdk.nashorn.internal.runtime.ScriptObject);";
-		
+
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(getClass().getName(), bcSig);
-		
+
 		assertNotNull(msp);
-		
+
 		List<String> paramTypes = new ArrayList<>();
 		paramTypes.add("jdk.nashorn.internal.runtime.ScriptObject");
-		
+
 		assertEquals(paramTypes, msp.getParamTypes());
-		
+
 		assertEquals("jdk.nashorn.internal.runtime.ScriptFunction", msp.getReturnType());
-	
+
 		assertEquals(":createProgramFunction", msp.getMemberName());
-		
+
 		List<String> modifiers = new ArrayList<>();
 		modifiers.add("public");
 		modifiers.add("static");
 
 		assertEquals(modifiers, msp.getModifiers());
+	}
+
+	@Test
+	public void testRegressionSubstituteGenericsForClassloading()
+	{
+		String sig = "public static <T extends java.lang.Object, U extends java.lang.Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>)";
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("java.util.Arrays", sig);
+
+		assertEquals("T[]", msp.getReturnType());
+
+		assertEquals("java.lang.Object[]", msp.applyGenericSubstitutionsForClassLoading(msp.getReturnType()));
+	}
+
+	@Test
+	public void testRegressionGenericsWithSuper()
+	{
+		String sig = "public static <T extends java.lang.Comparable<? super T>> void sort(java.util.List<T>)";
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature("java.util.Collections", sig);
+
+		List<String> modList = msp.getModifiers();
+
+		assertEquals(2, modList.size());
+		assertEquals("public", modList.get(0));
+		assertEquals("static", modList.get(1));
+
+		Map<String, String> genMap = msp.getGenerics();
+
+		assertEquals(1, genMap.size());
+		assertEquals(true, genMap.containsKey("T"));
+		assertEquals("java.lang.Comparable<? super T>", genMap.get("T"));
+
+		assertEquals("void", msp.getReturnType());
+
+		assertEquals("sort", msp.getMemberName());
+
+		List<String> paramTypes = msp.getParamTypes();
+
+		assertEquals(1, paramTypes.size());
+		assertEquals("java.util.List<T>", paramTypes.get(0));		
 	}
 }

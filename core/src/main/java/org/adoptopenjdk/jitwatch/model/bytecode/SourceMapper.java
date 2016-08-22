@@ -56,10 +56,6 @@ public class SourceMapper
 
 			sourceToClassMap.put(fqName, classBytecodeList);
 		}
-		else
-		{
-//			logger.debug("No classBytecodeList found for name {}", fqName);
-		}
 
 		classBytecodeList.add(classBytecode);
 	}
@@ -79,7 +75,7 @@ public class SourceMapper
 	}
 
 	public static MemberBytecode getMemberBytecodeForSourceLine(ClassBC classBytecode, int sourceLine)
-	{
+	{		
 		MemberBytecode result = null;
 
 		String fqName = getFullyQualifiedSourceName(classBytecode);
@@ -114,7 +110,7 @@ public class SourceMapper
 		}
 		else
 		{
-			logger.warn("No bytecode found for source {}", fqName);
+			logger.warn("No source-bytecode mapping found for class {}", classBytecode.getFullyQualifiedClassName());
 		}
 
 		if (DEBUG_LOGGING_TRIVIEW)

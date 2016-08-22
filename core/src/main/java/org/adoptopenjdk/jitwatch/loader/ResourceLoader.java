@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,12 +18,14 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
+import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +38,19 @@ public final class ResourceLoader
 	}
 
 	public static String getSourceForClassName(String fqName, List<String> sourceLocations)
-	{		
+	{	
+		List<String> searchLocations = new ArrayList<>(sourceLocations);
+		
+		if (searchLocations.isEmpty())
+		{
+			File jdkSrcZip = FileUtil.getJDKSourceZip();
+			
+			if (jdkSrcZip != null)
+			{
+				searchLocations.add(jdkSrcZip.toPath().toString());
+			}
+		}
+		
 		int dollarPos = fqName.indexOf(C_DOLLAR);
 
 		if (dollarPos != -1)
@@ -52,19 +66,19 @@ public final class ResourceLoader
 		{
 			String filename = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
 
-			result = getSourceForFilename(filename, sourceLocations);
+			result = getSourceForFilename(filename, searchLocations);
 
 			if (result != null)
 			{
 				break;
 			}
 		}
-
+		
 		return result;
 	}
 
 	public static String getSourceForFilename(String fileName, List<String> locations)
-	{
+	{		
 		if (fileName.startsWith(S_SLASH))
 		{
 			return readFile(new File(fileName));
@@ -75,7 +89,7 @@ public final class ResourceLoader
 		for (String location : locations)
 		{
 			File lf = new File(location);
-			
+						
 			if (lf.exists())
 			{
 				if (lf.isDirectory())
@@ -112,7 +126,7 @@ public final class ResourceLoader
 	public static String readFile(File sourceFile)
 	{
 		String result = null;
-
+		
 		if (sourceFile != null && sourceFile.exists())
 		{
 			try

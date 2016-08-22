@@ -82,7 +82,7 @@ public class CompilationInfo extends HBox
 
 		getChildren().add(vBoxBytecode);
 		getChildren().add(vBoxAssembly);
-		getChildren().add(vBoxCompileTime);		
+		getChildren().add(vBoxCompileTime);
 	}
 
 	public void setCompilation(Compilation compilation)
@@ -93,8 +93,15 @@ public class CompilationInfo extends HBox
 
 			lblAssemblySizeVal.setText(Integer.toString(compilation.getNativeSize()));
 
-			lblCompileTimeVal.setText(compilation.getCompileTime() + "ms");
-			
+			if (compilation.isC2N())
+			{
+				lblCompileTimeVal.setText(NA);
+			}
+			else
+			{
+				lblCompileTimeVal.setText(compilation.getCompileTime() + "ms");
+			}
+
 			try
 			{
 				int bytecodeSize = Integer.parseInt(lblBytecodeSizeVal.getText());
@@ -123,6 +130,8 @@ public class CompilationInfo extends HBox
 		}
 		else
 		{
+			lblBytecodeSizeVal.setStyle(STYLE_VALUE);
+			
 			lblBytecodeSizeVal.setText(NA);
 
 			lblAssemblySizeVal.setText(NA);

@@ -33,6 +33,8 @@ public interface IMetaMember
 
 	boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly);
 
+	boolean isConstructor();
+	
 	String getQueuedAttribute(String key);
 	Map<String, String> getQueuedAttributes();
 	

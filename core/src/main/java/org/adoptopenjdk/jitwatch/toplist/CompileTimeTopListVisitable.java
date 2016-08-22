@@ -21,11 +21,9 @@ public class CompileTimeTopListVisitable extends AbstractTopListVisitable
 	{
 		for (Compilation compilation : mm.getCompilations())
 		{
-			long compileTime = compilation.getCompileTime();
-	
-			if (compileTime != 0)
+			if (!compilation.isC2N())
 			{
-				topList.add(new MemberScore(mm, compileTime));
+				topList.add(new MemberScore(mm, compilation.getCompileTime()));
 			}
 		}	
 	}

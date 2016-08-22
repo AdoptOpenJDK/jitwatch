@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -631,41 +631,6 @@ public class JITWatchConfig
 		{
 			logger.error("Could not save config file", ioe);
 		}
-	}
-
-	public static File getJDKSourceZip()
-	{
-		String jrePath = System.getProperty("java.home");
-
-		File jreDir = new File(jrePath);
-
-		File result = null;
-
-		if (jreDir.exists() && jreDir.isDirectory())
-		{
-			File srcZipFile = new File(jreDir, "src.zip");
-
-			if (srcZipFile.exists() && srcZipFile.isFile())
-			{
-				result = srcZipFile;
-			}
-			else
-			{
-				File parentDir = jreDir.getParentFile();
-
-				if (parentDir.exists() && parentDir.isDirectory())
-				{
-					srcZipFile = new File(parentDir, "src.zip");
-
-					if (srcZipFile.exists() && srcZipFile.isFile())
-					{
-						result = srcZipFile;
-					}
-				}
-			}
-		}
-
-		return result;
 	}
 
 	public List<String> getConfiguredClassLocations()

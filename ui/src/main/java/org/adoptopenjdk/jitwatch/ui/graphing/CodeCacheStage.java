@@ -19,6 +19,7 @@ import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;

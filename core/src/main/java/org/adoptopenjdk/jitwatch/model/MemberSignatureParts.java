@@ -26,6 +26,9 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_BRACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_BRACE;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -92,7 +95,7 @@ public class MemberSignatureParts
 	}
 
 	private static void completeSignature(String origSig, MemberSignatureParts msp)
-	{
+	{		
 		if (msp.memberName != null)
 		{
 			// Constructors will return void for returnType
@@ -100,11 +103,6 @@ public class MemberSignatureParts
 			{
 				msp.memberName = StringUtil.getUnqualifiedClassName(msp.fullyQualifiedClassName);
 				msp.returnType = Void.TYPE.getName();
-
-				if (DEBUG_LOGGING)
-				{
-					logger.debug("Found constructor: {} ", msp.memberName);
-				}
 			}
 		}
 		else
@@ -172,9 +170,69 @@ public class MemberSignatureParts
 
 		return fromLogCompilationSignature(logCompilationSignature);
 	}
+	
+	public static String isolateGenericsTag(String input)
+	{	
+		StringBuilder builder = new StringBuilder();
+		
+		int openAngleBrackets = 0;
+		
+		boolean replaced = false;
+		
+		int length = input.length();
+		
+		for (int i = 0; i < length; i++)
+		{
+			char c = input.charAt(i);
+			
+			if (c == C_OPEN_ANGLE)
+			{
+				if (openAngleBrackets == 0 && !replaced)
+				{
+					builder.append(C_OPEN_BRACE);
+				}
+				else
+				{
+					builder.append(c);
+				}
 
+				openAngleBrackets++;
+			}
+			else if (c == C_CLOSE_ANGLE)
+			{
+				openAngleBrackets--;
+				
+				if (openAngleBrackets == 0 && !replaced)
+				{
+					builder.append(C_CLOSE_BRACE);
+					replaced = true;
+				}
+				else
+				{
+					builder.append(c);
+				}
+			}
+			else
+			{
+				builder.append(c);
+			}
+		}
+		
+		return builder.toString();
+	}
+	
+	public static boolean signatureHasGenerics(String input)
+	{
+		return input.contains(" extends ") || input.contains(" super ");
+	}
+	
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
 	{
+		if (signatureHasGenerics(toParse))
+		{		
+			toParse = isolateGenericsTag(toParse);
+		}
+				
 		MemberSignatureParts msp = new MemberSignatureParts();
 
 		msp.fullyQualifiedClassName = fqClassName;
@@ -196,7 +254,7 @@ public class MemberSignatureParts
 			builder.append(S_OPEN_PARENTHESES).append(mod).append(S_SPACE).append(S_CLOSE_PARENTHESES).append(C_QUESTION);
 		}
 
-		String regexGenerics = "(<[\\p{L}0-9_\\.\\$\\ ,/]+> )?";
+		String regexGenerics = "(\\{.*\\} )?";
 		String regexReturnType = "(.* )?"; // optional could be constructor
 		String regexMethodName = ParseUtil.METHOD_NAME_REGEX_GROUP;
 		String regexParams = "(\\(.*\\))";
@@ -469,19 +527,31 @@ public class MemberSignatureParts
 	public String applyGenericSubstitutionsForClassLoading(final String typeName)
 	{
 		String result = typeName;
-
+				
 		if (typeName != null)
 		{
-			if (genericsMap.containsKey(typeName))
+			int arrayBracketPos = typeName.indexOf(C_OPEN_SQUARE_BRACKET);
+			
+			if (arrayBracketPos != -1)
 			{
-				result = genericsMap.get(typeName);
+				result = typeName.substring(0,  arrayBracketPos);
 			}
-			else if (classBytecode != null && classBytecode.getGenericsMap().containsKey(typeName))
+			
+			if (genericsMap.containsKey(result))
 			{
-				result = classBytecode.getGenericsMap().get(typeName);
+				result = genericsMap.get(result);
 			}
+			else if (classBytecode != null && classBytecode.getGenericsMap().containsKey(result))
+			{
+				result = classBytecode.getGenericsMap().get(result);
+			}
+			
+			if (arrayBracketPos != -1)
+			{
+				result = result + typeName.substring(arrayBracketPos);
+			}			
 		}
-
+		
 		return result;
 	}
 

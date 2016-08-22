@@ -16,7 +16,7 @@ public class CompilationTableRow
 	{
 		this.compilation = compilation;
 	}
-	
+
 	public int getIndex()
 	{
 		return compilation.getIndex();
@@ -24,8 +24,8 @@ public class CompilationTableRow
 
 	public String getQueuedStamp()
 	{
-		long stamp =  compilation.getQueuedStamp();
-		
+		long stamp = compilation.getQueuedStamp();
+
 		String result;
 
 		if (stamp == 0)
@@ -42,8 +42,8 @@ public class CompilationTableRow
 
 	public String getCompiledStamp()
 	{
-		long stamp =  compilation.getCompiledStamp();
-		
+		long stamp = compilation.getCompiledStamp();
+
 		String result;
 
 		if (stamp == 0)
@@ -59,11 +59,11 @@ public class CompilationTableRow
 	}
 
 	public String getNative()
-	{	
+	{
 		int nativeSize = compilation.getNativeSize();
 
 		String result;
-		
+
 		if (nativeSize == 0)
 		{
 			result = "NA";
@@ -79,7 +79,7 @@ public class CompilationTableRow
 	public String getCompiler()
 	{
 		String result = compilation.getCompiler();
-		
+
 		if (result == null)
 		{
 			result = "NA";
@@ -87,16 +87,35 @@ public class CompilationTableRow
 
 		return result;
 	}
-	
+
 	public String getLevel()
 	{
 		String result = compilation.getLevel();
-		
+
 		if (result == null)
 		{
 			result = "NA";
 		}
 
 		return result;
+	}
+
+	public String getTooltip()
+	{
+		switch (compilation.getLevel())
+		{
+		case "Level 0":
+			return "Interpreter";
+		case "Level 1":
+			return "C1 with full optimization (no profiling)";
+		case "Level 2":
+			return "C1 with invocation and backedge counters";
+		case "Level 3":
+			return "C1 with full profiling (invocation and backedge counters + MethodDataOop)";
+		case "Level 4":
+			return "C2 Server compiler";
+		default:
+			return "Unknown compiler level";
+		}
 	}
 }

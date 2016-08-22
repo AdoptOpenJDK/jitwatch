@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -14,7 +14,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +27,13 @@ public class FileChooserListSrcZip extends FileChooserList
 		super(stage, title, items);
 
 		Button btnAddSrcZip = new Button("Add JDK src");
+		
 		btnAddSrcZip.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				File srcZipFile = JITWatchConfig.getJDKSourceZip();
+				File srcZipFile = FileUtil.getJDKSourceZip();
 				
 				if (srcZipFile != null)
 				{

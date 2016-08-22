@@ -7,11 +7,11 @@ package org.adoptopenjdk.jitwatch.model;
 
 public interface IParseDictionary
 {
-	void setType(String id, Tag type);
+	void putType(String id, Tag type);
 
-	void setKlass(String id, Tag klass);
+	void putKlass(String id, Tag klass);
 
-	void setMethod(String id, Tag method);
+	void putMethod(String id, Tag method);
 
 	Tag getType(String id);
 

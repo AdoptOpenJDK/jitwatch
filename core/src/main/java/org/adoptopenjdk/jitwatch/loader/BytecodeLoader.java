@@ -108,7 +108,7 @@ public final class BytecodeLoader
 	}
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, Path javapPath,
-																							boolean cacheBytecode)
+			boolean cacheBytecode)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -253,11 +253,20 @@ public final class BytecodeLoader
 				}
 				else if (line.startsWith(S_BYTECODE_SOURCE_FILE))
 				{
-					classBytecode.setSourceFile(getSourceFile(line));
+					String sourceFilename = getSourceFile(line);
 
-					if (cacheBytecode)
+					if (sourceFilename != null)
 					{
-						SourceMapper.addSourceClassMapping(classBytecode);
+						classBytecode.setSourceFile(sourceFilename);
+
+						if (cacheBytecode)
+						{
+							SourceMapper.addSourceClassMapping(classBytecode);
+						}
+					}
+					else
+					{
+						logger.warn("Couldn't parse source file from line {}", line);
 					}
 				}
 				break;
