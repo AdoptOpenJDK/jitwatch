@@ -342,7 +342,7 @@ public final class CompilationUtil
 		return parsePhase;
 	}
 	
-	private static boolean isStaleTask(Task task)
+	public static boolean isStaleTask(Task task)
 	{
 		List<Tag> failureChildren = task.getNamedChildren(TAG_FAILURE);
 		

@@ -42,6 +42,7 @@ import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.NativeMethodSizeTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.StaleTaskToplistVisitable;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -121,6 +122,9 @@ public class TopListStage extends Stage
 				}
 			}
 		}, new String[] { "Order", MEMBER });
+		
+		TopListWrapper tlStaleTasks = new TopListWrapper("Most Stale Tasks", new StaleTaskToplistVisitable(
+				parent.getJITDataModel(), true), new String[] { "Count", "Member" });
 
 		final Map<String, TopListWrapper> attrMap = new HashMap<>();
 
@@ -132,6 +136,7 @@ public class TopListStage extends Stage
 		attrMap.put(tlMostDecompiled.getTitle(), tlMostDecompiled);
 		attrMap.put(tlCompilationOrder.getTitle(), tlCompilationOrder);
 		attrMap.put(tlCompilationOrderOSR.getTitle(), tlCompilationOrderOSR);
+		attrMap.put(tlStaleTasks.getTitle(), tlStaleTasks);
 
 		VBox vbox = new VBox();
 		vbox.setPadding(new Insets(8));
