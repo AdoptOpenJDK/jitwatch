@@ -95,6 +95,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT = "size > DesiredMethodLimit";
 	private static final String REASON_NODE_COUNT_INLINING_CUTOFF = "NodeCountInliningCutoff";
 	private static final String REASON_UNLOADED_SIGNATURE_CLASSES = "unloaded signature classes";
+	
+    // don't inline throwable methods unless the inlining tree is rooted in a throwable class
+	// src/share/vm/c1/c1_GraphBuilder.cpp  
+	private static final String REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS = "don't inline Throwable constructors";
 
 	private static final String CODE_CACHE_FULL = "Code cache full, no further JIT compilation is possible";
 
@@ -131,6 +135,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		scoreMap.put(REASON_NEVER_EXECUTED, 0.0);
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
+		scoreMap.put(REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS, 0.0);
 
 		explanationMap.put(REASON_HOT_METHOD_TOO_BIG,
 				"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");
@@ -148,6 +153,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 		explanationMap.put(REASON_NOT_AN_ACCESSOR, "The callee method is not an accessor.");
 
+		explanationMap.put(REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS, "A Throwable method won't be inlined unless the inlining tree is rooted in a throwable class.");
+		
 		final String explanationInliningTooDeep = "Inlining could not continue as the inlining depth exceeded the limit.";
 
 		explanationMap.put(REASON_RECURSIVE_INLINING_TOO_DEEP, explanationInliningTooDeep);
