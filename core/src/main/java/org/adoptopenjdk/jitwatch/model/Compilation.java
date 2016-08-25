@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
@@ -297,18 +298,18 @@ public class Compilation
 
 		if (tagNMethod != null)
 		{
-			StringBuilder builder = new StringBuilder();
-
 			Map<String, String> tagAttributes = tagNMethod.getAttributes();
 
 			String level = tagAttributes.get(ATTR_LEVEL);
 
 			if (level != null)
 			{
-				builder.append("Level ").append(level);
+				result = level;
 			}
-
-			result = builder.toString();
+			else if (C2.equals(tagAttributes.get(ATTR_COMPILER)))
+			{
+				result = "4";
+			}
 		}
 
 		return result;

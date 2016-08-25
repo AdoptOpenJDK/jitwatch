@@ -41,10 +41,11 @@ import javafx.stage.StageStyle;
 public class TimeLineStage extends AbstractGraphStage
 {
 	private IMetaMember selectedMember = null;
-	private List<Compilation> memberCompilations;
 	private int compilationIndex = 0;
 	private static final double MARKET_DIAMETER = 10;
 	private boolean labelLeft = true;
+
+	private boolean drawnQueueEvent = false;
 
 	public TimeLineStage(final JITWatchUI parent)
 	{
@@ -68,23 +69,11 @@ public class TimeLineStage extends AbstractGraphStage
 		redraw();
 	}
 
-	private void processMemberEvents()
-	{
-		if (selectedMember != null)
-		{
-			memberCompilations = selectedMember.getCompilations();
-		}
-		else
-		{
-			memberCompilations.clear();
-		}
-	}
-
 	@Override
 	public final void redraw()
 	{
 		labelLeft = true;
-		
+
 		super.baseRedraw();
 
 		gc.setFont(STANDARD_FONT);
@@ -92,7 +81,6 @@ public class TimeLineStage extends AbstractGraphStage
 		if (selectedMember != mainUI.getSelectedMember())
 		{
 			selectedMember = mainUI.getSelectedMember();
-			processMemberEvents();
 		}
 
 		List<JITEvent> events = mainUI.getJITDataModel().getEventListCopy();
@@ -146,26 +134,30 @@ public class TimeLineStage extends AbstractGraphStage
 		maxY = events.size();
 	}
 
-	private void drawMemberEvents(long stamp, double yPos)
+	private void drawMemberEvents(List<Compilation> compilations, long stamp, double yPos)
 	{
-		if (compilationIndex >= memberCompilations.size())
+		if (compilationIndex >= compilations.size())
 		{
 			return;
 		}
 
-		Compilation compilation = memberCompilations.get(compilationIndex);
+		Compilation compilation = compilations.get(compilationIndex);
 
 		if (!compilation.isC2N())
 		{
-			Tag tagTaskQueued = compilation.getTagTaskQueued();
-
-			if (tagTaskQueued != null)
+			if (!drawnQueueEvent)
 			{
-				long tagTime = compilation.getQueuedStamp();
+				Tag tagTaskQueued = compilation.getTagTaskQueued();
 
-				if (tagTime == stamp)
+				if (tagTaskQueued != null)
 				{
-					drawMemberEvent(compilation, tagTaskQueued, stamp, yPos);
+					long tagTime = compilation.getQueuedStamp();
+
+					if (tagTime == stamp)
+					{
+						drawMemberEvent(compilation, tagTaskQueued, stamp, yPos);
+						drawnQueueEvent = true;
+					}
 				}
 			}
 
@@ -180,6 +172,7 @@ public class TimeLineStage extends AbstractGraphStage
 					drawMemberEvent(compilation, tagNMethod, stamp, yPos);
 
 					compilationIndex++;
+					drawnQueueEvent = false;
 				}
 			}
 		}
@@ -335,9 +328,14 @@ public class TimeLineStage extends AbstractGraphStage
 
 			double y = graphGapTop + normaliseY(cumC);
 
-			if (memberCompilations.size() > 0)
+			if (selectedMember != null)
 			{
-				drawMemberEvents(stamp, y);
+				List<Compilation> compilations = selectedMember.getCompilations();
+
+				if (!compilations.isEmpty())
+				{
+					drawMemberEvents(compilations, stamp, y);
+				}
 			}
 
 			gc.setStroke(colourMarker);

@@ -104,24 +104,28 @@ public class CompilationTableRow
 		{
 			result = "NA";
 		}
+		else
+		{
+			result = "Level " + result;
+		}
 
 		return result;
 	}
 
-	public String getTooltip()
+	public String getLevelDescription(String level)
 	{
-		switch (compilation.getLevel())
+		switch (level)
 		{
-		case "Level 0":
+		case "0":
 			return "Interpreter";
-		case "Level 1":
-			return "C1 with full optimization (no profiling)";
-		case "Level 2":
-			return "C1 with invocation and backedge counters";
-		case "Level 3":
-			return "C1 with full profiling (invocation and backedge counters + MethodDataOop)";
-		case "Level 4":
-			return "C2 Server compiler";
+		case "1":
+			return "C1 full optimization (no profiling)";
+		case "2":
+			return "C1 invocation and backedge counters";
+		case "3":
+			return "C1 full profiling (invocation and backedge counters + MDO)";
+		case "4":
+			return "Server compiler";
 		default:
 			return "Unknown compiler level";
 		}
