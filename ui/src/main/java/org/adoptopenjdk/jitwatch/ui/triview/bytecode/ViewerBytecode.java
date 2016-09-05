@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
@@ -175,7 +176,12 @@ public class ViewerBytecode extends Viewer
 	{
 		if (lastSuggestion != null && lastSuggestion.getCaller() != null && lastSuggestion.getCaller().equals(member))
 		{
-			highlightBytecodeForSuggestion(lastSuggestion);
+			Compilation compilation = member.getSelectedCompilation();
+			
+			if (compilation != null && compilation.getIndex() == lastSuggestion.getCompilationIndex())
+			{
+				highlightBytecodeForSuggestion(lastSuggestion);
+			}
 		}
 	}
 

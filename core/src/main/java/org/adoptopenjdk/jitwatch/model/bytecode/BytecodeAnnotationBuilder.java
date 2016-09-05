@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PREALLOCATED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
@@ -21,6 +22,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
@@ -29,6 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_LOCK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
@@ -532,6 +536,61 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 					logger.warn("Don't know how to handle phase {}", phaseName);
 				}
 
+				break;
+			}
+
+			case TAG_HOT_THROW:
+			{
+
+				MemberBytecode memberBytecode = member.getMemberBytecode();
+
+				if (memberBytecode != null)
+				{
+					ExceptionTable exceptionTable = memberBytecode.getExceptionTable();
+
+					if (exceptionTable != null)
+					{
+						ExceptionTableEntry entry = exceptionTable.getEntryForBCI(currentBytecode);
+
+						if (entry != null)
+						{
+							int exceptionBCI = entry.getTarget();
+							
+							String exceptionType = entry.getType();
+
+							String preallocated = child.getAttributes().get(ATTR_PREALLOCATED);
+
+							StringBuilder reason = new StringBuilder();
+
+							reason.append(exceptionType.replaceAll(S_SLASH,  S_DOT)).append(" thrown by this operation");
+							
+							BCAnnotationType annotationType;
+
+							if (preallocated != null && "1".equals(preallocated))
+							{
+								reason.append(" has been pre-allocated.");
+								annotationType = BCAnnotationType.HOT_THROW_PREALLOCATED;
+							}
+							else
+							{
+								reason.append(" was not pre-allocated.");
+								annotationType = BCAnnotationType.HOT_THROW_NOT_PREALLOCATED;
+							}
+
+							bcAnnotations.addAnnotation(exceptionBCI,
+									new LineAnnotation(reason.toString(), annotationType));
+						}
+					}
+					else
+					{
+						logger.warn("No ExceptionTable found for {}", member);
+
+					}
+				}
+				else
+				{
+					logger.warn("No MemberBytecode found for {}", member);
+				}
 				break;
 			}
 

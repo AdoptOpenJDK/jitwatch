@@ -1128,6 +1128,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 	@Override
 	public void highlightBytecodeForSuggestion(Suggestion suggestion)
 	{
+		System.out.println("highlightBytecodeForSuggestion");
+		
 		if (viewerBytecode != null)
 		{
 			viewerBytecode.highlightBytecodeForSuggestion(suggestion);

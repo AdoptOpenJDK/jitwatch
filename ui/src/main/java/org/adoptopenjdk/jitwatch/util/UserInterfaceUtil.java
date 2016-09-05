@@ -72,18 +72,22 @@ public final class UserInterfaceUtil
 
 	public static Color getColourForBytecodeAnnotation(BCAnnotationType type)
 	{
+		Color colourSuccess = Color.GREEN;
+		Color colourFailure = Color.RED;
+		Color colourInformation = Color.BLUE;
+		
 		switch (type)
 		{
-		case BRANCH:
-			return Color.BLUE;
 		case ELIMINATED_ALLOCATION:
-			return Color.GRAY;
-		case INLINE_FAIL:
-			return Color.RED;
 		case INLINE_SUCCESS:
-			return Color.GREEN;
+		case HOT_THROW_PREALLOCATED:
+			return colourSuccess;
+		case INLINE_FAIL:
+		case HOT_THROW_NOT_PREALLOCATED:
+			return colourFailure;
+		case BRANCH:
 		case UNCOMMON_TRAP:
-			return Color.PURPLE;
+			return colourInformation;
 		default:
 			return Color.BLACK;
 		}

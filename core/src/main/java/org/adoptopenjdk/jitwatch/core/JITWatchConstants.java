@@ -19,7 +19,7 @@ public final class JITWatchConstants
 
 	// Enable debugging for specific functionality
 	// DEBUG level logging requires editing src/main/resources/logback.xml
-	public static final boolean DEBUG_LOGGING = true;
+	public static final boolean DEBUG_LOGGING = false;
 	public static final boolean DEBUG_LOGGING_BYTECODE = false;
 	public static final boolean DEBUG_LOGGING_CLASSPATH = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
@@ -103,6 +103,7 @@ public final class JITWatchConstants
 	public static final String TAG_UNCOMMON_TRAP = "uncommon_trap";
 	public static final String TAG_PARSE_DONE = "parse_done";
 	public static final String TAG_PHASE_DONE = "phase_done";
+	public static final String TAG_HOT_THROW = "hot_throw";
 
 	public static final String TAG_CAST_UP = "cast_up";
 	public static final String TAG_PREDICTED_CALL = "predicted_call";
@@ -155,6 +156,7 @@ public final class JITWatchConstants
 	public static final String ATTR_ACTION = "action";
 	public static final String ATTR_COMMENT = "comment";
 	public static final String ATTR_ADDRESS = "address";
+	public static final String ATTR_PREALLOCATED = "preallocated";
 
 	public static final String ALWAYS = "always";
 	public static final String NEVER = "never";
@@ -300,7 +302,7 @@ public final class JITWatchConstants
 
 	public static final String S_BYTECODE_CONSTANT_POOL = "Constant pool:";
 	public static final String S_BYTECODE_CODE = "Code:";
-	public static final String S_BYTECODE_EXCEPTIONS = "Exceptions:";
+	public static final String S_BYTECODE_EXCEPTION_TABLE = "Exception table:";
 	public static final String S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS = "RuntimeVisibleAnnotations:";
 	public static final String S_BYTECODE_LINENUMBERTABLE = "LineNumberTable:";
 	public static final String S_BYTECODE_LOCALVARIABLETABLE = "LocalVariableTable:";

@@ -13,7 +13,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CONSTANT_POOL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTIONS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTION_TABLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_INNERCLASSES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LINENUMBERTABLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_LOCALVARIABLETABLE;
@@ -35,6 +35,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BCParamString;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCParamSwitch;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.ExceptionTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.IBytecodeParam;
 import org.adoptopenjdk.jitwatch.model.bytecode.InnerClassRelationship;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
@@ -72,7 +74,7 @@ public final class BytecodeLoader
 
 	enum BytecodeSection
 	{
-		NONE, CONSTANT_POOL, CODE, EXCEPTIONS, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE, INNERCLASSES
+		NONE, CONSTANT_POOL, CODE, EXCEPTIONTABLE, LINETABLE, RUNTIMEVISIBLEANNOTATIONS, LOCALVARIABLETABLE, STACKMAPTABLE, INNERCLASSES
 	}
 
 	private static final Map<String, BytecodeSection> sectionLabelMap = new HashMap<>();
@@ -84,7 +86,7 @@ public final class BytecodeLoader
 		sectionLabelMap.put(S_BYTECODE_LINENUMBERTABLE, BytecodeSection.LINETABLE);
 		sectionLabelMap.put(S_BYTECODE_LOCALVARIABLETABLE, BytecodeSection.LOCALVARIABLETABLE);
 		sectionLabelMap.put(S_BYTECODE_RUNTIMEVISIBLEANNOTATIONS, BytecodeSection.RUNTIMEVISIBLEANNOTATIONS);
-		sectionLabelMap.put(S_BYTECODE_EXCEPTIONS, BytecodeSection.EXCEPTIONS);
+		sectionLabelMap.put(S_BYTECODE_EXCEPTION_TABLE, BytecodeSection.EXCEPTIONTABLE);
 		sectionLabelMap.put(S_BYTECODE_STACKMAPTABLE, BytecodeSection.STACKMAPTABLE);
 		sectionLabelMap.put(S_BYTECODE_INNERCLASSES, BytecodeSection.INNERCLASSES);
 	}
@@ -99,6 +101,7 @@ public final class BytecodeLoader
 	 */
 	public static MetaClass buildMetaClassFromClass(String fqClassName)
 	{
+		//TODO implement
 		return null;
 	}
 
@@ -120,6 +123,7 @@ public final class BytecodeLoader
 		try
 		{
 			JavapProcess javapProcess;
+			
 			if (javapPath != null)
 			{
 				javapProcess = new JavapProcess(javapPath);
@@ -316,7 +320,8 @@ public final class BytecodeLoader
 					pos--;
 				}
 				break;
-			case EXCEPTIONS:
+			case EXCEPTIONTABLE:
+				section = performEXCEPTIONTABLE(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
 				break;
 			}
 
@@ -416,6 +421,27 @@ public final class BytecodeLoader
 
 			section = changeSection(BytecodeSection.NONE);
 		}
+
+		return section;
+	}
+
+	private static BytecodeSection performEXCEPTIONTABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder,
+			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
+	{
+		if (line.contains(" Class "))
+		{
+			builder.append(line).append(C_NEWLINE);
+		}
+		else if (line.replace(S_SPACE, S_EMPTY).equals("fromtotargettype"))
+		{
+		}
+		else
+		{
+			sectionFinished(fqClassName, BytecodeSection.EXCEPTIONTABLE, msp, builder, memberBytecode, classBytecode);
+
+			section = changeSection(BytecodeSection.NONE);
+		}
+
 		return section;
 	}
 
@@ -532,6 +558,15 @@ public final class BytecodeLoader
 			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("stored line number table for : {}", msp);
+			}
+		}
+		else if (lastSection == BytecodeSection.EXCEPTIONTABLE)
+		{
+			storeExceptionTable(fqClassName, memberBytecode, builder.toString(), msp);
+
+			if (DEBUG_LOGGING_BYTECODE)
+			{
+				logger.debug("stored exception table for : {}", msp);
 			}
 		}
 
@@ -749,12 +784,51 @@ public final class BytecodeLoader
 				}
 				catch (NumberFormatException nfe)
 				{
-					logger.error("Could not parse line number {}", line, nfe);
+					logger.error("Could not parse LineTableEntry {}", line, nfe);
 				}
 			}
 			else
 			{
-				logger.error("Could not split line: {}", line);
+				logger.error("Could not split LineTableEntry line: {}", line);
+			}
+		}
+	}
+
+	private static void storeExceptionTable(String fqClassName, MemberBytecode memberBytecode, String exceptionLines,
+			MemberSignatureParts msp)
+	{
+		String[] lines = exceptionLines.split(S_NEWLINE);
+
+		for (String line : lines)
+		{
+			line = line.trim();
+
+			if (line.length() > 0)
+			{
+				String[] parts = line.split("\\s+");
+
+				if (parts.length == 5)
+				{
+					try
+					{
+						int from = Integer.parseInt(parts[0].trim());
+						int to = Integer.parseInt(parts[1].trim());
+						int target = Integer.parseInt(parts[2].trim());
+						String type = parts[4].trim();
+
+						ExceptionTableEntry entry = new ExceptionTableEntry(from, to, target, type);
+
+						memberBytecode.addExceptionTableEntry(entry);
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Could not parse ExceptionTableEntry {}", line, nfe);
+					}
+				}
+				else
+				{
+					logger.error("Could not split ExceptionTableEntry line: '{}' got parts {}", line, parts.length);
+				}
 			}
 		}
 	}

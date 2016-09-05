@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.intrinsic;
+package org.adoptopenjdk.jitwatch.hotthrow;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
@@ -21,60 +21,73 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PREALLOCATED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
 import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.bytecode.ExceptionTable;
+import org.adoptopenjdk.jitwatch.model.bytecode.ExceptionTableEntry;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class IntrinsicFinder extends AbstractCompilationVisitable
+public final class HotThrowFinder extends AbstractCompilationVisitable
 {
-	private Map<String, String> result;
+	private Set<HotThrowResult> result;
+	private IReadOnlyJITDataModel model;
 
-	private static final Logger logger = LoggerFactory.getLogger(IntrinsicFinder.class);
+	private static final Logger logger = LoggerFactory.getLogger(HotThrowFinder.class);
 
-	public IntrinsicFinder()
+	public HotThrowFinder(IReadOnlyJITDataModel model)
 	{
-		ignoreTags.add(TAG_BC);
+		this.model = model;
+
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
 		ignoreTags.add(TAG_PARSE_DONE);
 		ignoreTags.add(TAG_BRANCH);
 		ignoreTags.add(TAG_CAST_UP);
+		ignoreTags.add(TAG_PARSE);
 		ignoreTags.add(TAG_INLINE_SUCCESS);
 		ignoreTags.add(TAG_INLINE_FAIL);
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_PREDICTED_CALL);
 		ignoreTags.add(TAG_DEPENDENCY);
-		ignoreTags.add(TAG_ASSERT_NULL);	
-		ignoreTags.add(TAG_OBSERVE);	
-		ignoreTags.add(TAG_HOT_THROW);
+		ignoreTags.add(TAG_OBSERVE);
+		ignoreTags.add(TAG_INTRINSIC);
+		ignoreTags.add(TAG_ASSERT_NULL);
 	}
 
-	public Map<String, String> findIntrinsics(IMetaMember member)
+	public Set<HotThrowResult> findHotThrows(IMetaMember member)
 	{
-		result = new HashMap<>();
+		result = new HashSet<>();
 
 		if (member != null)
 		{
@@ -83,11 +96,11 @@ public final class IntrinsicFinder extends AbstractCompilationVisitable
 				for (Compilation compilation : member.getCompilations())
 				{
 					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
-				}   
+				}
 			}
 			catch (LogParseException e)
 			{
-				logger.error("Error while finding intrinsics for member {}", member, e);
+				logger.error("Error while finding hot throws for member {}", member, e);
 			}
 		}
 
@@ -99,13 +112,25 @@ public final class IntrinsicFinder extends AbstractCompilationVisitable
 	{
 		String currentMethod = null;
 		String holder = null;
+		String currentBCI = null;
+
+		Map<String, String> attrs = parseTag.getAttributes();
+
+		String methodID = attrs.get(ATTR_METHOD);
+
+		Tag methodTag = parseDictionary.getMethod(methodID);
+
+		Map<String, String> methodTagAttributes = methodTag.getAttributes();
+
+		currentMethod = methodTagAttributes.get(ATTR_NAME);
+		holder = methodTagAttributes.get(ATTR_HOLDER);
 
 		List<Tag> allChildren = parseTag.getChildren();
 
 		for (Tag child : allChildren)
 		{
 			String tagName = child.getName();
-			Map<String, String> attrs = child.getAttributes();
+			attrs = child.getAttributes();
 
 			switch (tagName)
 			{
@@ -115,34 +140,68 @@ public final class IntrinsicFinder extends AbstractCompilationVisitable
 				holder = attrs.get(ATTR_HOLDER);
 				break;
 			}
+			case TAG_BC:
+			{
+				currentBCI = attrs.get(ATTR_BCI);
+				break;
+			}
 
-				// changes member context
+			// changes member context
 			case TAG_CALL:
 			{
-				String methodID = attrs.get(ATTR_METHOD);
+				methodID = attrs.get(ATTR_METHOD);
 
-				Tag methodTag = parseDictionary.getMethod(methodID);
-				
-				Map<String, String> methodTagAttributes = methodTag.getAttributes();
-				
+				methodTag = parseDictionary.getMethod(methodID);
+
+				methodTagAttributes = methodTag.getAttributes();
+
 				currentMethod = methodTagAttributes.get(ATTR_NAME);
 				holder = methodTagAttributes.get(ATTR_HOLDER);
 				break;
 			}
 
-			case TAG_INTRINSIC:
+			case TAG_HOT_THROW:
 			{
 				if (holder != null && currentMethod != null)
 				{
 					Tag klassTag = parseDictionary.getKlass(holder);
 
-					String intrinsic = child.getAttributes().get(ATTR_ID);
+					String preallocated = child.getAttributes().get(ATTR_PREALLOCATED);
 
-					if (klassTag != null)
+					if (currentBCI != null && klassTag != null)
 					{
-						String fqName = klassTag.getAttributes().get(ATTR_NAME).replace(C_SLASH, C_DOT) + C_DOT + currentMethod;
+						IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, model);
 
-						result.put(fqName, intrinsic);
+						if (member != null)
+						{
+							MemberBytecode memberBytecode = member.getMemberBytecode();
+
+							if (memberBytecode == null)
+							{
+								member.getMetaClass().getClassBytecode(model, new ArrayList<String>());
+
+								memberBytecode = member.getMemberBytecode();
+							}
+
+							if (memberBytecode != null)
+							{
+								ExceptionTable exceptionTable = memberBytecode.getExceptionTable();
+
+								if (exceptionTable != null)
+								{
+									int bciValue = Integer.valueOf(currentBCI);
+									
+									ExceptionTableEntry entry = exceptionTable.getEntryForBCI(bciValue);
+
+									if (entry != null)
+									{
+										HotThrowResult throwResult = new HotThrowResult(member, bciValue, entry.getType(), "1".equals(preallocated));
+
+										result.add(throwResult);
+									}
+								}
+							}
+						}
 					}
 				}
 
@@ -166,7 +225,7 @@ public final class IntrinsicFinder extends AbstractCompilationVisitable
 
 				break;
 			}
-			
+
 			case TAG_PARSE: // nested parse from inlining
 			{
 				visitTag(child, parseDictionary);

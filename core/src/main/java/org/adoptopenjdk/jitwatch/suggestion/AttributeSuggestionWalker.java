@@ -42,6 +42,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PREALLOCATED;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +66,7 @@ import org.slf4j.LoggerFactory;
 public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 {
 	private IMetaMember metaMember;
+	private int compilationIndex;
 
 	private static final Map<String, Double> scoreMap = new HashMap<>();
 	private static final Map<String, String> explanationMap = new HashMap<>();
@@ -101,6 +104,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS = "don't inline Throwable constructors";
 
 	private static final String CODE_CACHE_FULL = "Code cache full, no further JIT compilation is possible";
+	private static final String HOT_THROW_NOT_PREALLOCATED = "Hot throw was not preallocated";
 
 	static
 	{
@@ -122,6 +126,8 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		scoreMap.put(REASON_RECURSIVELY_INLINING_TOO_DEEP, 0.4);
 
 		scoreMap.put(REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT, 0.4);
+
+		scoreMap.put(HOT_THROW_NOT_PREALLOCATED, 0.3);
 
 		scoreMap.put(REASON_INLINING_PROHIBITED_BY_POLICY, 0.3);
 
@@ -222,6 +228,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			{
 				for (Compilation compilation : metaMember.getCompilations())
 				{
+					this.compilationIndex = compilation.getIndex();
 					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
 				}   
 			}
@@ -279,7 +286,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			case TAG_PARSE:
 			{
 				String callerID = attrs.get(ATTR_METHOD);
+				
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
+				
 				if (nestedCaller != null)
 				{
 					processParseTag(child, nestedCaller, parseDictionary);
@@ -298,6 +307,17 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				else
 				{
 					logger.warn("Don't know how to handle phase {}", phaseName);
+				}
+				break;
+			}
+			
+			case TAG_HOT_THROW:
+			{
+				String preallocated = attrs.get(ATTR_PREALLOCATED);
+				
+				if (!"1".equals(preallocated))
+				{
+					handleHotThrowNotPreallocated(attrs, currentBytecode, caller);
 				}
 				break;
 			}
@@ -362,7 +382,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					if (score > 0)
 					{
-						Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(),
+						Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
 								SuggestionType.INLINING, (int) Math.ceil(score));
 
 						if (!suggestionList.contains(suggestion))
@@ -374,7 +394,6 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			}
 			else if ("1".equals(methodTagAttributes.get(ATTR_UNLOADED)))
 			{
-				logger.debug("method {} has unloaded attribute of 1", callee.toStringUnqualifiedMethodName(false));
 			}
 			else
 			{
@@ -407,11 +426,34 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				.append(C_NEWLINE);
 		builder.append("You can control the code cache size with -XX:ReservedCodeCacheSize=<size>m");
 
-		Suggestion suggestion = new Suggestion(null, -1, builder.toString(), SuggestionType.CODE_CACHE, (int) Math.ceil(score));
+		Suggestion suggestion = new Suggestion(null, -1, -1, builder.toString(), SuggestionType.CODE_CACHE, (int) Math.ceil(score));
 
 		if (!suggestionList.contains(suggestion))
 		{
 			suggestionList.add(suggestion);
+		}
+	}
+	
+	private void handleHotThrowNotPreallocated(Map<String, String> attrs, int currentBytecode, IMetaMember caller)
+	{
+
+		double score = scoreMap.get(HOT_THROW_NOT_PREALLOCATED);
+
+		if (score > 0)
+		{
+			StringBuilder reasonBuilder = new StringBuilder();
+
+			reasonBuilder.append("Method contains a hot throw at bytecode ");
+			reasonBuilder.append(currentBytecode);
+			reasonBuilder.append(" that was not pre-allocated.");
+			
+			Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(), SuggestionType.HOT_THROW,
+					(int) Math.ceil(score));
+
+			if (!suggestionList.contains(suggestion))
+			{
+				suggestionList.add(suggestion);
+			}
 		}
 	}
 
@@ -480,7 +522,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append(
 					".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
-			Suggestion suggestion = new Suggestion(caller, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
+			Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
 					(int) Math.ceil(score));
 
 			if (!suggestionList.contains(suggestion))

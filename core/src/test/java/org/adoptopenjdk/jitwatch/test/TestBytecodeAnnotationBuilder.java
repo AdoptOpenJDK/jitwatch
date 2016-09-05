@@ -1978,6 +1978,5 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params, void.class);
 
 		assertTrue(CompilationUtil.memberMatchesMethodID(member, "823", parseDictionary));
-	
 	}
 }

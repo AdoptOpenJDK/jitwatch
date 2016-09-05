@@ -46,7 +46,6 @@ public abstract class AbstractSuggestionVisitable extends AbstractCompilationVis
 	
 	protected abstract void findNonMemberSuggestions();
 
-
 	@Override
 	public void reset()
 	{

@@ -254,7 +254,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public MemberBytecode getMemberBytecode()
 	{
 		MemberBytecode result = null;
-
+		
 		if (metaClass != null)
 		{
 			ClassBC classBytecode = metaClass.getClassBytecode();

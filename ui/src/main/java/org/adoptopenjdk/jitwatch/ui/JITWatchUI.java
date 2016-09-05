@@ -817,15 +817,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				matching = builtPath.toString();
 			}
 
-			logger.debug("part: {} matching '{}'", part, matching);
-
 			for (TreeItem<Object> node : curNode.getChildren())
 			{
 				rowsAbove++;
 
 				String nodeText = node.getValue().toString();
-
-				logger.debug("comparing '{}' with nodeText '{}'", matching, nodeText);
 
 				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
 				{
@@ -838,8 +834,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				}
 			}
 		}
-
-		logger.debug("found? {}", found);
 
 		if (found)
 		{
@@ -982,7 +976,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 			if (JITWatchConstants.S_PROFILE_SANDBOX.equals(config.getProfileName()))
 			{
-				logger.debug("Reverting to non-sandbox config for loaded log file");
 				logParser.getConfig().switchFromSandbox();
 			}
 		}
@@ -1064,14 +1057,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			if (lastSelectedMember != null)
 			{
-				logger.debug("focusTreeOnMember({})", lastSelectedMember);
-
 				focusTreeOnMember(lastSelectedMember);
 			}
 			else if (lastSelectedClass != null)
 			{
-				logger.debug("focusTreeOnClass({})", lastSelectedClass);
-
 				focusTreeOnClass(lastSelectedClass);
 			}
 		}

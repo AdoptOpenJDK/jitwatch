@@ -37,6 +37,7 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompileTimeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
+import org.adoptopenjdk.jitwatch.toplist.HotThrowTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
 import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.MemberScore;
@@ -79,6 +80,9 @@ public class TopListStage extends Stage
 		
 		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(
 				parent.getJITDataModel(), true), new String[] { "Count", "Intrinsic" });
+		
+		TopListWrapper tlHotThrows = new TopListWrapper("Hot throws", new HotThrowTopListVisitable(
+				parent.getJITDataModel(), true), new String[] { "Count", "Hot Throw" });
 		
 		TopListWrapper tlLargestBytecode = new TopListWrapper("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(
 				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
@@ -131,6 +135,7 @@ public class TopListStage extends Stage
 		attrMap.put(tlLargestNative.getTitle(), tlLargestNative);
 		attrMap.put(tlInlineFailReasons.getTitle(), tlInlineFailReasons);
 		attrMap.put(tlIntrinsics.getTitle(), tlIntrinsics);
+		attrMap.put(tlHotThrows.getTitle(), tlHotThrows);
 		attrMap.put(tlLargestBytecode.getTitle(), tlLargestBytecode);
 		attrMap.put(tlSlowestCompilation.getTitle(), tlSlowestCompilation);
 		attrMap.put(tlMostDecompiled.getTitle(), tlMostDecompiled);

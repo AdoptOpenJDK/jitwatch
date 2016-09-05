@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,6 +23,8 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BCParamString;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCParamSwitch;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
+import org.adoptopenjdk.jitwatch.model.bytecode.ExceptionTable;
+import org.adoptopenjdk.jitwatch.model.bytecode.ExceptionTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.IBytecodeParam;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
@@ -31,7 +33,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.junit.Test;
 
 public class TestBytecodeLoader
-{	
+{
 	@Test
 	public void testBytecodeSignature()
 	{
@@ -137,23 +139,24 @@ public class TestBytecodeLoader
 
 		assertEquals(false, i4.hasComment());
 	}
-	
+
 	@Test
-	public void testIloadW() {
+	public void testIloadW()
+	{
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("1: iload_w       340").append(S_NEWLINE);
 
 		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-		
+
 		assertEquals(1, instructions.size());
-		
+
 		BytecodeInstruction i = instructions.get(0);
 		assertEquals(1, i.getOffset());
 		assertEquals(Opcode.ILOAD, i.getOpcode());
 		assertEquals(true, i.hasParameters());
 		assertEquals(1, i.getParameters().size());
-		
+
 		BCParamNumeric varIndex = (BCParamNumeric) i.getParameters().get(0);
 		assertEquals(Integer.valueOf(340), varIndex.getValue());
 	}
@@ -320,7 +323,6 @@ public class TestBytecodeLoader
 	}
 
 	// used in next test
-
 	public int add(int x, int y)
 	{
 		return x + y;
@@ -329,71 +331,71 @@ public class TestBytecodeLoader
 	@Test
 	public void testLineNumberTable() throws ClassNotFoundException
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 
-		"Classfile TestBytecodeLoader.class",
-		"  Last modified 18-May-2014; size 426 bytes",
-		"  MD5 checksum d8d0af7620175f82d2c5c753b493196f",
-		"  Compiled from \"TestBytecodeLoader.java\"",
-		"public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader",
-		"  SourceFile: \"TestBytecodeLoader.java\"",
-		"  minor version: 0",
-		"  major version: 51",
-		"  flags: ACC_PUBLIC, ACC_SUPER",
-		"Constant pool:",
-		"   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V",
-		"   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
-		"   #3 = Class              #20            //  java/lang/Object",
-		"   #4 = Utf8               <init>",
-		"   #5 = Utf8               ()V",
-		"   #6 = Utf8               Code",
-		"   #7 = Utf8               LineNumberTable",
-		"   #8 = Utf8               LocalVariableTable",
-		"   #9 = Utf8               this",
-		"  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
-		"  #11 = Utf8               add",
-		"  #12 = Utf8               (II)I",
-		"  #13 = Utf8               a",
-		"  #14 = Utf8               I",
-		"  #15 = Utf8               b",
-		"  #16 = Utf8               SourceFile",
-		"  #17 = Utf8               TestBytecodeLoader.java",
-		"  #18 = NameAndType        #4:#5          //  \"<init>\":()V",
-		"  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
-		"  #20 = Utf8               java/lang/Object",
-		"{",
-		"  public org.adoptopenjdk.jitwatch.test.TestBytecodeLoader();",
-		"    flags: ACC_PUBLIC",
-		"    Code:",
-		"      stack=1, locals=1, args_size=1",
-		"         0: aload_0       ",
-		"         1: invokespecial #1                  // Method java/lang/Object.\"<init>\":()V",
-		"         4: return        ",
-		"      LineNumberTable:",
-		"        line 3: 0",
-		"      LocalVariableTable:",
-		"        Start  Length  Slot  Name   Signature",
-		"               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
-		"",
-		"  public int add(int, int);",
-		"    flags: ACC_PUBLIC",
-		"    Code:",
-		"      stack=2, locals=3, args_size=3",
-		"         0: iload_1       ",
-		"         1: iload_2       ",
-		"         2: iadd          ",
-		"         3: ireturn       ",
-		"      LineNumberTable:",
-		"        line 7: 0",
-		"      LocalVariableTable:",
-		"        Start  Length  Slot  Name   Signature",
-		"               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
-		"               0       4     1     a   I",
-		"               0       4     2     b   I",
-		"}"};
+				"Classfile TestBytecodeLoader.class",
+				"  Last modified 18-May-2014; size 426 bytes",
+				"  MD5 checksum d8d0af7620175f82d2c5c753b493196f",
+				"  Compiled from \"TestBytecodeLoader.java\"",
+				"public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader",
+				"  SourceFile: \"TestBytecodeLoader.java\"",
+				"  minor version: 0",
+				"  major version: 51",
+				"  flags: ACC_PUBLIC, ACC_SUPER",
+				"Constant pool:",
+				"   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V",
+				"   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"   #3 = Class              #20            //  java/lang/Object",
+				"   #4 = Utf8               <init>",
+				"   #5 = Utf8               ()V",
+				"   #6 = Utf8               Code",
+				"   #7 = Utf8               LineNumberTable",
+				"   #8 = Utf8               LocalVariableTable",
+				"   #9 = Utf8               this",
+				"  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"  #11 = Utf8               add",
+				"  #12 = Utf8               (II)I",
+				"  #13 = Utf8               a",
+				"  #14 = Utf8               I",
+				"  #15 = Utf8               b",
+				"  #16 = Utf8               SourceFile",
+				"  #17 = Utf8               TestBytecodeLoader.java",
+				"  #18 = NameAndType        #4:#5          //  \"<init>\":()V",
+				"  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"  #20 = Utf8               java/lang/Object",
+				"{",
+				"  public org.adoptopenjdk.jitwatch.test.TestBytecodeLoader();",
+				"    flags: ACC_PUBLIC",
+				"    Code:",
+				"      stack=1, locals=1, args_size=1",
+				"         0: aload_0       ",
+				"         1: invokespecial #1                  // Method java/lang/Object.\"<init>\":()V",
+				"         4: return        ",
+				"      LineNumberTable:",
+				"        line 3: 0",
+				"      LocalVariableTable:",
+				"        Start  Length  Slot  Name   Signature",
+				"               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"",
+				"  public int add(int, int);",
+				"    flags: ACC_PUBLIC",
+				"    Code:",
+				"      stack=2, locals=3, args_size=3",
+				"         0: iload_1       ",
+				"         1: iload_2       ",
+				"         2: iadd          ",
+				"         3: ireturn       ",
+				"      LineNumberTable:",
+				"        line 7: 0",
+				"      LocalVariableTable:",
+				"        Start  Length  Slot  Name   Signature",
+				"               0       4     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"               0       4     1     a   I",
+				"               0       4     2     b   I",
+				"}" };
 
-		IMetaMember member = UnitTestUtil
-				.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class }, int.class);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(getClass().getName(), "add", new Class<?>[] { int.class, int.class },
+				int.class);
 
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
 
@@ -420,7 +422,7 @@ public class TestBytecodeLoader
 		MetaClass metaClass = UnitTestUtil.createMetaClassFor(model, getClass().getName());
 
 		IMetaMember constructor = metaClass.getFirstConstructor();
-		
+
 		MemberBytecode memberBytecode2 = classBytecode.getMemberBytecode(constructor);
 
 		assertNotNull(memberBytecode2);
@@ -438,16 +440,139 @@ public class TestBytecodeLoader
 		assertEquals(0, offset2);
 	}
 
+	// used in next test
+	public char getChar(char[] chars, int index)
+	{
+		try
+		{
+			return chars[index];
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			return '*';
+		}
+	}
+
+	@Test
+	public void testExceptionTable() throws ClassNotFoundException
+	{
+		String[] lines = new String[] {
+
+				"Classfile TestBytecodeLoader.class",
+				"  Last modified 18-May-2014; size 426 bytes",
+				"  MD5 checksum d8d0af7620175f82d2c5c753b493196f",
+				"  Compiled from \"TestBytecodeLoader.java\"",
+				"public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader",
+				"  SourceFile: \"TestBytecodeLoader.java\"",
+				"  minor version: 0",
+				"  major version: 51",
+				"  flags: ACC_PUBLIC, ACC_SUPER",
+				"Constant pool:",
+				"   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V",
+				"   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"   #3 = Class              #20            //  java/lang/Object",
+				"   #4 = Utf8               <init>",
+				"   #5 = Utf8               ()V",
+				"   #6 = Utf8               Code",
+				"   #7 = Utf8               LineNumberTable",
+				"   #8 = Utf8               LocalVariableTable",
+				"   #9 = Utf8               this",
+				"  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"  #11 = Utf8               add",
+				"  #12 = Utf8               (II)I",
+				"  #13 = Utf8               a",
+				"  #14 = Utf8               I",
+				"  #15 = Utf8               b",
+				"  #16 = Utf8               SourceFile",
+				"  #17 = Utf8               TestBytecodeLoader.java",
+				"  #18 = NameAndType        #4:#5          //  \"<init>\":()V",
+				"  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"  #20 = Utf8               java/lang/Object",
+				"{",
+				"  public org.adoptopenjdk.jitwatch.test.TestBytecodeLoader();",
+				"    flags: ACC_PUBLIC",
+				"    Code:",
+				"      stack=1, locals=1, args_size=1",
+				"         0: aload_0       ",
+				"         1: invokespecial #1                  // Method java/lang/Object.\"<init>\":()V",
+				"         4: return        ",
+				"      LineNumberTable:",
+				"        line 3: 0",
+				"      LocalVariableTable:",
+				"        Start  Length  Slot  Name   Signature",
+				"               0       5     0  this   Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"",
+				"  public char getChar(char[], int);",
+				"descriptor: ([CI)C",
+				"flags: ACC_PUBLIC",
+				"Code:",
+				"  stack=2, locals=4, args_size=3",
+				"     0: aload_1",
+				"     1: iload_2",
+				"     2: caload",
+				"     3: ireturn",
+				"     4: astore_3",
+				"     5: bipush        42",
+				"     7: ireturn",
+				"  Exception table:",
+				"     from    to  target type",
+				"         0     3     4   Class java/lang/ArrayIndexOutOfBoundsException",
+				"  LineNumberTable:",
+				"    line 31: 0",
+				"    line 33: 4",
+				"    line 35: 5",
+				"  LocalVariableTable:",
+				"    Start  Length  Slot  Name   Signature",
+				"        5       3     3     e   Ljava/lang/ArrayIndexOutOfBoundsException;",
+				"        0       8     0  this   LHotThrow;",
+				"        0       8     1 chars   [C",
+				"        0       8     2 index   I",
+				"  StackMapTable: number_of_entries = 1",
+				"    frame_type = 68 /* same_locals_1_stack_item */",
+				"      stack = [ class java/lang/ArrayIndexOutOfBoundsException ]",
+				"}" };
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(getClass().getName(), "getChar",
+				new Class<?>[] { char[].class, int.class }, char.class);
+
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
+
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertEquals(7, instructions.size());
+
+		LineTable lineTable = memberBytecode.getLineTable();
+
+		assertEquals(3, lineTable.size());
+
+		ExceptionTable exceptionTable = memberBytecode.getExceptionTable();
+
+		assertEquals(1, exceptionTable.size());
+
+		ExceptionTableEntry entry = exceptionTable.getEntries().get(0);
+
+		assertEquals(0, entry.getFrom());
+		assertEquals(3, entry.getTo());
+		assertEquals(4, entry.getTarget());
+		assertEquals("java/lang/ArrayIndexOutOfBoundsException", entry.getType());
+
+		assertEquals(entry, exceptionTable.getEntryForBCI(2));
+	}
+
 	@Test
 	public void testClassFileVersion()
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 
-		"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
-		"SourceFile: \"MakeHotSpotLog.java\"",
-		"minor version: 1",
-		"major version: 51",
-		"flags: ACC_PUBLIC, ACC_SUPER"};
+				"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
+				"SourceFile: \"MakeHotSpotLog.java\"",
+				"minor version: 1",
+				"major version: 51",
+				"flags: ACC_PUBLIC, ACC_SUPER" };
 
 		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines, false);
 		assertEquals(1, classBytecode.getMinorVersion());
@@ -457,18 +582,18 @@ public class TestBytecodeLoader
 	@Test
 	public void testClassFileVersionWithRuntimeAnnotations()
 	{
-		String[] lines = new String[]{
+		String[] lines = new String[] {
 
-		"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
-		"SourceFile: \"MakeHotSpotLog.java\"",
-		"  RuntimeVisibleAnnotations:",
-		"    0: #49(#50=e#51.#52)",
-		"    0: #49(#50=e#51.#52)",
-		"    1: #53(#50=[e#54.#55])",
-		"    2: #56(#50=e#57.#58)",
-		"minor version: 1",
-		"major version: 51",
-		"flags: ACC_PUBLIC, ACC_SUPER"};
+				"public class org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
+				"SourceFile: \"MakeHotSpotLog.java\"",
+				"  RuntimeVisibleAnnotations:",
+				"    0: #49(#50=e#51.#52)",
+				"    0: #49(#50=e#51.#52)",
+				"    1: #53(#50=[e#54.#55])",
+				"    2: #56(#50=e#57.#58)",
+				"minor version: 1",
+				"major version: 51",
+				"flags: ACC_PUBLIC, ACC_SUPER" };
 
 		ClassBC classBytecode = BytecodeLoader.parse("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", lines, false);
 		assertEquals(1, classBytecode.getMinorVersion());
@@ -479,29 +604,29 @@ public class TestBytecodeLoader
 	public void testRegressionJMHSampleWithRuntimeAnnotations()
 	{
 		String bcSig = "public void measureWrong();";
-	
-		String[] lines = new String[]{
-	
-		bcSig,
-		"      descriptor: ()V",
-		"    flags: ACC_PUBLIC",
-		"    Code:",
-		"      stack=2, locals=1, args_size=1",
-		"         0: aload_0       ",
-		"         0: aload_0       ",
-		"         1: getfield      #4          // Field x:D",
-		"         4: invokestatic  #5                  // Method java/lang/Math.log:(D)D",
-		"         7: pop2          ",
-		"         8: return        ",
-		"      LineNumberTable:",
-		"        line 65: 0",
-		"        line 66: 8",
-		"      LocalVariableTable:",
-		"        Start  Length  Slot  Name   Signature",
-		"            0       9     0  this   Lorg/openjdk/jmh/samples/JMHSample_08_DeadCode;",
-		"    RuntimeVisibleAnnotations:",
-		"      0: #35()",
-		"      0: #35()"};
+
+		String[] lines = new String[] {
+
+				bcSig,
+				"      descriptor: ()V",
+				"    flags: ACC_PUBLIC",
+				"    Code:",
+				"      stack=2, locals=1, args_size=1",
+				"         0: aload_0       ",
+				"         0: aload_0       ",
+				"         1: getfield      #4          // Field x:D",
+				"         4: invokestatic  #5                  // Method java/lang/Math.log:(D)D",
+				"         7: pop2          ",
+				"         8: return        ",
+				"      LineNumberTable:",
+				"        line 65: 0",
+				"        line 66: 8",
+				"      LocalVariableTable:",
+				"        Start  Length  Slot  Name   Signature",
+				"            0       9     0  this   Lorg/openjdk/jmh/samples/JMHSample_08_DeadCode;",
+				"    RuntimeVisibleAnnotations:",
+				"      0: #35()",
+				"      0: #35()" };
 
 		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
 
@@ -654,7 +779,8 @@ public class TestBytecodeLoader
 		String className = "java.io.PrintStream";
 		String methodName = "print";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[]{java.lang.String.class}, void.class);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class },
+				void.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
 
@@ -675,12 +801,13 @@ public class TestBytecodeLoader
 		String className = "java.io.PrintStream";
 		String methodName = "print";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class }, void.class);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class },
+				void.class);
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
-
+		
 		assertNotNull(memberBytecode);
 
 		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();

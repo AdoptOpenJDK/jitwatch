@@ -20,6 +20,8 @@ public class MemberBytecode
 	private List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 
 	private LineTable lineTable;
+	
+	private ExceptionTable exceptionTable;
 
 	private MemberSignatureParts msp;
 
@@ -34,6 +36,7 @@ public class MemberBytecode
 		this.msp = msp;
 		this.classBytecode = classBytecode;
 		lineTable = new LineTable(this);
+		exceptionTable = new ExceptionTable();
 	}
 
 	public ClassBC getClassBytecode()
@@ -93,12 +96,22 @@ public class MemberBytecode
 
 	public void addLineTableEntry(LineTableEntry entry)
 	{
-		this.lineTable.add(entry);
+		lineTable.add(entry);
 	}
 
 	public LineTable getLineTable()
 	{
 		return lineTable;
+	}
+	
+	public void addExceptionTableEntry(ExceptionTableEntry entry)
+	{
+		exceptionTable.add(entry);
+	}
+
+	public ExceptionTable getExceptionTable()
+	{
+		return exceptionTable;
 	}
 
 	@Override
