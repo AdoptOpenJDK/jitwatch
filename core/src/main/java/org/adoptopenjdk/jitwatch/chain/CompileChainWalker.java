@@ -29,6 +29,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -129,7 +130,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 
 			case TAG_INLINE_FAIL:
 			{
-				handleInline(parentNode, methodID, parseDictionary, false, methodAttrs, callAttrs, tagAttrs);
+				createChildNode(parentNode, methodID, parseDictionary, false, false, methodAttrs, callAttrs, tagAttrs);
 				methodID = null;
 				lastNode = null;
 				break;
@@ -137,7 +138,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 
 			case TAG_INLINE_SUCCESS:
 			{
-				lastNode = handleInline(parentNode, methodID, parseDictionary, true, methodAttrs, callAttrs, tagAttrs);
+				lastNode = createChildNode(parentNode, methodID, parseDictionary, true, false, methodAttrs, callAttrs, tagAttrs);
 				break;
 			}
 
@@ -179,6 +180,10 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 				}
 				break;
 			}
+			
+			case TAG_VIRTUAL_CALL:
+				lastNode = createChildNode(parentNode, methodID, parseDictionary, false, true, methodAttrs, callAttrs, tagAttrs);
+				break;
 
 			default:
 				handleOther(child);
@@ -187,7 +192,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		}
 	}
 
-	private CompileNode handleInline(CompileNode parentNode, String methodID, IParseDictionary parseDictionary, boolean inlined,
+	private CompileNode createChildNode(CompileNode parentNode, String methodID, IParseDictionary parseDictionary, boolean inlined, boolean virtualCall,
 			Map<String, String> methodAttrs, Map<String, String> callAttrs, Map<String, String> tagAttrs)
 	{
 		CompileNode childNode = new CompileNode(methodID);
@@ -197,6 +202,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		String tooltip = TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);
 		
 		childNode.setInlined(inlined);
+		childNode.setVirtualCall(virtualCall);
 		childNode.setTooltipText(tooltip);
 		
 		return childNode;

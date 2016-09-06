@@ -20,6 +20,8 @@ public class CompileNode
 {	
 	private boolean inlined = false;
 	
+	private boolean virtualCall = false;
+	
 	private String tooltip;
 	
 	private List<CompileNode> children;
@@ -71,6 +73,16 @@ public class CompileNode
 		return inlined;
 	}
 	
+	public boolean isVirtualCall()
+	{
+		return virtualCall;
+	}
+
+	public void setVirtualCall(boolean virtualCall)
+	{
+		this.virtualCall = virtualCall;
+	}
+
 	public boolean isCompiled()
 	{
 		return getMember().isCompiled();

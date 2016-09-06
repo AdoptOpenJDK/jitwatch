@@ -58,6 +58,7 @@ public final class JITWatchConstants
 			TAG_COMPILATION_LOG_CLOSE, TAG_HOTSPOT_LOG_CLOSE }));
 
 	public static final String NATIVE_CODE_START = "Decoding compiled method";
+	public static final String NATIVE_CODE_ENTRY_POINT = "[Entry Point]";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 	public static final String LOADED = "[Loaded ";
 	public static final String METHOD = "method";
@@ -66,6 +67,7 @@ public final class JITWatchConstants
 	public static final String S_PARSE_HIR = "parse_hir";
 
 	public static final String S_CODE_COLON = "Code:";
+	public static final String S_ASSEMBLY_CONSTANTS = "[Constants]";
 
 	public static final String DEFAULT_PACKAGE_NAME = "(default package)";
 	public static final String TREE_PACKAGE_ROOT = "Packages";

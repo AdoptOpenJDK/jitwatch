@@ -84,6 +84,7 @@ public final class UserInterfaceUtil
 			return colourSuccess;
 		case INLINE_FAIL:
 		case HOT_THROW_NOT_PREALLOCATED:
+		case VIRTUAL_CALL:
 			return colourFailure;
 		case BRANCH:
 		case UNCOMMON_TRAP:

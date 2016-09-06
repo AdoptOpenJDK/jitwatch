@@ -123,13 +123,16 @@ public class CompileChainStage extends Stage
 
 		keyY += 15;
 
-		buildNode("Inlined", keyX, keyY, true, false);
+		buildNode("Inlined", keyX, keyY, true, false, false);
 		keyY += 35;
 
-		buildNode("Compiled", keyX, keyY, false, true);
+		buildNode("Compiled", keyX, keyY, false, true, false);
+		keyY += 35;
+		
+		buildNode("Virtual Call", keyX, keyY, false, false, true);
 		keyY += 35;
 
-		buildNode("Not Compiled", keyX, keyY, false, false);
+		buildNode("Not Compiled", keyX, keyY, false, false, false);
 		keyY += 35;
 	}
 
@@ -175,7 +178,7 @@ public class CompileChainStage extends Stage
 	{
 		String labelText = getLabelText(node);
 
-		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.isCompiled());
+		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.isCompiled(), node.isVirtualCall());
 
 		if (depth > 0)
 		{
@@ -206,7 +209,7 @@ public class CompileChainStage extends Stage
 		return nextX;
 	}
 
-	private PlotNode buildNode(String labelText, double x, double y, boolean inlined, boolean compiled)
+	private PlotNode buildNode(String labelText, double x, double y, boolean inlined, boolean compiled, boolean virtualCall)
 	{
 		Text text = new Text(labelText);
 
@@ -230,7 +233,7 @@ public class CompileChainStage extends Stage
 
 		rect.setStroke(Color.BLACK);
 		rect.setStrokeWidth(STROKE_WIDTH);
-		rect.setFill(getColourForCompilation(compiled, inlined));
+		rect.setFill(getColourForCompilation(compiled, inlined, virtualCall));
 
 		pane.getChildren().add(rect);
 		pane.getChildren().add(text);
@@ -242,11 +245,15 @@ public class CompileChainStage extends Stage
 		return result;
 	}
 
-	private Color getColourForCompilation(boolean isCompiled, boolean isInlined)
+	private Color getColourForCompilation(boolean isCompiled, boolean isInlined, boolean isVirtual)
 	{
 		if (isInlined)
 		{
 			return Color.GREEN;
+		}
+		else if (isVirtual)
+		{
+			return Color.PURPLE;
 		}
 		else if (isCompiled)
 		{

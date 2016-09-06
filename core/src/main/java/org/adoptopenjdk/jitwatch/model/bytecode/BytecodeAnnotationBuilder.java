@@ -47,6 +47,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -194,8 +195,8 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		else
 		{
 			logger.warn("Parse tag does not appear to be for member {}", member.toString());
-			logger.warn("Method ID: {}\nTag was: {}", methodID, tag.toString(true));
-			logger.warn("Dictionary: {}", parseDictionary.toString());
+			logger.warn("Method ID: {}\nTag was:\n{}", methodID, tag.toString(true));
+			logger.warn("Dictionary:\n{}", parseDictionary.toString());
 		}
 	}
 
@@ -538,6 +539,11 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 				break;
 			}
+			
+			case TAG_VIRTUAL_CALL:
+				bcAnnotations.addAnnotation(currentBytecode,
+						new LineAnnotation("Virtual call, not inlined", BCAnnotationType.VIRTUAL_CALL));
+				break;
 
 			case TAG_HOT_THROW:
 			{
