@@ -227,6 +227,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		errorCount = 0;
 		errorLog.clear();
+		
+		suggestions.clear();
 
 		isReadingLogFile = true;
 
