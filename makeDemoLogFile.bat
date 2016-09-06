@@ -55,7 +55,7 @@ set tiered=-XX:+TieredCompilation
 rem Disable compressed oops (makes assembly easier to read)
 set nocompressedoops=-XX:-UseCompressedOops
 
-set OPTIONAL_SWITCHES=%notiered% %assembly%
+set OPTIONAL_SWITCHES=%assembly%
 
 "%JAVA_HOME%\bin\java" -version
 

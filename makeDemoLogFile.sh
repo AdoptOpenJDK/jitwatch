@@ -55,7 +55,7 @@ export tiered="-XX:+TieredCompilation"
 # Disable compressed oops (makes assembly easier to read)
 export nocompressedoops="-XX:-UseCompressedOops"
 
-export OPTIONAL_SWITCHES="$notiered $assembly $nocompressedoops"
+export OPTIONAL_SWITCHES="$assembly $nocompressedoops"
 
 unamestr=`uname`
 
