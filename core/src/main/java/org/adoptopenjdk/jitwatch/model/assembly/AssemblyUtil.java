@@ -36,6 +36,7 @@ public final class AssemblyUtil
 		StringBuilder headerBuilder = new StringBuilder();
 
 		AssemblyBlock currentBlock = new AssemblyBlock();
+		currentBlock.setTitle(NATIVE_CODE_ENTRY_POINT);
 
 		AssemblyInstruction lastInstruction = null;
 

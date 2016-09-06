@@ -271,7 +271,7 @@ public class TestAssemblyUtil
 		assertEquals(5, blocks.size());
 		
 		AssemblyBlock block0 = blocks.get(0);
-		assertNull(block0.getTitle());
+		assertEquals("[Entry Point]", block0.getTitle());
 		
 		List<AssemblyInstruction> instructions0 = block0.getInstructions();
 		assertEquals(4, instructions0.size());
