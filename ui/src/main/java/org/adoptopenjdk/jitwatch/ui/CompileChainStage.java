@@ -161,11 +161,11 @@ public class CompileChainStage extends Stage
 		}
 		else if (member.isConstructor())
 		{
-			result = member.getMetaClass().getFullyQualifiedName() + "()";
+			result = member.getMetaClass().getAbbreviatedFullyQualifiedName() + "()";
 		}
 		else
 		{
-			result = member.getFullyQualifiedMemberName() + "()";
+			result = member.getAbbreviatedFullyQualifiedMemberName() + "()";
 		}
 
 		return result;
