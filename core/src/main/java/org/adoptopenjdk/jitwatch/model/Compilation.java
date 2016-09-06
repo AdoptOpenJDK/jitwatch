@@ -295,10 +295,21 @@ public class Compilation
 	public String getLevel()
 	{
 		String result = null;
-
+		
+		Tag tag;
+		
 		if (tagNMethod != null)
 		{
-			Map<String, String> tagAttributes = tagNMethod.getAttributes();
+			tag = tagNMethod;
+		}
+		else
+		{
+			tag = tagTaskQueued;
+		}
+
+		if (tag != null)
+		{
+			Map<String, String> tagAttributes = tag.getAttributes();
 
 			String level = tagAttributes.get(ATTR_LEVEL);
 
