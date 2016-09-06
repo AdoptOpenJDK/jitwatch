@@ -32,6 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +71,7 @@ public final class IntrinsicFinder extends AbstractCompilationVisitable
 		ignoreTags.add(TAG_ASSERT_NULL);	
 		ignoreTags.add(TAG_OBSERVE);	
 		ignoreTags.add(TAG_HOT_THROW);
+		ignoreTags.add(TAG_VIRTUAL_CALL);
 	}
 
 	public Map<String, String> findIntrinsics(IMetaMember member)
