@@ -32,6 +32,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
@@ -943,8 +944,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		Label label = viewerAssembly.getLabelAtIndex(index);
 
-		if (label != null)
-		{
+		if (label != null && label instanceof AssemblyLabel)
+		{			
 			String className = viewerAssembly.getClassNameFromLabel(label);
 
 			if (isClassNameEqualsCurrentMemberClassName(className) || isClassNameAnInnerClassOfCurrentMember(className))

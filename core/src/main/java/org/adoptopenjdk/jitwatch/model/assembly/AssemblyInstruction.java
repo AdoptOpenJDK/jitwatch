@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -30,7 +30,7 @@ public class AssemblyInstruction
 {
 	private String annotation;
 	private long address;
-	private String modifier;
+	private List<String> prefixes;
 	private String mnemonic;
 	private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
@@ -41,12 +41,12 @@ public class AssemblyInstruction
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyInstruction.class);
 
-	public AssemblyInstruction(String annotation, long address, String modifier, String mnemonic, List<String> operands,
+	public AssemblyInstruction(String annotation, long address, List<String> prefixes, String mnemonic, List<String> operands,
 			String firstComment, AssemblyLabels labels)
 	{
 		this.annotation = annotation;
 		this.address = address;
-		this.modifier = modifier;
+		this.prefixes = prefixes;
 		this.mnemonic = mnemonic;
 		this.operands = operands;
 		this.labels = labels;
@@ -67,9 +67,9 @@ public class AssemblyInstruction
 		return address;
 	}
 
-	public String getModifier()
+	public List<String> getPrefixes()
 	{
-		return modifier;
+		return prefixes;
 	}
 
 	public String getMnemonic()
@@ -109,14 +109,14 @@ public class AssemblyInstruction
 		if (comment != null)
 		{
 			commentLines.add(comment);
-			
+
 			if (!isSafePoint)
 			{
 				isSafePoint = comment.contains(S_SAFEPOINT_POLL) || comment.contains(S_SAFEPOINT_POLL_RETURN);
 			}
 		}
 	}
-	
+
 	public boolean isSafePoint()
 	{
 		return isSafePoint;
@@ -213,10 +213,13 @@ public class AssemblyInstruction
 
 		builder.append(C_COLON).append(C_SPACE);
 
-		if (modifier != null)
+		if (!prefixes.isEmpty())
 		{
-			builder.append(modifier);
-			builder.append(C_SPACE);
+			for (String prefix : prefixes)
+			{
+				builder.append(prefix);
+				builder.append(C_SPACE);
+			}
 		}
 
 		builder.append(mnemonic);
@@ -287,10 +290,13 @@ public class AssemblyInstruction
 
 		builder.append(C_COLON).append(C_SPACE);
 
-		if (modifier != null)
+		if (!prefixes.isEmpty())
 		{
-			builder.append(modifier);
-			builder.append(C_SPACE);
+			for (String prefix : prefixes)
+			{
+				builder.append(prefix);
+				builder.append(C_SPACE);
+			}
 		}
 
 		builder.append(mnemonic);
@@ -319,7 +325,7 @@ public class AssemblyInstruction
 		if (commentLines.size() > 0)
 		{
 			String comment = commentLines.get(line);
-			
+
 			if (line == 0)
 			{
 				// first comment on same line as instruction
@@ -332,14 +338,14 @@ public class AssemblyInstruction
 				builder.append(StringUtil.repeat(C_SPACE, lineLength + 2));
 				builder.append(comment);
 			}
-									
+
 			if (comment.contains(S_SAFEPOINT_POLL) || comment.contains(S_SAFEPOINT_POLL_RETURN))
 			{
 				builder.append(" *** SAFEPOINT POLL ***");
 			}
 
 			builder.append(S_NEWLINE);
-			
+
 		}
 		else
 		{

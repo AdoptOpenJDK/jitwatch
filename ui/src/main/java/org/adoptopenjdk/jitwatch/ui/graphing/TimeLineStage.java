@@ -103,13 +103,18 @@ public class TimeLineStage extends AbstractGraphStage
 
 			Tag endOfLogTag = mainUI.getJITDataModel().getEndOfLogTag();
 
+			JITEvent lastEvent = events.get(events.size() - 1);
+			
 			if (endOfLogTag != null)
 			{
 				maxX = getStampFromTag(endOfLogTag);
+				
+				long lastEventPlusPadding = (long)(lastEvent.getStamp() * 1.1);
+				
+				maxX = Math.min(maxX, lastEventPlusPadding);
 			}
 			else
 			{
-				JITEvent lastEvent = events.get(events.size() - 1);
 				maxX = lastEvent.getStamp();
 			}
 
@@ -266,23 +271,23 @@ public class TimeLineStage extends AbstractGraphStage
 		{
 			Map<String, String> eventAttributes = nextJournalEvent.getAttributes();
 
-			if (eventAttributes.containsKey(ATTR_DECOMPILES))
-			{
-				selectedItemBuilder.append("Recompiled");
-			}
-			else
-			{
-				selectedItemBuilder.append("Compiled");
-			}
+//			if (eventAttributes.containsKey(ATTR_DECOMPILES))
+//			{
+//				selectedItemBuilder.append("Recompiled");
+//			}
+//			else
+//			{
+//				selectedItemBuilder.append("Compiled");
+//			}
 
 			String compiler = eventAttributes.get(ATTR_COMPILER);
 
 			if (compiler == null)
 			{
-				compiler = "unknown!";
+				compiler = "Unknown";
 			}
 
-			selectedItemBuilder.append(" by ").append(compiler);
+			selectedItemBuilder.append(compiler);
 
 			String compileKind = eventAttributes.get(ATTR_COMPILE_KIND);
 

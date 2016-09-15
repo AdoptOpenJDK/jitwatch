@@ -337,7 +337,9 @@ public class TestAssemblyUtil
 		
 		assertEquals(Long.parseLong("7f447590414d", 16), instr.getAddress());
 		
-		assertEquals("data32", instr.getModifier());
+		assertEquals(1, instr.getPrefixes().size());
+
+		assertEquals("data32", instr.getPrefixes().get(0));
 		
 		assertEquals("xchg", instr.getMnemonic());
 		
@@ -362,7 +364,7 @@ public class TestAssemblyUtil
 		
 		assertEquals(Long.parseLong("7f447590416e", 16), instr.getAddress());
 		
-		assertEquals(null, instr.getModifier());
+		assertEquals(0, instr.getPrefixes().size());
 		
 		assertEquals("hlt", instr.getMnemonic());
 		
@@ -383,9 +385,12 @@ public class TestAssemblyUtil
 		assertNotNull(instr);
 		
 		assertEquals(Long.parseLong("7fbbc41082e5", 16), instr.getAddress());
-		
-		assertEquals("data32 data32", instr.getModifier());
-		
+	
+		assertEquals(2, instr.getPrefixes().size());
+
+		assertEquals("data32", instr.getPrefixes().get(0));	
+		assertEquals("data32", instr.getPrefixes().get(1));		
+
 		assertEquals("nopw", instr.getMnemonic());
 		
 		List<String> operands = instr.getOperands();
@@ -406,7 +411,7 @@ public class TestAssemblyUtil
 		
 		assertEquals(Long.parseLong("7f54f9bfd2f0", 16), instr.getAddress());
 		
-		assertNull(instr.getModifier());
+		assertEquals(0, instr.getPrefixes().size());
 		
 		assertEquals("mov", instr.getMnemonic());
 		
@@ -417,4 +422,75 @@ public class TestAssemblyUtil
 		assertEquals("%eax", operands.get(0));	
 		assertEquals("-0x14000(%rsp)", operands.get(1));		
 	}
+		
+	@Test
+	public void testInstructionParseIntelFormat()
+	{
+		String line = "0x0000000110aa2ee5: mov    QWORD PTR [rsp+0x78],rax";
+		
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		
+		assertNotNull(instr);
+		
+		assertEquals(Long.parseLong("110aa2ee5", 16), instr.getAddress());
+		
+		assertEquals(0, instr.getPrefixes().size());
+		
+		assertEquals("mov", instr.getMnemonic());
+		
+		List<String> operands = instr.getOperands();
+		
+		assertEquals(2, operands.size());
+		
+		assertEquals("QWORD PTR [rsp+0x78]", operands.get(0));
+		assertEquals("rax", operands.get(1));		
+	}
+	
+	@Test
+	public void testInstructionParseIntelFormatWithPrefixes()
+	{
+		String line = "0x0000000110aa2ee5: data32 data32 nop WORD PTR [rax+rax*1+0x0]";
+		
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		
+		assertNotNull(instr);
+		
+		assertEquals(Long.parseLong("110aa2ee5", 16), instr.getAddress());
+		
+		assertEquals(2, instr.getPrefixes().size());
+
+		assertEquals("data32", instr.getPrefixes().get(0));	
+		assertEquals("data32", instr.getPrefixes().get(1));			
+		
+		assertEquals("nop", instr.getMnemonic());
+		
+		List<String> operands = instr.getOperands();
+		
+		assertEquals(1, operands.size());
+		
+		assertEquals("WORD PTR [rax+rax*1+0x0]", operands.get(0));
+	}
+	
+	@Test
+	public void testInstructionParseIntelFormatStubCall()
+	{
+		String line = "0x0000000106d035e0: call   Stub::jshort_disjoint_arraycopy";
+		
+		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		
+		assertNotNull(instr);
+		
+		assertEquals(Long.parseLong("106d035e0", 16), instr.getAddress());
+		
+		assertEquals(0, instr.getPrefixes().size());
+
+		assertEquals("call", instr.getMnemonic());
+		
+		List<String> operands = instr.getOperands();
+		
+		assertEquals(1, operands.size());
+		
+		assertEquals("Stub::jshort_disjoint_arraycopy", operands.get(0));
+	}
+	
 }

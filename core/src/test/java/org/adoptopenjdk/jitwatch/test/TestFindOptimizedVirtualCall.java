@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
@@ -40,14 +41,13 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
 		String firstComment = S_EMPTY;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -69,14 +69,13 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
 		String firstComment = null;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -98,14 +97,13 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
 		String firstComment = "; Every day sends future a past.";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -127,14 +125,13 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
 		String firstComment = "; - FooClass::fooMethod@1 (line 42)";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -155,14 +152,13 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
 		operands.add("%rax");
 		String firstComment = C_SEMICOLON + S_OPTIMIZED_VIRTUAL_CALL;
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, firstComment, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, firstComment, new AssemblyLabels());
 
 		assertFalse(ins.isOptimizedVCall());
 
@@ -183,7 +179,6 @@ public class TestFindOptimizedVirtualCall
 	{
 		String annotation = null;
 		long address = 1;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
@@ -191,7 +186,7 @@ public class TestFindOptimizedVirtualCall
 
 		String comment0 = " ; OopMap{rbp=Oop off=940}";
 
-		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0, new AssemblyLabels());
+		AssemblyInstruction ins = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, comment0, new AssemblyLabels());
 		ins.addCommentLine(";*invokevirtual toString");
 		ins.addCommentLine(callSiteComment);
 		ins.addCommentLine("; " + S_OPTIMIZED_VIRTUAL_CALL);
@@ -277,7 +272,7 @@ public class TestFindOptimizedVirtualCall
 				.getOptimizedVirtualCallSiteOrNull());
 	}
 
-	private static final int sourceLine = 284; // TODO this must match call to test2() within test1() method
+	private static final int sourceLine = 279; // TODO this must match call to test2() within test1() method
 
 	public void test1()
 	{
@@ -296,7 +291,6 @@ public class TestFindOptimizedVirtualCall
 
 		String annotation = null;
 		long address = 16;
-		String modifier = null;
 		String mnemonic = "ADD";
 		List<String> operands = new ArrayList<>();
 		operands.add("%rdx");
@@ -312,7 +306,7 @@ public class TestFindOptimizedVirtualCall
 		String comment2 = "; - " + fqClassName + "::" + callerMethod + "@" + vCallBCI + " (line " + sourceLine + ")";
 		String comment3 = ";  " + JITWatchConstants.S_OPTIMIZED_VIRTUAL_CALL;
 
-		AssemblyInstruction instruction = new AssemblyInstruction(annotation, address, modifier, mnemonic, operands, comment0, new AssemblyLabels());
+		AssemblyInstruction instruction = new AssemblyInstruction(annotation, address, Collections.<String>emptyList(), mnemonic, operands, comment0, new AssemblyLabels());
 		instruction.addCommentLine(comment1);
 		instruction.addCommentLine(comment2);
 		instruction.addCommentLine(comment3);

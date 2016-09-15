@@ -288,6 +288,7 @@ public final class JITWatchConstants
 	public static final char C_OBJECT_REF = 'L';
 	public static final char C_SEMICOLON = ';';
 	public static final char C_OPEN_SQUARE_BRACKET = '[';
+	public static final char C_CLOSE_SQUARE_BRACKET = ']';
 	public static final char C_QUESTION = '?';
 	public static final char C_BACKSLASH = '\\';
 	public static final char C_HAT = '^';

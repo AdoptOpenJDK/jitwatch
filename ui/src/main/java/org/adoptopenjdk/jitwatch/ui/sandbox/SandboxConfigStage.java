@@ -206,8 +206,6 @@ public class SandboxConfigStage extends Stage
 		final RadioButton rbATT = new RadioButton("AT&T syntax");
 		final RadioButton rbIntel = new RadioButton("Intel syntax");
 
-		rbIntel.setDisable(true);
-
 		final ToggleGroup groupAssemblySyntax = new ToggleGroup();
 
 		boolean intelMode = config.isSandboxIntelMode();

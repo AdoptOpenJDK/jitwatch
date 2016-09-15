@@ -76,11 +76,11 @@ public class TestAssemblyLabels
 	@Test
 	public void testFormatAddressJumpLocal2()
 	{
-		labels.newInstruction(new AssemblyInstruction("", 99, "", "blah", Collections.<String>emptyList(), "", labels));
+		labels.newInstruction(new AssemblyInstruction("", 99, Collections.<String>emptyList(), "blah", Collections.<String>emptyList(), "", labels));
 		labels.newInstruction(
-			new AssemblyInstruction("anno", 65534, "mod", "jne", asList("0x0000000000000100"), "", labels));
+			new AssemblyInstruction("anno", 65534, asList("mod"), "jne", asList("0x0000000000000100"), "", labels));
 		labels.newInstruction(
-			new AssemblyInstruction("anno", 65535, "mod", "jne", asList("0x0000000000001000"), "", labels));
+			new AssemblyInstruction("anno", 65535, asList("mod"), "jne", asList("0x0000000000001000"), "", labels));
 
 		sb.setLength(0);
 		labels.formatAddress(256, sb);
@@ -106,7 +106,7 @@ public class TestAssemblyLabels
 	public void testFormatAddressJumpForeign()
 	{
 		labels.newInstruction(
-			new AssemblyInstruction("anno", 65535, "mod", "jne", asList("0x0000000000000000"), "", labels));
+			new AssemblyInstruction("anno", 65535, asList("mod"), "jne", asList("0x0000000000000000"), "", labels));
 
 		sb.setLength(0);
 		labels.formatAddress(65535, sb);
@@ -123,7 +123,7 @@ public class TestAssemblyLabels
 	public void testFormatAddressNotJump()
 	{
 		labels.newInstruction(
-			new AssemblyInstruction("anno", 65535, "mod", "foo", asList("0x0000000000000000"), "", labels));
+			new AssemblyInstruction("anno", 65535, asList("mod"), "foo", asList("0x0000000000000000"), "", labels));
 
 		sb.setLength(0);
 		labels.formatAddress(65535, sb);
@@ -140,7 +140,7 @@ public class TestAssemblyLabels
 	public void testFormatAddressNotJump2()
 	{
 		labels.newInstruction(
-			new AssemblyInstruction("anno", 65535, "mod", "jjj", asList("1", "2"), "", labels));
+			new AssemblyInstruction("anno", 65535, asList("mod"), "jjj", asList("1", "2"), "", labels));
 
 		sb.setLength(0);
 		labels.formatAddress(65535, sb);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2016 Chris Newland.
  * Copyright (c) 2015 Philip Aston
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
@@ -59,8 +59,14 @@ public final class AssemblyLabels
 
 		if (instruction.getMnemonic().startsWith("j") && operands.size() == 1)
 		{
-
-			return AssemblyUtil.getValueFromAddress(operands.get(0));
+			try
+			{
+				return AssemblyUtil.getValueFromAddress(operands.get(0));
+			}
+			catch (NumberFormatException nfe)
+			{
+				// could be Intel format jump to Stub:: reference
+			}
 		}
 
 		return null;

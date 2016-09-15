@@ -12,6 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHES
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PERCENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
@@ -43,6 +44,8 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class ViewerAssembly extends Viewer
 {
+	private final String CALL = "call";
+	
 	private DecimalFormat formatThousandsUnderscore;
 
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
@@ -118,7 +121,9 @@ public class ViewerAssembly extends Viewer
 	{
 		StringBuilder builder = new StringBuilder();
 
-		String ref = AssemblyReference.lookupMnemonic(instruction.getMnemonic());
+		String mnemonic = instruction.getMnemonic();
+		
+		String ref = AssemblyReference.lookupMnemonic(mnemonic);
 
 		if (ref == null)
 		{
@@ -131,21 +136,24 @@ public class ViewerAssembly extends Viewer
 
 		int opCount = operands.size();
 
+		// AT&T = source, dest
+		// Intel = dest, source
+
 		if (opCount >= 1)
 		{
 			builder.append("Source: ");
 
 			String op1 = operands.get(0);
 
-			if (op1.startsWith(S_PERCENT))
+			if (isRegister(mnemonic, op1))
 			{
 				builder.append(decodeRegister(op1, true));
 			}
-			else if (op1.startsWith(S_DOLLAR))
+			else if (isConstant(mnemonic, op1))
 			{
 				builder.append(getConstantLabel(op1));
 			}
-			else if (op1.startsWith(S_ASSEMBLY_ADDRESS) || (op1.contains(S_OPEN_PARENTHESES) && op1.contains(S_CLOSE_PARENTHESES)))
+			else if (isAddress(mnemonic, op1))
 			{
 				builder.append("Address ");
 				builder.append(op1);
@@ -157,16 +165,15 @@ public class ViewerAssembly extends Viewer
 
 				String op2 = operands.get(1);
 
-				if (op2.startsWith(S_PERCENT))
+				if (isRegister(mnemonic, op2))
 				{
 					builder.append(decodeRegister(op2, true));
 				}
-				else if (op1.startsWith(S_DOLLAR))
+				else if (isConstant(mnemonic, op2))
 				{
-					builder.append(getConstantLabel(op1));
+					builder.append(getConstantLabel(op2));
 				}
-				else if (op2.startsWith(S_ASSEMBLY_ADDRESS)
-						|| (op2.contains(S_OPEN_PARENTHESES) && op2.contains(S_CLOSE_PARENTHESES)))
+				else if (isAddress(mnemonic, op2))
 				{
 					builder.append("Address ");
 					builder.append(op2);
@@ -175,6 +182,26 @@ public class ViewerAssembly extends Viewer
 		}
 
 		return builder.toString();
+	}
+
+	private boolean isConstant(String mnemonic, String operand)
+	{
+		return operand.startsWith(S_DOLLAR) || (operand.startsWith(S_ASSEMBLY_ADDRESS) && !isJump(mnemonic));
+	}
+
+	private boolean isRegister(String mnemonic, String operand)
+	{
+		return operand.startsWith(S_PERCENT) || (!isConstant(mnemonic, operand) && !isAddress(mnemonic, operand));
+	}
+
+	private boolean isAddress(String mnemonic, String operand)
+	{
+		return operand.contains("(%") || operand.contains(S_OPEN_SQUARE)  || (operand.startsWith(S_ASSEMBLY_ADDRESS) && isJump(mnemonic));
+	}
+	
+	private boolean isJump(String mnemonic)
+	{
+		return mnemonic.startsWith("j") || CALL.equals(mnemonic);
 	}
 
 	private String getConstantLabel(String operand)
@@ -186,7 +213,12 @@ public class ViewerAssembly extends Viewer
 
 		try
 		{
-			long decimal = Long.decode(operand.substring(1, operand.length()));
+			if (operand.startsWith(S_DOLLAR))
+			{
+				operand = operand.substring(1);
+			}
+			
+			long decimal = Long.decode(operand);
 
 			builder.append(S_SPACE).append(S_OPEN_PARENTHESES).append("Decimal: ").append(formatThousandsUnderscore.format(decimal))
 					.append(S_CLOSE_PARENTHESES);
@@ -199,7 +231,7 @@ public class ViewerAssembly extends Viewer
 		return builder.toString();
 	}
 
-	private String decodeRegister(String register, boolean isATT)
+	private String decodeRegister(String regName, boolean isATT)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -207,68 +239,69 @@ public class ViewerAssembly extends Viewer
 		{
 			// https://sourceware.org/binutils/docs/as/i386_002dRegs.html#i386_002dRegs
 			// http://www.x86-64.org/documentation/assembly.html
-			if (register.length() >= 3)
+
+			if (regName.startsWith(S_PERCENT))
 			{
-				String regName = register.substring(1); // remove %
+				regName = regName.substring(1); // remove %
+			}
 
-				if (regName.startsWith("e"))
-				{
-					builder.append("32-bit register ").append(regName);
-				}
-				else if (regName.startsWith("r"))
-				{
-					builder.append("64-bit register ").append(regName);
-				}
-				else if (regName.startsWith("db"))
-				{
-					builder.append("debug register ").append(regName);
-				}
-				else if (regName.startsWith("cr"))
-				{
-					builder.append("processor control register ").append(regName);
-				}
-				else if (regName.startsWith("tr"))
-				{
-					builder.append("test register ").append(regName);
-				}
-				else if (regName.startsWith("st"))
-				{
-					builder.append("floating point register stack ").append(regName);
-				}
-				else if (regName.startsWith("mm"))
-				{
-					builder.append("MMX register ").append(regName);
-				}
-				else if (regName.startsWith("xmm"))
-				{
-					builder.append("SSE register ").append(regName);
-				}
-				else if (regName.endsWith("s"))
-				{
-					builder.append("section register ").append(regName);
-				}
-				else
-				{
-					builder.append("Register ").append(regName);
-				}
-
-				if (regName.endsWith("ax"))
-				{
-					builder.append(" (accumulator)");
-				}
-				else if (regName.endsWith("bp"))
-				{
-					builder.append(" (frame pointer)");
-				}
-				else if (regName.endsWith("sp"))
-				{
-					builder.append(" (stack pointer)");
-				}
+			if (regName.startsWith("e"))
+			{
+				builder.append("32-bit register ").append(regName);
+			}
+			else if (regName.startsWith("r"))
+			{
+				builder.append("64-bit register ").append(regName);
+			}
+			else if (regName.startsWith("db"))
+			{
+				builder.append("debug register ").append(regName);
+			}
+			else if (regName.startsWith("cr"))
+			{
+				builder.append("processor control register ").append(regName);
+			}
+			else if (regName.startsWith("tr"))
+			{
+				builder.append("test register ").append(regName);
+			}
+			else if (regName.startsWith("st"))
+			{
+				builder.append("floating point register stack ").append(regName);
+			}
+			else if (regName.startsWith("mm"))
+			{
+				builder.append("MMX register ").append(regName);
+			}
+			else if (regName.startsWith("xmm"))
+			{
+				builder.append("SSE register ").append(regName);
+			}
+			else if (regName.endsWith("s"))
+			{
+				builder.append("section register ").append(regName);
 			}
 			else
 			{
-				builder.append("unknown register: ").append(register);
+				builder.append("Register ").append(regName);
 			}
+
+			if (regName.endsWith("ax"))
+			{
+				builder.append(" (accumulator)");
+			}
+			else if (regName.endsWith("bp"))
+			{
+				builder.append(" (frame pointer)");
+			}
+			else if (regName.endsWith("sp"))
+			{
+				builder.append(" (stack pointer)");
+			}
+		}
+		else
+		{
+			builder.append("unknown register: ").append(regName);
 		}
 
 		return builder.toString();
@@ -372,8 +405,6 @@ public class ViewerAssembly extends Viewer
 		int bytecodeOffset = bcInstruction.getOffset();
 
 		boolean lastAssemblyIsCall = false;
-
-		final String CALL = "call";
 
 		for (Node node : vBoxRows.getChildren())
 		{
