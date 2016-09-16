@@ -20,9 +20,11 @@ public final class AssemblyUtil
 	// http://www.delorie.com/djgpp/doc/brennan/brennan_att_inline_djgpp.html
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyUtil.class);
 
-	private static final String PART_ADDRESS = "(0x[a-f0-9]+):";
+	private static final String PART_ADDRESS = "(" + S_HEX_PREFIX + "[a-f0-9]+):";
 	private static final String PART_INSTRUCTION = "([0-9a-zA-Z:_\\(\\)\\[\\]\\+\\*\\$,\\-%\\s]+)";
 	private static final String PART_COMMENT = "([;#].*)?";
+	
+	private static final Pattern ASSEMBLY_CONSTANT = Pattern.compile("^([\\$]?(" + S_HEX_PREFIX + ")?[a-f0-9]+[" + S_HEX_POSTFIX + "]?)$");
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT);
@@ -72,7 +74,7 @@ public final class AssemblyUtil
 
 				headerBuilder.append(line).append(S_NEWLINE);
 			}
-			else if (line.startsWith(S_OPEN_SQUARE))
+			else if (line.startsWith(S_OPEN_SQUARE_BRACKET))
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
@@ -99,8 +101,8 @@ public final class AssemblyUtil
 			{
 				AssemblyInstruction instr = createInstruction(labels, line);
 
-				if (instr == null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_ASSEMBLY_ADDRESS)
-						&& !line.contains(' ' + S_ASSEMBLY_ADDRESS))
+				if (instr == null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
+						&& !line.contains(' ' + S_HEX_PREFIX))
 				{
 					// remove last newline
 					headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
@@ -188,9 +190,9 @@ public final class AssemblyUtil
 
 		String annotation = S_EMPTY;
 
-		if (!line.startsWith(S_ASSEMBLY_ADDRESS))
+		if (!line.startsWith(S_HEX_PREFIX))
 		{
-			int addressIndex = line.indexOf(' ' + S_ASSEMBLY_ADDRESS);
+			int addressIndex = line.indexOf(' ' + S_HEX_PREFIX);
 
 			if (addressIndex != -1)
 			{
@@ -280,7 +282,7 @@ public final class AssemblyUtil
 
 				if (mnemonic == null)
 				{
-					if ("data32".equals(part))
+					if ("data64".equals(part) || "data32".equals(part) || "data16".equals(part) || "data8".equals(part) || "lock".equals(part))
 					{
 						prefixes.add(part);
 					}
@@ -337,7 +339,7 @@ public final class AssemblyUtil
 		return new AssemblyInstruction(annotation, address, prefixes, mnemonic, operands, comment, labels);
 	}
 
-	static long getValueFromAddress(final String address)
+	public static long getValueFromAddress(final String address)
 	{
 		long addressValue = 0;
 
@@ -345,12 +347,12 @@ public final class AssemblyUtil
 		{
 			String trimmedAddress = address.trim();
 
-			if (trimmedAddress.startsWith(S_ASSEMBLY_ADDRESS))
+			if (trimmedAddress.startsWith(S_HEX_PREFIX))
 			{
-				trimmedAddress = trimmedAddress.substring(S_ASSEMBLY_ADDRESS.length());
+				trimmedAddress = trimmedAddress.substring(S_HEX_PREFIX.length());
 			}
 
-			if (trimmedAddress.endsWith(HEXA_POSTFIX))
+			if (trimmedAddress.endsWith(S_HEX_POSTFIX))
 			{
 				trimmedAddress = trimmedAddress.substring(0, trimmedAddress.length() - 1);
 			}
@@ -358,5 +360,83 @@ public final class AssemblyUtil
 			addressValue = Long.parseLong(trimmedAddress, 16);
 		}
 		return addressValue;
+	}
+	
+	public static boolean isConstant(String mnemonic, String operand)
+	{
+		return ASSEMBLY_CONSTANT.matcher(operand).find() && !isJump(mnemonic);
+	}
+
+	public static boolean isRegister(String mnemonic, String operand)
+	{
+		return operand.startsWith(S_PERCENT) || operand.contains("(%") || operand.contains(S_OPEN_SQUARE_BRACKET) || (!isConstant(mnemonic, operand) && !isAddress(mnemonic, operand));
+	}
+
+	public static boolean isAddress(String mnemonic, String operand)
+	{
+		return (operand.startsWith(S_HEX_PREFIX) || operand.endsWith(S_HEX_POSTFIX)) && isJump(mnemonic);
+	}
+	
+	public static boolean isJump(String mnemonic)
+	{
+		boolean result = false;
+		
+		if (mnemonic != null)
+		{		
+			result = mnemonic.toLowerCase().startsWith("j") || mnemonic.toLowerCase().startsWith("call");
+		}
+		
+		return result;
+	}
+	
+	public static String extractRegisterName(final String input)
+	{
+		String regName = input;
+		
+		int indexOpenParentheses = input.indexOf(C_OPEN_PARENTHESES);
+		int indexCloseParentheses = input.indexOf(C_CLOSE_PARENTHESES);
+
+		if (indexOpenParentheses != -1 && indexCloseParentheses != -1)
+		{
+			regName = regName.substring(indexOpenParentheses+1, indexCloseParentheses);
+		}
+		
+		int indexOpenSquareBracket = regName.indexOf(C_OPEN_SQUARE_BRACKET);
+		int indexCloseSquareBracket = regName.indexOf(C_CLOSE_SQUARE_BRACKET);
+		
+		if (indexOpenSquareBracket != -1 && indexCloseSquareBracket != -1)
+		{
+			regName = regName.substring(indexOpenSquareBracket+1, indexCloseSquareBracket);
+		}
+		
+		if (regName.startsWith("*"))
+		{
+			regName = regName.substring(1);
+		}
+		
+		if (regName.startsWith(S_PERCENT))
+		{
+			regName = regName.substring(1);
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < regName.length(); i++)
+		{
+			char c = regName.charAt(i);
+			
+			if (Character.isAlphabetic(c) || Character.isDigit(c))
+			{
+				builder.append(c);
+			}
+			else
+			{
+				break;
+			}
+		}
+		
+		regName = builder.toString();
+		
+		return regName;
 	}
 }

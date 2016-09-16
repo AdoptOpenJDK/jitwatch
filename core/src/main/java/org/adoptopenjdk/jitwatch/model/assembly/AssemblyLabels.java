@@ -7,7 +7,7 @@
 package org.adoptopenjdk.jitwatch.model.assembly;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 
 import java.util.HashMap;
@@ -97,7 +97,7 @@ public final class AssemblyLabels
 		}
 		else
 		{
-			builder.append(S_ASSEMBLY_ADDRESS);
+			builder.append(S_HEX_PREFIX);
 			builder.append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		}
 	}

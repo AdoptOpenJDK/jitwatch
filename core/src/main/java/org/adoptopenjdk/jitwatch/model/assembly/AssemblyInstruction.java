@@ -8,7 +8,7 @@ package org.adoptopenjdk.jitwatch.model.assembly;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -208,7 +208,7 @@ public class AssemblyInstruction
 		}
 		else
 		{
-			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+			builder.append(S_HEX_PREFIX).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		}
 
 		builder.append(C_COLON).append(C_SPACE);
@@ -285,7 +285,7 @@ public class AssemblyInstruction
 		}
 		else
 		{
-			builder.append(S_ASSEMBLY_ADDRESS).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
+			builder.append(S_HEX_PREFIX).append(StringUtil.pad(Long.toHexString(address), 16, '0', true));
 		}
 
 		builder.append(C_COLON).append(C_SPACE);

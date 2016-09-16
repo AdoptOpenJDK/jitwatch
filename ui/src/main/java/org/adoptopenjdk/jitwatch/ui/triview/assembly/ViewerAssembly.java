@@ -6,15 +6,14 @@
 package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASSEMBLY_ADDRESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_AT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PERCENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_POSTFIX;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -30,6 +29,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
@@ -44,8 +44,6 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class ViewerAssembly extends Viewer
 {
-	private final String CALL = "call";
-	
 	private DecimalFormat formatThousandsUnderscore;
 
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
@@ -122,7 +120,7 @@ public class ViewerAssembly extends Viewer
 		StringBuilder builder = new StringBuilder();
 
 		String mnemonic = instruction.getMnemonic();
-		
+
 		String ref = AssemblyReference.lookupMnemonic(mnemonic);
 
 		if (ref == null)
@@ -134,74 +132,40 @@ public class ViewerAssembly extends Viewer
 
 		List<String> operands = instruction.getOperands();
 
-		int opCount = operands.size();
-
 		// AT&T = source, dest
 		// Intel = dest, source
 
-		if (opCount >= 1)
+		int pos = 1;
+
+		for (String operand : operands)
 		{
-			builder.append("Source: ");
+			builder.append("operand ").append(pos).append(": ");
 
-			String op1 = operands.get(0);
+			decodeOperand(mnemonic, operand, builder);
+			
+			builder.append(S_NEWLINE);
 
-			if (isRegister(mnemonic, op1))
-			{
-				builder.append(decodeRegister(op1, true));
-			}
-			else if (isConstant(mnemonic, op1))
-			{
-				builder.append(getConstantLabel(op1));
-			}
-			else if (isAddress(mnemonic, op1))
-			{
-				builder.append("Address ");
-				builder.append(op1);
-			}
-
-			if (opCount == 2)
-			{
-				builder.append("\nDestination: ");
-
-				String op2 = operands.get(1);
-
-				if (isRegister(mnemonic, op2))
-				{
-					builder.append(decodeRegister(op2, true));
-				}
-				else if (isConstant(mnemonic, op2))
-				{
-					builder.append(getConstantLabel(op2));
-				}
-				else if (isAddress(mnemonic, op2))
-				{
-					builder.append("Address ");
-					builder.append(op2);
-				}
-			}
+			pos++;
 		}
 
 		return builder.toString();
 	}
 
-	private boolean isConstant(String mnemonic, String operand)
+	private void decodeOperand(String mnemonic, String operand, StringBuilder builder)
 	{
-		return operand.startsWith(S_DOLLAR) || (operand.startsWith(S_ASSEMBLY_ADDRESS) && !isJump(mnemonic));
-	}
-
-	private boolean isRegister(String mnemonic, String operand)
-	{
-		return operand.startsWith(S_PERCENT) || (!isConstant(mnemonic, operand) && !isAddress(mnemonic, operand));
-	}
-
-	private boolean isAddress(String mnemonic, String operand)
-	{
-		return operand.contains("(%") || operand.contains(S_OPEN_SQUARE)  || (operand.startsWith(S_ASSEMBLY_ADDRESS) && isJump(mnemonic));
-	}
-	
-	private boolean isJump(String mnemonic)
-	{
-		return mnemonic.startsWith("j") || CALL.equals(mnemonic);
+		if (AssemblyUtil.isRegister(mnemonic, operand))
+		{
+			builder.append(decodeRegister(operand));
+		}
+		else if (AssemblyUtil.isConstant(mnemonic, operand))
+		{
+			builder.append(getConstantLabel(operand));
+		}
+		else if (AssemblyUtil.isAddress(mnemonic, operand))
+		{
+			builder.append("Address ");
+			builder.append(operand);
+		}
 	}
 
 	private String getConstantLabel(String operand)
@@ -218,6 +182,11 @@ public class ViewerAssembly extends Viewer
 				operand = operand.substring(1);
 			}
 			
+			if (operand.endsWith(S_HEX_POSTFIX))
+			{
+				operand = S_HEX_PREFIX + operand.substring(0,  operand.length()-1);
+			}
+			
 			long decimal = Long.decode(operand);
 
 			builder.append(S_SPACE).append(S_OPEN_PARENTHESES).append("Decimal: ").append(formatThousandsUnderscore.format(decimal))
@@ -231,77 +200,73 @@ public class ViewerAssembly extends Viewer
 		return builder.toString();
 	}
 
-	private String decodeRegister(String regName, boolean isATT)
+	private String decodeRegister(String input)
 	{
 		StringBuilder builder = new StringBuilder();
 
-		if (isATT)
+		// https://sourceware.org/binutils/docs/as/i386_002dRegs.html#i386_002dRegs
+		// http://www.x86-64.org/documentation/assembly.html
+
+		String regName = AssemblyUtil.extractRegisterName(input);
+	
+		if (regName.startsWith("e"))
 		{
-			// https://sourceware.org/binutils/docs/as/i386_002dRegs.html#i386_002dRegs
-			// http://www.x86-64.org/documentation/assembly.html
-
-			if (regName.startsWith(S_PERCENT))
-			{
-				regName = regName.substring(1); // remove %
-			}
-
-			if (regName.startsWith("e"))
-			{
-				builder.append("32-bit register ").append(regName);
-			}
-			else if (regName.startsWith("r"))
-			{
-				builder.append("64-bit register ").append(regName);
-			}
-			else if (regName.startsWith("db"))
-			{
-				builder.append("debug register ").append(regName);
-			}
-			else if (regName.startsWith("cr"))
-			{
-				builder.append("processor control register ").append(regName);
-			}
-			else if (regName.startsWith("tr"))
-			{
-				builder.append("test register ").append(regName);
-			}
-			else if (regName.startsWith("st"))
-			{
-				builder.append("floating point register stack ").append(regName);
-			}
-			else if (regName.startsWith("mm"))
-			{
-				builder.append("MMX register ").append(regName);
-			}
-			else if (regName.startsWith("xmm"))
-			{
-				builder.append("SSE register ").append(regName);
-			}
-			else if (regName.endsWith("s"))
-			{
-				builder.append("section register ").append(regName);
-			}
-			else
-			{
-				builder.append("Register ").append(regName);
-			}
-
-			if (regName.endsWith("ax"))
-			{
-				builder.append(" (accumulator)");
-			}
-			else if (regName.endsWith("bp"))
-			{
-				builder.append(" (frame pointer)");
-			}
-			else if (regName.endsWith("sp"))
-			{
-				builder.append(" (stack pointer)");
-			}
+			builder.append("32-bit register ").append(regName);
+		}
+		else if (regName.startsWith("r"))
+		{
+			builder.append("64-bit register ").append(regName);
+		}
+		else if (regName.startsWith("db"))
+		{
+			builder.append("debug register ").append(regName);
+		}
+		else if (regName.startsWith("cr"))
+		{
+			builder.append("processor control register ").append(regName);
+		}
+		else if (regName.startsWith("tr"))
+		{
+			builder.append("test register ").append(regName);
+		}
+		else if (regName.startsWith("st"))
+		{
+			builder.append("floating point register stack ").append(regName);
+		}
+		else if (regName.startsWith("mm"))
+		{
+			builder.append("MMX register ").append(regName);
+		}
+		else if (regName.startsWith("xmm"))
+		{
+			builder.append("SSE register ").append(regName);
+		}
+		else if (regName.endsWith("s"))
+		{
+			builder.append("section register ").append(regName);
 		}
 		else
 		{
-			builder.append("unknown register: ").append(regName);
+			builder.append("Register ").append(regName);
+		}
+
+		if (regName.endsWith("ax"))
+		{
+			builder.append(" (accumulator)");
+		}
+		else if (regName.endsWith("bp"))
+		{
+			builder.append(" (frame pointer)");
+		}
+		else if (regName.endsWith("sp"))
+		{
+			builder.append(" (stack pointer)");
+		}
+		
+		
+		if (input.startsWith("*"))
+		{
+			builder.append(" (indirect)");
 		}
 
 		return builder.toString();
@@ -416,7 +381,7 @@ public class ViewerAssembly extends Viewer
 
 				String mnemonic = lastAssemblyInstruction.getMnemonic();
 
-				if (mnemonic != null && mnemonic.startsWith(CALL))
+				if (mnemonic != null && mnemonic.toLowerCase().startsWith("call"))
 				{
 					lastAssemblyIsCall = true;
 				}

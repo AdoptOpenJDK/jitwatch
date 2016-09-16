@@ -20,7 +20,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ONE_OR_MORE
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PACKAGE_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PARAM_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ZERO_OR_MORE_SPACES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
@@ -28,7 +28,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_P
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_SQUARE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_POLYMORPHIC_SIGNATURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
@@ -596,7 +596,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
 
-			paramType = paramType.replace(S_OPEN_SQUARE, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE, S_ESCAPED_CLOSE_SQUARE);
+			paramType = paramType.replace(S_OPEN_SQUARE_BRACKET, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE_BRACKET, S_ESCAPED_CLOSE_SQUARE);
 		}
 
 		if (paramType.contains(S_DOT))
