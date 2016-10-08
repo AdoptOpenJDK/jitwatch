@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,32 +18,34 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 
 public class HelperMetaMethod extends AbstractMetaMember
 {
-	public HelperMetaMethod(String methodName, MetaClass metaClass,Class<?>[] params,
-			Class<?> returnType) throws NoSuchMethodException, SecurityException
+	public HelperMetaMethod(String methodName, MetaClass metaClass, Class<?>[] params, Class<?> returnType)
+			throws NoSuchMethodException, SecurityException
 	{
-    	super(methodName);
-    	
-    	Method dummyMethodObject = java.lang.String.class.getDeclaredMethod("length", new Class<?>[0]);
-    	
-        this.metaClass = metaClass;
+		super(methodName);
 
-        this.returnType = returnType;
-        this.paramTypes = Arrays.asList(params);
-        
-        // Can include non-method modifiers such as volatile so AND with
-        // acceptable values
-        this.modifier = dummyMethodObject.getModifiers() & Modifier.methodModifiers();
+		Method dummyMethodObject = java.lang.String.class.getDeclaredMethod("length", new Class<?>[0]);
 
-        this.isVarArgs = dummyMethodObject.isVarArgs();
+		this.metaClass = metaClass;
 
-        checkPolymorphicSignature(dummyMethodObject);
+		this.returnType = returnType;
+		this.paramTypes = Arrays.asList(params);
 
-        if (DEBUG_MEMBER_CREATION)
-        {
-        	logger.debug("Created MetaMethod: {}", toString());
-        }
-	}	
-	
+		// Can include non-method modifiers such as volatile so AND with
+		// acceptable values
+		this.modifier = dummyMethodObject.getModifiers() & Modifier.methodModifiers();
+
+		this.isVarArgs = dummyMethodObject.isVarArgs();
+
+		checkPolymorphicSignature(dummyMethodObject);
+
+		metaClass.addMember(this);
+		
+		if (DEBUG_MEMBER_CREATION)
+		{
+			logger.debug("Created HelperMetaMethod: {}", toString());
+		}
+	}
+
 	private List<BytecodeInstruction> instructions;
 
 	public void setInstructions(List<BytecodeInstruction> instructions)

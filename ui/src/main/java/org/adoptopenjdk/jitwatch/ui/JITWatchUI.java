@@ -38,14 +38,17 @@ import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
-import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
+import org.adoptopenjdk.jitwatch.report.ea.EliminatedAllocationWalker;
+import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
 import org.adoptopenjdk.jitwatch.ui.optimizedvcall.OptimizedVirtualCallStage;
+import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
+import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
-import org.adoptopenjdk.jitwatch.ui.suggestion.SuggestStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
@@ -146,7 +149,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private Button btnErrorLog;
 	private Button btnCodeCache;
 	private Button btnTriView;
-	private Button btnSuggest;
+	private Button btnReportSuggestions;
+	private Button btnReportEliminatedAllocations;
 	private Button btnOptimizedVirtualCalls;
 	private Button btnSandbox;
 
@@ -160,7 +164,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private CodeCacheStage codeCacheStage;
 	private TriView triViewStage;
 	private BrowserStage browserStage;
-	private SuggestStage suggestStage;
+	private ReportStage reportStageSuggestions;
+	private ReportStage reportStageElminatedAllocations;
+
 	private OptimizedVirtualCallStage ovcStage;
 	private SandboxStage sandBoxStage;
 
@@ -169,7 +175,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private IMetaMember selectedMember;
 	private MetaClass selectedMetaClass;
 
-	private List<Suggestion> suggestions = new ArrayList<>();
+	private List<Report> reportListSuggestions = new ArrayList<>();
+	private List<Report> reportListEliminatedAllocations = new ArrayList<>();
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -227,8 +234,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		errorCount = 0;
 		errorLog.clear();
-		
-		suggestions.clear();
+
+		reportListSuggestions.clear();
+		reportListEliminatedAllocations.clear();
 
 		isReadingLogFile = true;
 
@@ -258,6 +266,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		buildSuggestions();
 
+		buildEAReport();
+
 		Platform.runLater(new Runnable()
 		{
 			@Override
@@ -266,7 +276,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				updateButtons();
 			}
 		});
-		
+
 		logParser.discardParsedLogs();
 	}
 
@@ -274,11 +284,22 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		log("Finding code suggestions.");
 
-		AttributeSuggestionWalker walker = new AttributeSuggestionWalker(logParser.getModel());
+		SuggestionWalker walker = new SuggestionWalker(logParser.getModel());
 
-		suggestions = walker.getSuggestionList();
+		reportListSuggestions = walker.getReports(new ScoreComparator());
 
-		log("Found " + suggestions.size() + " code suggestions.");
+		log("Found " + reportListSuggestions.size() + " code suggestions.");
+	}
+
+	private void buildEAReport()
+	{
+		log("Finding eliminated allocations");
+
+		EliminatedAllocationWalker walker = new EliminatedAllocationWalker(logParser.getModel());
+
+		reportListEliminatedAllocations = walker.getReports(new ScoreComparator());
+
+		log("Found " + reportListEliminatedAllocations.size() + "  eliminated allocations.");
 	}
 
 	@Override
@@ -413,20 +434,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnStats = new Button("Stats");
-		btnStats.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				statsStage = new StatsStage(JITWatchUI.this);
-
-				StageManager.addAndShow(JITWatchUI.this.stage, statsStage);
-
-				btnStats.setDisable(true);
-			}
-		});
-
 		btnHisto = new Button("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -484,17 +491,32 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnSuggest = new Button("Suggest");
-		btnSuggest.setOnAction(new EventHandler<ActionEvent>()
+		btnReportSuggestions = new Button("Suggest");
+		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				suggestStage = new SuggestStage(JITWatchUI.this, suggestions);
+				reportStageSuggestions = new ReportStage(JITWatchUI.this, ReportStageType.SUGGESTION, reportListSuggestions);
 
-				StageManager.addAndShow(JITWatchUI.this.stage, suggestStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, reportStageSuggestions);
 
-				btnSuggest.setDisable(true);
+				btnReportSuggestions.setDisable(true);
+			}
+		});
+
+		btnReportEliminatedAllocations = new Button("EA");
+		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				reportStageElminatedAllocations = new ReportStage(JITWatchUI.this, ReportStageType.ELIMINATED_ALLOCATION,
+						reportListEliminatedAllocations);
+
+				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElminatedAllocations);
+
+				btnReportEliminatedAllocations.setDisable(true);
 			}
 		});
 
@@ -528,6 +550,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		});
 
 		btnErrorLog = new Button("Errors (0)");
+		btnErrorLog.setStyle("-fx-padding: 2 6;");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -536,8 +559,21 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
 		});
+		
+		btnStats = new Button("Stats");
+		btnStats.setStyle("-fx-padding: 2 6;");
+		btnStats.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				statsStage = new StatsStage(JITWatchUI.this);
 
-		btnErrorLog.setStyle("-fx-padding: 2 6;");
+				StageManager.addAndShow(JITWatchUI.this.stage, statsStage);
+
+				btnStats.setDisable(true);
+			}
+		});
 
 		lblHeap = new Label();
 
@@ -569,12 +605,12 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnStop);
 		hboxTop.getChildren().add(btnConfigure);
 		hboxTop.getChildren().add(btnTimeLine);
-		hboxTop.getChildren().add(btnStats);
 		hboxTop.getChildren().add(btnHisto);
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCache);
 		hboxTop.getChildren().add(btnTriView);
-		hboxTop.getChildren().add(btnSuggest);
+		hboxTop.getChildren().add(btnReportSuggestions);
+		hboxTop.getChildren().add(btnReportEliminatedAllocations);
 		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		compilationRowList = FXCollections.observableArrayList();
@@ -658,6 +694,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxBottom.setSpacing(4);
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
+		hboxBottom.getChildren().add(btnStats);
 		hboxBottom.getChildren().add(springLeft);
 		hboxBottom.getChildren().add(lblTweakLog);
 		hboxBottom.getChildren().add(springRight);
@@ -782,7 +819,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
-		btnSuggest.setText("Suggestions (" + suggestions.size() + S_CLOSE_PARENTHESES);
+		btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
+		btnReportEliminatedAllocations.setText("EA (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass)
@@ -897,7 +936,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			Dialogs.showOKDialog(stage, "Root method is not compiled",
 					"Can only display compile chain where the root method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
 		}
 	}
 
@@ -919,7 +958,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			Dialogs.showOKDialog(stage, "Root method is not compiled",
 					"Can only display optimized virtual calls where the root method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
 		}
 	}
 
@@ -934,7 +973,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			Dialogs.showOKDialog(stage, "Method is not compiled",
 					"Can only display JIT Journal if the method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false) + " is not compiled.");
+							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
 		}
 	}
 
@@ -1191,10 +1230,19 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			btnTriView.setDisable(false);
 			triViewStage = null;
 		}
-		else if (stage instanceof SuggestStage)
+		else if (stage instanceof ReportStage)
 		{
-			btnSuggest.setDisable(false);
-			suggestStage = null;
+			switch (((ReportStage) stage).getType())
+			{
+			case SUGGESTION:
+				btnReportSuggestions.setDisable(false);
+				reportStageSuggestions = null;
+				break;
+			case ELIMINATED_ALLOCATION:
+				btnReportEliminatedAllocations.setDisable(false);
+				reportStageElminatedAllocations = null;
+				break;
+			}
 		}
 		else if (stage instanceof OptimizedVirtualCallStage)
 		{

@@ -85,7 +85,16 @@ public class CompileNode
 
 	public boolean isCompiled()
 	{
-		return getMember().isCompiled();
+		boolean result = false;
+		
+		IMetaMember member = getMember();
+		
+		if (member != null)
+		{
+			result = member.isCompiled();
+		}
+		
+		return result;
 	}
 	
 	public void addChild(CompileNode child)

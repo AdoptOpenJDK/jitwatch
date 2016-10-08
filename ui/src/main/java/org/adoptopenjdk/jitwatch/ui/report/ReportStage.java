@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.suggestion;
+package org.adoptopenjdk.jitwatch.ui.report;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,8 +11,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.report.cell.LinkedBCICell;
+import org.adoptopenjdk.jitwatch.ui.report.cell.MemberTableCell;
+import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBean;
+import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBuilder;
+import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBean;
+import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBuilder;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
@@ -27,21 +33,25 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-public class SuggestStage extends Stage
+public class ReportStage extends Stage
 {
 	private VBox vbox;
-	private TableView<SuggestTableRow> tableView;
-	private ObservableList<SuggestTableRow> obList = FXCollections.observableArrayList();
+	private TableView<IReportRowBean> tableView;
+	private ObservableList<IReportRowBean> observableList = FXCollections.observableArrayList();
 
 	private Set<String> filterPackageSet = new HashSet<>();
 
-	private List<Suggestion> suggestions;
+	private List<Report> reportList;
 
-	public SuggestStage(final JITWatchUI parent, List<Suggestion> suggestions)
+	private ReportStageType type;
+
+	public ReportStage(final JITWatchUI parent, ReportStageType type, List<Report> reportList)
 	{
-		this.suggestions = suggestions;
+		this.reportList = reportList;
+		this.type = type;
 
 		MemberTableCell.setTriViewAccessor(parent);
+		LinkedBCICell.setTriViewAccessor(parent);
 
 		initStyle(StageStyle.DECORATED);
 
@@ -49,7 +59,7 @@ public class SuggestStage extends Stage
 
 		vbox = new VBox();
 
-		SuggestionPackageFilter filter = new SuggestionPackageFilter(this);
+		ReportPackageFilter filter = new ReportPackageFilter(this);
 
 		borderPane.setTop(filter);
 
@@ -57,15 +67,23 @@ public class SuggestStage extends Stage
 
 		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
-		tableView = SuggestionTableUtil.buildTableSuggestion(obList);
-
+		switch (type)
+		{
+		case SUGGESTION:
+			setTitle("JITWatch Code Suggestions");
+			tableView = SuggestionRowBuilder.buildTableSuggestion(observableList);
+			break;
+		case ELIMINATED_ALLOCATION:
+			setTitle("JITWatch Eliminated Allocation Report");
+			tableView = EliminatedAllocationRowBuilder.buildTableSuggestion(observableList);
+			break;
+		}
+		
 		filter.prefWidthProperty().bind(scene.widthProperty());
 
 		vbox.getChildren().add(tableView);
 
 		tableView.prefHeightProperty().bind(scene.heightProperty());
-
-		setTitle("JITWatch Code Suggestions");
 
 		setScene(scene);
 
@@ -74,25 +92,30 @@ public class SuggestStage extends Stage
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				parent.handleStageClosed(SuggestStage.this);
+				parent.handleStageClosed(ReportStage.this);
 			}
 		});
 
 		display();
 	}
 
+	public ReportStageType getType()
+	{
+		return type;
+	}
+
 	private void display()
 	{
-		obList.clear();
+		observableList.clear();
 
-		if (suggestions.size() == 0)
+		if (reportList.size() == 0)
 		{
 			vbox.getChildren().clear();
-			vbox.getChildren().add(new Label("No suggestions"));
+			vbox.getChildren().add(new Label("No results"));
 		}
 		else
 		{
-			for (Suggestion suggestion : suggestions)
+			for (Report report : reportList)
 			{
 				boolean show = false;
 
@@ -104,8 +127,8 @@ public class SuggestStage extends Stage
 				{
 					for (String allowedPackage : filterPackageSet)
 					{
-						if (suggestion.getCaller() != null
-								&& suggestion.getCaller().getFullyQualifiedMemberName().startsWith(allowedPackage.trim()))
+						if (report.getCaller() != null
+								&& report.getCaller().getFullyQualifiedMemberName().startsWith(allowedPackage.trim()))
 						{
 							show = true;
 						}
@@ -113,8 +136,16 @@ public class SuggestStage extends Stage
 				}
 
 				if (show)
-				{
-					obList.add(new SuggestTableRow(suggestion));
+				{					
+					switch (type)
+					{
+					case SUGGESTION:
+						observableList.add(new SuggestionRowBean(report));
+						break;
+					case ELIMINATED_ALLOCATION:
+						observableList.add(new EliminatedAllocationRowBean(report));
+						break;
+					}
 				}
 			}
 		}

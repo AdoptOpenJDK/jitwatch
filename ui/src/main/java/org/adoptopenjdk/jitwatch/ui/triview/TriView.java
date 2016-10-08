@@ -15,6 +15,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 import java.util.List;
+
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.Compilation;
@@ -29,7 +30,6 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
@@ -69,7 +69,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage implements ITriView, ILineListener
+public class TriView extends Stage implements ITriView
 {
 	private IMetaMember currentMember;
 	private JITWatchConfig config;
@@ -241,7 +241,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			@Override
 			public String toString(IMetaMember mm)
 			{
-				return mm.toStringUnqualifiedMethodName(false);
+				return mm.toStringUnqualifiedMethodName(false, false);
 			}
 
 			@Override
@@ -300,7 +300,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 			@Override
 			public void run()
 			{
-				focusSource();
+				//focusSource();
 			}
 		});
 	}
@@ -457,7 +457,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 					private void performUpdateOfItem(ListCell<IMetaMember> listCell, IMetaMember item)
 					{
-						listCell.setText(item.toStringUnqualifiedMethodName(false));
+						listCell.setText(item.toStringUnqualifiedMethodName(false, false));
 
 						if (item.isCompiled() && UserInterfaceUtil.IMAGE_TICK != null)
 						{
@@ -522,7 +522,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		List<IMetaMember> members = metaClass.getMetaMembers();
 
-		if (members.size() > 0)
+		if (!members.isEmpty())
 		{
 			setMember(members.get(0), false);
 		}
@@ -581,17 +581,17 @@ public class TriView extends Stage implements ITriView, ILineListener
 					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
 				}
 			}
-			
+
 			boolean lineNumbers = true;
 			boolean canHighlight = true;
-			
+
 			if (source == null)
 			{
 				source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
 				lineNumbers = false;
 				canHighlight = false;
 			}
-			
+
 			viewerSource.setContent(source, lineNumbers, canHighlight);
 		}
 
@@ -614,7 +614,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 
 		Compilation selectedCompilation = currentMember.getSelectedCompilation();
-		
+
 		if (selectedCompilation != null)
 		{
 			int selectedCompilationIndex = selectedCompilation.getIndex();
@@ -660,23 +660,15 @@ public class TriView extends Stage implements ITriView, ILineListener
 		compilationInfo.setCompilation(compilation);
 
 		viewerBytecode.setContent(currentMember);
-		
+
 		if (selectSourceLine)
 		{
 			MemberBytecode memberBytecode = currentMember.getMemberBytecode();
 
-			int memberSourceStartLine = -1;
-			
 			if (memberBytecode != null)
 			{
-				LineTable lineTable = memberBytecode.getLineTable();
-
-				memberSourceStartLine = lineTable.findSourceLineForBytecodeOffset(0);				
-			}
-			
-			if (memberSourceStartLine != -1)
-			{
-				viewerSource.highlightLine(memberSourceStartLine - 1);
+				viewerBytecode.highlightLine(0, true);
+				lineHighlighted(0, LineType.BYTECODE_BCI);				
 			}
 			else
 			{
@@ -718,7 +710,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 	{
 		if (currentMember.isCompiled())
 		{
-			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false));
+			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false, false));
 
 			Compilation compilation = currentMember.getSelectedCompilation();
 
@@ -777,13 +769,24 @@ public class TriView extends Stage implements ITriView, ILineListener
 	@Override
 	public void lineHighlighted(int index, LineType lineType)
 	{
+		if (DEBUG_LOGGING_TRIVIEW)
+		{
+			logger.debug("lineHighlighted {} {}", index, lineType);
+
+		}
+		
 		switch (lineType)
 		{
 		case SOURCE:
-			highlightFromSource(index, MASK_UPDATE_ASSEMBLY | MASK_UPDATE_BYTECODE);
+			highlightFromSource(index);
 			break;
 		case BYTECODE:
 			highlightFromBytecode(index);
+			break;
+		case BYTECODE_BCI:
+			int indexForBCI = viewerBytecode.getLineIndexForBytecodeOffset(index);	
+			viewerBytecode.highlightLine(indexForBCI, true);
+			highlightFromBytecode(indexForBCI);
 			break;
 		case ASSEMBLY:
 			highlightFromAssembly(index);
@@ -793,7 +796,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		}
 	}
 
-	private void highlightFromSource(int index, int updateMask)
+	private void highlightFromSource(int index)
 	{
 		int sourceLine = index + 1;
 		int bytecodeHighlight = -1;
@@ -854,24 +857,22 @@ public class TriView extends Stage implements ITriView, ILineListener
 						setMember(nextMember, false, false);
 					}
 
-					if ((updateMask & MASK_UPDATE_BYTECODE) == MASK_UPDATE_BYTECODE)
+					LineTable lineTable = memberBytecode.getLineTable();
+
+					LineTableEntry lineTableEntry = lineTable.getEntryForSourceLine(sourceLine);
+
+					if (DEBUG_LOGGING_TRIVIEW)
 					{
-						LineTable lineTable = memberBytecode.getLineTable();
-
-						LineTableEntry lineTableEntry = lineTable.getEntryForSourceLine(sourceLine);
-
-						if (DEBUG_LOGGING_TRIVIEW)
-						{
-							logger.debug("getEntryForSourceLine({}) : {}", sourceLine, lineTableEntry);
-						}
-
-						if (lineTableEntry != null)
-						{
-							int bcOffset = lineTableEntry.getBytecodeOffset();
-
-							bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
-						}
+						logger.debug("getEntryForSourceLine({}) : {}", sourceLine, lineTableEntry);
 					}
+
+					if (lineTableEntry != null)
+					{
+						int bcOffset = lineTableEntry.getBytecodeOffset();
+
+						bytecodeHighlight = viewerBytecode.getLineIndexForBytecodeOffset(bcOffset);
+					}
+
 				}
 				else if (msp != null && !msp.getMemberName().equals(S_STATIC_INIT))
 				{
@@ -879,15 +880,13 @@ public class TriView extends Stage implements ITriView, ILineListener
 				}
 			}
 
-			if ((updateMask & MASK_UPDATE_ASSEMBLY) == MASK_UPDATE_ASSEMBLY)
-			{
-				int assemblyHighlight = -1;
-				assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
-				viewerAssembly.highlightLine(assemblyHighlight);
-			}
+			int assemblyHighlight = -1;
+			assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
+			viewerAssembly.highlightLine(assemblyHighlight, true);
+
 		}
 
-		viewerBytecode.highlightLine(bytecodeHighlight);
+		viewerBytecode.highlightLine(bytecodeHighlight, true);
 	}
 
 	private void highlightFromBytecode(int index)
@@ -934,8 +933,8 @@ public class TriView extends Stage implements ITriView, ILineListener
 					}
 				}
 
-				viewerSource.highlightLine(sourceHighlight);
-				viewerAssembly.highlightLine(assemblyHighlight);
+				viewerSource.highlightLine(sourceHighlight, true);
+				viewerAssembly.highlightLine(assemblyHighlight, true);
 			}
 		}
 	}
@@ -945,7 +944,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 		Label label = viewerAssembly.getLabelAtIndex(index);
 
 		if (label != null && label instanceof AssemblyLabel)
-		{			
+		{
 			String className = viewerAssembly.getClassNameFromLabel(label);
 
 			if (isClassNameEqualsCurrentMemberClassName(className) || isClassNameAnInnerClassOfCurrentMember(className))
@@ -959,7 +958,7 @@ public class TriView extends Stage implements ITriView, ILineListener
 					{
 						int sourceHighlight = Integer.parseInt(sourceLine) - 1;
 
-						viewerSource.highlightLine(sourceHighlight);
+						viewerSource.highlightLine(sourceHighlight, true);
 
 						if (bci != null)
 						{
@@ -1124,30 +1123,5 @@ public class TriView extends Stage implements ITriView, ILineListener
 
 		focussedViewer = LineType.ASSEMBLY;
 		viewerAssembly.requestFocus();
-	}
-
-	@Override
-	public void highlightBytecodeForSuggestion(Suggestion suggestion)
-	{	
-		if (viewerBytecode != null)
-		{
-			viewerBytecode.highlightBytecodeForSuggestion(suggestion);
-		}
-	}
-
-	@Override
-	public void highlightBytecodeOffset(int bci, int updateMask)
-	{
-		if (viewerBytecode != null)
-		{
-			viewerBytecode.highlightBytecodeOffset(bci);
-		}
-	}
-
-	@Override
-	public void highlightSourceLine(int line, int updateMask)
-	{
-		highlightFromSource(line - 1, updateMask);
-		viewerSource.highlightLine(line - 1);
 	}
 }

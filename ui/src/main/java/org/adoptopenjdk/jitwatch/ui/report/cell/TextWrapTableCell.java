@@ -3,17 +3,20 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.suggestion;
+package org.adoptopenjdk.jitwatch.ui.report.cell;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+
+import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
+
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextArea;
 
-class SuggestionTableCell extends TableCell<SuggestTableRow, String>
+public class TextWrapTableCell extends TableCell<IReportRowBean, String>
 {
 	private TextArea textArea;
 
-	public SuggestionTableCell()
+	public TextWrapTableCell()
 	{
 		textArea = new TextArea();
 		textArea.setWrapText(true);
@@ -23,13 +26,13 @@ class SuggestionTableCell extends TableCell<SuggestTableRow, String>
 	}
 
 	@Override
-	protected void updateItem(String suggestion, boolean empty)
+	protected void updateItem(String text, boolean empty)
 	{
-		if (suggestion != null)
+		if (text != null)
 		{
-			int rows = suggestion.split(S_NEWLINE).length;
+			int rows = text.split(S_NEWLINE).length;
 
-			textArea.setText(suggestion);
+			textArea.setText(text);
 			textArea.setPrefHeight(100 + rows * 10);
 			textArea.setVisible(true);
 		}

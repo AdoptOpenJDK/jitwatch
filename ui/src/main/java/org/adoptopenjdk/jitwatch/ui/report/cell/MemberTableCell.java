@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.suggestion;
+package org.adoptopenjdk.jitwatch.ui.report.cell;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,13 +15,15 @@ import javafx.scene.layout.VBox;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
+import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
-public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
+public class MemberTableCell extends TableCell<IReportRowBean, Report>
 {
-	private VBox vb;
+	private VBox vBox;
 	private Label lblMetaClass;
 	private Label lblMetaMember;
 	private Label lblCompilation;
@@ -37,56 +39,56 @@ public class MemberTableCell extends TableCell<SuggestTableRow, Suggestion>
 
 	public MemberTableCell()
 	{
-		vb = new VBox();
+		vBox = new VBox();
 
 		lblMetaClass = new Label();
 		lblMetaMember = new Label();
 		lblCompilation = new Label();
-		
+
 		btnTriView = new Button("View");
 
-		vb.getChildren().add(lblMetaClass);
-		vb.getChildren().add(lblMetaMember);
-		vb.getChildren().add(lblCompilation);
+		vBox.getChildren().add(lblMetaClass);
+		vBox.getChildren().add(lblMetaMember);
+		vBox.getChildren().add(lblCompilation);
+		vBox.getChildren().add(btnTriView);
 
-		vb.getChildren().add(btnTriView);
+		vBox.setSpacing(5);
 
-		vb.setSpacing(5);
-
-		setGraphic(vb);
+		setGraphic(vBox);
 	}
 
 	@Override
-	protected void updateItem(final Suggestion suggestion, boolean empty)
+	protected void updateItem(final Report report, boolean empty)
 	{
-		if (suggestion != null && suggestion.getCaller() != null)
+		if (report != null && report.getCaller() != null)
 		{
-			final IMetaMember member = suggestion.getCaller();
+			final IMetaMember member = report.getCaller();
 
 			btnTriView.setOnAction(new EventHandler<ActionEvent>()
 			{
 				@Override
 				public void handle(ActionEvent e)
 				{
-					if (suggestion.getCompilationIndex() != -1)
+					if (report.getCompilationIndex() != -1)
 					{
-						member.setSelectedCompilation(suggestion.getCompilationIndex());
+						member.setSelectedCompilation(report.getCompilationIndex());
 					}
-					
+
 					ITriView triViewAccesor = triViewAccessor.openTriView(member, false);
-					triViewAccesor.highlightBytecodeForSuggestion(suggestion);
+					triViewAccesor.lineHighlighted(report.getBytecodeOffset(),  LineType.BYTECODE_BCI);
 				}
 			});
 
 			lblMetaClass.setText(member.getMetaClass().getFullyQualifiedName());
-			lblMetaMember.setText(member.toStringUnqualifiedMethodName(false));
-			
-			Compilation compilation = member.getCompilation(suggestion.getCompilationIndex());
-			
-			String compilationText = compilation != null ? "Compilation: " +compilation.getSignature() : S_EMPTY;
-			
+			lblMetaMember.setText(member.toStringUnqualifiedMethodName(false, false));
+
+			Compilation compilation = member.getCompilation(report.getCompilationIndex());
+
+			String compilationText = compilation != null ? "Compilation: " + compilation.getSignature() : S_EMPTY;
+
 			lblCompilation.setText(compilationText);
 
+			btnTriView.setText("View BCI " + report.getBytecodeOffset());
 
 			btnTriView.setVisible(true);
 		}

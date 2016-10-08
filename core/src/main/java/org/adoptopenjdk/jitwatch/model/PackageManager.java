@@ -44,7 +44,7 @@ public class PackageManager
 
 	public void addMetaClass(MetaClass metaClass)
 	{		
-		metaClasses.put(metaClass.getFullyQualifiedName(), metaClass);
+		metaClasses.put(metaClass.getFullyQualifiedName(), metaClass);		
 	}
 
 	public MetaClass getMetaClass(String className)

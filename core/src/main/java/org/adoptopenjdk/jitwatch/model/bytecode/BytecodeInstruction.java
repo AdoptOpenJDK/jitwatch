@@ -124,27 +124,11 @@ public class BytecodeInstruction
 		return toString(0, 0);
 	}
 
-	public boolean isInvoke()
-	{
-		return opcode != null && (opcode == Opcode.INVOKEVIRTUAL || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKESTATIC
-				|| opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKEDYNAMIC);
-	}
-
-	public boolean isLock()
-	{
-		return opcode != null && opcode == Opcode.MONITORENTER;
-	}
-
-	public boolean isSwitch()
-	{
-		return opcode != null && (opcode == Opcode.TABLESWITCH || opcode == Opcode.LOOKUPSWITCH);
-	}
-
 	public int getLabelLines()
 	{
 		int result = 1;
 
-		if (isSwitch() && parameters.size() == 1)
+		if (opcode.isSwitch() && parameters.size() == 1)
 		{
 			BCParamSwitch switchParam = (BCParamSwitch) parameters.get(0);
 			result = 2 + switchParam.getSize();
@@ -169,7 +153,7 @@ public class BytecodeInstruction
 
 	public String toString(int maxOffset, int line)
 	{
-		if (isSwitch())
+		if (opcode.isSwitch())
 		{
 			return toStringSwitch(maxOffset, line);
 		}

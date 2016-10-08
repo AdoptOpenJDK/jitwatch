@@ -36,7 +36,7 @@ public class SequenceSearchOperation implements IJarScanOperation
 
 		for (String mnemonic : searchSequence)
 		{
-			Opcode opcode = Opcode.getOpcodeForMnemonic(mnemonic);
+			Opcode opcode = Opcode.getByMnemonic(mnemonic);
 
 			wantedChain.add(opcode);
 		}

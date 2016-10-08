@@ -6,7 +6,6 @@
 package org.adoptopenjdk.jitwatch.ui.triview;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRIVIEW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -512,13 +511,13 @@ public class Viewer extends VBox
 		}
 	}
 
-	public void highlightLine(int index)
+	protected void highlightLine(int index)
 	{
 		highlightLine(index, true);
 	}
 
 	public void highlightLine(int index, boolean setScrollbar)
-	{
+	{	
 		unhighlightPrevious();
 
 		if (index >= vBoxRows.getChildren().size())
@@ -531,11 +530,6 @@ public class Viewer extends VBox
 			// leave source position unchanged if not a known source line
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
-
-			if (DEBUG_LOGGING_TRIVIEW)
-			{
-				logger.debug("highlighting line {} in {}", index, getClass().getName());
-			}
 
 			lastScrollIndex = index;
 

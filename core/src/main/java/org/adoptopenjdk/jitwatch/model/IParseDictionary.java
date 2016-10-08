@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
+
 public interface IParseDictionary
 {
 	void putType(String id, Tag type);
@@ -12,6 +14,8 @@ public interface IParseDictionary
 	void putKlass(String id, Tag klass);
 
 	void putMethod(String id, Tag method);
+	
+	void putBCIOpcode(String methodID, int bci, Opcode opcode);
 
 	Tag getType(String id);
 
@@ -19,6 +23,7 @@ public interface IParseDictionary
 
 	Tag getMethod(String id);
 	
-	@Override
-	String toString();
+	String getParseMethod();
+	
+	BCIOpcodeMap getBCIOpcodeMap(String methodID);
 }

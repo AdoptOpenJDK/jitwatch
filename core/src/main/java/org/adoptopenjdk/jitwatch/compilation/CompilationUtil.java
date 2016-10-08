@@ -74,7 +74,7 @@ public final class CompilationUtil
 
 					if (DEBUG_LOGGING)
 					{
-						logger.debug("About to visit {} parse tags in last <task> of Journal", parseTags.size());
+						logger.debug("About to visit {} parse tags of <task>", parseTags.size());
 					}
 
 					for (Tag parseTag : parseTags)
@@ -154,6 +154,8 @@ public final class CompilationUtil
 			logger.warn("Compilation is null");
 		}
 	}
+	
+//	private Map<Integer, Integer> getBytecodeMap
 
 	public static boolean isJournalForCompile2NativeMember(Tag tag)
 	{
@@ -189,7 +191,7 @@ public final class CompilationUtil
 	}
 
 	public static boolean memberMatchesMethodID(IMetaMember member, String methodID, IParseDictionary parseDictionary)
-	{
+	{		
 		boolean result = false;
 
 		Tag methodTag = parseDictionary.getMethod(methodID);
@@ -294,7 +296,7 @@ public final class CompilationUtil
 		return result;
 	}
 
-	private static Tag getParsePhase(Task task)
+	public static Tag getParsePhase(Task task)
 	{
 		Tag parsePhase = null;
 

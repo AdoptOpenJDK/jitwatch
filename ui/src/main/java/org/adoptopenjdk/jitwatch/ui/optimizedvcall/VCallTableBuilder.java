@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,6 +18,7 @@ import javafx.scene.input.MouseEvent;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 
 public class VCallTableBuilder
@@ -69,9 +70,8 @@ public class VCallTableBuilder
 
 					ITriView triView = proxy.openTriView(callingMember, true);
 
-					triView.highlightSourceLine(selected.getCallerSourceLine(), ITriView.MASK_UPDATE_ASSEMBLY);
-					triView.highlightBytecodeOffset(selected.getCallerBCI(), ITriView.MASK_UPDATE_ASSEMBLY);
-
+					triView.lineHighlighted(selected.getCallerSourceLine(), LineType.ASSEMBLY);
+					triView.lineHighlighted(selected.getCallerBCI(), LineType.ASSEMBLY);
 				}
 			}
 		});

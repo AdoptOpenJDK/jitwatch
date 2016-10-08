@@ -3,39 +3,47 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.suggestion;
+package org.adoptopenjdk.jitwatch.report;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
-public class Suggestion
+public class Report
 {
-	public enum SuggestionType
-	{
-		BRANCH, INLINING, CODE_CACHE, HOT_THROW
-	}
-
 	private final IMetaMember caller;
 	private final int compilationIndex;
 	private final int bytecodeOffset;
-	private final String suggestion;
-	private final SuggestionType type;
+	private final String text;
+	private final ReportType type;
 	private final int score;
+	private Object metaData;
 
-	public Suggestion(IMetaMember caller, int compilationIndex, int bytecodeOffset, String suggestion, SuggestionType type, int score)
+	public Report(IMetaMember caller, int compilationIndex, int bytecodeOffset, String text, ReportType type, int score)
+	{
+		this(caller, compilationIndex, bytecodeOffset, text, type, score, null);
+	}
+
+	public Report(IMetaMember caller, int compilationIndex, int bytecodeOffset, String text, ReportType type, int score,
+			Object metaData)
 	{
 		this.caller = caller;
 		this.compilationIndex = compilationIndex;
 		this.bytecodeOffset = bytecodeOffset;
-		this.suggestion = suggestion;
+		this.text = text;
 		this.score = score;
 		this.type = type;
+		this.metaData = metaData;
 	}
 
 	public IMetaMember getCaller()
 	{
 		return caller;
 	}
-	
+
+	public Object getMetaData()
+	{
+		return metaData;
+	}
+
 	public int getCompilationIndex()
 	{
 		return compilationIndex;
@@ -48,10 +56,10 @@ public class Suggestion
 
 	public String getText()
 	{
-		return suggestion;
+		return text;
 	}
 
-	public SuggestionType getType()
+	public ReportType getType()
 	{
 		return type;
 	}
@@ -69,8 +77,9 @@ public class Suggestion
 		result = prime * result + bytecodeOffset;
 		result = prime * result + ((caller == null) ? 0 : caller.hashCode());
 		result = prime * result + compilationIndex;
+		result = prime * result + ((metaData == null) ? 0 : metaData.hashCode());
 		result = prime * result + score;
-		result = prime * result + ((suggestion == null) ? 0 : suggestion.hashCode());
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -84,7 +93,7 @@ public class Suggestion
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Suggestion other = (Suggestion) obj;
+		Report other = (Report) obj;
 		if (bytecodeOffset != other.bytecodeOffset)
 			return false;
 		if (caller == null)
@@ -96,17 +105,31 @@ public class Suggestion
 			return false;
 		if (compilationIndex != other.compilationIndex)
 			return false;
-		if (score != other.score)
-			return false;
-		if (suggestion == null)
+		if (metaData == null)
 		{
-			if (other.suggestion != null)
+			if (other.metaData != null)
 				return false;
 		}
-		else if (!suggestion.equals(other.suggestion))
+		else if (!metaData.equals(other.metaData))
+			return false;
+		if (score != other.score)
+			return false;
+		if (text == null)
+		{
+			if (other.text != null)
+				return false;
+		}
+		else if (!text.equals(other.text))
 			return false;
 		if (type != other.type)
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Report [caller=" + caller + ", compilationIndex=" + compilationIndex + ", bytecodeOffset=" + bytecodeOffset
+				+ ", text=" + text + ", type=" + type + ", score=" + score + ", metaData=" + metaData + "]";
 	}
 }

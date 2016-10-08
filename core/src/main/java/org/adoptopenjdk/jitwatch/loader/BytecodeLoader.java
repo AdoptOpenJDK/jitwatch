@@ -719,7 +719,7 @@ public final class BytecodeLoader
 						}
 
 						instruction.setOffset(Integer.parseInt(offset));
-						instruction.setOpcode(Opcode.getOpcodeForMnemonic(mnemonic));
+						instruction.setOpcode(Opcode.getByMnemonic(mnemonic));
 
 						if (comment != null && comment.trim().length() > 0)
 						{

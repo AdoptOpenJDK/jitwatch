@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.suggestion;
+package org.adoptopenjdk.jitwatch.ui.report;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -12,11 +12,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 
-public class SuggestionPackageFilter extends HBox
+public class ReportPackageFilter extends HBox
 {
 	private TextField tfFilter;
 
-	public SuggestionPackageFilter(final SuggestStage parent)
+	public ReportPackageFilter(final ReportStage parent)
 	{
 		setPadding(new Insets(4));
 		setSpacing(4);

@@ -13,27 +13,21 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
-
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
-import org.adoptopenjdk.jitwatch.model.AnnotationException;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
@@ -41,9 +35,9 @@ import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.junit.After;
 import org.junit.Test;
@@ -74,7 +68,7 @@ public class TestBytecodeAnnotationBuilder
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
 
-		assertFalse(BytecodeAnnotationBuilder.sanityCheckInline(instrAaload));
+		assertFalse(new BytecodeAnnotationBuilder(true).sanityCheckInline(instrAaload));
 	}
 
 	@Test
@@ -83,7 +77,7 @@ public class TestBytecodeAnnotationBuilder
 		BytecodeInstruction instrInvokeSpecial = new BytecodeInstruction();
 		instrInvokeSpecial.setOpcode(Opcode.INVOKESPECIAL);
 
-		assertTrue(BytecodeAnnotationBuilder.sanityCheckInline(instrInvokeSpecial));
+		assertTrue(new BytecodeAnnotationBuilder(true).sanityCheckInline(instrInvokeSpecial));
 	}
 
 	@Test
@@ -92,7 +86,7 @@ public class TestBytecodeAnnotationBuilder
 		BytecodeInstruction instrAaload = new BytecodeInstruction();
 		instrAaload.setOpcode(Opcode.AALOAD);
 
-		assertFalse(BytecodeAnnotationBuilder.sanityCheckBranch(instrAaload));
+		assertFalse(new BytecodeAnnotationBuilder(true).sanityCheckBranch(instrAaload));
 	}
 
 	@Test
@@ -101,7 +95,7 @@ public class TestBytecodeAnnotationBuilder
 		BytecodeInstruction instrIfcmpne = new BytecodeInstruction();
 		instrIfcmpne.setOpcode(Opcode.IF_ICMPNE);
 
-		assertTrue(BytecodeAnnotationBuilder.sanityCheckBranch(instrIfcmpne));
+		assertTrue(new BytecodeAnnotationBuilder(true).sanityCheckBranch(instrIfcmpne));
 	}
 
 	@Test
@@ -302,21 +296,25 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf",
 				new Class[] { long.class }, void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
 
-		assertEquals(10, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 22, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 28, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 40, "always", BCAnnotationType.BRANCH);
-		checkLine(result, 52, "not reached", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 56, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 62, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
 
+		assertEquals(10, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 22, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 28, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 40, "always", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 52, "not reached", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 56, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 62, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
 	@Test
@@ -536,18 +534,23 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain",
 				new Class[] { long.class }, void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
 
-		assertEquals(8, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 28, "always", BCAnnotationType.BRANCH);
-		checkLine(result, 40, "not reached", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 44, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 47, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 47, "null_check", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(8, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 10, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 16, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 28, "always", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 40, "not reached", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 44, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 47, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 47, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 50, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
 	}
 
 	@Test
@@ -767,18 +770,23 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testCallChain3",
 				new Class[0], void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
 
-		assertEquals(8, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 64, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 18, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 35, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 67, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 52, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 57, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 26, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 61, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(8, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 64, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 18, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 35, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 67, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 52, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 57, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 26, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 61, "Inlined: Yes", BCAnnotationType.INLINE_SUCCESS);
 	}
 
 	@Test
@@ -977,55 +985,26 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", "testLeaf",
 				new Class[] { long.class }, void.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
-
-		assertEquals(11, result.annotatedLineCount());
-
-		checkLine(result, 10, "never", BCAnnotationType.BRANCH);
-		checkLine(result, 15, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 27, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 33, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 50, "not reached", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 55, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 65, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 65, "null_check", BCAnnotationType.UNCOMMON_TRAP);
-	}
-
-	private BytecodeAnnotations buildAnnotations(String vmVersion, IMetaMember member, String[] logLines, String[] bytecodeLines)
-	{
-		UnitTestUtil.processLogLines(member, logLines);
-
-		StringBuilder bytecodeBuilder = new StringBuilder();
-
-		for (String bcLine : bytecodeLines)
-		{
-			bytecodeBuilder.append(bcLine.trim()).append(S_NEWLINE);
-		}
-
-		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(bytecodeBuilder.toString());
-
-		((HelperMetaMethod) member).setInstructions(instructions);
-
-		BytecodeAnnotations bcAnnotations = null;
-
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease(vmVersion);
+		model.setVmVersionRelease("1.8.0");
 
-		try
-		{
-			bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, model);
-		}
-		catch (AnnotationException annoEx)
-		{
-			annoEx.printStackTrace();
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-			fail();
-		}
+		BytecodeAnnotationList list = result.getAnnotationList(member);
 
-		return bcAnnotations;
+		assertEquals(11, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 10, "never", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 15, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 27, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 33, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 50, "not reached", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 55, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 59, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 62, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 65, "MinInliningThreshold", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 65, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
 	@Test
@@ -1064,7 +1043,7 @@ public class TestBytecodeAnnotationBuilder
 		attrsParse.put(ATTR_METHOD, methodID);
 		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
-		IParseDictionary parseDictionary = new ParseDictionary();
+		IParseDictionary parseDictionary = new ParseDictionary(methodID);
 		parseDictionary.putKlass(klassID, tagKlass);
 		parseDictionary.putMethod(methodID, tagMethod);
 		parseDictionary.putType(idInt, tagTypeInt);
@@ -1104,31 +1083,6 @@ public class TestBytecodeAnnotationBuilder
 		member.setTagNMethod(tag);
 
 		assertFalse(CompilationUtil.isJournalForCompile2NativeMember(tag));
-	}
-
-	private void checkLine(BytecodeAnnotations result, int index, String annotation, BCAnnotationType type)
-	{
-		List<LineAnnotation> lines = result.getAnnotationsForBCI(index);
-
-		assertNotNull(lines);
-
-		boolean matchedAnnotation = false;
-		boolean matchedType = false;
-
-		for (LineAnnotation lineAnnotation : lines)
-		{
-			if (lineAnnotation.getAnnotation().contains(annotation))
-			{
-				matchedAnnotation = true;
-				if (lineAnnotation.getType() == type)
-				{
-					matchedType = true;
-				}
-			}
-		}
-
-		assertTrue("Did not match text: " + annotation, matchedAnnotation);
-		assertTrue("Did not match type: " + type, matchedType);
 	}
 
 	@Test
@@ -1178,7 +1132,7 @@ public class TestBytecodeAnnotationBuilder
 		attrsParse.put(ATTR_METHOD, methodID);
 		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
-		IParseDictionary parseDictionary = new ParseDictionary();
+		IParseDictionary parseDictionary = new ParseDictionary(methodID);
 		parseDictionary.putKlass(klassID, tagKlass);
 		parseDictionary.putMethod(methodID, tagMethod);
 		parseDictionary.putType(idString, tagTypeString);
@@ -1238,7 +1192,7 @@ public class TestBytecodeAnnotationBuilder
 		attrsParse.put(ATTR_METHOD, methodID);
 		Tag tagParse = createTag(TAG_PARSE, attrsParse, false);
 
-		IParseDictionary parseDictionary = new ParseDictionary();
+		IParseDictionary parseDictionary = new ParseDictionary(methodID);
 		parseDictionary.putKlass(klassID, tagKlass);
 		parseDictionary.putMethod(methodID, tagMethod);
 		parseDictionary.putType(idString, tagTypeString);
@@ -1516,25 +1470,30 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.8.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
 
-		assertEquals(12, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 7, "constraint", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 7, "predicate", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 7, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 11, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 11, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 22, "null_check", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 25, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 28, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 35, "EscapeTest$Wrapper1", BCAnnotationType.ELIMINATED_ALLOCATION);
-		checkLine(result, 42, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 47, "EscapeTest$Wrapper2", BCAnnotationType.ELIMINATED_ALLOCATION);
-		checkLine(result, 54, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 63, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 66, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 84, "unloaded", BCAnnotationType.UNCOMMON_TRAP);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(12, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 7, "constraint", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 7, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 7, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 11, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 11, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 22, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 25, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 28, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 35, "EscapeTest$Wrapper1", BCAnnotationType.ELIMINATED_ALLOCATION);
+		UnitTestUtil.checkAnnotation(list, 42, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 47, "EscapeTest$Wrapper2", BCAnnotationType.ELIMINATED_ALLOCATION);
+		UnitTestUtil.checkAnnotation(list, 54, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 63, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 66, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 84, "unloaded", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
 	@Test
@@ -1760,25 +1719,30 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.9.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.9.0");
 
-		assertEquals(12, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 7, "constraint", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 7, "predicate", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 7, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 11, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 11, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 22, "null_check", BCAnnotationType.UNCOMMON_TRAP);
-		checkLine(result, 25, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 28, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 35, "EscapeTest$Wrapper1", BCAnnotationType.ELIMINATED_ALLOCATION);
-		checkLine(result, 42, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 47, "EscapeTest$Wrapper2", BCAnnotationType.ELIMINATED_ALLOCATION);
-		checkLine(result, 54, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 63, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 66, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 84, "unloaded", BCAnnotationType.UNCOMMON_TRAP);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(12, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 7, "constraint", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 7, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 7, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 11, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 11, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 22, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 25, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 28, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 35, "EscapeTest$Wrapper1", BCAnnotationType.ELIMINATED_ALLOCATION);
+		UnitTestUtil.checkAnnotation(list, 42, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 47, "EscapeTest$Wrapper2", BCAnnotationType.ELIMINATED_ALLOCATION);
+		UnitTestUtil.checkAnnotation(list, 54, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 63, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 66, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 84, "unloaded", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
 	@Test
@@ -1860,53 +1824,58 @@ public class TestBytecodeAnnotationBuilder
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember("java.io.BufferedInputStream", "read", new Class[0], int.class);
 
-		BytecodeAnnotations result = buildAnnotations("1.9.0", member, logLines, bytecodeLines);
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.9.0");
 
-		assertEquals(5, result.annotatedLineCount());
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
-		checkLine(result, 8, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 12, "No, too big", BCAnnotationType.INLINE_FAIL);
-		checkLine(result, 23, "taken", BCAnnotationType.BRANCH);
-		checkLine(result, 29, "hot", BCAnnotationType.INLINE_SUCCESS);
-		checkLine(result, 43, "range_check", BCAnnotationType.UNCOMMON_TRAP);
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(5, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 8, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 12, "No, too big", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 23, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 29, "hot", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 43, "range_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
 
 	@Test
 	public void testRegressionMemberMatchesParseTagWithArrayParams()
 	{
-		String[] lines = new String[]{
-				 "<parse method='831' stamp='0.138'>",
-			     " <bc code='183' bci='9'/>",
-			     " <klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>",
-			     " <method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>",
-			     " <call method='834' instr='invokespecial'/>",
-			     " <inline_fail reason='not inlineable'/>",
-			     " <bc code='183' bci='27'/>",
-			     " <call method='834' instr='invokespecial'/>",
-			     " <inline_fail reason='not inlineable'/>",
-			     " <bc code='183' bci='43'/>",
-			     " <call method='834' instr='invokespecial'/>",
-			     " <inline_fail reason='not inlineable'/>",
-			     " <bc code='184' bci='58'/>",
-			     " <klass name='java/lang/Object' flags='1' id='728'/>",
-			     " <klass name='java/lang/System' flags='17' id='734'/>",
-			     " <method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>",
-			     " <call method='835' instr='invokestatic'/>",
-			     " <inline_success reason='intrinsic'/>",
-			     " <parse_done stamp='0.139'/>",
-			     "</parse>"
-		};
+		String[] lines = new String[] {
+				"<parse method='831' stamp='0.138'>",
+				" <bc code='183' bci='9'/>",
+				" <klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>",
+				" <method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>",
+				" <call method='834' instr='invokespecial'/>",
+				" <inline_fail reason='not inlineable'/>",
+				" <bc code='183' bci='27'/>",
+				" <call method='834' instr='invokespecial'/>",
+				" <inline_fail reason='not inlineable'/>",
+				" <bc code='183' bci='43'/>",
+				" <call method='834' instr='invokespecial'/>",
+				" <inline_fail reason='not inlineable'/>",
+				" <bc code='184' bci='58'/>",
+				" <klass name='java/lang/Object' flags='1' id='728'/>",
+				" <klass name='java/lang/System' flags='17' id='734'/>",
+				" <method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>",
+				" <call method='835' instr='invokestatic'/>",
+				" <inline_success reason='intrinsic'/>",
+				" <parse_done stamp='0.139'/>",
+				"</parse>" };
 
 		String methodName = "getChars";
 		String klassName = "java.lang.String";
 		Class<?>[] params = new Class[] { int.class, int.class, char[].class, int.class };
 
-		IParseDictionary parseDictionary = new ParseDictionary();
-		
+		IParseDictionary parseDictionary = new ParseDictionary(methodName);
+
 		TagProcessor tagProcessor = new TagProcessor();
-		
+
 		Tag tagKlass820 = tagProcessor.processLine("<klass name='[C' flags='1041' id='820'/>");
-		Tag tagKlass833 = tagProcessor.processLine("<klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>");
+		Tag tagKlass833 = tagProcessor
+				.processLine("<klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>");
 		Tag tagKlass734 = tagProcessor.processLine("<klass name='java/lang/System' flags='17' id='734'/>");
 		Tag tagKlass728 = tagProcessor.processLine("<klass name='java/lang/Object' flags='1' id='728'/>");
 		Tag tagKlass729 = tagProcessor.processLine("<klass name='java/lang/String' flags='17' id='729'/>");
@@ -1916,15 +1885,18 @@ public class TestBytecodeAnnotationBuilder
 		parseDictionary.putKlass("734", tagKlass734);
 		parseDictionary.putKlass("728", tagKlass728);
 		parseDictionary.putKlass("729", tagKlass729);
-		
+
 		Tag tagType721 = tagProcessor.processLine("<type name='int' id='721'/>");
 		Tag tagType723 = tagProcessor.processLine("<type name='void' id='723'/>");
 		parseDictionary.putType("721", tagType721);
 		parseDictionary.putType("723", tagType723);
-		
-		Tag tagMethod831 = tagProcessor.processLine("<method bytes='62' name='getChars' flags='1' holder='729' arguments='721 721 820 721' id='831' iicount='256' return='723'/>");
-		Tag tagMethod834 = tagProcessor.processLine("<method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>");
-		Tag tagMethod835 = tagProcessor.processLine("<method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>");
+
+		Tag tagMethod831 = tagProcessor.processLine(
+				"<method bytes='62' name='getChars' flags='1' holder='729' arguments='721 721 820 721' id='831' iicount='256' return='723'/>");
+		Tag tagMethod834 = tagProcessor
+				.processLine("<method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>");
+		Tag tagMethod835 = tagProcessor.processLine(
+				"<method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>");
 		parseDictionary.putMethod("831", tagMethod831);
 		parseDictionary.putMethod("834", tagMethod834);
 		parseDictionary.putMethod("835", tagMethod835);
@@ -1933,31 +1905,32 @@ public class TestBytecodeAnnotationBuilder
 
 		assertTrue(CompilationUtil.memberMatchesMethodID(member, "831", parseDictionary));
 	}
-	
+
 	@Test
 	public void testRegressionMemberMatchesParseTagForConstructor()
 	{
-		String[] lines = new String[]{
-		   "<parse method='823' stamp='2.515' uses='16823'>",
-		   "   <bc code='183' bci='1'/>",
-		   "   <klass name='java/lang/Object' flags='1' id='720'/>",
-		   "   <method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>",
-		   "   <call method='825' inline='1' count='16398' prof_factor='1'/>",
-		   "   <inline_success reason='inline (hot)'/>",
-		   "   <parse method='825' stamp='2.515' uses='16823'>",
-		   "     <parse_done nodes='51' memory='24584' stamp='2.515' live='50'/>",
-		   "   </parse>",
-		   "   <parse_done nodes='69' memory='28312' stamp='2.515' live='67'/>",
-		   " </parse>"};
-		
-		String methodName = "String"; // constructor java.lang.String(char[],boolean)
-		String klassName = "java.lang.String";
-		Class<?>[] params = new Class[] {char[].class, boolean.class };
+		String[] lines = new String[] {
+				"<parse method='823' stamp='2.515' uses='16823'>",
+				"   <bc code='183' bci='1'/>",
+				"   <klass name='java/lang/Object' flags='1' id='720'/>",
+				"   <method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>",
+				"   <call method='825' inline='1' count='16398' prof_factor='1'/>",
+				"   <inline_success reason='inline (hot)'/>",
+				"   <parse method='825' stamp='2.515' uses='16823'>",
+				"     <parse_done nodes='51' memory='24584' stamp='2.515' live='50'/>",
+				"   </parse>",
+				"   <parse_done nodes='69' memory='28312' stamp='2.515' live='67'/>",
+				" </parse>" };
 
-		IParseDictionary parseDictionary = new ParseDictionary();
-		
+		String methodName = "String"; // constructor
+										// java.lang.String(char[],boolean)
+		String klassName = "java.lang.String";
+		Class<?>[] params = new Class[] { char[].class, boolean.class };
+
+		IParseDictionary parseDictionary = new ParseDictionary(methodName);
+
 		TagProcessor tagProcessor = new TagProcessor();
-		
+
 		Tag tagType715 = tagProcessor.processLine("<type name='void' id='715'/>");
 		Tag tagType707 = tagProcessor.processLine("<type name='boolean' id='707'/>");
 		parseDictionary.putType("715", tagType715);
@@ -1970,13 +1943,504 @@ public class TestBytecodeAnnotationBuilder
 		parseDictionary.putKlass("721", tagKlass721);
 		parseDictionary.putKlass("812", tagKlass812);
 
-		Tag tagMethod823 = tagProcessor.processLine("<method level='3' bytes='10' name='&lt;init&gt;' flags='0' holder='721' arguments='812 707' id='823' compile_id='149' compiler='C1' iicount='16823' return='715'/>");
-		Tag tagMethod825 = tagProcessor.processLine("<method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>");
+		Tag tagMethod823 = tagProcessor.processLine(
+				"<method level='3' bytes='10' name='&lt;init&gt;' flags='0' holder='721' arguments='812 707' id='823' compile_id='149' compiler='C1' iicount='16823' return='715'/>");
+		Tag tagMethod825 = tagProcessor.processLine(
+				"<method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>");
 		parseDictionary.putMethod("823", tagMethod823);
 		parseDictionary.putMethod("825", tagMethod825);
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(klassName, methodName, params, void.class);
 
 		assertTrue(CompilationUtil.memberMatchesMethodID(member, "823", parseDictionary));
+	}
+
+	@Test
+	public void testParseTagForLateInline()
+	{
+		String[] logLines = new String[] {
+				"<task_queued decompiles='1' unstable_if_traps='1' method='java/io/BufferedReader readLine (Z)Ljava/lang/String;' bytes='304' count='5000' backedge_count='5000' stamp='2.384' comment='count' hot_count='5001' compile_id='184' iicount='664'/>",
+				"<nmethod stub_offset='4272' dependencies_offset='5560' address='0x00007f2f150e1450' unstable_if_traps='1' method='java/io/BufferedReader readLine (Z)Ljava/lang/String;' count='5000' backedge_count='5000' stamp='2.404' nul_chk_table_offset='5784' scopes_data_offset='4448' iicount='790' handler_table_offset='5568' entry='0x00007f2f150e1620' decompiles='1' size='5816' scopes_pcs_offset='5240' insts_offset='464' bytes='304' relocation_offset='296' compile_id='184' compiler='C2'/>",
+				"<task decompiles='1' unstable_if_traps='1' method='java/io/BufferedReader readLine (Z)Ljava/lang/String;' bytes='304' count='5000' backedge_count='5098' stamp='2.384' compile_id='184' iicount='694'>",
+				"  <phase nodes='3' name='parse' stamp='2.385' live='3'>",
+				"    <klass name='java/lang/String' flags='17' id='729'/>",
+				"    <type name='boolean' id='715'/>",
+				"    <klass name='java/io/BufferedReader' flags='1' id='831'/>",
+				"    <method bytes='304' name='readLine' flags='0' holder='831' arguments='715' id='832' iicount='694' return='729'/>",
+				"    <parse method='832' stamp='2.385' uses='694'>",
+				"      <observe total='1' count='1' trap='unstable_if'/>",
+				"      <observe that='has_exception_handlers'/>",
+				"      <bc code='194' bci='9'/>",
+				"      <uncommon_trap reason='null_check' bci='9' action='maybe_recompile'/>",
+				"      <bc code='183' bci='11'/>",
+				"      <type name='void' id='723'/>",
+				"      <method bytes='18' name='ensureOpen' flags='2' holder='831' id='835' iicount='696' return='723'/>",
+				"      <call method='835' inline='1' count='538' prof_factor='1'/>",
+				"      <klass name='java/io/IOException' flags='1' id='842'/>",
+				"      <uncommon_trap reason='unloaded' method='835' klass='842' bci='7' action='reinterpret' index='16'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='835' stamp='2.385' uses='538'>",
+				"        <bc code='187' bci='7'/>",
+				"        <uncommon_trap reason='unloaded' bci='7' action='reinterpret' index='16'/>",
+				"        <parse_done nodes='81' memory='32192' stamp='2.385' live='78'/>",
+				"      </parse>",
+				"      <bc code='154' bci='15'/>",
+				"      <branch prob='never' not_taken='538' taken='0' cnt='538' target_bci='25'/>",
+				"      <uncommon_trap reason='unstable_if' bci='15' action='reinterpret' comment='taken never'/>",
+				"      <bc code='153' bci='22'/>",
+				"      <branch prob='0.903346' not_taken='52' taken='486' cnt='538' target_bci='29'/>",
+				"      <uncommon_trap reason='predicate' bci='32' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='loop_limit_check' bci='32' action='maybe_recompile'/>",
+				"      <bc code='161' bci='40'/>",
+				"      <branch prob='0.976147' not_taken='13' taken='532' cnt='545' target_bci='47'/>",
+				"      <bc code='183' bci='44'/>",
+				"      <method bytes='170' name='fill' flags='2' holder='831' id='841' iicount='18' return='723'/>",
+				"      <call method='841' inline='1' count='13' prof_factor='1'/>",
+				"      <inline_fail reason='too big'/>",
+				"      <direct_call bci='44'/>",
+				"      <bc code='161' bci='55'/>",
+				"      <branch prob='0.992661' not_taken='4' taken='541' cnt='545' target_bci='82'/>",
+				"      <bc code='198' bci='59'/>",
+				"      <branch not_taken='1' taken='3' target_bci='77'/>",
+				"      <bc code='182' bci='63'/>",
+				"      <type name='int' id='721'/>",
+				"      <klass name='java/lang/StringBuffer' flags='17' id='793'/>",
+				"      <method bytes='5' name='length' flags='33' holder='793' id='840' iicount='71' return='721'/>",
+				"      <call method='840' inline='1' count='1' prof_factor='1'/>",
+				"      <inline_success reason='accessor'/>",
+				"      <parse method='840' stamp='2.385' uses='1'>",
+				"        <parse_done nodes='236' memory='60840' stamp='2.385' live='229'/>",
+				"      </parse>",
+				"      <bc code='158' bci='66'/>",
+				"      <branch not_taken='0' taken='1' target_bci='77'/>",
+				"      <bc code='182' bci='70'/>",
+				"      <method bytes='36' name='toString' flags='33' holder='793' id='838' iicount='2899' return='729'/>",
+				"      <call method='838' inline='1' count='0' prof_factor='1'/>",
+				"      <inline_fail reason='too big'/>",
+				"      <direct_call bci='70'/>",
+				"      <bc code='153' bci='90'/>",
+				"      <branch prob='0.903882' not_taken='52' taken='489' cnt='541' target_bci='117'/>",
+				"      <bc code='52' bci='101'/>",
+				"      <uncommon_trap reason='null_check' bci='101' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='range_check' bci='101' action='make_not_entrant' comment='range_check'/>",
+				"      <bc code='160' bci='104'/>",
+				"      <branch prob='never' not_taken='52' taken='0' cnt='52' target_bci='117'/>",
+				"      <uncommon_trap reason='unstable_if' bci='104' action='reinterpret' comment='taken never'/>",
+				"      <bc code='162' bci='137'/>",
+				"      <branch prob='0.000125585' not_taken='55732' taken='7' cnt='55739' target_bci='175'/>",
+				"      <uncommon_trap reason='predicate' bci='140' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='loop_limit_check' bci='140' action='maybe_recompile'/>",
+				"      <bc code='52' bci='146'/>",
+				"      <uncommon_trap reason='null_check' bci='146' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='range_check' bci='146' action='make_not_entrant' comment='range_check'/>",
+				"      <bc code='159' bci='153'/>",
+				"      <branch prob='0.00861265' not_taken='55252' taken='480' cnt='55732' target_bci='163'/>",
+				"      <bc code='160' bci='160'/>",
+				"      <branch prob='0.999059' not_taken='52' taken='55200' cnt='55252' target_bci='169'/>",
+				"      <bc code='162' bci='137'/>",
+				"      <branch prob='0.000125585' not_taken='55732' taken='7' cnt='55200' target_bci='175'/>",
+				"      <bc code='153' bci='188'/>",
+				"      <branch prob='0.012987' not_taken='532' taken='7' cnt='539' target_bci='264'/>",
+				"      <bc code='199' bci='192'/>",
+				"      <branch prob='0.0131332' not_taken='526' taken='7' cnt='533' target_bci='216'/>",
+				"      <bc code='183' bci='208'/>",
+				"      <klass name='[C' flags='1041' id='820'/>",
+				"      <method bytes='82' name='&lt;init&gt;' flags='1' holder='729' arguments='820 721 721' id='839' compile_id='96' compiler='C2' iicount='10337' return='723'/>",
+				"      <call method='839' inline='1' count='526' prof_factor='1'/>",
+				"      <klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='851'/>",
+				"      <uncommon_trap reason='unloaded' method='839' klass='851' bci='58' action='reinterpret' index='6'/>",
+				"      <uncommon_trap reason='unloaded' method='839' klass='851' bci='25' action='reinterpret' index='6'/>",
+				"      <uncommon_trap reason='unloaded' method='839' klass='851' bci='8' action='reinterpret' index='6'/>",
+				"      <inline_fail reason='already compiled into a big method'/>",
+				"      <direct_call bci='208'/>",
+				"      <bc code='182' bci='226'/>",
+				"      <method bytes='15' name='append' flags='33' holder='793' arguments='820 721 721' id='836' iicount='15' return='793'/>",
+				"      <call method='836' inline='1' count='7' prof_factor='1'/>",
+				"      <inline_fail reason='executed &lt; MinInliningThreshold times'/>",
+				"      <direct_call bci='226'/>",
+				"      <bc code='182' bci='231'/>",
+				"      <call method='838' inline='1' count='7' prof_factor='1'/>",
+				"      <inline_fail reason='too big'/>",
+				"      <direct_call bci='231'/>",
+				"      <bc code='160' bci='250'/>",
+				"      <branch prob='0.902439' not_taken='52' taken='481' cnt='533' target_bci='258'/>",
+				"      <bc code='199' bci='265'/>",
+				"      <branch not_taken='7' taken='0' target_bci='279'/>",
+				"      <bc code='183' bci='275'/>",
+				"      <method bytes='6' name='&lt;init&gt;' flags='1' holder='793' arguments='721' id='837' iicount='1185' return='723'/>",
+				"      <call method='837' inline='1' count='7' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <direct_call bci='275'/>",
+				"      <bc code='182' bci='289'/>",
+				"      <call method='836' inline='1' count='7' prof_factor='1'/>",
+				"      <inline_fail reason='executed &lt; MinInliningThreshold times'/>",
+				"      <direct_call bci='289'/>",
+				"      <bc code='191' bci='303'/>",
+				"      <uncommon_trap reason='null_check' bci='303' action='maybe_recompile'/>",
+				"      <parse_done nodes='728' memory='163168' stamp='2.386' live='710'/>",
+				"    </parse>",
+				"    <late_inline method='837'>",
+				"      <jvms method='832' bci='275'/>",
+				"    </late_inline>",
+				"    <parse method='837' stamp='2.386' uses='7'>",
+				"      <bc code='183' bci='2'/>",
+				"      <klass name='java/lang/AbstractStringBuilder' flags='1024' id='792'/>",
+				"      <method bytes='12' name='&lt;init&gt;' flags='0' holder='792' arguments='721' id='855' iicount='6908' return='723'/>",
+				"      <call method='855' inline='1' count='-1' prof_factor='0.00590717'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='855' stamp='2.386' uses='-1'>",
+				"        <bc code='183' bci='1'/>",
+				"        <klass name='java/lang/Object' flags='1' id='728'/>",
+				"        <method bytes='1' name='&lt;init&gt;' flags='1' holder='728' id='850' compile_id='10' compiler='C2' iicount='10171' return='723'/>",
+				"        <call method='850' inline='1' count='3610' prof_factor='1'/>",
+				"        <inline_success reason='inline (hot)'/>",
+				"        <parse method='850' stamp='2.386' uses='6910'>",
+				"          <parse_done nodes='783' memory='173688' stamp='2.386' live='555'/>",
+				"        </parse>",
+				"        <parse_done nodes='1000' memory='207344' stamp='2.386' live='771'/>",
+				"      </parse>",
+				"      <parse_done nodes='1009' memory='210416' stamp='2.386' live='779'/>",
+				"    </parse>",
+				"    <phase_done nodes='1009' name='parse' stamp='2.386' live='663'/>",
+				"  </phase>",
+				"  <phase nodes='1009' name='optimizer' stamp='2.386' live='663'>",
+				"    <phase nodes='1021' name='idealLoop' stamp='2.387' live='565'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop idx='1028'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1029' name='idealLoop' stamp='2.387' live='563'/>",
+				"    </phase>",
+				"    <phase nodes='1029' name='escapeAnalysis' stamp='2.387' live='563'>",
+				"      <phase nodes='1029' name='connectionGraph' stamp='2.387' live='563'>",
+				"        <phase_done nodes='1029' name='connectionGraph' stamp='2.387' live='563'/>",
+				"      </phase>",
+				"      <phase_done nodes='1029' name='escapeAnalysis' stamp='2.387' live='563'/>",
+				"    </phase>",
+				"    <phase nodes='1029' name='idealLoop' stamp='2.387' live='563'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop idx='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1110' name='idealLoop' stamp='2.388' live='565'/>",
+				"    </phase>",
+				"    <phase nodes='1110' name='idealLoop' stamp='2.388' live='565'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop idx='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1129' name='idealLoop' stamp='2.388' live='567'/>",
+				"    </phase>",
+				"    <phase nodes='1129' name='idealLoop' stamp='2.388' live='567'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop idx='1236' main_loop='1236' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1254' name='idealLoop' stamp='2.389' live='670'/>",
+				"    </phase>",
+				"    <phase nodes='1254' name='ccp' stamp='2.389' live='670'>",
+				"      <phase_done nodes='1254' name='ccp' stamp='2.389' live='670'/>",
+				"    </phase>",
+				"    <phase nodes='1272' name='idealLoop' stamp='2.389' live='655'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop pre_loop='1028' idx='1188' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1346' main_loop='1346' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1143' post_loop='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1396' name='idealLoop' stamp='2.390' live='700'/>",
+				"    </phase>",
+				"    <phase nodes='1396' name='idealLoop' stamp='2.390' live='700'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop pre_loop='1028' idx='1188' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1346' main_loop='1346' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1143' post_loop='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1472' name='idealLoop' stamp='2.391' live='706'/>",
+				"    </phase>",
+				"    <phase nodes='1472' name='idealLoop' stamp='2.391' live='706'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop pre_loop='1028' idx='1188' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1555' main_loop='1555' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1143' post_loop='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1640' name='idealLoop' stamp='2.391' live='794'/>",
+				"    </phase>",
+				"    <phase nodes='1640' name='idealLoop' stamp='2.391' live='794'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop pre_loop='1028' idx='1188' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1555' main_loop='1555' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1143' post_loop='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1706' name='idealLoop' stamp='2.392' live='767'/>",
+				"    </phase>",
+				"    <phase nodes='1706' name='idealLoop' stamp='2.392' live='767'>",
+				"      <loop_tree>",
+				"        <loop idx='1021'>",
+				"          <loop pre_loop='1028' idx='1188' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1555' main_loop='1555' inner_loop='1'>",
+				"          </loop>",
+				"          <loop idx='1143' post_loop='1028' inner_loop='1'>",
+				"          </loop>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='1764' name='idealLoop' stamp='2.393' live='746'/>",
+				"    </phase>",
+				"    <phase_done nodes='2155' name='optimizer' stamp='2.393' live='1037'/>",
+				"  </phase>",
+				"  <phase nodes='2155' name='matcher' stamp='2.393' live='1037'>",
+				"    <phase_done nodes='960' name='matcher' stamp='2.395' live='960'/>",
+				"  </phase>",
+				"  <phase nodes='1287' name='regalloc' stamp='2.396' live='1284'>",
+				"    <regalloc success='1' attempts='1'/>",
+				"    <phase_done nodes='1931' name='regalloc' stamp='2.403' live='1688'/>",
+				"  </phase>",
+				"  <phase nodes='1937' name='output' stamp='2.403' live='1694'>",
+				"    <phase_done nodes='1985' name='output' stamp='2.404' live='1715'/>",
+				"  </phase>",
+				"  <code_cache nmethods='187' free_code_cache='49351872' adapters='234' total_blobs='471'/>",
+				"  <task_done inlined_bytes='42' success='1' count='5000' backedge_count='5000' stamp='2.404' nmsize='3920'/>",
+				"</task>" };
+
+		String[] bytecodeLines = new String[] {
+				"  0: aconst_null     ",
+				"  1: astore_2        ",
+				"  2: aload_0         ",
+				"  3: getfield        #21  // Field lock:Ljava/lang/Object;",
+				"  6: dup             ",
+				"  7: astore          4    ",
+				"  9: monitorenter    ",
+				" 10: aload_0         ",
+				" 11: invokespecial   #22  // Method ensureOpen:()V",
+				" 14: iload_1         ",
+				" 15: ifne            25   ",
+				" 18: aload_0         ",
+				" 19: getfield        #5   // Field skipLF:Z",
+				" 22: ifeq            29   ",
+				" 25: iconst_1        ",
+				" 26: goto            30   ",
+				" 29: iconst_0        ",
+				" 30: istore          5    ",
+				" 32: aload_0         ",
+				" 33: getfield        #13  // Field nextChar:I",
+				" 36: aload_0         ",
+				" 37: getfield        #12  // Field nChars:I",
+				" 40: if_icmplt       47   ",
+				" 43: aload_0         ",
+				" 44: invokespecial   #23  // Method fill:()V",
+				" 47: aload_0         ",
+				" 48: getfield        #13  // Field nextChar:I",
+				" 51: aload_0         ",
+				" 52: getfield        #12  // Field nChars:I",
+				" 55: if_icmplt       82   ",
+				" 58: aload_2         ",
+				" 59: ifnull          77   ",
+				" 62: aload_2         ",
+				" 63: invokevirtual   #29  // Method java/lang/StringBuffer.length:()I",
+				" 66: ifle            77   ",
+				" 69: aload_2         ",
+				" 70: invokevirtual   #30  // Method java/lang/StringBuffer.toString:()Ljava/lang/String;",
+				" 73: aload           4    ",
+				" 75: monitorexit     ",
+				" 76: areturn         ",
+				" 77: aconst_null     ",
+				" 78: aload           4    ",
+				" 80: monitorexit     ",
+				" 81: areturn         ",
+				" 82: iconst_0        ",
+				" 83: istore          6    ",
+				" 85: iconst_0        ",
+				" 86: istore          7    ",
+				" 88: iload           5    ",
+				" 90: ifeq            117  ",
+				" 93: aload_0         ",
+				" 94: getfield        #11  // Field cb:[C",
+				" 97: aload_0         ",
+				" 98: getfield        #13  // Field nextChar:I",
+				"101: caload          ",
+				"102: bipush          10   ",
+				"104: if_icmpne       117  ",
+				"107: aload_0         ",
+				"108: dup             ",
+				"109: getfield        #13  // Field nextChar:I",
+				"112: iconst_1        ",
+				"113: iadd            ",
+				"114: putfield        #13  // Field nextChar:I",
+				"117: aload_0         ",
+				"118: iconst_0        ",
+				"119: putfield        #5   // Field skipLF:Z",
+				"122: iconst_0        ",
+				"123: istore          5    ",
+				"125: aload_0         ",
+				"126: getfield        #13  // Field nextChar:I",
+				"129: istore          8    ",
+				"131: iload           8    ",
+				"133: aload_0         ",
+				"134: getfield        #12  // Field nChars:I",
+				"137: if_icmpge       175  ",
+				"140: aload_0         ",
+				"141: getfield        #11  // Field cb:[C",
+				"144: iload           8    ",
+				"146: caload          ",
+				"147: istore          7    ",
+				"149: iload           7    ",
+				"151: bipush          10   ",
+				"153: if_icmpeq       163  ",
+				"156: iload           7    ",
+				"158: bipush          13   ",
+				"160: if_icmpne       169  ",
+				"163: iconst_1        ",
+				"164: istore          6    ",
+				"166: goto            175  ",
+				"169: iinc            8, 1 ",
+				"172: goto            131  ",
+				"175: aload_0         ",
+				"176: getfield        #13  // Field nextChar:I",
+				"179: istore_3        ",
+				"180: aload_0         ",
+				"181: iload           8    ",
+				"183: putfield        #13  // Field nextChar:I",
+				"186: iload           6    ",
+				"188: ifeq            264  ",
+				"191: aload_2         ",
+				"192: ifnonnull       216  ",
+				"195: new             #31  // class java/lang/String",
+				"198: dup             ",
+				"199: aload_0         ",
+				"200: getfield        #11  // Field cb:[C",
+				"203: iload_3         ",
+				"204: iload           8    ",
+				"206: iload_3         ",
+				"207: isub            ",
+				"208: invokespecial   #32  // Method java/lang/String.\"<init>\":([CII)V",
+				"211: astore          9    ",
+				"213: goto            236  ",
+				"216: aload_2         ",
+				"217: aload_0         ",
+				"218: getfield        #11  // Field cb:[C",
+				"221: iload_3         ",
+				"222: iload           8    ",
+				"224: iload_3         ",
+				"225: isub            ",
+				"226: invokevirtual   #33  // Method java/lang/StringBuffer.append:([CII)Ljava/lang/StringBuffer;",
+				"229: pop             ",
+				"230: aload_2         ",
+				"231: invokevirtual   #30  // Method java/lang/StringBuffer.toString:()Ljava/lang/String;",
+				"234: astore          9    ",
+				"236: aload_0         ",
+				"237: dup             ",
+				"238: getfield        #13  // Field nextChar:I",
+				"241: iconst_1        ",
+				"242: iadd            ",
+				"243: putfield        #13  // Field nextChar:I",
+				"246: iload           7    ",
+				"248: bipush          13   ",
+				"250: if_icmpne       258  ",
+				"253: aload_0         ",
+				"254: iconst_1        ",
+				"255: putfield        #5   // Field skipLF:Z",
+				"258: aload           9    ",
+				"260: aload           4    ",
+				"262: monitorexit     ",
+				"263: areturn         ",
+				"264: aload_2         ",
+				"265: ifnonnull       279  ",
+				"268: new             #34  // class java/lang/StringBuffer",
+				"271: dup             ",
+				"272: getstatic       #35  // Field defaultExpectedLineLength:I",
+				"275: invokespecial   #36  // Method java/lang/StringBuffer.\"<init>\":(I)V",
+				"278: astore_2        ",
+				"279: aload_2         ",
+				"280: aload_0         ",
+				"281: getfield        #11  // Field cb:[C",
+				"284: iload_3         ",
+				"285: iload           8    ",
+				"287: iload_3         ",
+				"288: isub            ",
+				"289: invokevirtual   #33  // Method java/lang/StringBuffer.append:([CII)Ljava/lang/StringBuffer;",
+				"292: pop             ",
+				"293: goto            32   ",
+				"296: astore          10   ",
+				"298: aload           4    ",
+				"300: monitorexit     ",
+				"301: aload           10   ",
+				"303: athrow          " };
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember("java.io.BufferedReader", "readLine", new Class[] { boolean.class },
+				java.lang.String.class);
+
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
+
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
+
+		BytecodeAnnotationList list = result.getAnnotationList(member);
+
+		assertEquals(30, list.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(list, 9, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 11, "BufferedReader", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 15, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 15, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 22, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 32, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 32, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 40, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 44, "BufferedReader", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 55, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 59, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 63, "StringBuffer", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 66, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 70, "StringBuffer", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 90, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 101, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 101, "range_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 104, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 104, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 137, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 140, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 140, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 146, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 146, "range_check", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(list, 153, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 160, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 188, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 192, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 208, "java.lang.String", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 226, "java.lang.StringBuffer", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 231, "java.lang.StringBuffer", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 250, "0.902439", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 265, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(list, 275, "java.lang.StringBuffer", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(list, 289, "java.lang.StringBuffer", BCAnnotationType.INLINE_FAIL);
+		UnitTestUtil.checkAnnotation(list, 303, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,10 +23,9 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.inline.HeadlessInlineVisitor;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
-//import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-//import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
-import org.adoptopenjdk.jitwatch.suggestion.AttributeSuggestionWalker;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
+import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
+import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 import org.adoptopenjdk.jitwatch.util.HeadlessUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -88,7 +87,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			timelineBuilder.append(StringUtil.formatTimestamp(event.getStamp(), true)).append(HEADLESS_SEPARATOR);
 			timelineBuilder.append(event.getEventType().getText()).append(HEADLESS_SEPARATOR);
 			timelineBuilder.append(event.getEventMember().getMetaClass().getFullyQualifiedName()).append(HEADLESS_SEPARATOR);
-			timelineBuilder.append(event.getEventMember().toStringUnqualifiedMethodName(true)).append(S_NEWLINE);
+			timelineBuilder.append(event.getEventMember().toStringUnqualifiedMethodName(true, true)).append(S_NEWLINE);
 		}
 	}
 
@@ -196,9 +195,9 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 		if (showSuggestions)
 		{
-			AttributeSuggestionWalker walker = new AttributeSuggestionWalker(parser.getModel());
+			SuggestionWalker walker = new SuggestionWalker(parser.getModel());
 
-			List<Suggestion> suggestions = walker.getSuggestionList();
+			List<Report> suggestions = walker.getReports(new ScoreComparator());
 
 			outputBuilder.append(getSuggestions(suggestions));
 		}
@@ -244,7 +243,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 	}
 
-	private String getSuggestions(List<Suggestion> suggestions)
+	private String getSuggestions(List<Report> suggestions)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -255,7 +254,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		builder.append("BCI").append(HEADLESS_SEPARATOR);
 		builder.append("Suggestion").append(S_NEWLINE);
 
-		for (Suggestion suggestion : suggestions)
+		for (Report suggestion : suggestions)
 		{
 			String callerClass;
 			String callerMember;
@@ -263,7 +262,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			if (suggestion.getCaller() != null)
 			{
 				callerClass = suggestion.getCaller().getMetaClass().getFullyQualifiedName();
-				callerMember = suggestion.getCaller().toStringUnqualifiedMethodName(true);
+				callerMember = suggestion.getCaller().toStringUnqualifiedMethodName(true, true);
 			}
 			else
 			{

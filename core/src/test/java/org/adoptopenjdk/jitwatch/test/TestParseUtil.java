@@ -458,7 +458,7 @@ public class TestParseUtil
 		Method m = UnitTestUtil.getMethod(className, methodName, new Class<?>[] { int.class });
 		MetaMethod method = new MetaMethod(m, null);
 
-		String uqToString = method.toStringUnqualifiedMethodName(false);
+		String uqToString = method.toStringUnqualifiedMethodName(true, false);
 
 		assertEquals(-1, uqToString.indexOf("volatile"));
 	}

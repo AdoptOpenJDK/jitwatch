@@ -12,10 +12,13 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +28,27 @@ public class Task extends Tag
 	private static final Logger logger = LoggerFactory.getLogger(Task.class);
 
 	private IParseDictionary parseDictionary;
-
-	public Task(String name, String attributeString, boolean selfClosing)
+	
+	public Task(String attributeString, boolean selfClosing)
 	{
-		super(name, attributeString, selfClosing);
+		super(TAG_TASK, attributeString, selfClosing);
 
-		parseDictionary = new ParseDictionary();
+		parseDictionary = new ParseDictionary(getAttributes().get(ATTR_METHOD));
 	}
 
 	public IParseDictionary getParseDictionary()
 	{
 		return parseDictionary;
+	}
+	
+	public void addBCIOpcodeMapping(String methodID, int bci, Opcode opcode)
+	{
+		if (DEBUG_LOGGING_PARSE_DICTIONARY)
+		{
+			logger.debug("Adding bci mapping: {} {} {}", methodID, bci, opcode);
+		}
+
+		parseDictionary.putBCIOpcode(methodID, bci, opcode);
 	}
 
 	public void addDictionaryType(String type, Tag tag)
@@ -92,7 +105,7 @@ public class Task extends Tag
 		klassName = klassName.replace(S_SLASH, S_DOT);
 
 		builder.append(" <!-- ");
-		builder.append(getTypeOrKlass(returnTypeID));
+		builder.append(ParseUtil.lookupType(returnTypeID, parseDictionary));
 		builder.append(C_SPACE);
 		builder.append(klassName);
 		builder.append(S_DOT);
@@ -105,7 +118,7 @@ public class Task extends Tag
 
 			for (String id : ids)
 			{
-				builder.append(getTypeOrKlass(id));
+				builder.append(ParseUtil.lookupType(id, parseDictionary));
 				builder.append(S_COMMA);
 			}
 
@@ -117,36 +130,36 @@ public class Task extends Tag
 		return builder.toString();
 	}
 
-	private String getTypeOrKlass(String id)
-	{
-		Tag typeTag = parseDictionary.getType(id);
-
-		String result = null;
-
-		if (typeTag == null)
-		{
-			Tag klassTag = parseDictionary.getKlass(id);
-
-			if (klassTag != null)
-			{
-				result = klassTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
-				result = result.replace(S_SLASH, S_DOT);
-			}
-		}
-		else
-		{
-			result = typeTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
-		}
-
-		if (result == null)
-		{
-			result = "???"; // further understanding required!
-		}
-		else
-		{
-			result = ParseUtil.expandParameterType(result);
-		}
-
-		return result;
-	}
+//	private String getTypeOrKlass2(String id) //TODO dup code from ParseUtil?
+//	{
+//		Tag typeTag = parseDictionary.getType(id);
+//
+//		String result = null;
+//
+//		if (typeTag == null)
+//		{
+//			Tag klassTag = parseDictionary.getKlass(id);
+//
+//			if (klassTag != null)
+//			{
+//				result = klassTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
+//				result = result.replace(S_SLASH, S_DOT);
+//			}
+//		}
+//		else
+//		{
+//			result = typeTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
+//		}
+//
+//		if (result == null)
+//		{
+//			result = "???"; // further understanding required!
+//		}
+//		else
+//		{
+//			result = ParseUtil.expandParameterType(result);
+//		}
+//
+//		return result;
+//	}
 }

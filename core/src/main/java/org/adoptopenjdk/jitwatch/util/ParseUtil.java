@@ -6,6 +6,8 @@
 package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
@@ -36,6 +38,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PACKAGE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
@@ -51,6 +54,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_LONG;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_SHORT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -62,6 +66,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.model.BCIOpcodeMap;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -71,6 +76,7 @@ import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,9 +191,7 @@ public final class ParseUtil
 	}
 
 	/*
-	 * [C => char[]
-	 * [[I => int[][]
-	 * [Ljava.lang.Object; => java.lang.Object[]
+	 * [C => char[] [[I => int[][] [Ljava.lang.Object; => java.lang.Object[]
 	 */
 	public static String expandParameterType(String name)
 	{
@@ -317,8 +321,8 @@ public final class ParseUtil
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("findClassForLogCompilationParameter:{}", param);
-		}		
-		
+		}
+
 		StringBuilder builder = new StringBuilder();
 
 		if (isPrimitive(param))
@@ -763,7 +767,7 @@ public final class ParseUtil
 			int modifier = member.getModifier();
 			String returnTypeName = member.getReturnTypeName();
 			String[] paramTypeNames = member.getParamTypeNames();
-			
+
 			int bestScore = 0;
 
 			for (int i = 0; i < lines.size(); i++)
@@ -779,8 +783,9 @@ public final class ParseUtil
 						logger.debug("Comparing {} with {}", line, member);
 					}
 
-					MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
-				
+					MemberSignatureParts msp = MemberSignatureParts
+							.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
+
 					if (!memberName.equals(msp.getMemberName()))
 					{
 						continue;
@@ -1025,6 +1030,8 @@ public final class ParseUtil
 	{
 		String result = null;
 
+		boolean isType = true;
+
 		if (typeOrKlassID != null)
 		{
 			Tag typeTag = parseDictionary.getType(typeOrKlassID);
@@ -1032,30 +1039,43 @@ public final class ParseUtil
 			if (typeTag == null)
 			{
 				typeTag = parseDictionary.getKlass(typeOrKlassID);
+				isType = false;
 			}
 
 			if (typeTag != null)
 			{
 				String typeAttrName = typeTag.getAttributes().get(ATTR_NAME);
-				
-				result = expandParseDictionaryTypeName(typeAttrName);
+
+				if (typeAttrName != null)
+				{
+					typeAttrName = typeAttrName.replace(S_SLASH, S_DOT);
+
+					if (isType || typeAttrName.startsWith(S_OPEN_SQUARE_BRACKET))
+					{
+						result = expandParseDictionaryTypeName(typeAttrName);
+					}
+					else
+					{
+						result = typeAttrName;
+					}
+				}
 			}
 		}
 
 		return result;
 	}
-	
+
 	public static String expandParseDictionaryTypeName(String typeName)
 	{
 		String result = null;
-		
+
 		if (typeName != null)
 		{
 			result = typeName.replace(S_SLASH, S_DOT);
-			
+
 			result = expandParameterType(result);
 		}
-		
+
 		return result;
 	}
 
@@ -1206,5 +1226,5 @@ public final class ParseUtil
 		}
 
 		return result;
-	}
+	}		
 }

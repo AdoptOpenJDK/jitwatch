@@ -366,7 +366,7 @@ public class ViewerAssembly extends Viewer
 		int result = -1;
 		int pos = 0;
 
-		boolean isInvoke = bcInstruction.isInvoke();
+		boolean isInvoke = bcInstruction.getOpcode().isInvoke();
 		int bytecodeOffset = bcInstruction.getOffset();
 
 		boolean lastAssemblyIsCall = false;

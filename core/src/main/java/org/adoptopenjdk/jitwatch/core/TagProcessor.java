@@ -15,9 +15,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_FRAGMENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_FRAGMENT;
 
 import java.util.Map;
+import java.util.Stack;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
+import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,12 @@ public class TagProcessor
 {
 	private static final Logger logger = LoggerFactory.getLogger(TagProcessor.class);
 
+	private Stack<String> methodIDStack = new Stack<>();
+	
 	private Tag currentTag;
 	private Tag topTag = null;
 	private boolean fragmentSeen;
-	
+
 	public String getTopTagName()
 	{
 		String result = null;
@@ -53,9 +57,9 @@ public class TagProcessor
 				result = handleTag(line);
 			}
 			else if (currentTag != null)
-			{								
+			{
 				String closingTag = currentTag.getClosingTag();
-				
+
 				if (line.endsWith(closingTag))
 				{
 					line = line.substring(0, line.length() - closingTag.length());
@@ -116,7 +120,8 @@ public class TagProcessor
 
 			if (DEBUG_LOGGING_TAGPROCESSOR)
 			{
-				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName, currentTag == null ? "null" : currentTag.getName(), topTag == null ? "null" : topTag.getName());
+				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName,
+						currentTag == null ? "null" : currentTag.getName(), topTag == null ? "null" : topTag.getName());
 			}
 
 			if (currentTag != null && closeName.equals(currentTag.getName()))
@@ -129,6 +134,11 @@ public class TagProcessor
 				{
 					currentTag = currentTag.getParent();
 				}
+				
+				if (JITWatchConstants.TAG_PARSE.equals(currentTag.getName()))
+				{
+					methodIDStack.pop();					
+				}				
 			}
 			else if (S_FRAGMENT.equals(closeName))
 			{
@@ -177,12 +187,12 @@ public class TagProcessor
 		String attributeString = line.substring(indexEndName);
 
 		Map<String, String> attrs = StringUtil.attributeStringToMap(attributeString);
-		
+
 		Tag nextTag;
 
 		if (JITWatchConstants.TAG_TASK.equals(name))
 		{
-			nextTag = new Task(name, attributeString, selfClosing);
+			nextTag = new Task(attributeString, selfClosing);
 		}
 		else
 		{
@@ -240,6 +250,32 @@ public class TagProcessor
 
 			case JITWatchConstants.TAG_KLASS:
 				((Task) topTag).addDictionaryKlass(attrs.get(JITWatchConstants.ATTR_ID), nextTag);
+				break;
+
+			case JITWatchConstants.TAG_PARSE:
+				String currentMethodID = attrs.get(JITWatchConstants.ATTR_METHOD);
+				methodIDStack.push(currentMethodID);
+				break;
+
+			case JITWatchConstants.TAG_BC:
+				String bci = attrs.get(JITWatchConstants.ATTR_BCI);
+				String code = attrs.get(JITWatchConstants.ATTR_CODE);
+
+				try
+				{
+					int bciValue = Integer.parseInt(bci);
+					int codeValue = Integer.parseInt(code);
+					Opcode opcode = Opcode.getByCode(codeValue);
+
+					((Task) topTag).addBCIOpcodeMapping(methodIDStack.peek(), bciValue, opcode);
+					
+					//logger.info("{} got bc tag {}", methodIDStack.peek(), nextTag.toString(false));
+				}
+				catch (NumberFormatException nfe)
+				{
+					logger.error("Couldn't parse bc tag {}", nextTag);
+				}
+
 				break;
 
 			default:

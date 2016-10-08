@@ -20,7 +20,7 @@ public interface IMetaMember
 	
 	List<BytecodeInstruction> getInstructions();
 
-	String toStringUnqualifiedMethodName(boolean fqParamTypes);
+	String toStringUnqualifiedMethodName(boolean visibilityAndReturnType, boolean fqParamTypes);
 
 	String getMemberName();
 	String getFullyQualifiedMemberName();

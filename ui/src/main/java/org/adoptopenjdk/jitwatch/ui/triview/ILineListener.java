@@ -7,10 +7,10 @@ package org.adoptopenjdk.jitwatch.ui.triview;
 
 public interface ILineListener
 {
-	public enum LineType { SOURCE, BYTECODE, ASSEMBLY, PLAIN }
+	public enum LineType { SOURCE, BYTECODE, BYTECODE_BCI, ASSEMBLY, PLAIN }
 	
 	void lineHighlighted(int index, LineType lineType);
-		
+	
 	void handleFocusSelf(LineType lineType);
 	void handleFocusNext();
 	void handleFocusPrev();

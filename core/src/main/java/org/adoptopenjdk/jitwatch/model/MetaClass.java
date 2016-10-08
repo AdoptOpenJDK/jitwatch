@@ -36,8 +36,8 @@ public class MetaClass implements Comparable<MetaClass>
 	private boolean isInterface = false;
 	private boolean missingDef = false;
 
-	private List<MetaMethod> classMethods = new CopyOnWriteArrayList<MetaMethod>();
-	private List<MetaConstructor> classConstructors = new CopyOnWriteArrayList<MetaConstructor>();
+	private List<IMetaMember> classMethods = new CopyOnWriteArrayList<IMetaMember>();
+	private List<IMetaMember> classConstructors = new CopyOnWriteArrayList<IMetaMember>();
 
 	private int compiledMethodCount = 0;
 
@@ -212,24 +212,26 @@ public class MetaClass implements Comparable<MetaClass>
 		return classPackage;
 	}
 
-	public void addMetaMethod(MetaMethod method)
+	public void addMember(IMetaMember member)
 	{
-		classMethods.add(method);
-	}
-
-	public void addMetaConstructor(MetaConstructor constructor)
-	{
-		classConstructors.add(constructor);
+		if (member instanceof MetaConstructor)
+		{
+			classMethods.add(member);
+		}
+		else
+		{
+			classConstructors.add(member);
+		}
 	}
 
 	public List<IMetaMember> getMetaMembers()
 	{
 		List<IMetaMember> result = new ArrayList<>();
 
-		IMetaMember[] constructorsArray = classConstructors.toArray(new MetaConstructor[classConstructors.size()]);
+		IMetaMember[] constructorsArray = classConstructors.toArray(new IMetaMember[classConstructors.size()]);
 		Arrays.sort(constructorsArray);
 
-		IMetaMember[] methodsArray = classMethods.toArray(new MetaMethod[classMethods.size()]);
+		IMetaMember[] methodsArray = classMethods.toArray(new IMetaMember[classMethods.size()]);
 		Arrays.sort(methodsArray);
 
 		result.addAll(Arrays.asList(constructorsArray));

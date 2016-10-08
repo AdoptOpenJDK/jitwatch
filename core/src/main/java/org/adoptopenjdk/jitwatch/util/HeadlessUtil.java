@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -76,7 +76,7 @@ public class HeadlessUtil
 
 					builder.append(metaClass.getName()).append(HEADLESS_SEPARATOR);
 
-					builder.append(member.toStringUnqualifiedMethodName(true)).append(HEADLESS_SEPARATOR);
+					builder.append(member.toStringUnqualifiedMethodName(true, true)).append(HEADLESS_SEPARATOR);
 
 					builder.append(isCompiled ? "Y" : "N").append(HEADLESS_SEPARATOR);
 

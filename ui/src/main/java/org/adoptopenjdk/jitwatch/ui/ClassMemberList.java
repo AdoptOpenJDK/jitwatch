@@ -323,7 +323,7 @@ public class ClassMemberList extends VBox
 			}
 			else
 			{
-				setText(item.toStringUnqualifiedMethodName(false));
+				setText(item.toStringUnqualifiedMethodName(false, false));
 
 				if (UserInterfaceUtil.IMAGE_TICK != null && item.isCompiled())
 				{

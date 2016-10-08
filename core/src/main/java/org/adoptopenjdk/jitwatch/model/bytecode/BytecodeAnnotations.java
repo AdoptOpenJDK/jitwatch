@@ -1,82 +1,45 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2016 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model.bytecode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public class BytecodeAnnotations
-{	
-	private static final Logger logger = LoggerFactory.getLogger(BytecodeAnnotations.class);
+{
+	private Map<IMetaMember, BytecodeAnnotationList> memberAnnotationMap = new HashMap<>();
 
-	private Map<Integer, List<LineAnnotation>> annotationMap = new TreeMap<>();
-	
-	public void addAnnotation(int bci, LineAnnotation annotation)
+	public void addAnnotation(IMetaMember member, int bci, LineAnnotation annotation)
 	{
-		if (DEBUG_LOGGING_BYTECODE)
+		BytecodeAnnotationList memberList = memberAnnotationMap.get(member);
+
+		if (memberList == null)
 		{
-			logger.debug("BCI: {} Annotation: {}", bci, annotation.getAnnotation());
+			memberList = new BytecodeAnnotationList();
+			memberAnnotationMap.put(member, memberList);
 		}
 
-		List<LineAnnotation> existingAnnotations = annotationMap.get(bci);
-
-		if (existingAnnotations == null)
-		{
-			existingAnnotations = new ArrayList<>();
-			annotationMap.put(bci, existingAnnotations);
-		}
-
-		existingAnnotations.add(annotation);
+		memberList.addAnnotation(bci, annotation);
 	}
 	
-	public List<LineAnnotation> getAnnotationsForBCI(int bci)
+	public BytecodeAnnotationList getAnnotationList(IMetaMember member)
 	{
-		return annotationMap.get(bci);
-	}
-	
-	public boolean hasAnnotationsForBCI(int bci)
-	{
-		return annotationMap.containsKey(bci);		
+		return memberAnnotationMap.get(member);
 	}
 	
 	public void clear()
 	{
-		annotationMap.clear();
+		memberAnnotationMap.clear();
 	}
 	
-	public int annotatedLineCount()
+	public Set<IMetaMember> getMembers()
 	{
-		return annotationMap.size();
+		return memberAnnotationMap.keySet();
 	}
-
-	@Override
-	public String toString()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (Map.Entry<Integer, List<LineAnnotation>> entry : annotationMap.entrySet())
-		{
-			for (LineAnnotation annotation : entry.getValue())
-			{
-				builder.append(entry.getKey()).append(S_SPACE).append(S_COLON).append(S_SPACE);
-				builder.append(annotation.toString()).append(S_NEWLINE).append(S_NEWLINE);
-			}			
-		}
-		
-		return builder.toString();
-	}
-	
 }

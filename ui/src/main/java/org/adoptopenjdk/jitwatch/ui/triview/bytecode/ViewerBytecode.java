@@ -17,13 +17,14 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
+import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
+import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.report.ReportType;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
@@ -49,7 +50,7 @@ public class ViewerBytecode extends Viewer
 	private boolean offsetMismatchDetected = false;
 	private IReadOnlyJITDataModel model;
 	private TriViewNavigationStack navigationStack;
-	private Suggestion lastSuggestion = null;
+	private Report lastSuggestion = null;
 
 	public ViewerBytecode(IStageAccessProxy stageAccessProxy, TriViewNavigationStack navigationStack, IReadOnlyJITDataModel model,
 			ILineListener lineListener, LineType lineType)
@@ -59,13 +60,15 @@ public class ViewerBytecode extends Viewer
 		this.navigationStack = navigationStack;
 	}
 
-	public void highlightBytecodeForSuggestion(Suggestion suggestion)
+	public void highlightBytecodeForSuggestion(Report report)
 	{
-		lastSuggestion = suggestion;
+		lastSuggestion = report;
 
-		int bytecodeOffset = suggestion.getBytecodeOffset();
+		int bytecodeOffset = report.getBytecodeOffset();
 
 		int index = getLineIndexForBytecodeOffset(bytecodeOffset);
+
+		logger.info("highlightBytecodeForSuggestion bci {} index {}", bytecodeOffset, index);
 
 		BytecodeLabel labelAtIndex = (BytecodeLabel) getLabelAtIndex(index);
 
@@ -82,23 +85,26 @@ public class ViewerBytecode extends Viewer
 				ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
 			}
 
-			ttBuilder.append("Suggestion:\n");
-
-			String text = suggestion.getText();
-
-			if (suggestion.getType() == SuggestionType.BRANCH)
+			if (report.getType() != ReportType.ELIMINATED_ALLOCATION)
 			{
-				text = StringUtil.wordWrap(text, 50);
+				ttBuilder.append("Suggestion:\n");
+
+				String text = report.getText();
+
+				if (report.getType() == ReportType.BRANCH)
+				{
+					text = StringUtil.wordWrap(text, 50);
+				}
+
+				ttBuilder.append(text);
 			}
 
-			ttBuilder.append(text);
-			
 			String toolTipString = ttBuilder.toString();
-						
+
 			toolTipString = StringUtil.replaceXMLEntities(toolTipString);
 
 			tooltip = new Tooltip(toolTipString);
-			
+
 			labelAtIndex.setTooltip(tooltip);
 		}
 
@@ -130,11 +136,18 @@ public class ViewerBytecode extends Viewer
 
 		List<Label> labels = new ArrayList<>();
 
-		if (instructions != null && instructions.size() > 0)
+		if (instructions != null && !instructions.isEmpty())
 		{
 			try
 			{
-				bcAnnotations = new BytecodeAnnotationBuilder().buildBytecodeAnnotations(member, model);
+				Compilation compilation = member.getSelectedCompilation();
+
+				if (compilation != null)
+				{
+					int compilationIndex = compilation.getIndex();
+
+					bcAnnotations = new BytecodeAnnotationBuilder(true).buildBytecodeAnnotations(member, compilationIndex, model);
+				}
 			}
 			catch (AnnotationException annoEx)
 			{
@@ -148,7 +161,7 @@ public class ViewerBytecode extends Viewer
 			int lineIndex = 0;
 
 			for (final BytecodeInstruction instruction : instructions)
-			{				
+			{
 				int labelLines = instruction.getLabelLines();
 
 				if (labelLines == 0)
@@ -177,7 +190,7 @@ public class ViewerBytecode extends Viewer
 		if (lastSuggestion != null && lastSuggestion.getCaller() != null && lastSuggestion.getCaller().equals(member))
 		{
 			Compilation compilation = member.getSelectedCompilation();
-			
+
 			if (compilation != null && compilation.getIndex() == lastSuggestion.getCompilationIndex())
 			{
 				highlightBytecodeForSuggestion(lastSuggestion);
@@ -197,36 +210,42 @@ public class ViewerBytecode extends Viewer
 		String unhighlightedStyle = STYLE_UNHIGHLIGHTED;
 
 		boolean hasEliminationAnnotation = false;
-		
+
 		if (bcAnnotations != null)
 		{
-			List<LineAnnotation> annotationList = bcAnnotations.getAnnotationsForBCI(offset);
+			BytecodeAnnotationList list = bcAnnotations.getAnnotationList(member);
 
-			if (annotationList != null && annotationList.size() > 0)
+			if (list != null)
 			{
-				BCAnnotationType lastAnnotationType = annotationList.get(0).getType();
+				List<LineAnnotation> annotationList = list.getAnnotationsForBCI(offset);
 
-				Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(lastAnnotationType);
-
-				unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
-
-				instructionToolTipBuilder = new StringBuilder();
-
-				for (LineAnnotation annotation : annotationList)
+				if (annotationList != null && !annotationList.isEmpty())
 				{
-					if (annotation.getType() != lastAnnotationType || lastAnnotationType != BCAnnotationType.UNCOMMON_TRAP)
-					{
-						instructionToolTipBuilder.append(S_NEWLINE);
-					}
-					
-					if (annotation.getType() == BCAnnotationType.ELIMINATED_ALLOCATION || annotation.getType() == BCAnnotationType.LOCK_ELISION)
-					{
-						hasEliminationAnnotation = true;
-					}
+					BCAnnotationType lastAnnotationType = annotationList.get(0).getType();
 
-					lastAnnotationType = annotation.getType();
+					Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(lastAnnotationType);
 
-					instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
+					unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
+
+					instructionToolTipBuilder = new StringBuilder();
+
+					for (LineAnnotation annotation : annotationList)
+					{
+						if (annotation.getType() != lastAnnotationType || lastAnnotationType != BCAnnotationType.UNCOMMON_TRAP)
+						{
+							instructionToolTipBuilder.append(S_NEWLINE);
+						}
+
+						if (annotation.getType() == BCAnnotationType.ELIMINATED_ALLOCATION
+								|| annotation.getType() == BCAnnotationType.LOCK_ELISION)
+						{
+							hasEliminationAnnotation = true;
+						}
+
+						lastAnnotationType = annotation.getType();
+
+						instructionToolTipBuilder.append(annotation.getAnnotation()).append(S_NEWLINE);
+					}
 				}
 			}
 		}
@@ -238,7 +257,7 @@ public class ViewerBytecode extends Viewer
 			lblLine.getStyleClass().add("eliminated-allocation");
 		}
 
-		if (instruction.isInvoke())
+		if (instruction.getOpcode().isInvoke())
 		{
 			instructionToolTipBuilder.append(S_NEWLINE);
 			instructionToolTipBuilder.append("Ctrl-click to inspect this method\nBackspace to return");
@@ -247,13 +266,13 @@ public class ViewerBytecode extends Viewer
 		if (instructionToolTipBuilder.length() > 0)
 		{
 			String toolTipString = StringUtil.replaceXMLEntities(instructionToolTipBuilder.toString().trim());
-			
+
 			Tooltip toolTip = new Tooltip(toolTipString);
 
 			toolTip.setStyle("-fx-strikethrough: false;");
 			toolTip.getStyleClass().clear();
 			toolTip.getStyleClass().add("tooltip");
-						
+
 			lblLine.setTooltip(toolTip);
 		}
 
@@ -285,7 +304,7 @@ public class ViewerBytecode extends Viewer
 	{
 		if (navigationStack.isCtrlPressed())
 		{
-			if (instruction != null && instruction.isInvoke())
+			if (instruction != null && instruction.getOpcode().isInvoke())
 			{
 				try
 				{

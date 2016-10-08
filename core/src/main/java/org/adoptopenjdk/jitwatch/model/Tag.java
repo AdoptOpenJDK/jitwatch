@@ -277,7 +277,6 @@ public class Tag
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (attributeString != null ? attributeString.hashCode() : 0);
-        result = 31 * result + (children != null ? children.hashCode() : 0);
         result = 31 * result + (parent != null ? parent.hashCode() : 0);
         result = 31 * result + (selfClosing ? 1 : 0);
         result = 31 * result + (textContent != null ? textContent.hashCode() : 0);

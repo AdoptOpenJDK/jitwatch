@@ -30,6 +30,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_LEVEL_DISCOUNT;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
 		ignoreTags.add(TAG_INTRINSIC);
 		ignoreTags.add(TAG_OBSERVE);
+		ignoreTags.add(TAG_HOT_THROW);
+		ignoreTags.add(TAG_CAST_UP);
 		ignoreTags.add(TAG_HOT_THROW);
 	}
 

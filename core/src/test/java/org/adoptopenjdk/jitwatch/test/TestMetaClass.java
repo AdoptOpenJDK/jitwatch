@@ -94,7 +94,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		String testRetType = "int";
 
@@ -123,7 +123,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		String testRetType = S_TYPE_NAME_VOID;
 
@@ -152,7 +152,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		String testRetType = S_TYPE_NAME_VOID;
 		List<String> paramList = new ArrayList<>();
@@ -179,7 +179,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		String testRetType = "java.lang.String";
 
@@ -208,7 +208,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		String testRetType = "[Ljava.lang.String;";
 
@@ -237,7 +237,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaConstructor testConstructor = new MetaConstructor(constructor, metaClass);
 
-		metaClass.addMetaConstructor(testConstructor);
+		metaClass.addMember(testConstructor);
 
 		String testRetType = getClass().getName();
 		List<String> paramList = new ArrayList<>();
@@ -264,7 +264,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		IMetaMember result = metaClass.getMemberForSignature(MemberSignatureParts.fromBytecodeSignature(
 				metaClass.getFullyQualifiedName(),
@@ -289,7 +289,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(metaClass.getFullyQualifiedName(),
 				"public K genericReturnDeclaredOnClass();");
@@ -321,7 +321,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(metaClass.getFullyQualifiedName(),
 				"public java.lang.Class<?>[] genericReturnTypeWildcard();");
@@ -347,7 +347,7 @@ public class TestMetaClass<K extends java.lang.Object>
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
-		metaClass.addMetaMethod(testMethod);
+		metaClass.addMember(testMethod);
 
 		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(metaClass.getFullyQualifiedName(),
 				"public void genericParamTypeWildcard(java.lang.Class<?>[]);");

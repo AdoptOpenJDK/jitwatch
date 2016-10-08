@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.suggestion;
+package org.adoptopenjdk.jitwatch.report.suggestion;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ALWAYS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
@@ -57,13 +57,15 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.suggestion.Suggestion.SuggestionType;
+import org.adoptopenjdk.jitwatch.report.AbstractReportBuilder;
+import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.report.ReportType;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
+public class SuggestionWalker extends AbstractReportBuilder
 {
 	private IMetaMember metaMember;
 	private int compilationIndex;
@@ -98,9 +100,10 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 	private static final String REASON_SIZE_ABOVE_DESIRED_METHOD_LIMIT = "size > DesiredMethodLimit";
 	private static final String REASON_NODE_COUNT_INLINING_CUTOFF = "NodeCountInliningCutoff";
 	private static final String REASON_UNLOADED_SIGNATURE_CLASSES = "unloaded signature classes";
-	
-    // don't inline throwable methods unless the inlining tree is rooted in a throwable class
-	// src/share/vm/c1/c1_GraphBuilder.cpp  
+
+	// don't inline throwable methods unless the inlining tree is rooted in a
+	// throwable class
+	// src/share/vm/c1/c1_GraphBuilder.cpp
 	private static final String REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS = "don't inline Throwable constructors";
 
 	private static final String CODE_CACHE_FULL = "Code cache full, no further JIT compilation is possible";
@@ -159,8 +162,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 		explanationMap.put(REASON_NOT_AN_ACCESSOR, "The callee method is not an accessor.");
 
-		explanationMap.put(REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS, "A Throwable method won't be inlined unless the inlining tree is rooted in a throwable class.");
-		
+		explanationMap.put(REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS,
+				"A Throwable method won't be inlined unless the inlining tree is rooted in a throwable class.");
+
 		final String explanationInliningTooDeep = "Inlining could not continue as the inlining depth exceeded the limit.";
 
 		explanationMap.put(REASON_RECURSIVE_INLINING_TOO_DEEP, explanationInliningTooDeep);
@@ -175,9 +179,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 	private static final int MIN_BRANCH_INVOCATIONS = 1000;
 	private static final int MIN_INLINING_INVOCATIONS = 1000;
-	private static final Logger logger = LoggerFactory.getLogger(AttributeSuggestionWalker.class);
+	private static final Logger logger = LoggerFactory.getLogger(SuggestionWalker.class);
 
-	public AttributeSuggestionWalker(IReadOnlyJITDataModel model)
+	public SuggestionWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
 
@@ -197,7 +201,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		ignoreTags.add(TAG_ASSERT_NULL);
 	}
 
-	protected void findNonMemberSuggestions()
+	protected void findNonMemberReports()
 	{
 		checkIfCodeCacheFull();
 	}
@@ -230,7 +234,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				{
 					this.compilationIndex = compilation.getIndex();
 					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
-				}   
+				}
 			}
 			catch (LogParseException e)
 			{
@@ -286,9 +290,9 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			case TAG_PARSE:
 			{
 				String callerID = attrs.get(ATTR_METHOD);
-				
+
 				IMetaMember nestedCaller = ParseUtil.lookupMember(callerID, parseDictionary, model);
-				
+
 				if (nestedCaller != null)
 				{
 					processParseTag(child, nestedCaller, parseDictionary);
@@ -310,11 +314,11 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				}
 				break;
 			}
-			
+
 			case TAG_HOT_THROW:
 			{
 				String preallocated = attrs.get(ATTR_PREALLOCATED);
-				
+
 				if (!"1".equals(preallocated))
 				{
 					handleHotThrowNotPreallocated(attrs, currentBytecode, caller);
@@ -337,7 +341,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		if (callee != null)
 		{
 			Tag methodTag = parseDictionary.getMethod(methodID);
-			
+
 			Map<String, String> methodTagAttributes = methodTag.getAttributes();
 
 			String methodBytecodes = methodTagAttributes.get(ATTR_BYTES);
@@ -367,7 +371,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					reasonBuilder.append("The call at bytecode ").append(currentBytecode).append(" to\n");
 					reasonBuilder.append("Class: ").append(callee.getMetaClass().getFullyQualifiedName()).append(C_NEWLINE);
-					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName(false)).append(C_NEWLINE);
+					reasonBuilder.append("Member: ").append(callee.toStringUnqualifiedMethodName(false, false)).append(C_NEWLINE);
 					reasonBuilder.append("was not inlined for reason: '").append(reason).append("'\n");
 
 					if (explanationMap.containsKey(reason))
@@ -382,12 +386,12 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 
 					if (score > 0)
 					{
-						Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
-								SuggestionType.INLINING, (int) Math.ceil(score));
+						Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
+								ReportType.INLINING, (int) Math.ceil(score));
 
-						if (!suggestionList.contains(suggestion))
+						if (!reportList.contains(suggestion))
 						{
-							suggestionList.add(suggestion);
+							reportList.add(suggestion);
 						}
 					}
 				}
@@ -417,7 +421,7 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 		{
 			logger.warn("No score is set for reason: {}", reason);
 		}
-		
+
 		StringBuilder builder = new StringBuilder();
 		builder.append(reason).append(C_NEWLINE);
 		builder.append("Occurred at ").append(event.getStamp() / 1000).append(" seconds").append(C_NEWLINE);
@@ -426,14 +430,14 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 				.append(C_NEWLINE);
 		builder.append("You can control the code cache size with -XX:ReservedCodeCacheSize=<size>m");
 
-		Suggestion suggestion = new Suggestion(null, -1, -1, builder.toString(), SuggestionType.CODE_CACHE, (int) Math.ceil(score));
+		Report suggestion = new Report(null, -1, -1, builder.toString(), ReportType.CODE_CACHE, (int) Math.ceil(score));
 
-		if (!suggestionList.contains(suggestion))
+		if (!reportList.contains(suggestion))
 		{
-			suggestionList.add(suggestion);
+			reportList.add(suggestion);
 		}
 	}
-	
+
 	private void handleHotThrowNotPreallocated(Map<String, String> attrs, int currentBytecode, IMetaMember caller)
 	{
 
@@ -446,13 +450,13 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append("Method contains a hot throw at bytecode ");
 			reasonBuilder.append(currentBytecode);
 			reasonBuilder.append(" that was not pre-allocated.");
-			
-			Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(), SuggestionType.HOT_THROW,
-					(int) Math.ceil(score));
 
-			if (!suggestionList.contains(suggestion))
+			Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
+					ReportType.HOT_THROW, (int) Math.ceil(score));
+
+			if (!reportList.contains(suggestion))
 			{
-				suggestionList.add(suggestion);
+				reportList.add(suggestion);
 			}
 		}
 	}
@@ -522,12 +526,12 @@ public class AttributeSuggestionWalker extends AbstractSuggestionVisitable
 			reasonBuilder.append(
 					".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
-			Suggestion suggestion = new Suggestion(caller, compilationIndex, currentBytecode, reasonBuilder.toString(), SuggestionType.BRANCH,
-					(int) Math.ceil(score));
+			Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
+					ReportType.BRANCH, (int) Math.ceil(score));
 
-			if (!suggestionList.contains(suggestion))
+			if (!reportList.contains(suggestion))
 			{
-				suggestionList.add(suggestion);
+				reportList.add(suggestion);
 			}
 		}
 	}

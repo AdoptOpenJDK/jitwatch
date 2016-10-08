@@ -271,14 +271,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			for (Method m : clazz.getDeclaredMethods())
 			{
 				MetaMethod metaMethod = new MetaMethod(m, resultMetaClass);
-				resultMetaClass.addMetaMethod(metaMethod);
+				resultMetaClass.addMember(metaMethod);
 				stats.incCountMethod();
 			}
 
 			for (Constructor<?> c : clazz.getDeclaredConstructors())
 			{
 				MetaConstructor metaConstructor = new MetaConstructor(c, resultMetaClass);
-				resultMetaClass.addMetaConstructor(metaConstructor);
+				resultMetaClass.addMember(metaConstructor);
 				stats.incCountConstructor();
 			}
 

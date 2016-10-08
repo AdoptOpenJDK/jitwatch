@@ -445,18 +445,21 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public String toStringUnqualifiedMethodName(boolean fqParamTypes)
+	public String toStringUnqualifiedMethodName(boolean visibilityAndReturnType, boolean fqParamTypes)
 	{
 		StringBuilder builder = new StringBuilder();
 
-		if (modifier != 0)
+		if (visibilityAndReturnType)
 		{
-			builder.append(Modifier.toString(modifier)).append(C_SPACE);
-		}
-
-		if (returnType != null)
-		{
-			builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
+			if (modifier != 0)
+			{
+				builder.append(Modifier.toString(modifier)).append(C_SPACE);
+			}
+	
+			if (returnType != null)
+			{
+				builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
+			}
 		}
 
 		builder.append(memberName);
