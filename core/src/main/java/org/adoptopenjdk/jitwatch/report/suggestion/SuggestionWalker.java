@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 
 public class SuggestionWalker extends AbstractReportBuilder
 {
-	private IMetaMember metaMember;
+	private IMetaMember compilationRootMember;
 	private int compilationIndex;
 
 	private static final Map<String, Double> scoreMap = new HashMap<>();
@@ -226,7 +226,7 @@ public class SuggestionWalker extends AbstractReportBuilder
 	{
 		if (metaMember != null && metaMember.isCompiled())
 		{
-			this.metaMember = metaMember;
+			this.compilationRootMember = metaMember;
 
 			try
 			{
@@ -440,7 +440,6 @@ public class SuggestionWalker extends AbstractReportBuilder
 
 	private void handleHotThrowNotPreallocated(Map<String, String> attrs, int currentBytecode, IMetaMember caller)
 	{
-
 		double score = scoreMap.get(HOT_THROW_NOT_PREALLOCATED);
 
 		if (score > 0)
@@ -539,6 +538,6 @@ public class SuggestionWalker extends AbstractReportBuilder
 	@Override
 	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
-		processParseTag(parseTag, metaMember, parseDictionary);
+		processParseTag(parseTag, compilationRootMember, parseDictionary);
 	}
 }

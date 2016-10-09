@@ -26,6 +26,8 @@ public class MemberBytecode
 	private MemberSignatureParts msp;
 
 	private ClassBC classBytecode;
+	
+	private int size = 0;
 
 	private static final Logger logger = LoggerFactory.getLogger(MemberBytecode.class);
 	
@@ -57,8 +59,25 @@ public class MemberBytecode
 	public void setInstructions(List<BytecodeInstruction> bytecodeInstructions)
 	{
 		this.bytecodeInstructions = bytecodeInstructions;
+		
+		if (!bytecodeInstructions.isEmpty())
+		{
+			BytecodeInstruction instruction = bytecodeInstructions.get(bytecodeInstructions.size() -1);
+			
+			if (instruction != null)
+			{
+				int bci = instruction.getOffset();
+				
+				size = bci + 1;
+			}
+		}
 	}
 
+	public int size()
+	{
+		return size;
+	}
+	
 	public List<BytecodeInstruction> getInstructions()
 	{
 		return bytecodeInstructions;

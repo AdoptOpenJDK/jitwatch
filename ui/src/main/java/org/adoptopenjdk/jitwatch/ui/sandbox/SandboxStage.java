@@ -83,6 +83,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	private TabPane tabPane;
 
 	private Button btnSandboxConfig;
+	
+	private Button btnRun;
 
 	private SandboxConfigStage sandboxConfigStage;
 
@@ -249,12 +251,14 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			}
 		});
 
-		Button btnRun = new Button("Run");
+		btnRun = new Button("Run");
 		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
+				btnRun.setDisable(true);
+				
 				Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
 
 				if (selectedTab != null)
@@ -388,6 +392,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 			public void run()
 			{
 				runSandbox(pane.getSourceFile());
+				btnRun.setDisable(false);
 			}
 		}).start();
 	}

@@ -89,8 +89,6 @@ public class CompilationInfo extends HBox
 	{
 		if (compilation != null)
 		{
-			lblBytecodeSizeVal.setText(getAttrOrNA(compilation.getQueuedAttributes(), ATTR_BYTES));
-
 			lblAssemblySizeVal.setText(Integer.toString(compilation.getNativeSize()));
 
 			if (compilation.isC2N())
@@ -102,31 +100,7 @@ public class CompilationInfo extends HBox
 				lblCompileTimeVal.setText(compilation.getCompileTime() + "ms");
 			}
 
-			try
-			{
-				int bytecodeSize = Integer.parseInt(lblBytecodeSizeVal.getText());
-
-				if (bytecodeSize < DEFAULT_FREQ_INLINE_SIZE)
-				{
-					lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #00ff00");
-					lblBytecodeSizeVal.setTooltip(new Tooltip("Will be inlined"));
-				}
-				else if (bytecodeSize < DEFAULT_MAX_INLINE_SIZE)
-				{
-					lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #ffff00");
-					lblBytecodeSizeVal.setTooltip(new Tooltip("Will be inlined if hot"));
-				}
-				else
-				{
-					lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #ff0000");
-					lblBytecodeSizeVal.setTooltip(new Tooltip("Will not be inlined"));
-				}
-			}
-			catch (NumberFormatException nfe)
-			{
-				lblBytecodeSizeVal.setStyle(STYLE_VALUE);
-				Tooltip.uninstall(lblBytecodeSizeVal, lblBytecodeSizeVal.getTooltip());
-			}
+			setBytecodeSize(getAttrOrNA(compilation.getQueuedAttributes(), ATTR_BYTES));
 		}
 		else
 		{
@@ -137,6 +111,37 @@ public class CompilationInfo extends HBox
 			lblAssemblySizeVal.setText(NA);
 
 			lblCompileTimeVal.setText(NA);
+		}
+	}
+	
+	public void setBytecodeSize(String sizeString)
+	{
+		lblBytecodeSizeVal.setText(sizeString);
+		
+		try
+		{
+			int bytecodeSize = Integer.parseInt(lblBytecodeSizeVal.getText());
+
+			if (bytecodeSize < DEFAULT_FREQ_INLINE_SIZE)
+			{
+				lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #00ff00");
+				lblBytecodeSizeVal.setTooltip(new Tooltip("Will be inlined"));
+			}
+			else if (bytecodeSize < DEFAULT_MAX_INLINE_SIZE)
+			{
+				lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #ffff00");
+				lblBytecodeSizeVal.setTooltip(new Tooltip("Will be inlined if hot"));
+			}
+			else
+			{
+				lblBytecodeSizeVal.setStyle(STYLE_VALUE + " -fx-background-color: #ff0000");
+				lblBytecodeSizeVal.setTooltip(new Tooltip("Will not be inlined"));
+			}
+		}
+		catch (NumberFormatException nfe)
+		{
+			lblBytecodeSizeVal.setStyle(STYLE_VALUE);
+			Tooltip.uninstall(lblBytecodeSizeVal, lblBytecodeSizeVal.getTooltip());
 		}
 	}
 

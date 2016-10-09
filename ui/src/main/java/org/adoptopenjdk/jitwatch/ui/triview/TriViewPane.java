@@ -58,18 +58,6 @@ public class TriViewPane extends VBox
 			}
 		});
 
-//		titleComponents.setOnMouseExited(new EventHandler<MouseEvent>()
-//		{
-//			@Override
-//			public void handle(MouseEvent arg0)
-//			{
-//				if (viewer.getConfig().isTriViewMouseFollow())
-//				{
-//					unFocus();
-//				}
-//			}
-//		});
-
 		titleComponents.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override

@@ -661,14 +661,14 @@ public class TriView extends Stage implements ITriView
 
 		viewerBytecode.setContent(currentMember);
 
+		MemberBytecode memberBytecode = currentMember.getMemberBytecode();
+		
 		if (selectSourceLine)
 		{
-			MemberBytecode memberBytecode = currentMember.getMemberBytecode();
-
 			if (memberBytecode != null)
 			{
 				viewerBytecode.highlightLine(0, true);
-				lineHighlighted(0, LineType.BYTECODE_BCI);				
+				lineHighlighted(0, LineType.BYTECODE_BCI);
 			}
 			else
 			{
@@ -701,6 +701,11 @@ public class TriView extends Stage implements ITriView
 		{
 			String msg = "Not JIT-compiled";
 			viewerAssembly.setContent(msg, false, false);
+			
+			if (compilation == null && memberBytecode != null)
+			{
+				compilationInfo.setBytecodeSize(Integer.toString(memberBytecode.size()));
+			}
 
 			lblMemberInfo.setText(S_EMPTY);
 		}
