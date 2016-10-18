@@ -70,6 +70,17 @@ public final class EliminatedAllocationRowBuilder
 				return new LinkedBCICell();
 			}
 		});
+		
+		TableColumn<IReportRowBean, String> directOrInline = new TableColumn<IReportRowBean, String>("How");
+		directOrInline.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("kind"));
+		directOrInline.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
+		{
+			@Override
+			public TableCell<IReportRowBean, String> call(TableColumn<IReportRowBean, String> col)
+			{
+				return new TextTableCell();
+			}
+		});
 
 		TableColumn<IReportRowBean, String> eliminatedType = new TableColumn<IReportRowBean, String>("Eliminated Type");
 		eliminatedType.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("eliminatedType"));
@@ -82,16 +93,18 @@ public final class EliminatedAllocationRowBuilder
 			}
 		});
 
-		metaClass.prefWidthProperty().bind(tv.widthProperty().multiply(0.25));
+		metaClass.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		member.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		compilation.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
-		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
-		eliminatedType.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
+		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.12));
+		directOrInline.prefWidthProperty().bind(tv.widthProperty().multiply(0.1));
+		eliminatedType.prefWidthProperty().bind(tv.widthProperty().multiply(0.18));
 
 		tv.getColumns().add(metaClass);
 		tv.getColumns().add(member);
 		tv.getColumns().add(compilation);
 		tv.getColumns().add(viewBCI);
+		tv.getColumns().add(directOrInline);
 		tv.getColumns().add(eliminatedType);
 
 		tv.setItems(rows);

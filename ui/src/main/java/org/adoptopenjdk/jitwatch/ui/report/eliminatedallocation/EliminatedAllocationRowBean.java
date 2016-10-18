@@ -10,6 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.report.ReportType;
 import org.adoptopenjdk.jitwatch.ui.report.AbstractReportRowBean;
 
 public class EliminatedAllocationRowBean extends AbstractReportRowBean
@@ -34,6 +35,11 @@ public class EliminatedAllocationRowBean extends AbstractReportRowBean
 	public String getMember()
 	{
 		return report.getCaller().toStringUnqualifiedMethodName(false, false);
+	}
+	
+	public String getKind()
+	{
+		return (report.getType() == ReportType.ELIMINATED_ALLOCATION_DIRECT) ? "Direct" : "Inline";
 	}
 	
 	public String getEliminatedType()

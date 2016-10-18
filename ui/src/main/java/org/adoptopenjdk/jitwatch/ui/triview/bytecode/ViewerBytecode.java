@@ -85,7 +85,8 @@ public class ViewerBytecode extends Viewer
 				ttBuilder.append(tooltip.getText()).append(S_NEWLINE).append(S_NEWLINE);
 			}
 
-			if (report.getType() != ReportType.ELIMINATED_ALLOCATION)
+			if (report.getType() != ReportType.ELIMINATED_ALLOCATION_DIRECT
+					&& report.getType() != ReportType.ELIMINATED_ALLOCATION_INLINE)
 			{
 				ttBuilder.append("Suggestion:\n");
 

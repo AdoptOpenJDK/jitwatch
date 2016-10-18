@@ -11,23 +11,24 @@ public class Report
 {
 	private final IMetaMember caller;
 	private final int compilationIndex;
-	private final int bytecodeOffset;
+	private final int bci;
 	private final String text;
 	private final ReportType type;
 	private final int score;
 	private Object metaData;
+	
 
-	public Report(IMetaMember caller, int compilationIndex, int bytecodeOffset, String text, ReportType type, int score)
+	public Report(IMetaMember caller, int compilationIndex, int bci, String text, ReportType type, int score)
 	{
-		this(caller, compilationIndex, bytecodeOffset, text, type, score, null);
+		this(caller, compilationIndex, bci, text, type, score, null);
 	}
 
-	public Report(IMetaMember caller, int compilationIndex, int bytecodeOffset, String text, ReportType type, int score,
+	public Report(IMetaMember caller, int compilationIndex, int bci, String text, ReportType type, int score,
 			Object metaData)
 	{
 		this.caller = caller;
 		this.compilationIndex = compilationIndex;
-		this.bytecodeOffset = bytecodeOffset;
+		this.bci = bci;
 		this.text = text;
 		this.score = score;
 		this.type = type;
@@ -51,7 +52,7 @@ public class Report
 
 	public int getBytecodeOffset()
 	{
-		return bytecodeOffset;
+		return bci;
 	}
 
 	public String getText()
@@ -74,7 +75,7 @@ public class Report
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + bytecodeOffset;
+		result = prime * result + bci;
 		result = prime * result + ((caller == null) ? 0 : caller.hashCode());
 		result = prime * result + compilationIndex;
 		result = prime * result + ((metaData == null) ? 0 : metaData.hashCode());
@@ -94,7 +95,7 @@ public class Report
 		if (getClass() != obj.getClass())
 			return false;
 		Report other = (Report) obj;
-		if (bytecodeOffset != other.bytecodeOffset)
+		if (bci != other.bci)
 			return false;
 		if (caller == null)
 		{
@@ -129,7 +130,7 @@ public class Report
 	@Override
 	public String toString()
 	{
-		return "Report [caller=" + caller + ", compilationIndex=" + compilationIndex + ", bytecodeOffset=" + bytecodeOffset
+		return "Report [caller=" + caller + ", compilationIndex=" + compilationIndex + ", bytecodeOffset=" + bci
 				+ ", text=" + text + ", type=" + type + ", score=" + score + ", metaData=" + metaData + "]";
 	}
 }

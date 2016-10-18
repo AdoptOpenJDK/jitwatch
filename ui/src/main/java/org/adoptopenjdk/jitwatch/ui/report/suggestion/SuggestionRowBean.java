@@ -30,7 +30,8 @@ public class SuggestionRowBean extends AbstractReportRowBean
 			return "Inlinling";
 		case CODE_CACHE:
 			return "Code Cache";
-		case ELIMINATED_ALLOCATION:
+		case ELIMINATED_ALLOCATION_DIRECT:
+		case ELIMINATED_ALLOCATION_INLINE:
 			return "Eliminated Allocation";
 		default:
 			return "Unknown";

@@ -19,7 +19,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationBuilder;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
@@ -40,10 +38,14 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.report.AbstractReportBuilder;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.ReportType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EliminatedAllocationWalker extends AbstractReportBuilder
 {
 	private BytecodeAnnotationBuilder bcAnnotationBuilder;
+
+	private static final Logger logger = LoggerFactory.getLogger(EliminatedAllocationWalker.class);
 
 	public EliminatedAllocationWalker(IReadOnlyJITDataModel model)
 	{
@@ -82,26 +84,40 @@ public class EliminatedAllocationWalker extends AbstractReportBuilder
 				try
 				{
 					BytecodeAnnotations annotations = bcAnnotationBuilder.buildBytecodeAnnotations(metaMember,
-							compilation.getIndex(), model, EnumSet.of(BCAnnotationType.ELIMINATED_ALLOCATION));
+							compilation.getIndex(), model);
 
 					Set<IMetaMember> membersWithAnnotations = annotations.getMembers();
 
 					for (IMetaMember currentMember : membersWithAnnotations)
 					{
-						BytecodeAnnotationList list = annotations.getAnnotationList(currentMember);
+						BytecodeAnnotationList annotationsForMember = annotations.getAnnotationList(currentMember);
 
-						for (Map.Entry<Integer, List<LineAnnotation>> entry : list.getEntries())
+						for (Map.Entry<Integer, List<LineAnnotation>> entry : annotationsForMember.getEntries())
 						{
 							List<LineAnnotation> lineAnnotations = entry.getValue();
 
 							int bci = entry.getKey();
 
+							boolean inlineAtBCI = hasInlineSuccessAnnotation(lineAnnotations);
+
 							for (LineAnnotation la : lineAnnotations)
 							{
-								Report report = new Report(currentMember, compilation.getIndex(), bci, la.getAnnotation(),
-										ReportType.ELIMINATED_ALLOCATION, 0, la.getMetaData());
 
-								reportList.add(report);
+								switch (la.getType())
+								{
+								case ELIMINATED_ALLOCATION:
+									ReportType type = inlineAtBCI ? ReportType.ELIMINATED_ALLOCATION_INLINE
+											: ReportType.ELIMINATED_ALLOCATION_DIRECT;
+
+									Report report = new Report(currentMember, compilation.getIndex(), bci, la.getAnnotation(), type,
+											0, la.getMetaData());
+
+									reportList.add(report);
+									break;
+
+								default:
+									break;
+								}
 							}
 						}
 					}
@@ -112,6 +128,25 @@ public class EliminatedAllocationWalker extends AbstractReportBuilder
 				}
 			}
 		}
+	}
+
+	private boolean hasInlineSuccessAnnotation(List<LineAnnotation> annotations)
+	{
+		boolean result = false;
+
+		for (LineAnnotation la : annotations)
+		{
+			switch (la.getType())
+			{
+			case INLINE_SUCCESS:
+				result = true;
+				break;
+			default:
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	@Override
