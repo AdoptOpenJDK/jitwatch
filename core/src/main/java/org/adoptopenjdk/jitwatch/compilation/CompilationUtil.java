@@ -23,6 +23,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_REASON_STALE_TASK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_METHOD_ID_MATCH;
 
 import java.util.List;
 import java.util.Map;
@@ -154,8 +156,8 @@ public final class CompilationUtil
 			logger.warn("Compilation is null");
 		}
 	}
-	
-//	private Map<Integer, Integer> getBytecodeMap
+
+	// private Map<Integer, Integer> getBytecodeMap
 
 	public static boolean isJournalForCompile2NativeMember(Tag tag)
 	{
@@ -191,14 +193,20 @@ public final class CompilationUtil
 	}
 
 	public static boolean memberMatchesMethodID(IMetaMember member, String methodID, IParseDictionary parseDictionary)
-	{		
+	{
 		boolean result = false;
 
 		Tag methodTag = parseDictionary.getMethod(methodID);
 
-		if (DEBUG_LOGGING)
+		StringBuilder builder = null;
+
+		if (DEBUG_LOGGING_METHOD_ID_MATCH)
 		{
-			logger.debug("methodID: {} methodTag: {}", methodID, methodTag != null ? methodTag.toString(true) : "null");
+			builder = new StringBuilder();
+			builder.append(
+					String.format("methodID: %s methodTag: %s", methodID, methodTag != null ? methodTag.toString(true) : "null"))
+					.append(S_NEWLINE);
+			builder.append(String.format("member: %s ", member.toString())).append(S_NEWLINE);
 		}
 
 		if (methodTag != null)
@@ -211,9 +219,9 @@ public final class CompilationUtil
 
 			if (klassTag != null)
 			{
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_METHOD_ID_MATCH)
 				{
-					logger.debug("klass tag: {}", klassTag.toString(false));
+					builder.append(String.format("klass tag: %s", klassTag.toString(false))).append(S_NEWLINE);
 				}
 
 				String klassAttrName = klassTag.getAttributes().get(ATTR_NAME);
@@ -227,26 +235,29 @@ public final class CompilationUtil
 				String returnType = ParseUtil.getMethodTagReturn(methodTag, parseDictionary);
 				List<String> paramTypes = ParseUtil.getMethodTagArguments(methodTag, parseDictionary);
 
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_METHOD_ID_MATCH)
 				{
-					logger.debug("memberName: {}/{}", member.getMemberName(), methodAttrName);
-					logger.debug("metaClass : {}/{}", member.getMetaClass().getFullyQualifiedName(), klassAttrName);
-					logger.debug("return    : {}/{}", member.getReturnTypeName(), returnType);
-					logger.debug("params    : {}/{}", StringUtil.arrayToString(member.getParamTypeNames()),
-							StringUtil.listToString(paramTypes));
+					builder.append(String.format("memberName: %s/%s", member.getMemberName(), methodAttrName)).append(S_NEWLINE);
+					builder.append(String.format("metaClass : %s/%s", member.getMetaClass().getFullyQualifiedName(), klassAttrName))
+							.append(S_NEWLINE);
+					builder.append(String.format("return    : %s/%s", member.getReturnTypeName(), returnType)).append(S_NEWLINE);
+					builder.append(String.format("params    : %s/%s", StringUtil.arrayToString(member.getParamTypeNames()),
+							StringUtil.listToString(paramTypes))).append(S_NEWLINE);
 				}
 
 				boolean nameMatches;
 
 				if (S_CONSTRUCTOR_INIT.equals(methodAttrName))
 				{
-					if (DEBUG_LOGGING)
+					if (DEBUG_LOGGING_METHOD_ID_MATCH)
 					{
-						logger.debug("Looks like a constructor. Checking {} vs {}", member.getMemberName(), klassAttrName);
+						builder.append(
+								String.format("Looks like a constructor. Checking %s vs %s", member.getMemberName(), klassAttrName))
+								.append(S_NEWLINE);
 					}
-					
-					String unqualifiedClassName = StringUtil.getUnqualifiedClassName(klassAttrName);	
-					
+
+					String unqualifiedClassName = StringUtil.getUnqualifiedClassName(klassAttrName);
+
 					nameMatches = member.getMemberName().equals(unqualifiedClassName);
 				}
 				else
@@ -266,8 +277,10 @@ public final class CompilationUtil
 						String memberParamType = member.getParamTypeNames()[pos];
 						String tagParamType = paramTypes.get(pos);
 
-						// logger.debug("checking: {}/{}", memberParamType,
-						// tagParamType);
+						if (DEBUG_LOGGING_METHOD_ID_MATCH)
+						{
+							builder.append(String.format("checking: %s/%s", memberParamType, tagParamType)).append(S_NEWLINE);
+						}
 
 						if (!memberParamType.equals(tagParamType))
 						{
@@ -283,12 +296,17 @@ public final class CompilationUtil
 
 				result = nameMatches && klassMatches && returnMatches && paramsMatch;
 
-				if (DEBUG_LOGGING)
+				if (DEBUG_LOGGING_METHOD_ID_MATCH)
 				{
-					logger.debug("Matched name: {} klass: {} return: {} params: {}", nameMatches, klassMatches, returnMatches,
-							paramsMatch);
+					builder.append(String.format("Matched name: %s klass: %s return: %s params: %s", nameMatches, klassMatches,
+							returnMatches, paramsMatch)).append(S_NEWLINE);
 
-					logger.debug("Matches member:{} = {}", member, result);
+					builder.append(String.format("Matches member:%s = %s", member, result)).append(S_NEWLINE);
+
+					if (!result)
+					{
+						logger.error(builder.toString());
+					}
 				}
 			}
 		}
@@ -327,11 +345,11 @@ public final class CompilationUtil
 						logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(),
 								phasesParse.size());
 
-						if(DEBUG_LOGGING)
+						if (DEBUG_LOGGING)
 						{
 							logger.debug("Task {}", task);
 						}
-						
+
 						// possible JDK9 new format with no wrapping tag so
 						// return
 						// the whole task tag
@@ -343,24 +361,24 @@ public final class CompilationUtil
 
 		return parsePhase;
 	}
-	
+
 	public static boolean isStaleTask(Task task)
 	{
 		List<Tag> failureChildren = task.getNamedChildren(TAG_FAILURE);
-		
+
 		boolean stale = false;
-		
+
 		for (Tag failure : failureChildren)
 		{
 			String reason = failure.getAttributes().get(ATTR_REASON);
-			
+
 			if (S_REASON_STALE_TASK.equals(reason))
 			{
 				stale = true;
 				break;
 			}
 		}
-		
+
 		return stale;
 	}
 

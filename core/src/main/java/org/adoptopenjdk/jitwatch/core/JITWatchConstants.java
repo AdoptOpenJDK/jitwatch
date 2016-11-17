@@ -24,6 +24,7 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING_CLASSPATH = false;
 	public static final boolean DEBUG_LOGGING_ASSEMBLY = false;
 	public static final boolean DEBUG_LOGGING_SIG_MATCH = false;
+	public static final boolean DEBUG_LOGGING_METHOD_ID_MATCH = false;
 	public static final boolean DEBUG_LOGGING_OVC = false;
 	public static final boolean DEBUG_LOGGING_PARSE_DICTIONARY = false;
 	public static final boolean DEBUG_LOGGING_TRIVIEW = false;
@@ -163,8 +164,10 @@ public final class JITWatchConstants
 	public static final String ATTR_ADDRESS = "address";
 	public static final String ATTR_PREALLOCATED = "preallocated";
 
-	public static final String ALWAYS = "always";
-	public static final String NEVER = "never";
+	public static final String BRANCH_TAKEN_ALWAYS = "always";
+	public static final String BRANCH_TAKEN_NEVER = "never";
+	public static final String BRANCH_TAKEN_MIN = "min";
+	public static final String BRANCH_TAKEN_MAX = "max";
 
 	public static final String S_ENTITY_APOS = "&apos;";
 	public static final String S_ENTITY_LT = "&lt;";

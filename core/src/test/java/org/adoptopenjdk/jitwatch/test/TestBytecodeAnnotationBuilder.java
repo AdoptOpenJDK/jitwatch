@@ -31,6 +31,9 @@ import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
+import org.adoptopenjdk.jitwatch.model.LogParseException;
+import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.ParseDictionary;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
@@ -2443,4 +2446,84 @@ public class TestBytecodeAnnotationBuilder
 		UnitTestUtil.checkAnnotation(list, 289, "java.lang.StringBuffer", BCAnnotationType.INLINE_FAIL);
 		UnitTestUtil.checkAnnotation(list, 303, "null_check", BCAnnotationType.UNCOMMON_TRAP);
 	}
+
+	@Test
+	public void testRegressionMemberMatchesParseTagForVarArgs() throws ClassNotFoundException, LogParseException
+	{
+		String methodName = "format";
+		String klassName = "java.lang.String";
+
+		Class<?>[] params = new Class[] { String.class, Object[].class };
+
+		IParseDictionary parseDictionary = new ParseDictionary(methodName);
+
+		TagProcessor tagProcessor = new TagProcessor();
+
+		parseDictionary.putType("722", tagProcessor.processLine("<type name='int' id='722'/>"));
+		parseDictionary.putType("724", tagProcessor.processLine("<type name='void' id='724'/>"));
+		parseDictionary.putType("716", tagProcessor.processLine("<type name='boolean' id='716'/>"));
+		parseDictionary.putType("717", tagProcessor.processLine("<type name='char' id='717'/>"));
+
+		parseDictionary.putKlass("793",
+				tagProcessor.processLine("<klass name='java/lang/AbstractStringBuilder' flags='1024' id='793'/>"));
+		parseDictionary.putKlass("795", tagProcessor.processLine("<klass name='java/lang/StringBuilder' flags='17' id='795'/>"));
+		parseDictionary.putKlass("850", tagProcessor.processLine("<klass name='java/lang/Appendable' flags='1537' id='850'/>"));
+		parseDictionary.putKlass("730", tagProcessor.processLine("<klass name='java/lang/String' flags='17' id='730'/>"));
+		parseDictionary.putKlass("841", tagProcessor.processLine("<klass name='java/util/Locale' flags='17' id='841'/>"));
+		parseDictionary.putKlass("832", tagProcessor.processLine("<klass name='[Ljava/lang/Object;' flags='1041' id='832'/>"));
+		parseDictionary.putKlass("876",
+				tagProcessor.processLine("<klass unloaded='1' name='java/util/FormatterClosedException' id='876'/>"));
+		parseDictionary.putKlass("855",
+				tagProcessor.processLine("<klass name='java/text/DecimalFormatSymbols' flags='1' id='855'/>"));
+		parseDictionary.putKlass("835", tagProcessor.processLine("<klass name='java/util/Formatter' flags='17' id='835'/>"));
+		parseDictionary.putKlass("838",
+				tagProcessor.processLine("<klass name='java/util/Locale$Category' flags='16409' id='838'/>"));
+		parseDictionary.putKlass("729", tagProcessor.processLine("<klass name='java/lang/Object' flags='1' id='729'/>"));
+
+		parseDictionary.putMethod("861", tagProcessor.processLine(
+				"<method level='3' bytes='37' name='getInstance' flags='25' holder='855' arguments='841' id='861' compile_id='1395' compiler='C1' iicount='1448' return='855'/>"));
+		parseDictionary.putMethod("872", tagProcessor
+				.processLine("<method bytes='12' name='toString' flags='1' holder='835' id='872' iicount='1454' return='730'/>"));
+		parseDictionary.putMethod("851", tagProcessor.processLine(
+				"<method bytes='23' name='&lt;init&gt;' flags='2' holder='835' arguments='841 850' id='851' iicount='1441' return='724'/>"));
+		parseDictionary.putMethod("874", tagProcessor.processLine(
+				"<method level='3' bytes='16' name='ensureOpen' flags='2' holder='835' id='874' compile_id='1364' compiler='C1' iicount='2911' return='724'/>"));
+		parseDictionary.putMethod("842", tagProcessor.processLine(
+				"<method bytes='132' name='getDefault' flags='9' holder='841' arguments='838' id='842' iicount='1434' return='841'/>"));
+		parseDictionary.putMethod("853", tagProcessor.processLine(
+				"<method bytes='27' name='getZero' flags='10' holder='835' arguments='841' id='853' iicount='1444' return='717'/>"));
+		parseDictionary.putMethod("865", tagProcessor.processLine(
+				"<method level='1' bytes='5' name='getZeroDigit' flags='1' holder='855' id='865' compile_id='1332' compiler='C1' iicount='151' return='717'/>"));
+		parseDictionary.putMethod("833", tagProcessor.processLine(
+				"<method bytes='16' name='format' flags='137' holder='730' arguments='730 832' id='833' iicount='1430' return='730'/>"));
+		parseDictionary.putMethod("844", tagProcessor.processLine(
+				"<method level='4' bytes='7' name='&lt;init&gt;' flags='1' holder='795' id='844' compile_id='1357' compiler='C2' iicount='5341' return='724'/>"));
+		parseDictionary.putMethod("877",
+				tagProcessor.processLine("<method unloaded='1' name='&lt;init&gt;' holder='876' id='877' return='724'/>"));
+		parseDictionary.putMethod("867", tagProcessor.processLine(
+				"<method bytes='11' name='format' flags='129' holder='835' arguments='730 832' id='867' iicount='1452' return='835'/>"));
+		parseDictionary.putMethod("878", tagProcessor
+				.processLine("<method bytes='36' name='toString' flags='1' holder='729' id='878' iicount='1' return='730'/>"));
+		parseDictionary.putMethod("846", tagProcessor.processLine(
+				"<method level='3' bytes='12' name='&lt;init&gt;' flags='0' holder='793' arguments='722' id='846' compile_id='53' compiler='C1' iicount='8594' return='724'/>"));
+		parseDictionary.putMethod("836", tagProcessor.processLine(
+				"<method bytes='18' name='&lt;init&gt;' flags='1' holder='835' id='836' iicount='1432' return='724'/>"));
+		parseDictionary.putMethod("858", tagProcessor.processLine(
+				"<method level='3' bytes='75' name='equals' flags='1' holder='841' arguments='729' id='858' compile_id='1377' compiler='C1' iicount='1501' return='716'/>"));
+		parseDictionary.putMethod("869", tagProcessor.processLine(
+				"<method level='3' bytes='271' name='format' flags='129' holder='835' arguments='841 730 832' id='869' compile_id='1383' compiler='C1' iicount='1453' return='835'/>"));
+		parseDictionary.putMethod("848", tagProcessor.processLine(
+				"<method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='729' id='848' compile_id='19' compiler='C1' iicount='80409' return='724'/>"));
+
+		MetaClass metaClass = UnitTestUtil.createMetaClassFor(new JITDataModel(), klassName);
+		
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("java/lang/String format (Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
+		
+		System.out.println(msp);
+		
+		IMetaMember member = metaClass.getMemberForSignature(msp);
+
+		assertTrue(CompilationUtil.memberMatchesMethodID(member, "833", parseDictionary));
+	}
+
 }

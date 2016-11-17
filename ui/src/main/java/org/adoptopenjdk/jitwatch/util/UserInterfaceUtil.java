@@ -88,6 +88,7 @@ public final class UserInterfaceUtil
 			return colourFailure;
 		case BRANCH:
 		case UNCOMMON_TRAP:
+		case INTRINSIC_USED:
 			return colourInformation;
 		default:
 			return Color.BLACK;

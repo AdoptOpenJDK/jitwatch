@@ -38,19 +38,19 @@ public final class ResourceLoader
 	}
 
 	public static String getSourceForClassName(String fqName, List<String> sourceLocations)
-	{	
+	{
 		List<String> searchLocations = new ArrayList<>(sourceLocations);
-		
+
 		if (searchLocations.isEmpty())
 		{
 			File jdkSrcZip = FileUtil.getJDKSourceZip();
-			
+
 			if (jdkSrcZip != null)
 			{
 				searchLocations.add(jdkSrcZip.toPath().toString());
 			}
 		}
-		
+
 		int dollarPos = fqName.indexOf(C_DOLLAR);
 
 		if (dollarPos != -1)

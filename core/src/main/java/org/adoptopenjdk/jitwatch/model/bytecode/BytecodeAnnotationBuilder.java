@@ -536,7 +536,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 			
 			Map<String, String> tagAttrs = child.getAttributes();
 
-			if (DEBUG_LOGGING)
+			if (DEBUG_LOGGING_BYTECODE)
 			{
 				logger.debug("Examining child tag {}", child);
 			}

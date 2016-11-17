@@ -5,7 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.report.suggestion;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ALWAYS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.BRANCH_TAKEN_ALWAYS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.BRANCH_TAKEN_MIN;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.BRANCH_TAKEN_MAX;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.BRANCH_TAKEN_NEVER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_COUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
@@ -17,7 +20,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_UNLOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NEVER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
@@ -482,11 +484,11 @@ public class SuggestionWalker extends AbstractReportBuilder
 
 		if (probStr != null)
 		{
-			if (NEVER.equalsIgnoreCase(probStr))
+			if (BRANCH_TAKEN_NEVER.equalsIgnoreCase(probStr) || BRANCH_TAKEN_MIN.equalsIgnoreCase(probStr))
 			{
 				probability = 0;
 			}
-			else if (ALWAYS.equalsIgnoreCase(probStr))
+			else if (BRANCH_TAKEN_ALWAYS.equalsIgnoreCase(probStr) || BRANCH_TAKEN_MAX.equalsIgnoreCase(probStr))
 			{
 				probability = 1;
 			}
@@ -525,8 +527,8 @@ public class SuggestionWalker extends AbstractReportBuilder
 			reasonBuilder.append(
 					".\nIt may be possbile to modify the branch (for example by sorting a Collection before iterating) to make it more predictable.");
 
-			Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
-					ReportType.BRANCH, (int) Math.ceil(score));
+			Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(), ReportType.BRANCH,
+					(int) Math.ceil(score));
 
 			if (!reportList.contains(suggestion))
 			{

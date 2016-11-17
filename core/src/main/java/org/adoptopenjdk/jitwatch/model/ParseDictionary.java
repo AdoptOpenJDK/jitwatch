@@ -18,42 +18,42 @@ public class ParseDictionary implements IParseDictionary
 	private Map<String, Tag> typeMap = new HashMap<>();
 	private Map<String, Tag> klassMap = new HashMap<>();
 	private Map<String, Tag> methodMap = new HashMap<>();
-	
+
 	private String parseMethod;
-	
+
 	private Map<String, BCIOpcodeMap> methodBCIOpcodeMap = new HashMap<>();
 
 	public ParseDictionary(String parseMethod)
 	{
 		this.parseMethod = parseMethod;
 	}
-	
+
 	@Override
 	public String getParseMethod()
 	{
 		return parseMethod;
 	}
-	
+
 	@Override
 	public void putBCIOpcode(String methodID, int bci, Opcode opcode)
 	{
 		BCIOpcodeMap bciOpcodeMap = getBCIOpcodeMap(methodID);
-		
+
 		if (bciOpcodeMap == null)
 		{
 			bciOpcodeMap = new BCIOpcodeMap();
 			methodBCIOpcodeMap.put(methodID, bciOpcodeMap);
 		}
-		
+
 		bciOpcodeMap.put(bci, opcode);
 	}
-	
+
 	@Override
 	public BCIOpcodeMap getBCIOpcodeMap(String methodID)
 	{
 		return methodBCIOpcodeMap.get(methodID);
-	}	
-	
+	}
+
 	@Override
 	public Tag getType(String id)
 	{
@@ -99,24 +99,21 @@ public class ParseDictionary implements IParseDictionary
 
 		for (Map.Entry<String, Tag> entry : typeMap.entrySet())
 		{
-			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().getAttributes().get(ATTR_NAME))
-					.append(S_NEWLINE);
+			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().toString().trim()).append(S_NEWLINE);
 		}
 
-		builder.append("Classes:\n");
+		builder.append("Klasses:\n");
 
 		for (Map.Entry<String, Tag> entry : klassMap.entrySet())
 		{
-			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().getAttributes().get(ATTR_NAME))
-					.append(S_NEWLINE);
+			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().toString().trim()).append(S_NEWLINE);
 		}
 
 		builder.append("Methods:\n");
 
 		for (Map.Entry<String, Tag> entry : methodMap.entrySet())
 		{
-			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().getAttributes().get(ATTR_NAME))
-					.append(S_NEWLINE);
+			builder.append(entry.getKey()).append("\t=>\t").append(entry.getValue().toString().trim()).append(S_NEWLINE);
 		}
 
 		return builder.toString().trim();

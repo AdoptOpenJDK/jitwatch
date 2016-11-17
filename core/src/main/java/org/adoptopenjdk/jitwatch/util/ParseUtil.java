@@ -318,11 +318,6 @@ public final class ParseUtil
 
 	public static Class<?> findClassForLogCompilationParameter(String param) throws ClassNotFoundException
 	{
-		if (DEBUG_LOGGING)
-		{
-			logger.debug("findClassForLogCompilationParameter:{}", param);
-		}
-
 		StringBuilder builder = new StringBuilder();
 
 		if (isPrimitive(param))
@@ -424,27 +419,48 @@ public final class ParseUtil
 					memberHasVarArgs);
 		}
 
-		if (!memberHasVarArgs && memberParamCount != signatureParamCount)
+		if (memberParamCount == 0 && signatureParamCount == 0)
 		{
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.debug("both have zero params");
+			}
+			
+			result = true;
+		}
+		else if (signatureParamCount < memberParamCount)
+		{
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.debug("signature has less params than method");
+			}
+			
 			result = false;
 		}
-		else if (memberParamCount > 0 && signatureParamCount > 0)
+		else if (signatureParamCount > memberParamCount && !memberHasVarArgs)
 		{
-			int memPos = memberParamCount - 1;
+			if (DEBUG_LOGGING_SIG_MATCH)
+			{
+				logger.debug("signature has more params than non-varargs method");
+			}
+			
+			result = false;
+		}
+		else
+		{
+			// signature params >= memberParams
+			
+			int memPos = 0;
 
-			for (int sigPos = signatureParamCount - 1; sigPos >= 0; sigPos--)
+			for (int sigPos = 0; sigPos < signatureParamCount; sigPos++)
 			{
 				Class<?> sigParamClass = signatureParamClasses.get(sigPos);
 
 				Class<?> memParamClass = memberParamClasses.get(memPos);
 
-				boolean memberParamCouldBeVarArgs = false;
-
-				boolean isLastParameter = (memPos == memberParamCount - 1);
-
-				if (memberHasVarArgs && isLastParameter)
+				if (DEBUG_LOGGING_SIG_MATCH)
 				{
-					memberParamCouldBeVarArgs = true;
+					logger.debug("Comparing member param[{}] {} to sig param[{}] {}", memPos, memParamClass, sigPos, sigParamClass);
 				}
 
 				boolean classMatch = false;
@@ -464,31 +480,32 @@ public final class ParseUtil
 					{
 						logger.debug("{} equals/isAssignableFrom {}", memParamClass, sigParamClass);
 					}
-
-					if (memPos > 0)
-					{
-						// move to previous member parameter
-						memPos--;
-					}
-					else if (sigPos > 0)
-					{
-						if (DEBUG_LOGGING_SIG_MATCH)
-						{
-							logger.debug("More signature params but no more member params to try");
-						}
-
-						result = false;
-						break;
-					}
 				}
 				else
 				{
+
+					boolean memberParamCouldBeVarArgs = false;
+
+					boolean isLastParameter = (memPos == memberParamCount - 1);
+
+					if (memberHasVarArgs && isLastParameter)
+					{
+						memberParamCouldBeVarArgs = true;
+					}
+					
 					if (memberParamCouldBeVarArgs)
 					{
 						// check assignable
 						Class<?> componentType = memParamClass.getComponentType();
 
-						if (!componentType.isAssignableFrom(sigParamClass))
+						if (componentType.isAssignableFrom(sigParamClass))
+						{
+							if (DEBUG_LOGGING_SIG_MATCH)
+							{
+								logger.debug("vararg member param {} equals/isAssignableFrom {}", memParamClass, sigParamClass);
+							}
+						}
+						else
 						{
 							result = false;
 							break;
@@ -501,15 +518,15 @@ public final class ParseUtil
 					}
 
 				} // if classMatch
+				
+				memPos++;
+				
+				if (memPos >= memberParamCount)
+				{
+					memPos = memberParamCount - 1;
+				}
 
 			} // for
-
-			boolean unusedMemberParams = (memPos > 0);
-
-			if (unusedMemberParams)
-			{
-				result = false;
-			}
 		}
 
 		return result;
@@ -1226,5 +1243,5 @@ public final class ParseUtil
 		}
 
 		return result;
-	}		
+	}
 }

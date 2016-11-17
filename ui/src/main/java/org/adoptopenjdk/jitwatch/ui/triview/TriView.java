@@ -300,7 +300,7 @@ public class TriView extends Stage implements ITriView
 			@Override
 			public void run()
 			{
-				//focusSource();
+				// focusSource();
 			}
 		});
 	}
@@ -567,18 +567,17 @@ public class TriView extends Stage implements ITriView
 
 		if (!sameClass)
 		{
-			String source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(), config.getSourceLocations());
+			String source = null;
 
-			if (source == null)
+			String sourceFileName = classBytecode.getSourceFile();
+
+			if (sourceFileName != null)
 			{
-				String sourceFileName = classBytecode.getSourceFile();
+				source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
 
-				logger.debug("Could not find source for {}. Trying to locate via bytecode source file attribute {}", memberClass,
-						sourceFileName);
-
-				if (sourceFileName != null)
+				if (source == null)
 				{
-					source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
+					source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(), config.getSourceLocations());
 				}
 			}
 
@@ -662,7 +661,7 @@ public class TriView extends Stage implements ITriView
 		viewerBytecode.setContent(currentMember);
 
 		MemberBytecode memberBytecode = currentMember.getMemberBytecode();
-		
+
 		if (selectSourceLine)
 		{
 			if (memberBytecode != null)
@@ -701,7 +700,7 @@ public class TriView extends Stage implements ITriView
 		{
 			String msg = "Not JIT-compiled";
 			viewerAssembly.setContent(msg, false, false);
-			
+
 			if (compilation == null && memberBytecode != null)
 			{
 				compilationInfo.setBytecodeSize(Integer.toString(memberBytecode.size()));
@@ -779,7 +778,7 @@ public class TriView extends Stage implements ITriView
 			logger.debug("lineHighlighted {} {}", index, lineType);
 
 		}
-		
+
 		switch (lineType)
 		{
 		case SOURCE:
@@ -789,7 +788,7 @@ public class TriView extends Stage implements ITriView
 			highlightFromBytecode(index);
 			break;
 		case BYTECODE_BCI:
-			int indexForBCI = viewerBytecode.getLineIndexForBytecodeOffset(index);	
+			int indexForBCI = viewerBytecode.getLineIndexForBytecodeOffset(index);
 			viewerBytecode.highlightLine(indexForBCI, true);
 			highlightFromBytecode(indexForBCI);
 			break;

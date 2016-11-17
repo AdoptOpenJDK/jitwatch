@@ -7,6 +7,8 @@ package org.adoptopenjdk.jitwatch.process.compiler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,6 +22,8 @@ import org.adoptopenjdk.jitwatch.process.AbstractProcess;
 public class CompilerScala extends AbstractProcess implements ICompiler
 {
 	private Path compilerPath;
+	
+	private String languageHomeDir;
 
 	private final String COMPILER_NAME = "scalac";
 
@@ -27,6 +31,8 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 	{
 		super();
 
+		this.languageHomeDir = languageHomeDir;
+		
 		compilerPath = Paths.get(languageHomeDir, "bin", COMPILER_NAME);
 
 		if (!compilerPath.toFile().exists())
@@ -47,9 +53,11 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
-		List<String> compileOptions = Arrays.asList(new String[] { "-g:vars", "-d", outputDirPath });
+		List<String> compileOptions = Arrays.asList(new String[] { "-print", "-g:vars", "-d", outputDirPath });
 
 		commands.addAll(compileOptions);
+		
+		addScalaCoreLibs(classpathEntries);
 
 		if (classpathEntries.size() > 0)
 		{
@@ -63,6 +71,65 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 			commands.add(sourceFile.getAbsolutePath());
 		}
 
-		return runCommands(commands, logListener);
+		boolean success = runCommands(commands, logListener);
+		
+		if (success)
+		{
+			String realSource = getOutputStream();
+					
+			/*
+			FileWriter writer = null;
+
+			try
+			{
+				writer = new FileWriter(saveFile);
+				writer.write(getSource());
+				sandboxStage.log("Saved " + saveFile.getCanonicalPath());
+				
+				sourceFile = saveFile;
+			}
+			catch (IOException ioe)
+			{
+				sandboxStage.log("Could not save file");
+			}
+			finally
+			{
+				if (writer != null)
+				{
+					try
+					{
+						writer.close();
+					}
+					catch (IOException ioe)
+					{
+					}
+				}
+			}
+			*/
+			
+		}
+		
+		return success;
+	}
+	
+	private void addScalaCoreLibs(List<String> classpathEntries)
+	{
+		String[] coreLibs = Paths.get(languageHomeDir, "lib").toFile().list(new FilenameFilter()
+		{
+			
+			@Override
+			public boolean accept(File dir, String name)
+			{
+				return name.endsWith(".jar");
+			}
+		});
+		
+		for (String filename : coreLibs)
+		{
+			if (!classpathEntries.contains(filename))
+			{
+				classpathEntries.add(filename);
+			}
+		}		
 	}
 }

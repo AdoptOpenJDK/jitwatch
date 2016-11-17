@@ -28,6 +28,8 @@ public class MetaConstructor extends AbstractMetaMember
 		
 		paramTypes = Arrays.asList(constructor.getParameterTypes());
 		modifier = constructor.getModifiers();
+		
+        isVarArgs = constructor.isVarArgs();
 
         if (DEBUG_MEMBER_CREATION)
         {
