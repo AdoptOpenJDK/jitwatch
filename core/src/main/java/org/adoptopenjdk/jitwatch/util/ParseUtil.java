@@ -425,7 +425,7 @@ public final class ParseUtil
 			{
 				logger.debug("both have zero params");
 			}
-			
+
 			result = true;
 		}
 		else if (signatureParamCount < memberParamCount)
@@ -434,7 +434,7 @@ public final class ParseUtil
 			{
 				logger.debug("signature has less params than method");
 			}
-			
+
 			result = false;
 		}
 		else if (signatureParamCount > memberParamCount && !memberHasVarArgs)
@@ -443,13 +443,13 @@ public final class ParseUtil
 			{
 				logger.debug("signature has more params than non-varargs method");
 			}
-			
+
 			result = false;
 		}
 		else
 		{
 			// signature params >= memberParams
-			
+
 			int memPos = 0;
 
 			for (int sigPos = 0; sigPos < signatureParamCount; sigPos++)
@@ -492,7 +492,7 @@ public final class ParseUtil
 					{
 						memberParamCouldBeVarArgs = true;
 					}
-					
+
 					if (memberParamCouldBeVarArgs)
 					{
 						// check assignable
@@ -518,9 +518,9 @@ public final class ParseUtil
 					}
 
 				} // if classMatch
-				
+
 				memPos++;
-				
+
 				if (memPos >= memberParamCount)
 				{
 					memPos = memberParamCount - 1;
@@ -943,6 +943,44 @@ public final class ParseUtil
 		return result;
 	}
 
+	public static String lookupMetaClassName(String methodId, IParseDictionary parseDictionary)
+	{
+		String metaClassName = null;
+
+		Tag methodTag = parseDictionary.getMethod(methodId);
+
+		if (methodTag != null)
+		{
+			Map<String, String> methodTagAttributes = methodTag.getAttributes();
+
+			String klassId = methodTagAttributes.get(ATTR_HOLDER);
+
+			Tag klassTag = parseDictionary.getKlass(klassId);
+
+			metaClassName = klassTag.getAttributes().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+		}
+
+		return metaClassName;
+	}
+
+	public static String lookupMethodName(String methodId, IParseDictionary parseDictionary)
+	{
+		String methodName = null;
+
+		Tag methodTag = parseDictionary.getMethod(methodId);
+
+		if (methodTag != null)
+		{
+			Map<String, String> methodTagAttributes = methodTag.getAttributes();
+
+			methodName = methodTagAttributes.get(ATTR_NAME);
+
+			methodName = StringUtil.replaceXMLEntities(methodName);
+		}
+
+		return methodName;
+	}
+
 	public static IMetaMember lookupMember(String methodId, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
 		IMetaMember result = null;
@@ -951,23 +989,7 @@ public final class ParseUtil
 
 		if (methodTag != null)
 		{
-			Map<String, String> methodTagAttributes = methodTag.getAttributes();
-
-			String methodName = methodTagAttributes.get(ATTR_NAME);
-
-			methodName = StringUtil.replaceXMLEntities(methodName);
-
-			String klassId = methodTagAttributes.get(ATTR_HOLDER);
-
-			Tag klassTag = parseDictionary.getKlass(klassId);
-
-			String metaClassName = klassTag.getAttributes().get(ATTR_NAME);
-
-			metaClassName = metaClassName.replace(S_SLASH, S_DOT);
-
-			String returnType = getMethodTagReturn(methodTag, parseDictionary);
-
-			List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
+			String metaClassName = lookupMetaClassName(methodId, parseDictionary);
 
 			PackageManager pm = model.getPackageManager();
 
@@ -975,40 +997,17 @@ public final class ParseUtil
 
 			if (metaClass == null)
 			{
-				if (DEBUG_LOGGING)
-				{
-					logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
-				}
-
-				// Possible that TraceClassLoading did not log this class
-				// try to classload and add to model
-
-				Class<?> clazz = null;
-
-				try
-				{
-					clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
-
-					if (clazz != null)
-					{
-						metaClass = model.buildAndGetMetaClass(clazz);
-					}
-				}
-				catch (ClassNotFoundException cnf)
-				{
-					if (!possibleLambdaMethod(metaClassName))
-					{
-						logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
-					}
-				}
-				catch (NoClassDefFoundError ncdf)
-				{
-					logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
-				}
+				metaClass = lateLoadMetaClass(model, metaClassName);
 			}
 
 			if (metaClass != null)
 			{
+				String methodName = lookupMethodName(methodId, parseDictionary);
+
+				String returnType = getMethodTagReturn(methodTag, parseDictionary);
+
+				List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
+
 				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName, returnType,
 						argumentTypes);
 
@@ -1021,6 +1020,39 @@ public final class ParseUtil
 		}
 
 		return result;
+	}
+
+	private static MetaClass lateLoadMetaClass(IReadOnlyJITDataModel model, String metaClassName)
+	{
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
+		}
+
+		MetaClass metaClass = null;
+		
+		try
+		{
+			Class<?> clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
+
+			if (clazz != null)
+			{
+				metaClass = model.buildAndGetMetaClass(clazz);
+			}
+		}
+		catch (ClassNotFoundException cnf)
+		{
+			if (!possibleLambdaMethod(metaClassName))
+			{
+				logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
+			}
+		}
+		catch (NoClassDefFoundError ncdf)
+		{
+			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
+		}
+		
+		return metaClass;
 	}
 
 	public static boolean possibleLambdaMethod(String fqClassName)

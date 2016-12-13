@@ -48,7 +48,7 @@ public class AnnotationException extends Exception
 		}
 		else
 		{
-			builder.append("Unknown");
+			builder.append("Unknown instruction");
 		}
 
 		return builder.toString();

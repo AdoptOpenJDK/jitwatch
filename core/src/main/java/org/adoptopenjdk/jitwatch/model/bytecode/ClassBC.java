@@ -213,7 +213,7 @@ public class ClassBC
 			result = "Java 1.1";
 			break;
 		default:
-			result = "Unknown";
+			result = "Unknown java version";
 			break;
 		}
 
