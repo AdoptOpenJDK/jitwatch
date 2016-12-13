@@ -104,7 +104,7 @@
 
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://chriswhocodes.com/jenkins/jitwatch/</url>
+		<url>http://chriswhocodes.com:8080/jenkins/jitwatch/</url>
 	</ciManagement>
 
 	<mailingLists>
