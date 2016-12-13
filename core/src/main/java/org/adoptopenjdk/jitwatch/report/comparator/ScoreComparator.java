@@ -5,9 +5,11 @@
  */
 package org.adoptopenjdk.jitwatch.report.comparator;
 
+import java.util.Comparator;
+
 import org.adoptopenjdk.jitwatch.report.Report;
 
-public class ScoreComparator implements IReportComparator
+public class ScoreComparator implements Comparator<Report>
 {
 
 	@Override

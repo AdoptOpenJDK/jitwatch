@@ -7,11 +7,11 @@ package org.adoptopenjdk.jitwatch.report;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.report.comparator.IReportComparator;
 import org.adoptopenjdk.jitwatch.treevisitor.ITreeVisitable;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 
@@ -26,7 +26,7 @@ public abstract class AbstractReportBuilder extends AbstractCompilationVisitable
 		reportList = new ArrayList<>();
 	}
 
-	public List<Report> getReports(IReportComparator comparator)
+	public List<Report> getReports(Comparator<Report> comparator)
 	{
 		TreeVisitor.walkTree(model, this);
 		
