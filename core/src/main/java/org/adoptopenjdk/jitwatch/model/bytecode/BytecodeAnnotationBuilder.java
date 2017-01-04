@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -14,11 +14,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PREALLOCATED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -73,7 +73,6 @@ import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -362,24 +361,13 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 			referencedObject = typeOrKlassName;
 		}
 
-		// TODO eliminations on invoke bytecodes where inlined
-
 		Opcode opcode = bciOpcodeMap.get(bciValue);
 		
 		boolean isInlined = (opcode != null && opcode.isInvoke());
 
 		String annotation = buildEliminatedAllocationAnnotation(typeOrKlassName, isInlined);
 		
-//		if (opcode == null || opcode.isAllocation())
-//		{
-			
-			putAnnotation(member, bciValue,
-					new LineAnnotation(annotation, BCAnnotationType.ELIMINATED_ALLOCATION, referencedObject));
-//		}
-//		else if (DEBUG_LOGGING)
-//		{			
-//			logger.debug("Found heap elimination at bci {} for opcode {}", bciValue, opcode);
-//		}
+		putAnnotation(member, bciValue, new LineAnnotation(annotation, BCAnnotationType.ELIMINATED_ALLOCATION, referencedObject));
 	}
 
 	private IMetaMember findMemberForInlinedMethod(Tag tagJVMS, IParseDictionary parseDictionary)
@@ -387,7 +375,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		IMetaMember member = null;
 
 		String methodID = tagJVMS.getAttributes().get(ATTR_METHOD);
-
+		
 		if (methodID != null)
 		{
 			member = ParseUtil.lookupMember(methodID, parseDictionary, model);
@@ -404,96 +392,93 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 	}
 
-	// <eliminate_lock lock='0'>
-	// </eliminate_lock>
-	// <eliminate_lock lock='1'>
-	// <jvms bci='-1' method='823'/>
-	// <jvms bci='21' method='818'/>
-	// </eliminate_lock>
-
-	// JDK9 has much more detail in eliminate_lock
-	// (callnode.cpp:log_lock_optimization)
 	private void visitTagEliminateLock(Tag tagEliminateLock, IParseDictionary parseDictionary)
 	{
+		String kind = tagEliminateLock.getAttributes().get(ATTR_KIND);
+		
 		List<Tag> childrenJVMS = tagEliminateLock.getNamedChildren(TAG_JVMS);
 
 		if (childrenJVMS.size() > 0)
 		{
-			StringBuilder builder = new StringBuilder();
-
-			builder.append("A lock has been eliminated").append(S_NEWLINE);
-			builder.append("Call chain:").append(S_NEWLINE);
-
-			int depth = 0;
-
 			for (Tag tagJVMS : childrenJVMS)
 			{
 				Map<String, String> tagJVMSAttributes = tagJVMS.getAttributes();
 
-				String methodID = tagJVMSAttributes.get(ATTR_METHOD);
+				String attrBCI = tagJVMSAttributes.get(ATTR_BCI);
 
-				// logger.info("checking member: {} methodID: {} jvms: {}",
-				// member.toString(), methodID, tagJVMS.toString());
+				int bciValue = 0;
 
-				if (CompilationUtil.memberMatchesMethodID(currentMember, methodID, parseDictionary))
+				if (attrBCI != null)
 				{
-					String bci = tagJVMSAttributes.get(ATTR_BCI);
-
-					if (bci != null)
+					try
 					{
-						try
-						{
-							int bciValue = Integer.parseInt(bci);
-
-							if (methodID != null)
-							{
-								IMetaMember member = ParseUtil.lookupMember(methodID, parseDictionary, model);
-
-								if (member != null)
-								{
-									if (bciValue != -1)
-									{
-										builder.append(StringUtil.repeat(C_SPACE, depth * 2)).append("->").append(C_SPACE);
-										depth++;
-									}
-
-									builder.append(member.toStringUnqualifiedMethodName(false, true));
-								}
-							}
-
-							builder.append(S_NEWLINE);
-
-							if (bciValue != -1)
-							{
-								putAnnotation(currentMember, bciValue,
-										new LineAnnotation(builder.toString().trim(), BCAnnotationType.LOCK_ELISION));
-							}
-						}
-						catch (NumberFormatException nfe)
-						{
-							logger.error("Couldn't parse BCI", nfe);
-						}
+						bciValue = Integer.parseInt(attrBCI);
+					}
+					catch (NumberFormatException nfe)
+					{
+						logger.error("Couldn't parse bci attribute {} tag {}", attrBCI, tagJVMS.toString(true));
+						continue;
 					}
 				}
 				else
 				{
-					// logger.warn("jvms tag does not appear to be for member
-					// {}", member.toString());
-					// logger.warn("Method ID: {}\nTag was:\n{}", methodID,
-					// tag.toString(true));
-					// logger.warn("Dictionary:\n{}",
-					// parseDictionary.toString());
-					// logger.warn("Parent:\n{}",
-					// tag.getParent().toString(true));
-
-					// TODO could be an invoke of a synchronized method
-					// check flags on target method for synchronized flag
-
-					// unhandledTags.add(tag);
-
+					logger.error("Missing bci attribute on tag {}", tagJVMS.toString(true));
 				}
-			}
+
+				String methodID = tagJVMSAttributes.get(ATTR_METHOD);
+
+				BCIOpcodeMap bciOpcodeMap = parseDictionary.getBCIOpcodeMap(methodID);
+				
+				//logger.info("current {} methodID {} parseMethod {}", currentMember.toStringUnqualifiedMethodName(true, true), methodID, parseDictionary.getParseMethod());
+
+				if (CompilationUtil.memberMatchesMethodID(currentMember, methodID, parseDictionary))
+				{
+					storeElidedLock(currentMember, bciValue, kind, bciOpcodeMap);
+				}
+				else if (processAnnotationsForInlinedMethods)
+				{
+					IMetaMember inlinedMember = findMemberForInlinedMethod(tagJVMS, parseDictionary);
+
+					if (inlinedMember != null)
+					{
+						storeElidedLock(inlinedMember, bciValue, kind, bciOpcodeMap);
+					}
+					else
+					{
+						unhandledTags.add(tagJVMS);
+					}
+				}
+				
+			} // end for
 		}
+	}
+	
+	private void storeElidedLock(IMetaMember member, int bciValue, String kind, BCIOpcodeMap bciOpcodeMap)
+	{		
+		Opcode opcode = bciOpcodeMap.get(bciValue);
+		
+		boolean isInlined = (opcode != null && opcode.isInvoke());
+
+		String annotation = buildElidedLockAnnotation(isInlined);
+		
+		putAnnotation(member, bciValue, new LineAnnotation(annotation, BCAnnotationType.LOCK_ELISION, kind));
+	}
+	
+	private String buildElidedLockAnnotation(boolean isInlined)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		if (isInlined)
+		{
+			builder.append("A lock was eliminated due to inlining at this bci");
+		}
+		else
+		{
+			builder.append("A lock was eliminated at this bci");
+
+		}
+		
+		return builder.toString();
 	}
 
 	private void visitTagUncommonTrap(Tag tag)
@@ -506,7 +491,6 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 	}
 
-	//TODO refactor!
 	private void buildParseTagAnnotations(Tag parseTag, BytecodeAnnotations annotations, IParseDictionary parseDictionary)
 			throws AnnotationException
 	{
@@ -646,7 +630,6 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 			case TAG_INTRINSIC:
 			{
-
 				if (!sanityCheckIntrinsic(currentInstruction))
 				{
 					throw new AnnotationException("Expected an invoke instruction (INTRINSIC)", currentBytecode,
@@ -756,13 +739,13 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 	}
 
-	protected String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
+	private String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
 			Map<String, String> callAttrs, String reason, boolean inlined)
 	{
 		return TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);
 	}
 
-	protected String buildEliminatedAllocationAnnotation(String typeOrKlassName, boolean isInlined)
+	private String buildEliminatedAllocationAnnotation(String typeOrKlassName, boolean isInlined)
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -794,7 +777,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		return builder.toString();
 	}
 
-	protected String buildBranchAnnotation(Map<String, String> tagAttrs)
+	private String buildBranchAnnotation(Map<String, String> tagAttrs)
 	{
 		String count = tagAttrs.get(ATTR_BRANCH_COUNT);
 		String taken = tagAttrs.get(ATTR_BRANCH_TAKEN);

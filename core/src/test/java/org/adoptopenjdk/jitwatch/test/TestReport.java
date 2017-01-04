@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
@@ -286,44 +285,44 @@ public class TestReport
 				"29: lload_2         ",
 				"30: lreturn         " };
 
-		String[] bytecodeLinesInner = new String[] {
-				" 0: lconst_0        ",
-				" 1: lstore_3        ",
-				" 2: iconst_2        ",
-				" 3: newarray        int  ",
-				" 5: astore          5    ",
-				" 7: aload           5    ",
-				" 9: iconst_0        ",
-				"10: iload_1         ",
-				"11: iastore         ",
-				"12: aload           5    ",
-				"14: iconst_1        ",
-				"15: iload_2         ",
-				"16: iastore         ",
-				"17: new             #3   // class java/util/Random",
-				"20: dup             ",
-				"21: invokespecial   #4   // Method java/util/Random.\"<init>\":()V",
-				"24: astore          6    ",
-				"26: aload           6    ",
-				"28: invokevirtual   #5   // Method java/util/Random.nextBoolean:()Z",
-				"31: ifeq            45   ",
-				"34: lload_3         ",
-				"35: aload           5    ",
-				"37: iconst_0        ",
-				"38: iaload          ",
-				"39: i2l             ",
-				"40: ladd            ",
-				"41: lstore_3        ",
-				"42: goto            53   ",
-				"45: lload_3         ",
-				"46: aload           5    ",
-				"48: iconst_1        ",
-				"49: iaload          ",
-				"50: i2l             ",
-				"51: ladd            ",
-				"52: lstore_3        ",
-				"53: lload_3         ",
-				"54: lreturn         " };
+//		String[] bytecodeLinesInner = new String[] {
+//				" 0: lconst_0        ",
+//				" 1: lstore_3        ",
+//				" 2: iconst_2        ",
+//				" 3: newarray        int  ",
+//				" 5: astore          5    ",
+//				" 7: aload           5    ",
+//				" 9: iconst_0        ",
+//				"10: iload_1         ",
+//				"11: iastore         ",
+//				"12: aload           5    ",
+//				"14: iconst_1        ",
+//				"15: iload_2         ",
+//				"16: iastore         ",
+//				"17: new             #3   // class java/util/Random",
+//				"20: dup             ",
+//				"21: invokespecial   #4   // Method java/util/Random.\"<init>\":()V",
+//				"24: astore          6    ",
+//				"26: aload           6    ",
+//				"28: invokevirtual   #5   // Method java/util/Random.nextBoolean:()Z",
+//				"31: ifeq            45   ",
+//				"34: lload_3         ",
+//				"35: aload           5    ",
+//				"37: iconst_0        ",
+//				"38: iaload          ",
+//				"39: i2l             ",
+//				"40: ladd            ",
+//				"41: lstore_3        ",
+//				"42: goto            53   ",
+//				"45: lload_3         ",
+//				"46: aload           5    ",
+//				"48: iconst_1        ",
+//				"49: iaload          ",
+//				"50: i2l             ",
+//				"51: ladd            ",
+//				"52: lstore_3        ",
+//				"53: lload_3         ",
+//				"54: lreturn         " };
 
 		JITDataModel model = new JITDataModel();
 		model.setVmVersionRelease("1.8.0");
@@ -356,5 +355,223 @@ public class TestReport
 
 		List<LineAnnotation> annotationsForOuterBCI18 = listOuter.getAnnotationsForBCI(18);
 		assertEquals(1 + listInner.annotatedLineCount(), annotationsForOuterBCI18.size());
+	}
+	
+	@Test
+	public void testElidedLocks()
+	{
+		String[] lines = new String[] {
+				"<task_queued osr_bci='8' method='LockEliminate &lt;init&gt; ()V' compile_kind='osr' bytes='65' blocking='1' count='1' backedge_count='101376' stamp='0.185' comment='tiered' hot_count='101376' compile_id='21' iicount='1'/>",
+				"<nmethod stub_offset='1072' dependencies_offset='1584' address='0x00000001102b7d10' method='LockEliminate &lt;init&gt; ()V' level='4' count='1' backedge_count='101376' stamp='0.191' scopes_data_offset='1128' iicount='1' oops_offset='1096' entry='0x00000001102b7e60' size='1592' scopes_pcs_offset='1280' compile_kind='osr' insts_offset='336' bytes='65' relocation_offset='296' compile_id='21' compiler='C2'/>",
+				"<task osr_bci='8' method='LockEliminate &lt;init&gt; ()V' compile_kind='osr' bytes='65' blocking='1' count='1' backedge_count='101376' stamp='0.185' compile_id='21' iicount='1'>",
+				"  <phase nodes='3' name='parse' stamp='0.185' live='3'>",
+				"    <type name='void' id='724'/>",
+				"    <klass name='LockEliminate' flags='1' id='832'/>",
+				"    <method level='3' bytes='65' name='&lt;init&gt;' flags='1' holder='832' id='833' compile_id='20' compiler='C1' iicount='1' return='724'/>",
+				"    <klass unloaded='1' name='java/lang/System' id='837'/>",
+				"    <uncommon_trap reason='unloaded' method='833' klass='837' bci='57' action='reinterpret' index='42'/>",
+				"    <parse osr_bci='8' method='833' stamp='0.185' uses='1'>",
+				"      <observe that='has_exception_handlers'/>",
+				"      <uncommon_trap reason='unloaded' method='833' klass='837' bci='57' action='reinterpret' index='42'/>",
+				"      <dependency ctxk='832' type='leaf_type'/>",
+				"      <dependency ctxk='832' type='leaf_type'/>",
+				"      <uncommon_trap reason='constraint' bci='8' action='reinterpret'/>",
+				"      <uncommon_trap reason='predicate' bci='8' action='maybe_recompile'/>",
+				"      <uncommon_trap reason='loop_limit_check' bci='8' action='maybe_recompile'/>",
+				"      <bc code='162' bci='11'/>",
+				"      <branch prob='never' not_taken='40960' taken='0' cnt='40960' target_bci='57'/>",
+				"      <uncommon_trap reason='unstable_if' bci='11' action='reinterpret' comment='taken never'/>",
+				"      <bc code='194' bci='18'/>",
+				"      <uncommon_trap reason='null_check' bci='18' action='maybe_recompile'/>",
+				"      <bc code='183' bci='21'/>",
+				"      <type name='long' id='723'/>",
+				"      <method level='1' bytes='6' name='increment' flags='34' holder='832' arguments='723' id='838' compile_id='17' compiler='C1' iicount='83200' return='723'/>",
+				"      <call method='838' inline='1' count='40960' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='838' stamp='0.185' uses='40960'>",
+				"        <parse_done nodes='182' memory='50976' stamp='0.185' live='176'/>",
+				"      </parse>",
+				"      <bc code='183' bci='27'/>",
+				"      <method level='1' bytes='6' name='decrement' flags='34' holder='832' arguments='723' id='839' compile_id='18' compiler='C1' iicount='42240' return='723'/>",
+				"      <call method='839' inline='1' count='40960' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='839' stamp='0.185' uses='40960'>",
+				"        <parse_done nodes='216' memory='56880' stamp='0.185' live='209'/>",
+				"      </parse>",
+				"      <bc code='183' bci='47'/>",
+				"      <call method='838' inline='1' count='40960' prof_factor='1'/>",
+				"      <inline_success reason='inline (hot)'/>",
+				"      <parse method='838' stamp='0.185' uses='40960'>",
+				"        <parse_done nodes='255' memory='63208' stamp='0.185' live='247'/>",
+				"      </parse>",
+				"      <parse_done nodes='258' memory='70920' stamp='0.185' live='250'/>",
+				"    </parse>",
+				"    <phase_done nodes='258' name='parse' stamp='0.185' live='174'/>",
+				"  </phase>",
+				"  <phase nodes='258' name='optimizer' stamp='0.185' live='174'>",
+				"    <phase nodes='263' name='idealLoop' stamp='0.185' live='167'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='264' name='idealLoop' stamp='0.186' live='167'/>",
+				"    </phase>",
+				"    <phase nodes='264' name='escapeAnalysis' stamp='0.186' live='167'>",
+				"      <phase nodes='265' name='connectionGraph' stamp='0.186' live='168'>",
+				"        <phase_done nodes='265' name='connectionGraph' stamp='0.186' live='168'/>",
+				"      </phase>",
+				"      <phase_done nodes='265' name='escapeAnalysis' stamp='0.186' live='168'/>",
+				"    </phase>",
+				"    <phase nodes='265' name='idealLoop' stamp='0.186' live='168'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='271' name='idealLoop' stamp='0.186' live='166'/>",
+				"    </phase>",
+				"    <phase nodes='271' name='idealLoop' stamp='0.186' live='166'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='271' name='idealLoop' stamp='0.186' live='166'/>",
+				"    </phase>",
+				"    <phase nodes='271' name='idealLoop' stamp='0.186' live='166'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='271' name='idealLoop' stamp='0.186' live='166'/>",
+				"    </phase>",
+				"    <phase nodes='271' name='ccp' stamp='0.186' live='166'>",
+				"      <phase_done nodes='271' name='ccp' stamp='0.186' live='166'/>",
+				"    </phase>",
+				"    <phase nodes='272' name='idealLoop' stamp='0.186' live='164'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='272' name='idealLoop' stamp='0.186' live='149'/>",
+				"    </phase>",
+				"    <phase nodes='272' name='idealLoop' stamp='0.186' live='149'>",
+				"      <loop_tree>",
+				"        <loop idx='263' inner_loop='1'>",
+				"        </loop>",
+				"      </loop_tree>",
+				"      <phase_done nodes='272' name='idealLoop' stamp='0.186' live='149'/>",
+				"    </phase>",
+				"    <eliminate_lock kind='coarsened' class_id='lock' lock='1' stamp='0.186' compile_id='21'>",
+				"      <jvms method='838' bci='-1'/>",
+				"      <jvms method='833' bci='47'/>",
+				"    </eliminate_lock>",
+				"    <eliminate_lock kind='coarsened' class_id='unlock' lock='0' stamp='0.186' compile_id='21'>",
+				"    </eliminate_lock>",
+				"    <eliminate_lock kind='nested' class_id='unlock' lock='0' stamp='0.186' compile_id='21'>",
+				"    </eliminate_lock>",
+				"    <eliminate_lock kind='nested' class_id='lock' lock='1' stamp='0.186' compile_id='21'>",
+				"      <jvms method='839' bci='-1'/>",
+				"      <jvms method='833' bci='27'/>",
+				"    </eliminate_lock>",
+				"    <eliminate_lock kind='nested' class_id='unlock' lock='0' stamp='0.186' compile_id='21'>",
+				"    </eliminate_lock>",
+				"    <eliminate_lock kind='nested' class_id='lock' lock='1' stamp='0.186' compile_id='21'>",
+				"      <jvms method='838' bci='-1'/>",
+				"      <jvms method='833' bci='21'/>",
+				"    </eliminate_lock>",
+				"    <dependency ctxk='832' type='leaf_type'/>",
+				"    <phase_done nodes='362' name='optimizer' stamp='0.186' live='178'/>",
+				"  </phase>",
+				"  <phase nodes='362' name='matcher' stamp='0.186' live='178'>",
+				"    <phase_done nodes='162' name='matcher' stamp='0.186' live='162'/>",
+				"  </phase>",
+				"  <phase nodes='211' name='regalloc' stamp='0.186' live='211'>",
+				"    <regalloc success='1' attempts='1'/>",
+				"    <phase_done nodes='279' name='regalloc' stamp='0.187' live='254'/>",
+				"  </phase>",
+				"  <phase nodes='279' name='output' stamp='0.187' live='254'>",
+				"    <phase_done nodes='291' name='output' stamp='0.187' live='264'/>",
+				"  </phase>",
+				"  <dependency ctxk='832' type='leaf_type'/>",
+				"  <code_cache nmethods='21' free_code_cache='250525696' adapters='145' total_blobs='252'/>",
+				"  <task_done inlined_bytes='18' success='1' count='1' backedge_count='101376' stamp='0.191' nmsize='760'/>",
+				"</task>"
+		};
+		
+		String[] bytecodeLines = new String[]{
+				" 0: aload_0         ",
+				" 1: invokespecial   #1   // Method java/lang/Object.\"<init>\":()V",
+				" 4: lconst_0        ",
+				" 5: lstore_1        ",
+				" 6: iconst_0        ",
+				" 7: istore_3        ",
+				" 8: iload_3         ",
+				" 9: ldc             #2   // int 1000000",
+				"11: if_icmpge       57   ",
+				"14: aload_0         ",
+				"15: dup             ",
+				"16: astore          4    ",
+				"18: monitorenter    ",
+				"19: aload_0         ",
+				"20: lload_1         ",
+				"21: invokespecial   #3   // Method increment:(J)J",
+				"24: lstore_1        ",
+				"25: aload_0         ",
+				"26: lload_1         ",
+				"27: invokespecial   #4   // Method decrement:(J)J",
+				"30: lstore_1        ",
+				"31: aload           4    ",
+				"33: monitorexit     ",
+				"34: goto            45   ",
+				"37: astore          5    ",
+				"39: aload           4    ",
+				"41: monitorexit     ",
+				"42: aload           5    ",
+				"44: athrow          ",
+				"45: aload_0         ",
+				"46: lload_1         ",
+				"47: invokespecial   #3   // Method increment:(J)J",
+				"50: lstore_1        ",
+				"51: iinc            3, 1 ",
+				"54: goto            8    ",
+				"57: getstatic       #5   // Field java/lang/System.out:Ljava/io/PrintStream;",
+				"60: lload_1         ",
+				"61: invokevirtual   #6   // Method java/io/PrintStream.println:(J)V",
+				"64: return          "
+		};
+		
+		JITDataModel model = new JITDataModel();
+		model.setVmVersionRelease("1.8.0");
+
+		IMetaMember memberLockEliminate = UnitTestUtil.createTestMetaMember(model, "LockEliminate", "LockEliminate", new Class[] {  },
+				void.class);
+
+		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(false, true, model, memberLockEliminate, lines, bytecodeLines);
+
+		BytecodeAnnotationList annotations = result.getAnnotationList(memberLockEliminate);
+		
+		assertEquals(7, annotations.annotatedLineCount());
+
+		UnitTestUtil.checkAnnotation(annotations, 8, "constraint", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(annotations, 8, "predicate", BCAnnotationType.UNCOMMON_TRAP);
+		UnitTestUtil.checkAnnotation(annotations, 8, "loop_limit_check", BCAnnotationType.UNCOMMON_TRAP);
+
+		UnitTestUtil.checkAnnotation(annotations, 11, "taken", BCAnnotationType.BRANCH);
+		UnitTestUtil.checkAnnotation(annotations, 11, "unstable_if", BCAnnotationType.UNCOMMON_TRAP);
+		
+		UnitTestUtil.checkAnnotation(annotations, 18, "null_check", BCAnnotationType.UNCOMMON_TRAP);
+
+		UnitTestUtil.checkAnnotation(annotations, 21, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(annotations, 21, "A lock was eliminated due to inlining at this bci", BCAnnotationType.LOCK_ELISION);
+
+		UnitTestUtil.checkAnnotation(annotations, 27, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(annotations, 27, "A lock was eliminated due to inlining at this bci", BCAnnotationType.LOCK_ELISION);
+
+		UnitTestUtil.checkAnnotation(annotations, 47, "inline (hot)", BCAnnotationType.INLINE_SUCCESS);
+		UnitTestUtil.checkAnnotation(annotations, 47, "A lock was eliminated due to inlining at this bci", BCAnnotationType.LOCK_ELISION);
+		
+		UnitTestUtil.checkAnnotation(annotations, 57, "unloaded", BCAnnotationType.UNCOMMON_TRAP);
+
+		// TODO handle BCI -1 (meaning = synchronized method signature?)
+		assertEquals(3, UnitTestUtil.unhandledTags.size());
 	}
 }

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.report.ea;
+package org.adoptopenjdk.jitwatch.report.escapeanalysis;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
@@ -38,16 +38,12 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.report.AbstractReportBuilder;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.ReportType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class EliminatedAllocationWalker extends AbstractReportBuilder
+public abstract class AbstractEscapeAnalysisWalker extends AbstractReportBuilder
 {
 	private BytecodeAnnotationBuilder bcAnnotationBuilder;
 
-	private static final Logger logger = LoggerFactory.getLogger(EliminatedAllocationWalker.class);
-
-	public EliminatedAllocationWalker(IReadOnlyJITDataModel model)
+	public AbstractEscapeAnalysisWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
 
@@ -102,10 +98,8 @@ public class EliminatedAllocationWalker extends AbstractReportBuilder
 
 							for (LineAnnotation la : lineAnnotations)
 							{
-
-								switch (la.getType())
+								if (filterLineAnnotation(la))
 								{
-								case ELIMINATED_ALLOCATION:
 									ReportType type = inlineAtBCI ? ReportType.ELIMINATED_ALLOCATION_INLINE
 											: ReportType.ELIMINATED_ALLOCATION_DIRECT;
 
@@ -113,10 +107,6 @@ public class EliminatedAllocationWalker extends AbstractReportBuilder
 											0, la.getMetaData());
 
 									reportList.add(report);
-									break;
-
-								default:
-									break;
 								}
 							}
 						}
@@ -129,6 +119,8 @@ public class EliminatedAllocationWalker extends AbstractReportBuilder
 			}
 		}
 	}
+	
+	protected abstract boolean filterLineAnnotation(LineAnnotation la);
 
 	private boolean hasInlineSuccessAnnotation(List<LineAnnotation> annotations)
 	{

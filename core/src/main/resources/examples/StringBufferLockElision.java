@@ -1,12 +1,5 @@
-import java.util.Vector;
-import java.util.Random;
-
-// See http://www.infoq.com/articles/java-threading-optimizations-p2
-
 public class StringBufferLockElision
 {
-    private java.util.Random random = new java.util.Random();
-
     public StringBufferLockElision()
     {
         StringBuffer buffer = new StringBuffer();

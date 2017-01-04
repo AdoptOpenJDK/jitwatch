@@ -1,31 +1,31 @@
 public class LockEliminate
 {
-    private java.util.Random random = new java.util.Random();
-
     public LockEliminate()
     {
         long count = 0;
 
-        for (int i = 0; i < 20_000; i++)
+        for (int i = 0; i < 1_000_000; i++)
         {
             synchronized(this)
             {
                 count = increment(count);
                 count = decrement(count);
             }
+
+            count = increment(count);
         }
 
         System.out.println(count);
     }
 
-    public synchronized long increment(long input)
+    private synchronized long increment(long input)
     {        
-        return input + random.nextInt(5);
+        return input + 0xDEAD;
     }
 
-    public synchronized long decrement(long input)
+    private synchronized long decrement(long input)
     {        
-        return input - random.nextInt(5);
+        return input - 0xBEEF;
     }
 
     public static void main(String[] args)

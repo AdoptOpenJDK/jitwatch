@@ -27,7 +27,7 @@ public final class JITWatchConstants
 	public static final boolean DEBUG_LOGGING_METHOD_ID_MATCH = false;
 	public static final boolean DEBUG_LOGGING_OVC = false;
 	public static final boolean DEBUG_LOGGING_PARSE_DICTIONARY = false;
-	public static final boolean DEBUG_LOGGING_TRIVIEW = false;
+	public static final boolean DEBUG_LOGGING_TRIVIEW = true;
 	public static final boolean DEBUG_LOGGING_TAGPROCESSOR = false;
 
 	public static final char HEADLESS_SEPARATOR = '|';
@@ -163,6 +163,7 @@ public final class JITWatchConstants
 	public static final String ATTR_COMMENT = "comment";
 	public static final String ATTR_ADDRESS = "address";
 	public static final String ATTR_PREALLOCATED = "preallocated";
+	public static final String ATTR_KIND = "kind";
 
 	public static final String BRANCH_TAKEN_ALWAYS = "always";
 	public static final String BRANCH_TAKEN_NEVER = "never";
