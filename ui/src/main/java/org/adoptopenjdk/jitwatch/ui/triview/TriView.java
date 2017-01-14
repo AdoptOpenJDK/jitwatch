@@ -241,7 +241,7 @@ public class TriView extends Stage implements ITriView
 			@Override
 			public String toString(IMetaMember mm)
 			{
-				return mm.toStringUnqualifiedMethodName(false, false);
+				return mm!=null ? mm.toStringUnqualifiedMethodName(false, false) : "null";
 			}
 
 			@Override
