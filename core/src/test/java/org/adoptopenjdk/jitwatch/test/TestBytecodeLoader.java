@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,6 +9,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -772,17 +773,31 @@ public class TestBytecodeLoader
 
 		assertEquals(43, instructions.size());
 	}
-
-	@Test
-	public void testRegressionLoadJavaIoPrintStreamString()
+	
+	public int exampleOverloadedMethod(Object object)
 	{
-		String className = "java.io.PrintStream";
-		String methodName = "print";
+		return object.hashCode();
+	}
+	
+	public int exampleOverloadedMethod(String string)
+	{
+		return string.hashCode();
+	}
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.String.class },
-				void.class);
+	private void doTestOverloadedMethod(Class<?> paramClass)
+	{
+		String className = getClass().getName();	
+		String methodName = "exampleOverloadedMethod";
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass },
+				int.class);
+
+		String thisClassLocation = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+		
+		List<String> classPath = new ArrayList<String>();
+		classPath.add(thisClassLocation);
+				
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -792,29 +807,19 @@ public class TestBytecodeLoader
 
 		assertNotNull(instructions);
 
-		assertEquals(8, instructions.size());
+		assertEquals(3, instructions.size());
+	}
+	
+	@Test
+	public void testExampleOverloadedMethodString()
+	{
+		doTestOverloadedMethod(java.lang.String.class);
 	}
 
 	@Test
-	public void testRegressionLoadJavaIoPrintStreamObject()
+	public void testExampleOverloadedMethodObject()
 	{
-		String className = "java.io.PrintStream";
-		String methodName = "print";
-
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { java.lang.Object.class },
-				void.class);
-
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), className, false);
-
-		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
-		
-		assertNotNull(memberBytecode);
-
-		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
-
-		assertNotNull(instructions);
-
-		assertEquals(5, instructions.size());
+		doTestOverloadedMethod(java.lang.Object.class);
 	}
 
 	@Test
