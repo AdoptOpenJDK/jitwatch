@@ -1,33 +1,27 @@
 public class LockCoarsen
 {
-    private java.util.Random random = new java.util.Random();
-
     public LockCoarsen()
     {
-        long count = 0;
+        java.util.Random random = new java.util.Random();
 
-        // both calls to increment() should be inlined
-        for (int i = 0; i < 20_000; i++)
+        long sum = 0;
+ 
+        Object lock = new Object();
+
+        for (int i = 0; i < 1_000_000; i++)
         {
-            synchronized(this)
+            synchronized(lock)
             {
-                count = increment(count);
+                sum += random.nextLong();
             }
 
-            count -= 5;
-
-            synchronized(this)
+            synchronized(lock)
             {
-                count = increment(count);
+                sum -= random.nextLong();
             }
         }
 
-        System.out.println(count);
-    }
-
-    public long increment(long input)
-    {
-        return input + random.nextInt(5);
+        System.out.println(sum);
     }
 
     public static void main(String[] args)

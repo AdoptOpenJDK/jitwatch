@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -1846,27 +1846,27 @@ public class TestBytecodeAnnotationBuilder
 	@Test
 	public void testRegressionMemberMatchesParseTagWithArrayParams()
 	{
-		String[] lines = new String[] {
-				"<parse method='831' stamp='0.138'>",
-				" <bc code='183' bci='9'/>",
-				" <klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>",
-				" <method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>",
-				" <call method='834' instr='invokespecial'/>",
-				" <inline_fail reason='not inlineable'/>",
-				" <bc code='183' bci='27'/>",
-				" <call method='834' instr='invokespecial'/>",
-				" <inline_fail reason='not inlineable'/>",
-				" <bc code='183' bci='43'/>",
-				" <call method='834' instr='invokespecial'/>",
-				" <inline_fail reason='not inlineable'/>",
-				" <bc code='184' bci='58'/>",
-				" <klass name='java/lang/Object' flags='1' id='728'/>",
-				" <klass name='java/lang/System' flags='17' id='734'/>",
-				" <method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>",
-				" <call method='835' instr='invokestatic'/>",
-				" <inline_success reason='intrinsic'/>",
-				" <parse_done stamp='0.139'/>",
-				"</parse>" };
+//		String[] lines = new String[] {
+//				"<parse method='831' stamp='0.138'>",
+//				" <bc code='183' bci='9'/>",
+//				" <klass unloaded='1' name='java/lang/StringIndexOutOfBoundsException' id='833'/>",
+//				" <method unloaded='1' name='&lt;init&gt;' holder='833' arguments='721' id='834' return='723'/>",
+//				" <call method='834' instr='invokespecial'/>",
+//				" <inline_fail reason='not inlineable'/>",
+//				" <bc code='183' bci='27'/>",
+//				" <call method='834' instr='invokespecial'/>",
+//				" <inline_fail reason='not inlineable'/>",
+//				" <bc code='183' bci='43'/>",
+//				" <call method='834' instr='invokespecial'/>",
+//				" <inline_fail reason='not inlineable'/>",
+//				" <bc code='184' bci='58'/>",
+//				" <klass name='java/lang/Object' flags='1' id='728'/>",
+//				" <klass name='java/lang/System' flags='17' id='734'/>",
+//				" <method compile_kind='c2n' level='0' bytes='0' name='arraycopy' flags='265' holder='734' arguments='728 721 728 721 721' id='835' compile_id='5' iicount='640' return='723'/>",
+//				" <call method='835' instr='invokestatic'/>",
+//				" <inline_success reason='intrinsic'/>",
+//				" <parse_done stamp='0.139'/>",
+//				"</parse>" };
 
 		String methodName = "getChars";
 		String klassName = "java.lang.String";
@@ -1912,18 +1912,18 @@ public class TestBytecodeAnnotationBuilder
 	@Test
 	public void testRegressionMemberMatchesParseTagForConstructor()
 	{
-		String[] lines = new String[] {
-				"<parse method='823' stamp='2.515' uses='16823'>",
-				"   <bc code='183' bci='1'/>",
-				"   <klass name='java/lang/Object' flags='1' id='720'/>",
-				"   <method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>",
-				"   <call method='825' inline='1' count='16398' prof_factor='1'/>",
-				"   <inline_success reason='inline (hot)'/>",
-				"   <parse method='825' stamp='2.515' uses='16823'>",
-				"     <parse_done nodes='51' memory='24584' stamp='2.515' live='50'/>",
-				"   </parse>",
-				"   <parse_done nodes='69' memory='28312' stamp='2.515' live='67'/>",
-				" </parse>" };
+//		String[] lines = new String[] {
+//				"<parse method='823' stamp='2.515' uses='16823'>",
+//				"   <bc code='183' bci='1'/>",
+//				"   <klass name='java/lang/Object' flags='1' id='720'/>",
+//				"   <method level='1' bytes='1' name='&lt;init&gt;' flags='1' holder='720' id='825' compile_id='24' compiler='C1' iicount='370647' return='715'/>",
+//				"   <call method='825' inline='1' count='16398' prof_factor='1'/>",
+//				"   <inline_success reason='inline (hot)'/>",
+//				"   <parse method='825' stamp='2.515' uses='16823'>",
+//				"     <parse_done nodes='51' memory='24584' stamp='2.515' live='50'/>",
+//				"   </parse>",
+//				"   <parse_done nodes='69' memory='28312' stamp='2.515' live='67'/>",
+//				" </parse>" };
 
 		String methodName = "String"; // constructor
 										// java.lang.String(char[],boolean)
@@ -2452,8 +2452,6 @@ public class TestBytecodeAnnotationBuilder
 	{
 		String methodName = "format";
 		String klassName = "java.lang.String";
-
-		Class<?>[] params = new Class[] { String.class, Object[].class };
 
 		IParseDictionary parseDictionary = new ParseDictionary(methodName);
 

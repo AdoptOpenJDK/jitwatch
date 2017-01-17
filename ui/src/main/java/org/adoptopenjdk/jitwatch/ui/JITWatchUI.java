@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -40,7 +40,8 @@ import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
-import org.adoptopenjdk.jitwatch.report.ea.EliminatedAllocationWalker;
+import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
+import org.adoptopenjdk.jitwatch.report.escapeanalysis.lockelision.ElidedLocksWalker;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
@@ -151,6 +152,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private Button btnTriView;
 	private Button btnReportSuggestions;
 	private Button btnReportEliminatedAllocations;
+	private Button btnReportElidedLocks;
 	private Button btnOptimizedVirtualCalls;
 	private Button btnSandbox;
 
@@ -166,6 +168,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private BrowserStage browserStage;
 	private ReportStage reportStageSuggestions;
 	private ReportStage reportStageElminatedAllocations;
+	private ReportStage reportStageElidedLocks;
 
 	private OptimizedVirtualCallStage ovcStage;
 	private SandboxStage sandBoxStage;
@@ -177,6 +180,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private List<Report> reportListSuggestions = new ArrayList<>();
 	private List<Report> reportListEliminatedAllocations = new ArrayList<>();
+	private List<Report> reportListElidedLocks = new ArrayList<>();
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -237,6 +241,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		reportListSuggestions.clear();
 		reportListEliminatedAllocations.clear();
+		reportListElidedLocks.clear();
 
 		isReadingLogFile = true;
 
@@ -266,7 +271,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		buildSuggestions();
 
-		buildEAReport();
+		buildEliminatedAllocationReport();
+		
+		buildElidedLocksReport();
 
 		Platform.runLater(new Runnable()
 		{
@@ -291,7 +298,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		log("Found " + reportListSuggestions.size() + " code suggestions.");
 	}
 
-	private void buildEAReport()
+	private void buildEliminatedAllocationReport()
 	{
 		log("Finding eliminated allocations");
 
@@ -300,6 +307,17 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		reportListEliminatedAllocations = walker.getReports(new ScoreComparator());
 
 		log("Found " + reportListEliminatedAllocations.size() + "  eliminated allocations.");
+	}
+	
+	private void buildElidedLocksReport()
+	{
+		log("Finding elided locks");
+
+		ElidedLocksWalker walker = new ElidedLocksWalker(logParser.getModel());
+
+		reportListElidedLocks = walker.getReports(new ScoreComparator());
+
+		log("Found " + reportListElidedLocks.size() + "  elided locks.");
 	}
 
 	@Override
@@ -505,7 +523,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnReportEliminatedAllocations = new Button("EA");
+		btnReportEliminatedAllocations = new Button("-Allocs");
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -517,6 +535,21 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElminatedAllocations);
 
 				btnReportEliminatedAllocations.setDisable(true);
+			}
+		});
+		
+		btnReportElidedLocks = new Button("-Locks");
+		btnReportElidedLocks.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				reportStageElidedLocks = new ReportStage(JITWatchUI.this, ReportStageType.ELIDED_LOCK,
+						reportListElidedLocks);
+
+				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElidedLocks);
+
+				btnReportElidedLocks.setDisable(true);
 			}
 		});
 
@@ -611,6 +644,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnReportSuggestions);
 		hboxTop.getChildren().add(btnReportEliminatedAllocations);
+		hboxTop.getChildren().add(btnReportElidedLocks);
 		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		compilationRowList = FXCollections.observableArrayList();
@@ -820,8 +854,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStop.setDisable(!isReadingLogFile);
 
 		btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
-		btnReportEliminatedAllocations.setText("EA (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
-
+		btnReportEliminatedAllocations.setText("-Allocs (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+		btnReportElidedLocks.setText("-Locks (" + reportListElidedLocks.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass)
@@ -1241,6 +1275,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			case ELIMINATED_ALLOCATION:
 				btnReportEliminatedAllocations.setDisable(false);
 				reportStageElminatedAllocations = null;
+				break;
+			case ELIDED_LOCK:
+				btnReportElidedLocks.setDisable(false);
+				reportStageElidedLocks = null;
 				break;
 			}
 		}

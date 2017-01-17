@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,6 +15,8 @@ import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.report.cell.LinkedBCICell;
 import org.adoptopenjdk.jitwatch.ui.report.cell.MemberTableCell;
+import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBean;
+import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBean;
@@ -77,8 +79,12 @@ public class ReportStage extends Stage
 			setTitle("JITWatch Eliminated Allocation Report");
 			tableView = EliminatedAllocationRowBuilder.buildTableSuggestion(observableList);
 			break;
+		case ELIDED_LOCK:
+			setTitle("JITWatch Elided Lock Report");
+			tableView = ElidedLockRowBuilder.buildTableSuggestion(observableList);
+			break;
 		}
-		
+
 		filter.prefWidthProperty().bind(scene.widthProperty());
 
 		vbox.getChildren().add(tableView);
@@ -136,7 +142,7 @@ public class ReportStage extends Stage
 				}
 
 				if (show)
-				{					
+				{
 					switch (type)
 					{
 					case SUGGESTION:
@@ -145,6 +151,8 @@ public class ReportStage extends Stage
 					case ELIMINATED_ALLOCATION:
 						observableList.add(new EliminatedAllocationRowBean(report));
 						break;
+					case ELIDED_LOCK:
+						observableList.add(new ElidedLockRowBean(report));
 					}
 				}
 			}
