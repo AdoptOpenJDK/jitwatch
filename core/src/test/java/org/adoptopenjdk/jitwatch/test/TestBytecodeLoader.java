@@ -793,7 +793,7 @@ public class TestBytecodeLoader
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass }, int.class);
 
-		URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+		URL[] urls = ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs();
 
 		List<String> classPath = new ArrayList<String>();
 
