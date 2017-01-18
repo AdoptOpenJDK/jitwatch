@@ -800,6 +800,7 @@ public class TestBytecodeLoader
 		for (URL url : urls)
 		{
 			classPath.add(url.toExternalForm());
+			System.out.println(url.toExternalForm());
 		}
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
