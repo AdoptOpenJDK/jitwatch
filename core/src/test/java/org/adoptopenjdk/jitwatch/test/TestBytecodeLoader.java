@@ -10,6 +10,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -773,12 +775,12 @@ public class TestBytecodeLoader
 
 		assertEquals(43, instructions.size());
 	}
-	
+
 	public int exampleOverloadedMethod(Object object)
 	{
 		return object.hashCode();
 	}
-	
+
 	public int exampleOverloadedMethod(String string)
 	{
 		return string.hashCode();
@@ -786,17 +788,20 @@ public class TestBytecodeLoader
 
 	private void doTestOverloadedMethod(Class<?> paramClass)
 	{
-		String className = getClass().getName();	
+		String className = getClass().getName();
 		String methodName = "exampleOverloadedMethod";
 
-		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass },
-				int.class);
+		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass }, int.class);
 
-		String thisClassLocation = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-		
+		URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+
 		List<String> classPath = new ArrayList<String>();
-		classPath.add(thisClassLocation);
-				
+
+		for (URL url : urls)
+		{
+			classPath.add(url.toExternalForm());
+		}
+
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
@@ -809,7 +814,7 @@ public class TestBytecodeLoader
 
 		assertEquals(3, instructions.size());
 	}
-	
+
 	@Test
 	public void testExampleOverloadedMethodString()
 	{
