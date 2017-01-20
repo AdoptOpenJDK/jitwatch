@@ -2516,12 +2516,9 @@ public class TestBytecodeAnnotationBuilder
 		MetaClass metaClass = UnitTestUtil.createMetaClassFor(new JITDataModel(), klassName);
 		
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("java/lang/String format (Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
-		
-		System.out.println(msp);
-		
+				
 		IMetaMember member = metaClass.getMemberForSignature(msp);
 
 		assertTrue(CompilationUtil.memberMatchesMethodID(member, "833", parseDictionary));
 	}
-
 }

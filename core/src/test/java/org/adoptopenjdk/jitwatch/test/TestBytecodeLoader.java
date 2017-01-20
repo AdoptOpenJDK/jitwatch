@@ -10,6 +10,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -786,21 +787,21 @@ public class TestBytecodeLoader
 		return string.hashCode();
 	}
 
-	private void doTestOverloadedMethod(Class<?> paramClass)
+	private void doTestOverloadedMethod(Class<?> paramClass) throws URISyntaxException
 	{
 		String className = getClass().getName();
 		String methodName = "exampleOverloadedMethod";
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass }, int.class);
 
-		URL[] urls = ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs();
+		URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
 
 		List<String> classPath = new ArrayList<String>();
 
 		for (URL url : urls)
 		{
-			classPath.add(url.toExternalForm());
-			System.out.println(url.toExternalForm());
+			String filesystemPath = new File(url.toURI()).toString();
+			classPath.add(filesystemPath);
 		}
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
@@ -817,13 +818,13 @@ public class TestBytecodeLoader
 	}
 
 	@Test
-	public void testExampleOverloadedMethodString()
+	public void testExampleOverloadedMethodString() throws URISyntaxException
 	{
 		doTestOverloadedMethod(java.lang.String.class);
 	}
 
 	@Test
-	public void testExampleOverloadedMethodObject()
+	public void testExampleOverloadedMethodObject() throws URISyntaxException
 	{
 		doTestOverloadedMethod(java.lang.Object.class);
 	}
