@@ -903,7 +903,7 @@ public class TestCompileChain
 
 		assertNotNull(tag);
 
-		Compilation compilation = new Compilation(0);
+		Compilation compilation = new Compilation(null, 0);
 		compilation.setTagTask((Task)tag);
 
 		CompileChainWalker walker = new CompileChainWalker(new JITDataModel());

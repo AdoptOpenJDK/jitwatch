@@ -5,6 +5,12 @@
  */
 package org.adoptopenjdk.jitwatch.ui;
 
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
+
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -19,11 +25,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-
-import org.adoptopenjdk.jitwatch.chain.CompileNode;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 public class CompileChainStage extends Stage
 {
@@ -81,7 +82,7 @@ public class CompileChainStage extends Stage
 		});
 	}
 
-	public void redraw()
+	private void redraw()
 	{
 		showKey();
 

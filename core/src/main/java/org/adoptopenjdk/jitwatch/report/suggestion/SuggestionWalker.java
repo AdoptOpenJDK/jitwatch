@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,7 +26,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
@@ -203,6 +202,7 @@ public class SuggestionWalker extends AbstractReportBuilder
 		ignoreTags.add(TAG_ASSERT_NULL);
 	}
 
+	@Override
 	protected void findNonMemberReports()
 	{
 		checkIfCodeCacheFull();
@@ -214,10 +214,12 @@ public class SuggestionWalker extends AbstractReportBuilder
 
 		for (CodeCacheEvent event : codeCacheEvents)
 		{
-			switch (event.getTag().getName())
+			switch (event.getEventType())
 			{
-			case TAG_CODE_CACHE_FULL:
+			case CACHE_FULL:
 				handleCodeCacheFull(event);
+				break;
+			default:
 				break;
 			}
 		}

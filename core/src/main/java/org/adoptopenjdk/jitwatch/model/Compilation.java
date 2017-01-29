@@ -1,5 +1,6 @@
+
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,6 +19,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
 
 public class Compilation
 {
@@ -45,9 +47,19 @@ public class Compilation
 
 	private int index;
 
-	public Compilation(int index)
+	private IMetaMember member;
+	
+	private boolean failedTask = false;
+
+	public Compilation(IMetaMember member, int index)
 	{
+		this.member = member;
 		this.index = index;
+	}
+
+	public IMetaMember getMember()
+	{
+		return member;
 	}
 
 	public String getCompileID()
@@ -58,11 +70,6 @@ public class Compilation
 	public String getNativeAddress()
 	{
 		return nativeAddress;
-	}
-
-	public void setNativeAddress(String nativeAddress)
-	{
-		this.nativeAddress = nativeAddress;
 	}
 
 	public AssemblyMethod getAssembly()
@@ -152,6 +159,11 @@ public class Compilation
 	public void setTagTask(Task tagTask)
 	{
 		this.tagTask = tagTask;
+		
+		if (tagTask.getFirstNamedChild(TAG_FAILURE) != null)
+		{
+			failedTask = true;
+		}
 	}
 
 	public Tag getTagTaskQueued()
@@ -295,9 +307,9 @@ public class Compilation
 	public String getLevel()
 	{
 		String result = null;
-		
+
 		Tag tag;
-		
+
 		if (tagNMethod != null)
 		{
 			tag = tagNMethod;
@@ -326,8 +338,7 @@ public class Compilation
 		return result;
 	}
 
-	@Override
-	public String toString()
+	public String toStringVerbose()
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -347,5 +358,23 @@ public class Compilation
 		}
 
 		return builder.toString();
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		if (tagNMethod != null)
+		{
+			builder.append("Compilation for ").append(tagNMethod).append("\n");
+		}
+		
+		return builder.toString();
+	}
+
+	public boolean isFailedTask()
+	{
+		return failedTask;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -68,7 +68,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected List<Class<?>> paramTypes;
 
 	public AbstractMetaMember(String memberName)
-	{		
+	{
 		this.memberName = memberName;
 
 		compilations = new ArrayList<>();
@@ -254,7 +254,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	public MemberBytecode getMemberBytecode()
 	{
 		MemberBytecode result = null;
-		
+
 		if (metaClass != null)
 		{
 			ClassBC classBytecode = metaClass.getClassBytecode();
@@ -370,7 +370,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			if (C2N.equals(compileKind))
 			{
 				compilation = createCompilation();
-				
+
 				compilation.setTagNMethod(tagNMethod);
 
 				compilations.add(compilation);
@@ -384,14 +384,14 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		// inform package tree it contains class with a compiled method
 		getMetaClass().getPackage().setHasCompiledClasses();
 	}
-	
+
 	private Compilation createCompilation()
 	{
 		int nextIndex = compilations.size();
 
 		selectedCompilation = nextIndex;
-		
-		return new Compilation(nextIndex);		
+
+		return new Compilation(this, nextIndex);
 	}
 
 	@Override
@@ -455,7 +455,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			{
 				builder.append(Modifier.toString(modifier)).append(C_SPACE);
 			}
-	
+
 			if (returnType != null)
 			{
 				builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
@@ -505,9 +505,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		return compilations;
 	}
-	
+
 	@Override
-	public 	boolean isConstructor()
+	public boolean isConstructor()
 	{
 		return (this instanceof MetaConstructor);
 	}
@@ -599,7 +599,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
 
-			paramType = paramType.replace(S_OPEN_SQUARE_BRACKET, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE_BRACKET, S_ESCAPED_CLOSE_SQUARE);
+			paramType = paramType.replace(S_OPEN_SQUARE_BRACKET, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE_BRACKET,
+					S_ESCAPED_CLOSE_SQUARE);
 		}
 
 		if (paramType.contains(S_DOT))
@@ -625,6 +626,11 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
+	private int makeSafeIndex(int index)
+	{
+		return Math.max(0, Math.min(index, compilations.size() - 1));
+	}
+
 	public Compilation getCompilation(int index)
 	{
 		Compilation result = null;
@@ -640,7 +646,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public void setSelectedCompilation(int index)
 	{
-		this.selectedCompilation = index;
+		this.selectedCompilation = makeSafeIndex(index);
 	}
 
 	@Override

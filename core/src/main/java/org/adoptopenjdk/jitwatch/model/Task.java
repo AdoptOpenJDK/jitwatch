@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -129,37 +129,4 @@ public class Task extends Tag
 
 		return builder.toString();
 	}
-
-//	private String getTypeOrKlass2(String id) //TODO dup code from ParseUtil?
-//	{
-//		Tag typeTag = parseDictionary.getType(id);
-//
-//		String result = null;
-//
-//		if (typeTag == null)
-//		{
-//			Tag klassTag = parseDictionary.getKlass(id);
-//
-//			if (klassTag != null)
-//			{
-//				result = klassTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
-//				result = result.replace(S_SLASH, S_DOT);
-//			}
-//		}
-//		else
-//		{
-//			result = typeTag.getAttributes().get(JITWatchConstants.ATTR_NAME);
-//		}
-//
-//		if (result == null)
-//		{
-//			result = "???"; // further understanding required!
-//		}
-//		else
-//		{
-//			result = ParseUtil.expandParameterType(result);
-//		}
-//
-//		return result;
-//	}
 }

@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheEventWalker;
+import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
 import org.adoptopenjdk.jitwatch.core.ErrorLog;
 import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
@@ -43,6 +45,7 @@ import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.lockelision.ElidedLocksWalker;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
+import org.adoptopenjdk.jitwatch.ui.codecache.CodeCacheLayoutStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
@@ -148,7 +151,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private Button btnHisto;
 	private Button btnTopList;
 	private Button btnErrorLog;
-	private Button btnCodeCache;
+	private Button btnCodeCacheTimeline;
+	private Button btnNMethods;
 	private Button btnTriView;
 	private Button btnReportSuggestions;
 	private Button btnReportEliminatedAllocations;
@@ -163,7 +167,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private StatsStage statsStage;
 	private HistoStage histoStage;
 	private TopListStage topListStage;
-	private CodeCacheStage codeCacheStage;
+	private CodeCacheStage codeCacheTimelineStage;
+	private CodeCacheLayoutStage codeCacheBlocksStage;
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 	private ReportStage reportStageSuggestions;
@@ -181,6 +186,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private List<Report> reportListSuggestions = new ArrayList<>();
 	private List<Report> reportListEliminatedAllocations = new ArrayList<>();
 	private List<Report> reportListElidedLocks = new ArrayList<>();
+
+	private CodeCacheWalkerResult codeCacheWalkerResult;
 
 	private Runtime runtime = Runtime.getRuntime();
 
@@ -272,8 +279,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		buildSuggestions();
 
 		buildEliminatedAllocationReport();
-		
+
 		buildElidedLocksReport();
+
+		buildCodeCacheResult();
 
 		Platform.runLater(new Runnable()
 		{
@@ -308,7 +317,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		log("Found " + reportListEliminatedAllocations.size() + "  eliminated allocations.");
 	}
-	
+
 	private void buildElidedLocksReport()
 	{
 		log("Finding elided locks");
@@ -317,7 +326,21 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		reportListElidedLocks = walker.getReports(new ScoreComparator());
 
-		log("Found " + reportListElidedLocks.size() + "  elided locks.");
+		log("Found " + reportListElidedLocks.size() + " elided locks.");
+	}
+
+	private void buildCodeCacheResult()
+	{
+		CodeCacheEventWalker compilationWalker = new CodeCacheEventWalker(logParser.getModel());
+
+		compilationWalker.walkCompilations();
+
+		codeCacheWalkerResult = compilationWalker.getResult();
+	}
+
+	public CodeCacheWalkerResult getCodeCacheWalkerResult()
+	{
+		return codeCacheWalkerResult;
 	}
 
 	@Override
@@ -438,7 +461,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnTimeLine = new Button("Chart");
+		btnTimeLine = new Button("Timeline");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -480,17 +503,34 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			}
 		});
 
-		btnCodeCache = new Button("Code Cache");
-		btnCodeCache.setOnAction(new EventHandler<ActionEvent>()
+		btnCodeCacheTimeline = new Button("Cache");
+		btnCodeCacheTimeline.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				codeCacheStage = new CodeCacheStage(JITWatchUI.this);
+				codeCacheTimelineStage = new CodeCacheStage(JITWatchUI.this);
 
-				StageManager.addAndShow(JITWatchUI.this.stage, codeCacheStage);
+				StageManager.addAndShow(JITWatchUI.this.stage, codeCacheTimelineStage);
 
-				btnCodeCache.setDisable(true);
+				btnCodeCacheTimeline.setDisable(true);
+			}
+		});
+
+		btnNMethods = new Button("NMethods");
+		btnNMethods.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				codeCacheBlocksStage = new CodeCacheLayoutStage(JITWatchUI.this);
+
+				StageManager.addAndShow(JITWatchUI.this.stage, codeCacheBlocksStage);
+
+				btnNMethods.setDisable(true);
+
+				codeCacheBlocksStage.redraw();
+
 			}
 		});
 
@@ -537,15 +577,14 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				btnReportEliminatedAllocations.setDisable(true);
 			}
 		});
-		
+
 		btnReportElidedLocks = new Button("-Locks");
 		btnReportElidedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				reportStageElidedLocks = new ReportStage(JITWatchUI.this, ReportStageType.ELIDED_LOCK,
-						reportListElidedLocks);
+				reportStageElidedLocks = new ReportStage(JITWatchUI.this, ReportStageType.ELIDED_LOCK, reportListElidedLocks);
 
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElidedLocks);
 
@@ -592,7 +631,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
 		});
-		
+
 		btnStats = new Button("Stats");
 		btnStats.setStyle("-fx-padding: 2 6;");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
@@ -640,7 +679,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnTimeLine);
 		hboxTop.getChildren().add(btnHisto);
 		hboxTop.getChildren().add(btnTopList);
-		hboxTop.getChildren().add(btnCodeCache);
+		hboxTop.getChildren().add(btnCodeCacheTimeline);
+		hboxTop.getChildren().add(btnNMethods);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnReportSuggestions);
 		hboxTop.getChildren().add(btnReportEliminatedAllocations);
@@ -662,6 +702,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 					selectedMember.setSelectedCompilation(newVal.getIndex());
 
 					openTriView(selectedMember, true);
+
+					refreshOnce();
 				}
 			}
 		});
@@ -1116,10 +1158,43 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 			compilationRowList.add(row);
 		}
+		
+		compilationTable.getSelectionModel().clearAndSelect(selectedMember.getCompilations().size() - 1);
+		
+		refreshOnce();
+	}
+
+	public void setCompilationOnSelectedMember(int compilationIndex)
+	{
+		if (selectedMember != null)
+		{
+			selectedMember.setSelectedCompilation(compilationIndex);
+
+			if (selectedMember.getSelectedCompilation() != null)
+			{
+				compilationTable.getSelectionModel().clearAndSelect(selectedMember.getSelectedCompilation().getIndex());
+			}
+		}
+	}
+
+	private void refreshOnce() // TODO replace with listeners
+	{
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (codeCacheBlocksStage != null)
+				{
+					codeCacheBlocksStage.redraw();
+				}
+			}
+		});
 	}
 
 	private void refresh()
 	{
+		// TODO refresh list from StageManager
 		boolean sameVmCommandAsLastRun = sameVmCommand();
 
 		if (repaintTree)
@@ -1145,9 +1220,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			timeLineStage.redraw();
 		}
 
-		if (codeCacheStage != null)
+		if (codeCacheTimelineStage != null)
 		{
-			codeCacheStage.redraw();
+			codeCacheTimelineStage.redraw();
 		}
 
 		if (statsStage != null)
@@ -1256,8 +1331,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 		else if (stage instanceof CodeCacheStage)
 		{
-			btnCodeCache.setDisable(false);
-			codeCacheStage = null;
+			btnCodeCacheTimeline.setDisable(false);
+			codeCacheTimelineStage = null;
+		}
+		else if (stage instanceof CodeCacheLayoutStage)
+		{
+			btnNMethods.setDisable(false);
+			codeCacheBlocksStage = null;
 		}
 		else if (stage instanceof TriView)
 		{

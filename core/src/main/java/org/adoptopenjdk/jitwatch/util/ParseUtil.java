@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ARGUMENTS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_RETURN;
@@ -54,8 +52,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_LONG;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_SHORT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -66,7 +62,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.model.BCIOpcodeMap;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
@@ -76,7 +71,6 @@ import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +120,42 @@ public final class ParseUtil
 			Thread.dumpStack();
 		}
 
+		return result;
+	}
+	
+	public static long parseStampFromTag(Tag tag)
+	{
+		String attrValue = tag.getAttributes().get(ATTR_STAMP);
+
+		long result = 0;
+		
+		if (attrValue != null)
+		{
+			result = parseStamp(attrValue);
+		}
+		else
+		{
+			logger.error("attribute {} missing from tag {}", ATTR_STAMP, tag.toString(true));
+		}
+		
+		return result;
+	}
+	
+	public static long parseLongAttributeFromTag(Tag tag, String attrName)
+	{
+		String attrValue = tag.getAttributes().get(attrName);
+
+		long result = 0;
+		
+		if (attrValue != null)
+		{
+			result = Long.parseLong(attrValue);
+		}
+		else
+		{
+			logger.error("attribute {} missing from tag {}", attrName, tag.toString(true));
+		}
+		
 		return result;
 	}
 
