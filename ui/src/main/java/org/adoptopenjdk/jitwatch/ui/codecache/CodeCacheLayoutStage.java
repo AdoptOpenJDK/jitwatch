@@ -25,6 +25,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -32,6 +33,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
@@ -71,6 +73,12 @@ public class CodeCacheLayoutStage extends Stage
 	private Button btnZoomOut;
 	private Button btnZoomReset;
 	private Button btnAnimate;
+
+	private CheckBox checkC1;
+	private CheckBox checkC2;
+
+	private boolean drawC1 = true;
+	private boolean drawC2 = true;
 
 	private TextField txtAnimationSeconds;
 
@@ -115,9 +123,9 @@ public class CodeCacheLayoutStage extends Stage
 
 		borderPane.setTop(scrollPane);
 
-		HBox hboxControls = buildControls();
+		VBox vBoxControls = buildControls();
 
-		borderPane.setCenter(hboxControls);
+		borderPane.setCenter(vBoxControls);
 
 		borderPane.setBottom(nMethodInfo);
 
@@ -132,7 +140,7 @@ public class CodeCacheLayoutStage extends Stage
 
 		nMethodInfo.prefHeightProperty().bind(scrollPane.heightProperty());
 
-		hboxControls.prefWidthProperty().bind(scene.widthProperty());
+		vBoxControls.prefWidthProperty().bind(scene.widthProperty());
 
 		class SceneResizeListener implements ChangeListener<Number>
 		{
@@ -193,7 +201,16 @@ public class CodeCacheLayoutStage extends Stage
 		setScene(scene);
 	}
 
-	private HBox buildControls()
+	private VBox buildControls()
+	{
+		VBox vBoxControls = new VBox();
+
+		vBoxControls.getChildren().addAll(buildControlButtons(), buildControlInfo());
+
+		return vBoxControls;
+	}
+
+	private HBox buildControlButtons()
 	{
 		HBox hboxControls = new HBox();
 
@@ -201,14 +218,34 @@ public class CodeCacheLayoutStage extends Stage
 		hboxControls.setAlignment(Pos.CENTER_LEFT);
 		hboxControls.setPadding(new Insets(4, 0, 0, 8));
 
-		lblNMethodCount = new Label();
-		lblNMethodCount.setMinWidth(80);
-		lblNMethodCount.getStyleClass().add("readonly-label");
-
 		btnZoomIn = new Button("Zoom In");
 		btnZoomOut = new Button("Zoom Out");
 		btnZoomReset = new Button("Reset");
 		btnAnimate = new Button("Animate");
+
+		checkC1 = new CheckBox("Show C1");
+		checkC1.setSelected(drawC1);
+		checkC1.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				drawC1 = checkC1.isSelected();
+				redraw();
+			}
+		});
+
+		checkC2 = new CheckBox("Show C2");
+		checkC2.setSelected(drawC2);
+		checkC2.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				drawC2 = checkC2.isSelected();
+				redraw();
+			}
+		});
 
 		txtAnimationSeconds = new TextField("5");
 		txtAnimationSeconds.getStyleClass().add("readonly-label");
@@ -266,8 +303,25 @@ public class CodeCacheLayoutStage extends Stage
 			}
 		});
 
-		int addressLabelWidth = 96;
+		hboxControls.getChildren().addAll(checkC1, checkC2, btnZoomIn, btnZoomOut, btnZoomReset, btnAnimate, txtAnimationSeconds);
 
+		return hboxControls;
+	}
+
+	private HBox buildControlInfo()
+	{
+		HBox hboxControls = new HBox();
+
+		hboxControls.setSpacing(10);
+		hboxControls.setAlignment(Pos.CENTER_LEFT);
+		hboxControls.setPadding(new Insets(12, 0, 0, 8));
+
+		int addressLabelWidth = 128;
+
+		lblNMethodCount = new Label();
+		lblNMethodCount.setMinWidth(addressLabelWidth);
+		lblNMethodCount.getStyleClass().add("readonly-label");
+		
 		lblLowAddress = new Label();
 		lblLowAddress.setMinWidth(addressLabelWidth);
 		lblLowAddress.getStyleClass().add("readonly-label");
@@ -280,9 +334,8 @@ public class CodeCacheLayoutStage extends Stage
 		lblAddressRange.setMinWidth(addressLabelWidth);
 		lblAddressRange.getStyleClass().add("readonly-label");
 
-		hboxControls.getChildren().addAll(new Label("NMethods"), lblNMethodCount, new Label("Low Addr"), lblLowAddress,
-				new Label("High Addr"), lblHighAddress, new Label("Range"), lblAddressRange, btnZoomIn, btnZoomOut, btnZoomReset,
-				btnAnimate, txtAnimationSeconds);
+		hboxControls.getChildren().addAll(new Label("NMethods"), lblNMethodCount, new Label("Lowest Address"), lblLowAddress,
+				new Label("Highest Address"), lblHighAddress, new Label("Address Range Size"), lblAddressRange);
 
 		return hboxControls;
 	}
@@ -343,12 +396,17 @@ public class CodeCacheLayoutStage extends Stage
 
 		for (CodeCacheEvent event : codeCacheData.getEvents())
 		{
+			if (!showEvent(event))
+			{
+				continue;
+			}
+			
 			final Compilation eventCompilation = event.getCompilation();
 
 			final IMetaMember compilationMember = eventCompilation.getMember();
 
 			if (eventCompilation != null)
-			{
+			{			
 				if (selectedMember != null && selectedMember.equals(compilationMember))
 				{
 					eventsOfSelectedMember.add(event);
@@ -418,6 +476,25 @@ public class CodeCacheLayoutStage extends Stage
 		// System.out.println("redraw " + (stop - start));
 	}
 
+	private boolean showEvent(CodeCacheEvent event)
+	{
+		boolean result = true;
+	
+		int level = event.getCompilationLevel();
+		
+		if (!drawC1 && level >= 1 && level <= 3)
+		{
+			result = false;
+		}
+		
+		if (!drawC2 && level == 4)
+		{
+			result = false;
+		}
+		
+		return result;
+	}
+	
 	private void plotMarker(double x, double h, double w, IMetaMember compilationMember, int compilationIndex)
 	{
 		double side = h * 0.04;
@@ -429,7 +506,13 @@ public class CodeCacheLayoutStage extends Stage
 		double bottom = h;
 
 		Polygon triangle = new Polygon();
-		triangle.getPoints().addAll(new Double[] { left, bottom, centre, top, right, bottom });
+		triangle.getPoints().addAll(new Double[] {
+				left,
+				bottom,
+				centre,
+				top,
+				right,
+				bottom });
 
 		triangle.setFill(Color.WHITE);
 		triangle.setStroke(Color.BLACK);
@@ -461,8 +544,7 @@ public class CodeCacheLayoutStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				mainUI.focusTreeOnMember(compilationMember);
-				mainUI.setCompilationOnSelectedMember(compilationIndex);
+				mainUI.setCompilationOnSelectedMember(compilationMember, compilationIndex);
 			}
 		});
 	}
@@ -520,13 +602,18 @@ public class CodeCacheLayoutStage extends Stage
 					}
 
 					CodeCacheEvent event = events.get(currentEvent++);
-
+					
+					if (!showEvent(event))
+					{
+						continue;
+					}
+					
 					final Compilation eventCompilation = event.getCompilation();
 
 					final IMetaMember compilationMember = eventCompilation.getMember();
 
 					if (eventCompilation != null)
-					{
+					{						
 						long addressOffset = event.getNativeAddress() - lowAddress;
 
 						double scaledAddress = (double) addressOffset / (double) addressRange;
@@ -583,11 +670,9 @@ public class CodeCacheLayoutStage extends Stage
 
 		if (selectedMember != null && selectedMember.getSelectedCompilation() != null)
 		{
-			int nextIndex = selectedMember.getSelectedCompilation().getIndex() - 1;
+			int prevIndex = selectedMember.getSelectedCompilation().getIndex() - 1;
 
-			mainUI.setCompilationOnSelectedMember(nextIndex);
-
-			redraw();
+			mainUI.setCompilationOnSelectedMember(selectedMember, prevIndex);
 		}
 	}
 
@@ -599,9 +684,7 @@ public class CodeCacheLayoutStage extends Stage
 		{
 			int nextIndex = selectedMember.getSelectedCompilation().getIndex() + 1;
 
-			mainUI.setCompilationOnSelectedMember(nextIndex);
-
-			redraw();
+			mainUI.setCompilationOnSelectedMember(selectedMember, nextIndex);
 		}
 	}
 }

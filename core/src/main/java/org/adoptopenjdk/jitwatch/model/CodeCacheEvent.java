@@ -20,6 +20,8 @@ public class CodeCacheEvent
 	private long nativeAddress;
 
 	private Compilation compilation;
+	
+	private int compilationLevel;
 
 	public CodeCacheEvent(CodeCacheEventType eventType, long stamp, long nativeCodeSize, long freeCodeCache)
 	{
@@ -58,6 +60,13 @@ public class CodeCacheEvent
 	public void setCompilation(Compilation compilation)
 	{
 		this.compilation = compilation;
+		
+		compilationLevel = compilation.getLevel();
+	}
+
+	public int getCompilationLevel()
+	{
+		return compilationLevel;
 	}
 
 	public long getFreeCodeCache()

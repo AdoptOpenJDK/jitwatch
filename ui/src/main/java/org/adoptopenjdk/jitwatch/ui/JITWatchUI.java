@@ -101,6 +101,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private static final String JAVA_VERSION_7 = "1.7";
 	public static final boolean IS_JAVA_FX2;
 
+	private boolean selectedProgrammatically = false;
+
 	static
 	{
 		String version = System.getProperty("java.version", JAVA_VERSION_7);
@@ -290,6 +292,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			public void run()
 			{
 				updateButtons();
+
+				refreshOnce();
 			}
 		});
 
@@ -697,13 +701,16 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
 					CompilationTableRow newVal)
 			{
-				if (selectedMember != null && newVal != null)
+				if (!selectedProgrammatically)
 				{
-					selectedMember.setSelectedCompilation(newVal.getIndex());
+					if (selectedMember != null && newVal != null)
+					{
+						selectedMember.setSelectedCompilation(newVal.getIndex());
 
-					openTriView(selectedMember, true);
+						openTriView(selectedMember, true);
 
-					refreshOnce();
+						refreshOnce();
+					}
 				}
 			}
 		});
@@ -961,7 +968,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return found;
 	}
 
-	public void focusTreeOnMember(IMetaMember member)
+	public void focusTreeOnMember(IMetaMember member, boolean openTriView)
 	{
 		if (member != null)
 		{
@@ -972,6 +979,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			if (found)
 			{
 				classMemberList.selectMember(member);
+
+				setSelectedMetaMember(member, openTriView);
+
 				lastSelectedMember = null;
 			}
 		}
@@ -1136,7 +1146,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return same;
 	}
 
-	void setSelectedMetaMember(IMetaMember member)
+	void setSelectedMetaMember(IMetaMember member, boolean openTriView)
 	{
 		compilationRowList.clear();
 
@@ -1145,7 +1155,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			return;
 		}
 
-		if (triViewStage != null)
+		if (openTriView && triViewStage != null)
 		{
 			triViewStage.setMember(member, false);
 		}
@@ -1158,38 +1168,44 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 			compilationRowList.add(row);
 		}
+
+		Compilation selectedCompilation = selectedMember.getSelectedCompilation();
 		
-		compilationTable.getSelectionModel().clearAndSelect(selectedMember.getCompilations().size() - 1);
+		if (selectedCompilation != null)
+		{
+			compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
+		}
 		
 		refreshOnce();
 	}
 
-	public void setCompilationOnSelectedMember(int compilationIndex)
-	{
+	public void setCompilationOnSelectedMember(IMetaMember member, int compilationIndex)
+	{		
+		selectedProgrammatically = true;
+
+		selectedMember = member;
+
 		if (selectedMember != null)
 		{
 			selectedMember.setSelectedCompilation(compilationIndex);
 
 			if (selectedMember.getSelectedCompilation() != null)
-			{
+			{				
 				compilationTable.getSelectionModel().clearAndSelect(selectedMember.getSelectedCompilation().getIndex());
 			}
+			
+			focusTreeOnMember(selectedMember, true);
 		}
+
+		selectedProgrammatically = false;
 	}
 
-	private void refreshOnce() // TODO replace with listeners
+	private void refreshOnce()
 	{
-		Platform.runLater(new Runnable()
+		if (codeCacheBlocksStage != null)
 		{
-			@Override
-			public void run()
-			{
-				if (codeCacheBlocksStage != null)
-				{
-					codeCacheBlocksStage.redraw();
-				}
-			}
-		});
+			codeCacheBlocksStage.redraw();
+		}
 	}
 
 	private void refresh()
@@ -1207,7 +1223,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			if (lastSelectedMember != null)
 			{
-				focusTreeOnMember(lastSelectedMember);
+				focusTreeOnMember(lastSelectedMember, true);
 			}
 			else if (lastSelectedClass != null)
 			{
@@ -1409,7 +1425,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		classMemberList.clearClassMembers();
 		selectedMetaClass = metaClass;
 
-		setSelectedMetaMember(null);
+		setSelectedMetaMember(null, true);
 
 		if (metaClass == null)
 		{

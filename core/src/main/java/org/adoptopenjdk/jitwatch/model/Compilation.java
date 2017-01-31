@@ -48,7 +48,7 @@ public class Compilation
 	private int index;
 
 	private IMetaMember member;
-	
+
 	private boolean failedTask = false;
 
 	public Compilation(IMetaMember member, int index)
@@ -159,7 +159,7 @@ public class Compilation
 	public void setTagTask(Task tagTask)
 	{
 		this.tagTask = tagTask;
-		
+
 		if (tagTask.getFirstNamedChild(TAG_FAILURE) != null)
 		{
 			failedTask = true;
@@ -304,9 +304,9 @@ public class Compilation
 		return result;
 	}
 
-	public String getLevel()
+	public int getLevel()
 	{
-		String result = null;
+		int result = -1;
 
 		Tag tag;
 
@@ -327,11 +327,17 @@ public class Compilation
 
 			if (level != null)
 			{
-				result = level;
+				try
+				{
+					result = Integer.parseInt(level);
+				}
+				catch (NumberFormatException nfe)
+				{
+				}
 			}
 			else if (C2.equals(tagAttributes.get(ATTR_COMPILER)))
 			{
-				result = "4";
+				result = 4;
 			}
 		}
 
@@ -359,7 +365,7 @@ public class Compilation
 
 		return builder.toString();
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -369,7 +375,7 @@ public class Compilation
 		{
 			builder.append("Compilation for ").append(tagNMethod).append("\n");
 		}
-		
+
 		return builder.toString();
 	}
 

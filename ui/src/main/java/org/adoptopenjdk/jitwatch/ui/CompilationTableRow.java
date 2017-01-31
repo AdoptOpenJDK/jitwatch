@@ -98,15 +98,17 @@ public class CompilationTableRow
 
 	public String getLevel()
 	{
-		String result = compilation.getLevel();
+		String result = null;
+		
+		int level = compilation.getLevel();
 
-		if (result == null)
+		if (level == -1)
 		{
 			result = "NA";
 		}
 		else
 		{
-			result = "Level " + result;
+			result = "Level " + level;
 		}
 
 		return result;

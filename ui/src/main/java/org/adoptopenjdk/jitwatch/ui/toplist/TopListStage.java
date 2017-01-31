@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -190,7 +190,7 @@ public class TopListStage extends Stage
 			{
 				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
 				{
-					parent.focusTreeOnMember((IMetaMember) newVal.getKey());
+					parent.focusTreeOnMember((IMetaMember) newVal.getKey(), true);
 				}
 			}
 		});

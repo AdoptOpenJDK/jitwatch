@@ -373,7 +373,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 				compilation.setTagNMethod(tagNMethod);
 
-				compilations.add(compilation);
+				storeCompilation(compilation);
 			}
 			else
 			{
@@ -383,6 +383,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		// inform package tree it contains class with a compiled method
 		getMetaClass().getPackage().setHasCompiledClasses();
+	}
+
+	private void storeCompilation(Compilation compilation)
+	{
+		compilations.add(compilation);
+		
+		selectedCompilation = compilations.size() - 1;
 	}
 
 	private Compilation createCompilation()

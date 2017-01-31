@@ -43,7 +43,7 @@ public class NMethodInfo extends HBox
 	{
 		this.parent = parent;
 
-		setPadding(new Insets(32, 4, 0, 4));
+		setPadding(new Insets(24, 4, 0, 4));
 		setSpacing(16);
 
 		getChildren().addAll(makeLeftColumn(), makeRightColumn());

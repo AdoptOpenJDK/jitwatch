@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -40,6 +40,8 @@ public class ClassMemberList extends VBox
 	private MetaClass metaClass = null;
 	private JITWatchConfig config;
 
+	private boolean selectedProgrammatically = false;
+	
 	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.config = config;
@@ -69,7 +71,10 @@ public class ClassMemberList extends VBox
 			@Override
 			public void changed(ObservableValue<? extends IMetaMember> arg0, IMetaMember oldVal, IMetaMember newVal)
 			{
-				parent.setSelectedMetaMember(newVal);
+				if (!selectedProgrammatically)
+				{
+					parent.setSelectedMetaMember(newVal, true);
+				}
 			}
 		});
 
@@ -292,6 +297,8 @@ public class ClassMemberList extends VBox
 
 	public void selectMember(IMetaMember selected)
 	{
+		selectedProgrammatically = true;
+		
 		memberList.getSelectionModel().clearSelection();
 
 		for (int i = 0; i < memberList.getItems().size(); i++)
@@ -307,6 +314,8 @@ public class ClassMemberList extends VBox
 				memberList.scrollTo(i);
 			}
 		}
+		
+		selectedProgrammatically = false;
 	}
 
 	static class MetaMethodCell extends ListCell<IMetaMember>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -37,6 +37,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
+import org.adoptopenjdk.jitwatch.util.BytecodeReceivingRunnable;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,7 +242,7 @@ public class TriView extends Stage implements ITriView
 			@Override
 			public String toString(IMetaMember mm)
 			{
-				return mm!=null ? mm.toStringUnqualifiedMethodName(false, false) : "null";
+				return mm != null ? mm.toStringUnqualifiedMethodName(false, false) : "null";
 			}
 
 			@Override
@@ -540,65 +541,26 @@ public class TriView extends Stage implements ITriView
 
 	public void setMember(IMetaMember member, boolean force)
 	{
-		setMember(member, force, true);
+		boolean jumpToSource = true;
+
+		setMember(member, force, jumpToSource);
 	}
 
 	public void setMember(IMetaMember member, boolean force, boolean jumpToSource)
 	{
-		boolean sameClass = false;
-
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 
 		currentMember = member;
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
-		sameClass = evaluateSameClass(force, sameClass, previousClass, memberClass);
+		boolean sameClass = evaluateSameClass(force, previousClass, memberClass);
 
 		processIfNotSameClass(sameClass, memberClass);
 
 		ignoreComboChanged = true;
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
-
-		List<String> allClassLocations = config.getAllClassLocations();
-
-		ClassBC classBytecode = currentMember.getMetaClass().getClassBytecode(model, allClassLocations);
-
-		if (!sameClass)
-		{
-			String source = null;
-
-			String sourceFileName = classBytecode.getSourceFile();
-
-			if (sourceFileName != null)
-			{
-				source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
-
-				if (source == null)
-				{
-					source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(), config.getSourceLocations());
-				}
-			}
-
-			boolean lineNumbers = true;
-			boolean canHighlight = true;
-
-			if (source == null)
-			{
-				source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
-				lineNumbers = false;
-				canHighlight = false;
-			}
-
-			viewerSource.setContent(source, lineNumbers, canHighlight);
-		}
-
-		StringBuilder statusBarBuilder = new StringBuilder();
-
-		updateStatusBarWithClassInformation(classBytecode, statusBarBuilder);
-		updateStatusBarIfCompiled(statusBarBuilder);
-		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
 		comboSelectedCompilation.getSelectionModel().clearSelection();
 		comboCompilationList.clear();
@@ -622,9 +584,55 @@ public class TriView extends Stage implements ITriView
 
 		comboSelectedCompilation.setVisible(compilationCount > 0);
 
-		updateBytecodeAndAssembly(jumpToSource);
+		List<String> allClassLocations = config.getAllClassLocations();
 
-		lblMemberInfo.setText(statusBarBuilder.toString());
+		final boolean finalSameClass = sameClass;
+
+		UserInterfaceUtil.getBytecodeAndUpdateUI(currentMember, model, allClassLocations, new BytecodeReceivingRunnable()
+		{
+			public void run()
+			{
+				if (!finalSameClass)
+				{
+					String source = null;
+
+					String sourceFileName = getClassBC().getSourceFile();
+
+					if (sourceFileName != null)
+					{
+						source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
+
+						if (source == null)
+						{
+							source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(),
+									config.getSourceLocations());
+						}
+					}
+
+					boolean lineNumbers = true;
+					boolean canHighlight = true;
+
+					if (source == null)
+					{
+						source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
+						lineNumbers = false;
+						canHighlight = false;
+					}
+
+					viewerSource.setContent(source, lineNumbers, canHighlight);
+				}
+
+				StringBuilder statusBarBuilder = new StringBuilder();
+				updateStatusBarIfCompiled(statusBarBuilder);
+				applyActionsIfOffsetMismatchDetected(statusBarBuilder);
+
+				lblMemberInfo.setText(statusBarBuilder.toString());
+
+				updateStatusBarWithClassInformation(getClassBC(), statusBarBuilder);
+
+				updateBytecodeAndAssembly(jumpToSource);
+			}
+		});
 	}
 
 	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)
@@ -755,9 +763,9 @@ public class TriView extends Stage implements ITriView
 		}
 	}
 
-	private boolean evaluateSameClass(boolean force, boolean inSameClass, MetaClass previousClass, MetaClass memberClass)
+	private boolean evaluateSameClass(boolean force, MetaClass previousClass, MetaClass memberClass)
 	{
-		boolean result = inSameClass;
+		boolean result = false;
 
 		if (!force)
 		{
