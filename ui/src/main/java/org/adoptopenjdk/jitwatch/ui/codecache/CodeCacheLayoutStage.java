@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.codecache;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -369,7 +370,7 @@ public class CodeCacheLayoutStage extends Stage
 
 			lblLowAddress.setText(Long.toHexString(lowAddress));
 			lblHighAddress.setText(Long.toHexString(highAddress));
-			lblAddressRange.setText(Long.toString(addressRange));
+			lblAddressRange.setText(NumberFormat.getNumberInstance().format(addressRange));
 
 			ok = true;
 		}
