@@ -134,7 +134,6 @@ public class NMethodInfo extends HBox
 
 		Label descriptionLabel = new Label(labelText);
 		descriptionLabel.setMinWidth(DESCRIPTION_WIDTH);
-		descriptionLabel.setPadding(new Insets(0, 4, 0, 4));
 
 		labelValue.getStyleClass().add("readonly-label");
 		labelValue.prefWidthProperty().bind(widthProperty().multiply(0.5).subtract(DESCRIPTION_WIDTH));
