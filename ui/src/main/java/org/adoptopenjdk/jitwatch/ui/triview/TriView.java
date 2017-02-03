@@ -546,7 +546,7 @@ public class TriView extends Stage implements ITriView
 		setMember(member, force, jumpToSource);
 	}
 
-	public void setMember(IMetaMember member, boolean force, boolean jumpToSource)
+	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource)
 	{
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 

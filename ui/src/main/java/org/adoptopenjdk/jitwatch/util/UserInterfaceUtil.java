@@ -46,8 +46,8 @@ public final class UserInterfaceUtil
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
 	}
 
-	public static void getBytecodeAndUpdateUI(IMetaMember member, IReadOnlyJITDataModel model, List<String> classLocations,
-			BytecodeReceivingRunnable bcRunnable)
+	public static void getBytecodeAndUpdateUI(final IMetaMember member, final IReadOnlyJITDataModel model, final List<String> classLocations,
+			final BytecodeReceivingRunnable bcRunnable)
 	{
 		new Thread(new Runnable()
 		{
