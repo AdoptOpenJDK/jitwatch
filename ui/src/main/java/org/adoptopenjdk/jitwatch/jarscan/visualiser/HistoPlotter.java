@@ -1,12 +1,14 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.jarscan.visualiser;
 
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,7 +24,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -153,7 +154,7 @@ public class HistoPlotter extends Application
 				Tooltip.install(data.getNode(), tooltip);
 			}
 		}
-		
+
 		chart.setTitle(getTitle());
 	}
 
@@ -167,12 +168,22 @@ public class HistoPlotter extends Application
 
 			try
 			{
-				ImageIO.write(SwingFXUtils.fromFXImage(imageSnap, null), "png", new File(screenshotFilename));
+
+				Class<?> swingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
+
+				Method methodFromFXImage = swingFXUtils.getMethod("fromFXImage", new Class[] {
+						javafx.scene.image.Image.class,
+						java.awt.image.BufferedImage.class });
+
+				ImageIO.write((RenderedImage) methodFromFXImage.invoke(null, new Object[] {
+						imageSnap,
+						null }), "png", new File(screenshotFilename));
 				Platform.exit();
 			}
-			catch (IOException e)
+			catch (Throwable t)
 			{
-				e.printStackTrace();
+				System.err.println("Couldn't write screenshot");
+				t.printStackTrace();
 			}
 		}
 	}
@@ -181,7 +192,8 @@ public class HistoPlotter extends Application
 	{
 		if (args.length < 1)
 		{
-			System.err.println("HistoPlotter <histo CSV> [--" + PARAM_LIMIT + "=limit] [--" + PARAM_SCREENSHOT + "=outputFilename]");
+			System.err
+					.println("HistoPlotter <histo CSV> [--" + PARAM_LIMIT + "=limit] [--" + PARAM_SCREENSHOT + "=outputFilename]");
 			System.exit(-1);
 		}
 
@@ -248,7 +260,7 @@ public class HistoPlotter extends Application
 		stage.setScene(scene);
 		stage.show();
 	}
-	
+
 	private String getTitle()
 	{
 		String chartTitle = null;
@@ -263,7 +275,7 @@ public class HistoPlotter extends Application
 		{
 			chartTitle = filename;
 		}
-		
+
 		return "Input file: " + chartTitle + "    limit: " + limit;
 	}
 
