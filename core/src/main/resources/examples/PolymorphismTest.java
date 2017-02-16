@@ -45,7 +45,7 @@ public class PolymorphismTest
 
     final int maxImplementations = 2;
 
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 1_000_000; i++)
     {
        switch(i % maxImplementations)
        {
