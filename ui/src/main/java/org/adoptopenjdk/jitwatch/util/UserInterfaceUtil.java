@@ -17,12 +17,12 @@ import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.application.Platform;
 
 public final class UserInterfaceUtil
 {
@@ -33,6 +33,7 @@ public final class UserInterfaceUtil
 
 	public static final String FONT_MONOSPACE_FAMILY;
 	public static final String FONT_MONOSPACE_SIZE;
+	public static final boolean ADD_CLOSE_DECORATION; // for fullscreen JavaFX systems
 
 	private UserInterfaceUtil()
 	{
@@ -44,10 +45,11 @@ public final class UserInterfaceUtil
 
 		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", Font.font(java.awt.Font.MONOSPACED, 12).getName());
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
+		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 
-	public static void getBytecodeAndUpdateUI(final IMetaMember member, final IReadOnlyJITDataModel model, final List<String> classLocations,
-			final BytecodeReceivingRunnable bcRunnable)
+	public static void getBytecodeAndUpdateUI(final IMetaMember member, final IReadOnlyJITDataModel model,
+			final List<String> classLocations, final BytecodeReceivingRunnable bcRunnable)
 	{
 		new Thread(new Runnable()
 		{
@@ -83,9 +85,9 @@ public final class UserInterfaceUtil
 		return result;
 	}
 
-	public static Scene getScene(Parent parent, double width, double height)
+	public static Scene getScene(Parent rootNode, double width, double height)
 	{
-		Scene scene = new Scene(parent, width, height);
+		Scene scene = new Scene(rootNode, width, height);
 
 		String styleSheet = UserInterfaceUtil.class.getResource("/style.css").toExternalForm();
 

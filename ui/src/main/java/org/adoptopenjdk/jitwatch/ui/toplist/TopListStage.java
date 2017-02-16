@@ -21,7 +21,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -31,8 +30,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
-
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompileTimeTopListVisitable;
@@ -59,15 +56,6 @@ public class TopListStage extends Stage
 	public TopListStage(final JITWatchUI parent)
 	{
 		initStyle(StageStyle.DECORATED);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(TopListStage.this);
-			}
-		});
 
 		int width = 800;
 		int height = 480;

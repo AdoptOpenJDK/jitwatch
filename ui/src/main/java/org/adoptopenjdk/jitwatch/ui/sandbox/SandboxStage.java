@@ -61,16 +61,16 @@ import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SandboxStage extends Stage implements ISandboxStage, IStageCloseListener, ILogListener, ILogParseErrorListener
+public class SandboxStage extends Stage implements ISandboxStage, IStageClosedListener, ILogListener, ILogParseErrorListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(SandboxStage.class);
 
@@ -94,7 +94,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 
 	private JITWatchConfig config;
 
-	public SandboxStage(final IStageCloseListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
+	public SandboxStage(final IStageClosedListener closeListener, IStageAccessProxy proxy, final ILogParser parser)
 	{
 		this.accessProxy = proxy;
 
@@ -656,7 +656,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageCloseLis
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		StageManager.closeStageAndChildren(stage);
+		StageManager.closeStage(stage);
 
 		if (stage instanceof SandboxConfigStage)
 		{

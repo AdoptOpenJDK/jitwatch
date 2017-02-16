@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.beans.value.ChangeListener;
@@ -24,7 +25,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class NothingMountedStage extends Stage
 {	
@@ -76,15 +76,7 @@ public class NothingMountedStage extends Stage
             }
         });
 
-        btnDismiss.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-				parent.handleStageClosed(NothingMountedStage.this);
-                close();
-            }
-        });
+        btnDismiss.setOnAction(StageManager.getCloseHandler(this));
 
         hboxButtons.getChildren().add(btnDismiss);
         hboxButtons.getChildren().add(btnOpenConfig);
@@ -96,14 +88,5 @@ public class NothingMountedStage extends Stage
         vbox.getChildren().add(hboxButtons);       
 		
 		setScene(scene);
-		
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(NothingMountedStage.this);
-			}
-		});
 	}
 }

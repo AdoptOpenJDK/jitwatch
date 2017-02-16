@@ -5,19 +5,20 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.stage.StageStyle;
 
 public class CodeCacheStage extends AbstractGraphStage
 {
@@ -26,8 +27,6 @@ public class CodeCacheStage extends AbstractGraphStage
 	public CodeCacheStage(JITWatchUI parent)
 	{
 		super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, true);
-
-		initStyle(StageStyle.DECORATED);
 
 		StackPane root = new StackPane();
 		Scene scene = UserInterfaceUtil.getScene(root, width, height);

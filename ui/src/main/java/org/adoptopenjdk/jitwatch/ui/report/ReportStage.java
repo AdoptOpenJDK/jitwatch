@@ -25,7 +25,6 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
@@ -33,7 +32,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class ReportStage extends Stage
 {
@@ -92,15 +90,6 @@ public class ReportStage extends Stage
 		tableView.prefHeightProperty().bind(scene.heightProperty());
 
 		setScene(scene);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(ReportStage.this);
-			}
-		});
 
 		display();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -13,8 +13,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -38,8 +36,6 @@ public class CompileNode
 
 	private Compilation compilation;
 	
-	private static final Logger logger = LoggerFactory.getLogger(CompileNode.class);
-
 	public static CompileNode createRootNode(Compilation compilation, String methodID, IParseDictionary parseDictionary, IReadOnlyJITDataModel model)
 	{
 		CompileNode root = new CompileNode(methodID);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,10 +16,8 @@ import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SI
 
 import java.util.ArrayList;
 import java.util.List;
-import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
-import javafx.stage.WindowEvent;
 
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
@@ -30,20 +28,11 @@ public class JournalViewerStage extends AbstractTextViewerStage
 	{
 		super(parent, title, false);
 
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(JournalViewerStage.this);
-			}
-		});
-
 		int maxLineLength = 0;
 
 		List<Label> labels = new ArrayList<>();
 		
-			String[] tagLines = compilation.toString().split(S_NEWLINE);
+			String[] tagLines = compilation.toStringVerbose().split(S_NEWLINE);
 
 			for (int i = 0; i < tagLines.length; i++)
 			{

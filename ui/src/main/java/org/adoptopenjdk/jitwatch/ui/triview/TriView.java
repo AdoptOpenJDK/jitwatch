@@ -66,7 +66,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
@@ -285,25 +284,7 @@ public class TriView extends Stage implements ITriView
 
 		setScene(scene);
 
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(TriView.this);
-			}
-		});
-
 		checkColumns();
-
-		Platform.runLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				// focusSource();
-			}
-		});
 	}
 
 	private void setupCheckBoxes()

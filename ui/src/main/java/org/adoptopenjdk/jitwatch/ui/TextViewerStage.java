@@ -11,9 +11,7 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
-import javafx.event.EventHandler;
 import javafx.scene.control.Label;
-import javafx.stage.WindowEvent;
 
 public class TextViewerStage extends AbstractTextViewerStage
 {
@@ -22,14 +20,6 @@ public class TextViewerStage extends AbstractTextViewerStage
 		super(parent, title, highlighting);
 
         String source = inSource;
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(TextViewerStage.this);
-			}
-		});
 
 		if (source == null)
 		{

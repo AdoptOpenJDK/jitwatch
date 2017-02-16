@@ -53,6 +53,8 @@ import org.adoptopenjdk.jitwatch.ui.optimizedvcall.OptimizedVirtualCallStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
@@ -91,7 +93,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageCloseListener, IStageAccessProxy
+public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageClosedListener, IStageAccessProxy
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
@@ -386,6 +388,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	@Override
 	public void start(final Stage stage)
 	{
+		StageManager.registerListener(this);
+		
 		this.stage = stage;
 
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -393,7 +397,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(WindowEvent arg0)
 			{
-				StageManager.closeStageAndChildren(stage);
+				StageManager.closeStage(stage);
 
 				stopParsing();
 			}
@@ -884,7 +888,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		if (browserStage == null)
 		{
-			browserStage = new BrowserStage(JITWatchUI.this);
+			browserStage = new BrowserStage();
 
 			StageManager.addAndShow(this.stage, browserStage);
 		}
@@ -1304,8 +1308,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	@Override
 	public void handleStageClosed(Stage stage)
 	{
-		StageManager.closeStageAndChildren(stage);
-
 		if (stage instanceof TimeLineStage)
 		{
 			btnTimeLine.setDisable(false);
@@ -1446,7 +1448,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		return stage;
 	}
-
+	
+//TOOD remove
 	private void checkIfTweakLog()
 	{
 		if (logParser != null && logParser.isTweakVMLog())
@@ -1457,6 +1460,5 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			lblTweakLog.setText(S_EMPTY);
 		}
-
 	}
 }

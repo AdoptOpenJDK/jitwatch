@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD

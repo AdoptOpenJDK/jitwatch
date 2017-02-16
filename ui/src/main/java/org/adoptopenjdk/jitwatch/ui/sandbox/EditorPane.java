@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -188,6 +188,15 @@ public class EditorPane extends VBox
 			public void changed(ObservableValue<? extends Number> value, Number oldValue, Number newValue)
 			{
 				sbLineNum.setValue(newValue.doubleValue());
+			}
+		});
+		
+		sbLineNum.valueProperty().addListener(new ChangeListener<Number>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Number> value, Number oldValue, Number newValue)
+			{
+				sbSource.setValue(newValue.doubleValue());
 			}
 		});
 

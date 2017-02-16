@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,13 +7,11 @@ package org.adoptopenjdk.jitwatch.ui;
 
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class BrowserStage extends Stage
 {
@@ -21,7 +19,7 @@ public class BrowserStage extends Stage
 
 	private WebEngine webEngine;
 
-	public BrowserStage(final JITWatchUI parent)
+	public BrowserStage()
 	{
 		initStyle(StageStyle.DECORATED);
 
@@ -32,15 +30,6 @@ public class BrowserStage extends Stage
 		webEngine = web.getEngine();
 
 		setScene(scene);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(BrowserStage.this);
-			}
-		});
 	}
 
 	public void setContent(final String title, final String html, String stylesheet)

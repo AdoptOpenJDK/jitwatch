@@ -17,10 +17,10 @@ import javafx.stage.Stage;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.ui.StageManager;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 
-public class VMLanguageList extends FlowPane implements IStageCloseListener
+public class VMLanguageList extends FlowPane implements IStageClosedListener
 {
 	private JITWatchConfig config;
 

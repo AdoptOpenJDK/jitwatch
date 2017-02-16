@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,7 +11,8 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.FileChooserList;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -36,7 +37,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class SandboxConfigStage extends Stage
 {
@@ -50,7 +50,7 @@ public class SandboxConfigStage extends Stage
 	private CheckBox checkBoxPrintAssembly;
 	private CheckBox checkBoxDisableInlining;
 
-	private IStageCloseListener parent;
+	private IStageClosedListener parent;
 	private JITWatchConfig config;
 	private FileChooserList chooserClasses;
 	private VMLanguageList vmLanguageList;
@@ -61,7 +61,7 @@ public class SandboxConfigStage extends Stage
 
 	private static final Logger logger = LoggerFactory.getLogger(SandboxConfigStage.class);
 
-	public SandboxConfigStage(final IStageCloseListener parent, final JITWatchConfig config)
+	public SandboxConfigStage(final IStageClosedListener parent, final JITWatchConfig config)
 	{
 		this.parent = parent;
 		this.config = config;
@@ -108,28 +108,6 @@ public class SandboxConfigStage extends Stage
 		vbox.getChildren().add(buildHBoxButtons());
 
 		setTitle("Sandbox Configuration");
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(SandboxConfigStage.this);
-			}
-		});
-	}
-
-	private EventHandler<ActionEvent> getEventHandlerForCancelButton()
-	{
-		return new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.handleStageClosed(SandboxConfigStage.this);
-				close();
-			}
-		};
 	}
 
 	private EventHandler<ActionEvent> getEventHandlerForSaveButton()
@@ -726,7 +704,7 @@ public class SandboxConfigStage extends Stage
 
 		btnSave.setOnAction(getEventHandlerForSaveButton());
 
-		btnCancel.setOnAction(getEventHandlerForCancelButton());
+		btnCancel.setOnAction(StageManager.getCloseHandler(this));
 
 		hbox.getChildren().add(btnCancel);
 		hbox.getChildren().add(btnSave);

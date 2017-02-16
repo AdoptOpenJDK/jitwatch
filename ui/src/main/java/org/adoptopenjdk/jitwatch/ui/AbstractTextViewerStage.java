@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,12 +10,10 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public abstract class AbstractTextViewerStage extends Stage
 {
@@ -24,15 +22,6 @@ public abstract class AbstractTextViewerStage extends Stage
 	public AbstractTextViewerStage(final JITWatchUI parent, String title, boolean highlighting)
 	{
 		initStyle(StageStyle.DECORATED);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(AbstractTextViewerStage.this);
-			}
-		});
 
 		viewer = new Viewer(parent, highlighting);
 

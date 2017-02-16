@@ -1,3 +1,7 @@
+.root {
+  -fx-font: 12px Arial;
+}
+
 .mnemonic-underline {
   -fx-stroke: -fx-text-base-color;
 }

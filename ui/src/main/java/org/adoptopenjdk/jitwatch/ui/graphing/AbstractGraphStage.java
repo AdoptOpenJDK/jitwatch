@@ -5,18 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.ui.graphing;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
-import javafx.geometry.VPos;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
-
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
@@ -27,6 +15,16 @@ import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.VPos;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public abstract class AbstractGraphStage extends Stage
 {
@@ -90,15 +88,6 @@ public abstract class AbstractGraphStage extends Stage
 		gc = canvas.getGraphicsContext2D();
 
 		initStyle(StageStyle.DECORATED);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(AbstractGraphStage.this);
-			}
-		});
 
 		class SceneResizeListener implements ChangeListener<Number>
 		{

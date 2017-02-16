@@ -15,7 +15,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
-
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import java.util.Collections;
@@ -36,7 +35,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.stage.StageStyle;
 
 public class TimeLineStage extends AbstractGraphStage
 {
@@ -50,8 +48,6 @@ public class TimeLineStage extends AbstractGraphStage
 	public TimeLineStage(final JITWatchUI parent)
 	{
 		super(parent, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT, true);
-
-		initStyle(StageStyle.DECORATED);
 
 		StackPane root = new StackPane();
 		Scene scene = UserInterfaceUtil.getScene(root, width, height);

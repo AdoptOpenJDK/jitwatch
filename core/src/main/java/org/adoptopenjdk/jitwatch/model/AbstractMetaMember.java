@@ -23,7 +23,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ZERO_OR_MOR
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_PARENTHESES;
@@ -234,7 +234,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getReturnTypeName()
 	{
-		return (returnType == null) ? S_EMPTY : ParseUtil.expandParameterType(returnType.getName());
+		return (isConstructor() || returnType == null) ? S_TYPE_NAME_VOID : ParseUtil.expandParameterType(returnType.getName());
 	}
 
 	@Override
@@ -463,7 +463,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				builder.append(Modifier.toString(modifier)).append(C_SPACE);
 			}
 
-			if (returnType != null)
+			if (!isConstructor() && returnType != null)
 			{
 				builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
 			}

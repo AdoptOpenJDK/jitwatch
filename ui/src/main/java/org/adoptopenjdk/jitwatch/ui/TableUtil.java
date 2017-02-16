@@ -1,17 +1,14 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui;
 
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.util.Callback;
 
 public final class TableUtil
 {

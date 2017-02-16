@@ -41,7 +41,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class CodeCacheLayoutStage extends Stage
 {
@@ -99,15 +98,6 @@ public class CodeCacheLayoutStage extends Stage
 		this.mainUI = parent;
 
 		this.zoom = 1;
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(CodeCacheLayoutStage.this);
-			}
-		});
 
 		initStyle(StageStyle.DECORATED);
 

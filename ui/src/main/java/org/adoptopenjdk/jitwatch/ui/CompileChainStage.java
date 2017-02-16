@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -24,13 +24,12 @@ import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class CompileChainStage extends Stage
 {
 	private ScrollPane scrollPane;
 	private Pane pane;
-	private JITWatchUI parent;
+	private IStageAccessProxy stageAccess;
 
 	private CompileNode rootNode;
 
@@ -51,11 +50,11 @@ public class CompileChainStage extends Stage
 		public Text text;
 	}
 
-	public CompileChainStage(final JITWatchUI parent, CompileNode root)
+	public CompileChainStage(final IStageAccessProxy stageAccess, CompileNode root)
 	{
 		initStyle(StageStyle.DECORATED);
 
-		this.parent = parent;
+		this.stageAccess = stageAccess;
 
 		this.rootNode = root;
 
@@ -71,15 +70,6 @@ public class CompileChainStage extends Stage
 		setScene(scene);
 
 		redraw();
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(CompileChainStage.this);
-			}
-		});
 	}
 
 	private void redraw()
@@ -273,7 +263,7 @@ public class CompileChainStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				parent.openTriView(node.getMember(), true);
+				stageAccess.openTriView(node.getMember(), true);
 			}
 		});
 	}

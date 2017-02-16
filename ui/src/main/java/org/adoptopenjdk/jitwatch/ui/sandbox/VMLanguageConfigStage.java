@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui.sandbox;
 
 import java.io.File;
+
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,11 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
-
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.ui.IStageCloseListener;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class VMLanguageConfigStage extends Stage
 {
@@ -32,10 +31,10 @@ public class VMLanguageConfigStage extends Stage
 
 	private TextField tfLanguagePath;
 
-	private IStageCloseListener parent;
+	private IStageClosedListener parent;
 	private JITWatchConfig config;
 
-	public VMLanguageConfigStage(final IStageCloseListener parent, final JITWatchConfig config, final String language)
+	public VMLanguageConfigStage(final IStageClosedListener parent, final JITWatchConfig config, final String language)
 	{
 		this.parent = parent;
 		this.config = config;
@@ -61,15 +60,6 @@ public class VMLanguageConfigStage extends Stage
 		Scene scene = UserInterfaceUtil.getScene(vbox, 480, 120);
 
 		setScene(scene);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(VMLanguageConfigStage.this);
-			}
-		});
 	}
 
 
@@ -156,7 +146,7 @@ public class VMLanguageConfigStage extends Stage
 		return result;
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerForCancelButton(final IStageCloseListener parent)
+	private EventHandler<ActionEvent> getEventHandlerForCancelButton(final IStageClosedListener parent)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -169,7 +159,7 @@ public class VMLanguageConfigStage extends Stage
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerForSaveButton(final String language, final IStageCloseListener parent, final JITWatchConfig config)
+	private EventHandler<ActionEvent> getEventHandlerForSaveButton(final String language, final IStageClosedListener parent, final JITWatchConfig config)
 	{
 		return new EventHandler<ActionEvent>()
 		{

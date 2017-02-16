@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 public class ParseDictionary implements IParseDictionary

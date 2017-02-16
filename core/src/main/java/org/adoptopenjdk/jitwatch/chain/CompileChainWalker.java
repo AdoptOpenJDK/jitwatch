@@ -31,7 +31,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_LEVEL_DISCOUNT;
 
 import java.util.HashMap;
 import java.util.Map;

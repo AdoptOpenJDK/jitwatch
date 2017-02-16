@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,6 +12,8 @@ import java.util.List;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public class MainConfigStage extends Stage
 {
@@ -44,7 +45,7 @@ public class MainConfigStage extends Stage
 
 	private static final Logger logger = LoggerFactory.getLogger(MainConfigStage.class);
 
-	public MainConfigStage(final IStageCloseListener parent, final ILogListener logListener, final JITWatchConfig config)
+	public MainConfigStage(final IStageClosedListener parent2, final ILogListener logListener, final JITWatchConfig config)
 	{
 		initStyle(StageStyle.UTILITY);
 
@@ -170,22 +171,14 @@ public class MainConfigStage extends Stage
 
 				config.saveConfig();
 
-				parent.handleStageClosed(MainConfigStage.this);
-				close();
+				StageManager.closeStage(MainConfigStage.this);
+				
 			}
 		});
 
 		Button btnCancel = new Button("Cancel");
 
-		btnCancel.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.handleStageClosed(MainConfigStage.this);
-				close();
-			}
-		});
+		btnCancel.setOnAction(StageManager.getCloseHandler(MainConfigStage.this));
 
 		HBox hboxButtons = new HBox();
 		hboxButtons.setSpacing(20);
@@ -213,15 +206,6 @@ public class MainConfigStage extends Stage
 		Scene scene = UserInterfaceUtil.getScene(vbox, 640, 400);
 
 		setScene(scene);
-
-		setOnCloseRequest(new EventHandler<WindowEvent>()
-		{
-			@Override
-			public void handle(WindowEvent arg0)
-			{
-				parent.handleStageClosed(MainConfigStage.this);
-			}
-		});
 	}
 
 	private void createComboOptions(JITWatchConfig config)
