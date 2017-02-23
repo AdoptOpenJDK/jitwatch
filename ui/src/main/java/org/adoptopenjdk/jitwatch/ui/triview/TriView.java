@@ -31,7 +31,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
@@ -69,7 +69,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage implements ITriView
+public class TriView extends Stage implements ILineListener
 {
 	private IMetaMember currentMember;
 	private JITWatchConfig config;
@@ -228,7 +228,7 @@ public class TriView extends Stage implements ITriView
 				{
 					if (newVal != null)
 					{
-						TriView.this.setMember(newVal, true);
+						TriView.this.setMember(newVal, true, 0);
 					}
 				}
 			}
@@ -285,6 +285,8 @@ public class TriView extends Stage implements ITriView
 		setScene(scene);
 
 		checkColumns();
+		
+		updateButtons();
 	}
 
 	private void setupCheckBoxes()
@@ -364,7 +366,7 @@ public class TriView extends Stage implements ITriView
 
 				if (currentMember != null)
 				{
-					updateBytecodeAndAssembly(false);
+					updateBytecodeAndAssembly(false, 0);
 				}
 			}
 		});
@@ -385,7 +387,7 @@ public class TriView extends Stage implements ITriView
 				{
 					currentMember.setSelectedCompilation(index);
 
-					updateBytecodeAndAssembly(false);
+					updateBytecodeAndAssembly(false, 0);
 				}
 			}
 		});
@@ -506,7 +508,7 @@ public class TriView extends Stage implements ITriView
 
 		if (!members.isEmpty())
 		{
-			setMember(members.get(0), false);
+			setMember(members.get(0), false, 0);
 		}
 		else
 		{
@@ -524,10 +526,17 @@ public class TriView extends Stage implements ITriView
 	{
 		boolean jumpToSource = true;
 
-		setMember(member, force, jumpToSource);
+		setMember(member, force, jumpToSource, 0);
+	}
+	
+	public void setMember(IMetaMember member, boolean force, int highlightBCI)
+	{
+		boolean jumpToSource = true;
+
+		setMember(member, force, jumpToSource, highlightBCI);
 	}
 
-	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource)
+	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
 	{
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 
@@ -548,8 +557,6 @@ public class TriView extends Stage implements ITriView
 
 		List<Compilation> compilations = currentMember.getCompilations();
 
-		int compilationCount = compilations.size();
-
 		for (Compilation compilation : compilations)
 		{
 			comboCompilationList.add(compilation.getSignature());
@@ -562,8 +569,8 @@ public class TriView extends Stage implements ITriView
 			int selectedCompilationIndex = selectedCompilation.getIndex();
 			comboSelectedCompilation.getSelectionModel().select(selectedCompilationIndex);
 		}
-
-		comboSelectedCompilation.setVisible(compilationCount > 0);
+				
+		updateButtons();
 
 		List<String> allClassLocations = config.getAllClassLocations();
 
@@ -604,16 +611,31 @@ public class TriView extends Stage implements ITriView
 				}
 
 				StringBuilder statusBarBuilder = new StringBuilder();
+				
+				updateStatusBarWithClassInformation(getClassBC(), statusBarBuilder);
+				
 				updateStatusBarIfCompiled(statusBarBuilder);
-				applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
+				applyActionsIfOffsetMismatchDetected(statusBarBuilder);
+				
 				lblMemberInfo.setText(statusBarBuilder.toString());
 
-				updateStatusBarWithClassInformation(getClassBC(), statusBarBuilder);
-
-				updateBytecodeAndAssembly(jumpToSource);
+				updateBytecodeAndAssembly(jumpToSource, highlightBCI);
 			}
 		});
+	}
+	
+	private void updateButtons()
+	{
+		boolean isCompiled = currentMember != null ? currentMember.isCompiled() : false;
+		
+		comboSelectedCompilation.setVisible(isCompiled);
+		
+		btnCompileChain.setDisable(!isCompiled);
+		
+		btnJITJournal.setDisable(!isCompiled);
+		
+		btnLineTable.setDisable(currentMember == null);
 	}
 
 	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)
@@ -641,7 +663,7 @@ public class TriView extends Stage implements ITriView
 		}
 	}
 
-	private void updateBytecodeAndAssembly(boolean selectSourceLine)
+	private void updateBytecodeAndAssembly(boolean focusSource, int highlightBCI)
 	{
 		Compilation compilation = currentMember.getSelectedCompilation();
 
@@ -651,16 +673,16 @@ public class TriView extends Stage implements ITriView
 
 		MemberBytecode memberBytecode = currentMember.getMemberBytecode();
 
-		if (selectSourceLine)
+		if (focusSource)
 		{
 			if (memberBytecode != null)
 			{
-				viewerBytecode.highlightLine(0, true);
-				lineHighlighted(0, LineType.BYTECODE_BCI);
+				viewerBytecode.highlightLine(highlightBCI, true);
+				lineHighlighted(highlightBCI, LineType.BYTECODE_BCI);
 			}
 			else
 			{
-				viewerSource.jumpTo(currentMember);
+				viewerSource.jumpToMemberSource(currentMember);
 				viewerSource.setScrollBar();
 			}
 		}
@@ -703,7 +725,7 @@ public class TriView extends Stage implements ITriView
 	{
 		if (currentMember.isCompiled())
 		{
-			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(false, false));
+			statusBarBuilder.append(C_SPACE).append(currentMember.toStringUnqualifiedMethodName(true, true));
 
 			Compilation compilation = currentMember.getSelectedCompilation();
 
@@ -738,10 +760,33 @@ public class TriView extends Stage implements ITriView
 			comboMember.getSelectionModel().clearSelection();
 			comboMemberList.clear();
 			comboMemberList.addAll(memberClass.getMetaMembers());
-
+			
 			String fqName = memberClass.getFullyQualifiedName();
 			classSearch.setText(fqName);
 		}
+	}
+
+	public void clear()
+	{
+		comboMember.getSelectionModel().clearSelection();
+		comboMemberList.clear();
+		
+		comboCompilationList.clear();
+		comboSelectedCompilation.getSelectionModel().clearSelection();
+		
+		paneSource.clear();
+		paneBytecode.clear();
+		paneAssembly.clear();
+		
+		compilationInfo.clear();
+		
+		currentMember = null;
+		
+		classSearch.clear();
+		
+		lblMemberInfo.setText(S_EMPTY);
+		
+		updateButtons();
 	}
 
 	private boolean evaluateSameClass(boolean force, MetaClass previousClass, MetaClass memberClass)
@@ -765,7 +810,6 @@ public class TriView extends Stage implements ITriView
 		if (DEBUG_LOGGING_TRIVIEW)
 		{
 			logger.debug("lineHighlighted {} {}", index, lineType);
-
 		}
 
 		switch (lineType)
@@ -847,7 +891,7 @@ public class TriView extends Stage implements ITriView
 				{
 					if (!nextMember.equals(currentMember))
 					{
-						setMember(nextMember, false, false);
+						setMember(nextMember, false, false, 0);
 					}
 
 					LineTable lineTable = memberBytecode.getLineTable();

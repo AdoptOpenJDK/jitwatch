@@ -26,8 +26,8 @@ public class SuggestionRowBean extends AbstractReportRowBean
 		{
 		case BRANCH:
 			return "Branch";
-		case INLINING:
-			return "Inlinling";
+		case INLINE_FAILURE:
+			return "Inlining";
 		case CODE_CACHE:
 			return "Code Cache";
 		case ELIMINATED_ALLOCATION_DIRECT:

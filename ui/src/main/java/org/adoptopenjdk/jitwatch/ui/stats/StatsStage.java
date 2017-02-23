@@ -3,9 +3,10 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.stats;
 
 import org.adoptopenjdk.jitwatch.model.JITStats;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
@@ -33,7 +34,7 @@ public class StatsStage extends Stage
 		
 		Scene scene = UserInterfaceUtil.getScene(vbox, 800, 480);
 	
-		tableView = TableUtil.buildTableStats(obList);
+		tableView = StatsTableBuilder.buildTableStats(obList);
 		
 		vbox.getChildren().add(tableView);
 		

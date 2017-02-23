@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -85,6 +85,17 @@ public class CompilationInfo extends HBox
 		getChildren().add(vBoxCompileTime);
 	}
 
+	public void clear()
+	{
+		lblBytecodeSizeVal.setStyle(STYLE_VALUE);
+
+		lblBytecodeSizeVal.setText(NA);
+
+		lblAssemblySizeVal.setText(NA);
+
+		lblCompileTimeVal.setText(NA);
+	}
+
 	public void setCompilation(Compilation compilation)
 	{
 		if (compilation != null)
@@ -104,20 +115,14 @@ public class CompilationInfo extends HBox
 		}
 		else
 		{
-			lblBytecodeSizeVal.setStyle(STYLE_VALUE);
-			
-			lblBytecodeSizeVal.setText(NA);
-
-			lblAssemblySizeVal.setText(NA);
-
-			lblCompileTimeVal.setText(NA);
+			clear();
 		}
 	}
-	
+
 	public void setBytecodeSize(String sizeString)
 	{
 		lblBytecodeSizeVal.setText(sizeString);
-		
+
 		try
 		{
 			int bytecodeSize = Integer.parseInt(lblBytecodeSizeVal.getText());

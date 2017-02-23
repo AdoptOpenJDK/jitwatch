@@ -391,7 +391,7 @@ public class SuggestionWalker extends AbstractReportBuilder
 					if (score > 0)
 					{
 						Report suggestion = new Report(caller, compilationIndex, currentBytecode, reasonBuilder.toString(),
-								ReportType.INLINING, (int) Math.ceil(score));
+								ReportType.INLINE_FAILURE, (int) Math.ceil(score));
 
 						if (!reportList.contains(suggestion))
 						{

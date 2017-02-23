@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.viewer;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
@@ -20,6 +20,7 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 
 import org.adoptopenjdk.jitwatch.model.Compilation;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 
 public class JournalViewerStage extends AbstractTextViewerStage

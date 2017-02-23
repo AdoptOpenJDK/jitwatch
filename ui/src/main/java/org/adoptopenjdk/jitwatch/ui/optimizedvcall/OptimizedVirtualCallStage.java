@@ -8,7 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.optimizedvcall;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.geometry.Insets;

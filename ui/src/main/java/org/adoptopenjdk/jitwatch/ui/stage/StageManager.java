@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.ActionEvent;
@@ -46,6 +47,30 @@ public class StageManager
 		for (IStageClosedListener listener : listeners)
 		{
 			listener.handleStageClosed(stage);
+		}
+	}
+
+	public static void clearReportStages()
+	{
+		for (Stage rootStage : openStages.keySet())
+		{
+			clearChildren(rootStage);
+		}
+	}
+
+	public static void clearChildren(Stage stage)
+	{
+		if (openStages.containsKey(stage))
+		{
+			for (Stage childStage : openStages.get(stage))
+			{
+				clearChildren(childStage);
+			}
+		}
+
+		if (stage instanceof ReportStage)
+		{
+			((ReportStage) stage).clear();
 		}
 	}
 

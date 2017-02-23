@@ -80,6 +80,11 @@ public class ClassSearch extends Region
 			}
 		});
 	}
+	
+	public void clear()
+	{
+		tfSearch.clear();
+	}
 
 	private void performActionUsingSearchResults()
 	{

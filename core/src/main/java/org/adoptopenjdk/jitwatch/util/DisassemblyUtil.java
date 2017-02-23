@@ -9,12 +9,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
+import org.adoptopenjdk.jitwatch.util.OSUtil.OperatingSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.adoptopenjdk.jitwatch.util.OSUtil;
-import org.adoptopenjdk.jitwatch.util.OSUtil.Architecture;
-import org.adoptopenjdk.jitwatch.util.OSUtil.OperatingSystem;
 
 public final class DisassemblyUtil
 {
@@ -69,13 +67,13 @@ public final class DisassemblyUtil
 
 		switch (arch)
 		{
-		case BIT32:
+		case X86_32:
 		{
 			binaryName = "hsdis-i386";
 			hsdisPath = Paths.get(hsdisPath.toString(), "i386", "server");
 			break;
 		}
-		case BIT64:
+		case X86_64:
 		{
 			binaryName = "hsdis-amd64";
 
@@ -89,6 +87,12 @@ public final class DisassemblyUtil
 			}
 			break;
 		}
+		case ARM_32:
+			break;
+		case ARM_64:
+			break;
+		default:
+			break;
 		}
 
 		if (os != null)

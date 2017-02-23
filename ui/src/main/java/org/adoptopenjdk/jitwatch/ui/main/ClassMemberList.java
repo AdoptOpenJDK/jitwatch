@@ -3,11 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.main;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +42,33 @@ public class ClassMemberList extends VBox
 	private JITWatchConfig config;
 
 	private boolean selectedProgrammatically = false;
-	
-	public ClassMemberList(final JITWatchUI parent, final JITWatchConfig config)
+
+	private List<IMemberSelectedListener> listeners = new ArrayList<>();
+
+	public void registerListener(IMemberSelectedListener listener)
+	{
+		listeners.add(listener);
+	}
+
+	public void clear()
+	{
+		if (memberList != null)
+		{
+			memberList.getItems().clear();
+		}
+
+		metaClass = null;
+	}
+
+	private void notifyListeners(IMetaMember member, boolean openTriView)
+	{
+		for (IMemberSelectedListener listener : listeners)
+		{
+			listener.setSelectedMetaMember(member, openTriView);
+		}
+	}
+
+	public ClassMemberList(final IStageAccessProxy parent, final JITWatchConfig config)
 	{
 		this.config = config;
 
@@ -73,7 +99,7 @@ public class ClassMemberList extends VBox
 			{
 				if (!selectedProgrammatically)
 				{
-					parent.setSelectedMetaMember(newVal, true);
+					notifyListeners(newVal, true);
 				}
 			}
 		});
@@ -133,22 +159,26 @@ public class ClassMemberList extends VBox
 		};
 	}
 
-	private ContextMenu buildContextMenuCompiledMember(JITWatchUI parent)
+	private ContextMenu buildContextMenuCompiledMember(IStageAccessProxy parent)
 	{
 		final ContextMenu menu = new ContextMenu();
 
 		MenuItem menuItemTriView = new MenuItem("Show TriView");
+		MenuItem menuItemInlinedInto = new MenuItem("Show inlined into");
+
 		MenuItem menuItemIntrinsics = new MenuItem("Show intrinsics used");
 		MenuItem menuItemCallChain = new MenuItem("Show compile chain");
 		MenuItem menuItemOptimizedVCalls = new MenuItem("Show optimized virtual calls");
 
 		menu.getItems().add(menuItemTriView);
+		menu.getItems().add(menuItemInlinedInto);
 		menu.getItems().add(menuItemIntrinsics);
 		menu.getItems().add(menuItemCallChain);
 		menu.getItems().add(menuItemOptimizedVCalls);
 
-
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
+
+		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(parent));
 
 		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
 
@@ -156,24 +186,26 @@ public class ClassMemberList extends VBox
 
 		menuItemOptimizedVCalls.setOnAction(getEventHandlerMenuItemOptimizedVCall(parent));
 
-
 		return menu;
 	}
 
-	private ContextMenu buildContextMenuUncompiledMember(JITWatchUI parent)
+	private ContextMenu buildContextMenuUncompiledMember(IStageAccessProxy parent)
 	{
 		ContextMenu menu = new ContextMenu();
 
 		MenuItem menuItemTriView = new MenuItem("Show TriView");
+		MenuItem menuItemInlinedInto = new MenuItem("Show inlined into");
 
 		menu.getItems().add(menuItemTriView);
+		menu.getItems().add(menuItemInlinedInto);
 
 		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
+		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(parent));
 
 		return menu;
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemTriView(final JITWatchUI parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemTriView(final IStageAccessProxy parent)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -185,7 +217,19 @@ public class ClassMemberList extends VBox
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemIntrinsics(final JITWatchUI parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemInlinedInto(final IStageAccessProxy parent)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				parent.openInlinedIntoReport(memberList.getSelectionModel().getSelectedItem());
+			}
+		};
+	}
+
+	private EventHandler<ActionEvent> getEventHandlerMenuItemIntrinsics(final IStageAccessProxy parent)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -196,12 +240,12 @@ public class ClassMemberList extends VBox
 
 				String intrinsicsUsed = findIntrinsicsUsedByMember(member);
 
-				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed);
+				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed, false, false);
 			}
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemCallChain(final JITWatchUI parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemCallChain(final IStageAccessProxy parent)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -213,7 +257,7 @@ public class ClassMemberList extends VBox
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final JITWatchUI parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final IStageAccessProxy parent)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -298,7 +342,7 @@ public class ClassMemberList extends VBox
 	public void selectMember(IMetaMember selected)
 	{
 		selectedProgrammatically = true;
-		
+
 		memberList.getSelectionModel().clearSelection();
 
 		for (int i = 0; i < memberList.getItems().size(); i++)
@@ -314,7 +358,7 @@ public class ClassMemberList extends VBox
 				memberList.scrollTo(i);
 			}
 		}
-		
+
 		selectedProgrammatically = false;
 	}
 

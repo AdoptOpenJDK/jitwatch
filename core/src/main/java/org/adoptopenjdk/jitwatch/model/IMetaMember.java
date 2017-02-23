@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -59,5 +59,5 @@ public interface IMetaMember
 	Compilation getCompilation(int index);
 	Compilation getLastCompilation();
 	
-	String getSignatureRegEx();
+	String getSourceMethodSignatureRegEx();
 }

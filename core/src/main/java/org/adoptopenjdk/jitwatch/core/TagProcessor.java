@@ -216,7 +216,7 @@ public class TagProcessor
 		{
 			if (name.equals(S_FRAGMENT))
 			{
-				logger.debug(
+				logger.warn(
 						"Found a {} in the HotSpot log. The VM exited before the hotspot log was fully written. JIT information may have been lost.",
 						TAG_OPEN_FRAGMENT);
 

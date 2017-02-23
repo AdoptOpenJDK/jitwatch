@@ -10,7 +10,7 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
-import org.adoptopenjdk.jitwatch.ui.FileChooserList;
+import org.adoptopenjdk.jitwatch.ui.filechooser.FileChooserList;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;

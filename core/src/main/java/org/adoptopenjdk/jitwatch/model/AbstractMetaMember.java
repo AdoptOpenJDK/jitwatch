@@ -520,7 +520,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public String getSignatureRegEx()
+	public String getSourceMethodSignatureRegEx()
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -553,6 +553,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(memberName);
 		}
 
+		//TODO return type and name should uniquely identify a method
+		
+		/* 
 		builder.append(REGEX_ZERO_OR_MORE_SPACES);
 
 		builder.append(S_ESCAPED_OPEN_PARENTHESES);
@@ -578,6 +581,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		builder.append(S_ESCAPED_CLOSE_PARENTHESES);
 		builder.append(REGEX_GROUP_ANY);
 		builder.append(C_DOLLAR);
+		*/
 
 		return builder.toString();
 	}

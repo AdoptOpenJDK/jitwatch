@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -31,7 +31,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;

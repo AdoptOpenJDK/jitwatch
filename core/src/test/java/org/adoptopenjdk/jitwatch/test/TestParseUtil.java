@@ -45,7 +45,7 @@ public class TestParseUtil
 		Method m = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "ensureCapacity", new Class<?>[] { int.class });
 		MetaMethod method = new MetaMethod(m, null);
 		String sourceSig = "public void ensureCapacity(int foo)";
-		Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+		Matcher matcher = Pattern.compile(method.getSourceMethodSignatureRegEx()).matcher(sourceSig);
 		boolean match = matcher.find();
 		assertTrue(match);
 
@@ -53,7 +53,7 @@ public class TestParseUtil
 		Method m2 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "setCharAt", new Class<?>[] { int.class, char.class });
 		MetaMethod method2 = new MetaMethod(m2, null);
 		String sourceSig2 = "public void setCharAt(int foo, char bar)";
-		Matcher matcher2 = Pattern.compile(method2.getSignatureRegEx()).matcher(sourceSig2);
+		Matcher matcher2 = Pattern.compile(method2.getSourceMethodSignatureRegEx()).matcher(sourceSig2);
 		boolean match2 = matcher2.find();
 		assertTrue(match2);
 
@@ -61,7 +61,7 @@ public class TestParseUtil
 		Method m3 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { java.lang.String.class });
 		MetaMethod methodFQ = new MetaMethod(m3, null);
 		String sourceSigFQ = "public AbstractStringBuilder append(String foo)";
-		Matcher matcherFQ = Pattern.compile(methodFQ.getSignatureRegEx()).matcher(sourceSigFQ);
+		Matcher matcherFQ = Pattern.compile(methodFQ.getSourceMethodSignatureRegEx()).matcher(sourceSigFQ);
 		boolean matchFQ = matcherFQ.find();
 		assertTrue(matchFQ);
 
@@ -69,7 +69,7 @@ public class TestParseUtil
 		Constructor<?> c1 = UnitTestUtil.getConstructor("java.lang.AbstractStringBuilder", new Class<?>[] { int.class });
 		MetaConstructor con1 = new MetaConstructor(c1, null);
 		String sourceSigC1 = "AbstractStringBuilder(int foo)";
-		Matcher matcherC1 = Pattern.compile(con1.getSignatureRegEx()).matcher(sourceSigC1);
+		Matcher matcherC1 = Pattern.compile(con1.getSourceMethodSignatureRegEx()).matcher(sourceSigC1);
 		boolean matchC1 = matcherC1.find();
 		assertTrue(matchC1);
 
@@ -77,7 +77,7 @@ public class TestParseUtil
 		Method m4 = UnitTestUtil.getMethod("java.lang.String", "getBytes", new Class<?>[0]);
 		MetaMethod method4 = new MetaMethod(m4, null);
 		String sourceSig4 = "public byte[] getBytes()";
-		Matcher matcher4 = Pattern.compile(method4.getSignatureRegEx()).matcher(sourceSig4);
+		Matcher matcher4 = Pattern.compile(method4.getSourceMethodSignatureRegEx()).matcher(sourceSig4);
 		boolean match4 = matcher4.find();
 		assertTrue(match4);
 
@@ -85,7 +85,7 @@ public class TestParseUtil
 		Method m5 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "append", new Class<?>[] { char[].class });
 		MetaMethod method5 = new MetaMethod(m5, null);
 		String sourceSig5 = "public AbstractStringBuilder append(char[] foo)";
-		Matcher matcher5 = Pattern.compile(method5.getSignatureRegEx()).matcher(sourceSig5);
+		Matcher matcher5 = Pattern.compile(method5.getSourceMethodSignatureRegEx()).matcher(sourceSig5);
 		boolean match5 = matcher5.find();
 		assertTrue(match5);
 	}
@@ -99,7 +99,7 @@ public class TestParseUtil
 		MetaMethod method = new MetaMethod(m, null);
 
 		String sourceSig = "private String loadConvert (char[] in, int off, int len, char[] convtBuf) {";
-		Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+		Matcher matcher = Pattern.compile(method.getSourceMethodSignatureRegEx()).matcher(sourceSig);
 		boolean match = matcher.find();
 		assertTrue(match);
 	}
@@ -117,7 +117,7 @@ public class TestParseUtil
 		// test for failure on matching internal (type erased) representation
 		// against generics signature
 		String sourceSig = "public static <U,T> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {";
-		Matcher matcher = Pattern.compile(method.getSignatureRegEx()).matcher(sourceSig);
+		Matcher matcher = Pattern.compile(method.getSourceMethodSignatureRegEx()).matcher(sourceSig);
 		boolean match = matcher.find();
 		assertFalse(match);
 	}
@@ -484,7 +484,7 @@ public class TestParseUtil
 
 		String sourceSig = "public void unicodeMethodNameµµµµµ()";
 
-		Matcher matcher = Pattern.compile(testMethod.getSignatureRegEx()).matcher(sourceSig);
+		Matcher matcher = Pattern.compile(testMethod.getSourceMethodSignatureRegEx()).matcher(sourceSig);
 		boolean match = matcher.find();
 		assertTrue(match);
 	}

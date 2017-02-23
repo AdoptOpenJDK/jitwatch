@@ -61,10 +61,10 @@ import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -621,7 +621,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			@Override
 			public void run()
 			{
-				accessProxy.openTriView(member, true, getWidth(), getHeight());
+				accessProxy.openTriView(member, true, 0);
 			}
 		});
 	}

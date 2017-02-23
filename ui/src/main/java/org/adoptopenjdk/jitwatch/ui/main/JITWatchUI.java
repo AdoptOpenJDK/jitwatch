@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.main;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
@@ -44,8 +44,12 @@ import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.lockelision.ElidedLocksWalker;
+import org.adoptopenjdk.jitwatch.report.inlining.InliningWalker;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.browser.BrowserStage;
 import org.adoptopenjdk.jitwatch.ui.codecache.CodeCacheLayoutStage;
+import org.adoptopenjdk.jitwatch.ui.compilechain.CompileChainStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
@@ -55,9 +59,11 @@ import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
+import org.adoptopenjdk.jitwatch.ui.stats.StatsStage;
 import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
-import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
+import org.adoptopenjdk.jitwatch.ui.viewer.JournalViewerStage;
+import org.adoptopenjdk.jitwatch.ui.viewer.TextViewerStage;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -93,7 +99,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageClosedListener, IStageAccessProxy
+public class JITWatchUI extends Application
+		implements IJITListener, ILogParseErrorListener, IStageClosedListener, IStageAccessProxy, IMemberSelectedListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
@@ -152,6 +159,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private Button btnConfigure;
 	private Button btnTimeLine;
 	private Button btnStats;
+	private Button btnReset;
 	private Button btnHisto;
 	private Button btnTopList;
 	private Button btnErrorLog;
@@ -175,6 +183,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private CodeCacheLayoutStage codeCacheBlocksStage;
 	private TriView triViewStage;
 	private BrowserStage browserStage;
+		
 	private ReportStage reportStageSuggestions;
 	private ReportStage reportStageElminatedAllocations;
 	private ReportStage reportStageElidedLocks;
@@ -241,6 +250,22 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		startDelayedByConfig = false;
 
+		isReadingLogFile = true;
+		
+		clear();
+		
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				updateButtons();
+			}
+		});
+	}
+	
+	private void clear()
+	{
 		lastVmCommand = logParser.getVMCommand();
 		lastSelectedMember = selectedMember;
 		lastSelectedClass = selectedMetaClass;
@@ -249,18 +274,27 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		errorCount = 0;
 		errorLog.clear();
-
+		
 		reportListSuggestions.clear();
 		reportListEliminatedAllocations.clear();
 		reportListElidedLocks.clear();
-
-		isReadingLogFile = true;
-
+						
 		Platform.runLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
+				classMemberList.clear();
+				
+				StageManager.clearReportStages();
+				
+				codeCacheWalkerResult = null;
+				
+				if (triViewStage != null)
+				{
+					triViewStage.clear();
+				}
+				
 				classTree.handleConfigUpdate(getConfig());
 
 				updateButtons();
@@ -269,6 +303,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				metaClassSelectedFromClassTree(null);
 
 				textAreaLog.clear();
+				
+				refreshOnce();
 			}
 		});
 	}
@@ -389,7 +425,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	public void start(final Stage stage)
 	{
 		StageManager.registerListener(this);
-		
+
 		this.stage = stage;
 
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
@@ -563,7 +599,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(ActionEvent e)
 			{
-				reportStageSuggestions = new ReportStage(JITWatchUI.this, ReportStageType.SUGGESTION, reportListSuggestions);
+				reportStageSuggestions = new ReportStage(JITWatchUI.this, "JITWatch Code Suggestions", ReportStageType.SUGGESTION,
+						reportListSuggestions);
 
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageSuggestions);
 
@@ -577,8 +614,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(ActionEvent e)
 			{
-				reportStageElminatedAllocations = new ReportStage(JITWatchUI.this, ReportStageType.ELIMINATED_ALLOCATION,
-						reportListEliminatedAllocations);
+				reportStageElminatedAllocations = new ReportStage(JITWatchUI.this, "JITWatch Eliminated Allocation Report",
+						ReportStageType.ELIMINATED_ALLOCATION, reportListEliminatedAllocations);
 
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElminatedAllocations);
 
@@ -592,7 +629,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			@Override
 			public void handle(ActionEvent e)
 			{
-				reportStageElidedLocks = new ReportStage(JITWatchUI.this, ReportStageType.ELIDED_LOCK, reportListElidedLocks);
+				reportStageElidedLocks = new ReportStage(JITWatchUI.this, "JITWatch Elided Lock Report",
+						ReportStageType.ELIDED_LOCK, reportListElidedLocks);
 
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElidedLocks);
 
@@ -654,6 +692,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				btnStats.setDisable(true);
 			}
 		});
+		
+		btnReset = new Button("Reset");
+		btnReset.setStyle("-fx-padding: 2 6;");
+		btnReset.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				logParser.reset();
+				clear();
+			}
+		});
 
 		lblHeap = new Label();
 
@@ -696,7 +746,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		compilationRowList = FXCollections.observableArrayList();
-		compilationTable = TableUtil.buildTableMemberAttributes(compilationRowList);
+		compilationTable = CompilationTableBuilder.buildTableMemberAttributes(compilationRowList);
 		compilationTable.setPlaceholder(new Text("Select a JIT-compiled class member to view compilations."));
 
 		compilationTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<CompilationTableRow>()
@@ -723,6 +773,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
 
 		classMemberList = new ClassMemberList(this, getConfig());
+		classMemberList.registerListener(this);
 
 		spMethodInfo.getItems().add(classMemberList);
 		spMethodInfo.getItems().add(compilationTable);
@@ -782,6 +833,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(btnErrorLog);
 		hboxBottom.getChildren().add(btnStats);
+		hboxBottom.getChildren().add(btnReset);
 		hboxBottom.getChildren().add(springLeft);
 		hboxBottom.getChildren().add(lblTweakLog);
 		hboxBottom.getChildren().add(springRight);
@@ -829,34 +881,17 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	}
 
 	@Override
-	public ITriView openTriView(IMetaMember member, boolean force)
+	public void openTriView(IMetaMember member, boolean force)
 	{
-		if (triViewStage == null)
-		{
-			triViewStage = new TriView(JITWatchUI.this, getConfig());
-
-			StageManager.addAndShow(this.stage, triViewStage);
-
-			btnTriView.setDisable(true);
-		}
-
-		if (member != null)
-		{
-			triViewStage.setMember(member, force);
-		}
-
-		return triViewStage;
+		openTriView(member, force, 0);
 	}
-
+	
 	@Override
-	public ITriView openTriView(IMetaMember member, boolean force, double width, double height)
+	public void openTriView(IMetaMember member, boolean force, int highlightBCI)
 	{
 		if (triViewStage == null)
 		{
 			triViewStage = new TriView(JITWatchUI.this, getConfig());
-
-			triViewStage.setWidth(width);
-			triViewStage.setHeight(height);
 
 			StageManager.addAndShow(this.stage, triViewStage);
 
@@ -865,10 +900,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		if (member != null)
 		{
-			triViewStage.setMember(member, force);
+			triViewStage.setMember(member, force, highlightBCI);
 		}
-
-		return triViewStage;
 	}
 
 	public void openSandbox()
@@ -1003,6 +1036,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		openTextViewer(title, content, false, false);
 	}
 
+	@Override
 	public void openCompileChain(IMetaMember member)
 	{
 		if (member != null && member.isCompiled())
@@ -1022,14 +1056,9 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				logger.error("Could not open CompileChain - root node was null");
 			}
 		}
-		else
-		{
-			Dialogs.showOKDialog(stage, "Root method is not compiled",
-					"Can only display compile chain where the root method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
-		}
 	}
 
+	@Override
 	public void openOptmizedVCallReport(IMetaMember member)
 	{
 		if (member.isCompiled())
@@ -1044,11 +1073,26 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			StageManager.addAndShow(this.stage, ovcs);
 
 		}
-		else
+	}
+
+	@Override
+	public void openInlinedIntoReport(IMetaMember member)
+	{
+		if (member != null)
 		{
-			Dialogs.showOKDialog(stage, "Root method is not compiled",
-					"Can only display optimized virtual calls where the root method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
+			log("Finding inlined into reports for " + member.toStringUnqualifiedMethodName(true, true));
+
+			InliningWalker walker = new InliningWalker(logParser.getModel(), member);
+
+			List<Report> inlinedIntoMemberList = walker.getReports(new ScoreComparator());
+
+			log("Found " + inlinedIntoMemberList.size() + " locations.");
+
+			ReportStage inlinedIntoStage = new ReportStage(JITWatchUI.this,
+					"Inlining report for callee " + member.toStringUnqualifiedMethodName(true, true), ReportStageType.INLINING,
+					inlinedIntoMemberList);
+			
+			StageManager.addAndShow(JITWatchUI.this.stage, inlinedIntoStage);
 		}
 	}
 
@@ -1058,12 +1102,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			JournalViewerStage jvs = new JournalViewerStage(this, title, member.getSelectedCompilation());
 			StageManager.addAndShow(this.stage, jvs);
-		}
-		else
-		{
-			Dialogs.showOKDialog(stage, "Method is not compiled",
-					"Can only display JIT Journal if the method has been JIT-compiled.\n"
-							+ member.toStringUnqualifiedMethodName(false, false) + " is not compiled.");
 		}
 	}
 
@@ -1150,7 +1188,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return same;
 	}
 
-	void setSelectedMetaMember(IMetaMember member, boolean openTriView)
+	@Override
+	public void setSelectedMetaMember(IMetaMember member, boolean openTriView)
 	{
 		compilationRowList.clear();
 
@@ -1174,17 +1213,17 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 
 		Compilation selectedCompilation = selectedMember.getSelectedCompilation();
-		
+
 		if (selectedCompilation != null)
 		{
 			compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
 		}
-		
+
 		refreshOnce();
 	}
 
 	public void setCompilationOnSelectedMember(IMetaMember member, int compilationIndex)
-	{		
+	{
 		selectedProgrammatically = true;
 
 		selectedMember = member;
@@ -1194,10 +1233,10 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 			selectedMember.setSelectedCompilation(compilationIndex);
 
 			if (selectedMember.getSelectedCompilation() != null)
-			{				
+			{
 				compilationTable.getSelectionModel().clearAndSelect(selectedMember.getSelectedCompilation().getIndex());
 			}
-			
+
 			focusTreeOnMember(selectedMember, true);
 		}
 
@@ -1214,7 +1253,6 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 	private void refresh()
 	{
-		// TODO refresh list from StageManager
 		boolean sameVmCommandAsLastRun = sameVmCommand();
 
 		if (repaintTree)
@@ -1378,6 +1416,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 				btnReportElidedLocks.setDisable(false);
 				reportStageElidedLocks = null;
 				break;
+			case INLINING:
+				break;
 			}
 		}
 		else if (stage instanceof OptimizedVirtualCallStage)
@@ -1448,8 +1488,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		return stage;
 	}
-	
-//TOOD remove
+
+	// TOOD remove
 	private void checkIfTweakLog()
 	{
 		if (logParser != null && logParser.isTweakVMLog())

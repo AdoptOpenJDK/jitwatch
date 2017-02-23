@@ -1,18 +1,20 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.main;
+
+import org.adoptopenjdk.jitwatch.ui.main.CompilationTableRow;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-public final class TableUtil
+public final class CompilationTableBuilder
 {
-	private TableUtil()
+	private CompilationTableBuilder()
 	{
 	}
 
@@ -45,26 +47,6 @@ public final class TableUtil
 		tv.getColumns().add(columnSize);
 		tv.getColumns().add(columnCompiler);
 		tv.getColumns().add(columnLevel);
-
-		tv.setItems(rows);
-
-		return tv;
-	}
-
-	public static TableView<StatsTableRow> buildTableStats(ObservableList<StatsTableRow> rows)
-	{
-		TableView<StatsTableRow> tv = new TableView<>();
-
-		TableColumn<StatsTableRow, String> colName = new TableColumn<StatsTableRow, String>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<StatsTableRow, String>("name"));
-		colName.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
-
-		TableColumn<StatsTableRow, Long> colValue = new TableColumn<StatsTableRow, Long>("Value");
-		colValue.setCellValueFactory(new PropertyValueFactory<StatsTableRow, Long>("value"));
-		colValue.prefWidthProperty().bind(tv.widthProperty().multiply(0.66));
-
-		tv.getColumns().add(colName);
-		tv.getColumns().add(colValue);
 
 		tv.setItems(rows);
 

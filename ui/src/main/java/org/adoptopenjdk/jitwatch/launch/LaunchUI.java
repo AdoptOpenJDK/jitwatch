@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.launch;
 
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 
 public final class LaunchUI
 {

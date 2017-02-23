@@ -12,13 +12,16 @@ import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.report.Report;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.report.cell.LinkedBCICell;
 import org.adoptopenjdk.jitwatch.ui.report.cell.MemberTableCell;
 import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBuilder;
+import org.adoptopenjdk.jitwatch.ui.report.inlining.InliningRowBean;
+import org.adoptopenjdk.jitwatch.ui.report.inlining.InliningRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBuilder;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
@@ -45,13 +48,13 @@ public class ReportStage extends Stage
 
 	private ReportStageType type;
 
-	public ReportStage(final JITWatchUI parent, ReportStageType type, List<Report> reportList)
+	public ReportStage(final IStageAccessProxy proxy, String title, ReportStageType type, List<Report> reportList)
 	{
 		this.reportList = reportList;
 		this.type = type;
 
-		MemberTableCell.setTriViewAccessor(parent);
-		LinkedBCICell.setTriViewAccessor(parent);
+		MemberTableCell.setTriViewAccessor(proxy);
+		LinkedBCICell.setTriViewAccessor(proxy);
 
 		initStyle(StageStyle.DECORATED);
 
@@ -70,16 +73,20 @@ public class ReportStage extends Stage
 		switch (type)
 		{
 		case SUGGESTION:
-			setTitle("JITWatch Code Suggestions");
+			setTitle(title);
 			tableView = SuggestionRowBuilder.buildTableSuggestion(observableList);
 			break;
 		case ELIMINATED_ALLOCATION:
-			setTitle("JITWatch Eliminated Allocation Report");
+			setTitle(title);
 			tableView = EliminatedAllocationRowBuilder.buildTableSuggestion(observableList);
 			break;
 		case ELIDED_LOCK:
-			setTitle("JITWatch Elided Lock Report");
+			setTitle(title);
 			tableView = ElidedLockRowBuilder.buildTableSuggestion(observableList);
+			break;
+		case INLINING:
+			setTitle(title);
+			tableView = InliningRowBuilder.buildTableSuggestion(observableList);
 			break;
 		}
 
@@ -94,6 +101,11 @@ public class ReportStage extends Stage
 		display();
 	}
 
+	public void clear()
+	{
+		observableList.clear();
+	}
+	
 	public ReportStageType getType()
 	{
 		return type;
@@ -101,7 +113,7 @@ public class ReportStage extends Stage
 
 	private void display()
 	{
-		observableList.clear();
+		clear();
 
 		if (reportList.size() == 0)
 		{
@@ -142,6 +154,10 @@ public class ReportStage extends Stage
 						break;
 					case ELIDED_LOCK:
 						observableList.add(new ElidedLockRowBean(report));
+						break;
+					case INLINING:
+						observableList.add(new InliningRowBean(report));
+						break;
 					}
 				}
 			}

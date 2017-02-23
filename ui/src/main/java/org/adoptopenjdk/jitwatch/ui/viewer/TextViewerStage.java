@@ -3,11 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.viewer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;

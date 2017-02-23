@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -66,13 +66,16 @@ public final class ClassUtil
 
 	public static void clear()
 	{
-		try
+		if (disposableClassLoader != null)
 		{
-			disposableClassLoader.close();
-		}
-		catch (IOException e)
-		{
-			logger.warn("Could not close the DisposableURLClassLoader", e);
+			try
+			{
+				disposableClassLoader.close();
+			}
+			catch (IOException e)
+			{
+				logger.warn("Could not close the DisposableURLClassLoader", e);
+			}
 		}
 		disposableClassLoader = null;
 	}

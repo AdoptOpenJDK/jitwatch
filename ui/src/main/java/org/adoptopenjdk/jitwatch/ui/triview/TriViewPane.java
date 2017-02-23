@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.ui.triview;
 
 import javafx.event.EventHandler;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -19,6 +20,8 @@ public class TriViewPane extends VBox
 	private static final String STYLE_UNFOCUSSED = "-fx-background-color:#dddddd; -fx-padding:4px;";
 	private static final String STYLE_FOCUSSED = "-fx-background-color:#ffffaa; -fx-padding:4px;";
 	
+	private Viewer viewer;
+	
 	public TriViewPane(TriView parent, String title, Viewer viewer)
 	{
 		construct(parent, title, viewer, new HBox());
@@ -28,10 +31,16 @@ public class TriViewPane extends VBox
 	{
 		construct(parent, title, viewer, titleComponents);
 	}
+	
+	public void clear()
+	{
+		viewer.clear();
+	}
 
 	private void construct(final TriView parent, String title, final Viewer viewer, HBox titleComponents)
 	{
 		this.titleComponents = titleComponents;
+		this.viewer = viewer;
 
 		titleComponents.setStyle(STYLE_UNFOCUSSED);
 		titleComponents.prefWidthProperty().bind(widthProperty());

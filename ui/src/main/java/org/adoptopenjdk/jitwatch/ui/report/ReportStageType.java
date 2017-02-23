@@ -7,5 +7,5 @@ package org.adoptopenjdk.jitwatch.ui.report;
 
 public enum ReportStageType
 {
-	SUGGESTION, ELIMINATED_ALLOCATION, ELIDED_LOCK
+	SUGGESTION, ELIMINATED_ALLOCATION, ELIDED_LOCK, INLINING
 }

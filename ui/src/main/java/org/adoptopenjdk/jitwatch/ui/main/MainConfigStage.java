@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.main;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +11,10 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.filechooser.FileChooserList;
+import org.adoptopenjdk.jitwatch.ui.filechooser.FileChooserListSrcZip;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;

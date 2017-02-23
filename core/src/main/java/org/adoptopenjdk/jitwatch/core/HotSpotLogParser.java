@@ -254,9 +254,6 @@ public class HotSpotLogParser implements ILogParser
 
 		currentMember = null;
 
-		// tell listener to reset any data
-		logListener.handleReadStart();
-
 		vmCommand = null;
 
 		parseLineNumber = 0;
@@ -272,6 +269,9 @@ public class HotSpotLogParser implements ILogParser
 	{
 		reset();
 
+		// tell listener to reset any data
+		logListener.handleReadStart();
+		
 		this.errorListener = errorListener;
 
 		splitLogFile(hotspotLog);

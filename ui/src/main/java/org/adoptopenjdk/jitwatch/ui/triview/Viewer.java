@@ -43,7 +43,7 @@ import javafx.scene.layout.VBox;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
@@ -105,6 +105,15 @@ public class Viewer extends VBox
 		this.isHighlighting = highlighting;
 
 		setup();
+	}
+	
+	public void clear()
+	{
+		lineAnnotations.clear();
+		
+		vBoxRows.getChildren().clear();
+		
+		lastScrollIndex = -1;
 	}
 	
 	public LineType getLineType()
@@ -231,9 +240,9 @@ public class Viewer extends VBox
 
 	public void setContent(String inSource, boolean showLineNumbers, boolean canHighlight)
 	{
+		clear();
+		
 		String source = inSource;
-		lineAnnotations.clear();
-		lastScrollIndex = -1;
 		
 		isHighlighting = canHighlight;
 		
@@ -459,11 +468,11 @@ public class Viewer extends VBox
 		return builder.toString();
 	}
 
-	public void jumpTo(IMetaMember member)
+	public void jumpToMemberSource(IMetaMember member)
 	{
 		scrollIndex = -1;
 
-		int regexPos = findPosForRegex(member.getSignatureRegEx());
+		int regexPos = findPosForRegex(member.getSourceMethodSignatureRegEx());
 
 		if (regexPos == -1)
 		{

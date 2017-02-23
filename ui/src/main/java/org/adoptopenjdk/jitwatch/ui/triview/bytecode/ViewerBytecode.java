@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -25,7 +25,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.ReportType;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 import org.adoptopenjdk.jitwatch.ui.triview.TriViewNavigationStack;
@@ -137,7 +137,7 @@ public class ViewerBytecode extends Viewer
 
 		List<Label> labels = new ArrayList<>();
 
-		if (instructions != null && !instructions.isEmpty())
+		if (!instructions.isEmpty())
 		{
 			try
 			{

@@ -3,12 +3,14 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui;
+package org.adoptopenjdk.jitwatch.ui.compilechain;
 
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.EventHandler;
@@ -119,7 +121,7 @@ public class CompileChainStage extends Stage
 
 		buildNode("Compiled", keyX, keyY, false, true, false);
 		keyY += 35;
-		
+
 		buildNode("Virtual Call", keyX, keyY, false, false, true);
 		keyY += 35;
 
@@ -193,7 +195,7 @@ public class CompileChainStage extends Stage
 		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.rect);
 		initialiseRectWithOnMouseClickedEventHandler(node, plotNode.text);
 
-		Tooltip tip = new Tooltip(node.getTooltipText());
+		Tooltip tip = new Tooltip(node == this.rootNode ? "Root node" : node.getTooltipText());
 		Tooltip.install(plotNode.rect, tip);
 		Tooltip.install(plotNode.text, tip);
 

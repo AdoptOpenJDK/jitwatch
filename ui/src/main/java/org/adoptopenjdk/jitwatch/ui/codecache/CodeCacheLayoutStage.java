@@ -13,8 +13,10 @@ import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -336,6 +338,11 @@ public class CodeCacheLayoutStage extends Stage
 		boolean ok = false;
 
 		pane.getChildren().clear();
+		
+		lblNMethodCount.setText(S_EMPTY);
+		lblLowAddress.setText(S_EMPTY);
+		lblHighAddress.setText(S_EMPTY);
+		lblAddressRange.setText(S_EMPTY);
 
 		nMethodInfo.clear();
 

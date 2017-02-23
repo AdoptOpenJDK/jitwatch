@@ -17,9 +17,7 @@ import javafx.scene.input.MouseEvent;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
-import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 
 public class VCallTableBuilder
 {
@@ -68,10 +66,7 @@ public class VCallTableBuilder
 				{
 					IMetaMember callingMember = selected.getCaller();
 
-					ITriView triView = proxy.openTriView(callingMember, true);
-
-					triView.lineHighlighted(selected.getCallerSourceLine(), LineType.ASSEMBLY);
-					triView.lineHighlighted(selected.getCallerBCI(), LineType.ASSEMBLY);
+					proxy.openTriView(callingMember, true, selected.getCallerBCI());
 				}
 			}
 		});

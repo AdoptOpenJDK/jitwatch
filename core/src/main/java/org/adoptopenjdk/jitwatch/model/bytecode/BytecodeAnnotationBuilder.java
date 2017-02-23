@@ -12,22 +12,25 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_PROB;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BRANCH_TAKEN;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_PREALLOCATED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMENT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ELIMINATE_ALLOCATION;
@@ -38,6 +41,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCES
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_JVMS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_LATE_INLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
@@ -48,10 +52,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CAL
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_COMMENT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_LATE_INLINE;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -593,7 +593,11 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = buildInlineAnnotation(parseDictionary, lastMethodAttrs, callAttrs, reason, true);
 
-				putAnnotation(currentMember, currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS));
+				IMetaMember inlinedMember = ParseUtil.lookupMember(lastMethodAttrs.get(ATTR_ID), parseDictionary, model);
+
+				LineAnnotation lineAnnotation = new LineAnnotation(annotationText, BCAnnotationType.INLINE_SUCCESS, inlinedMember);
+								
+				putAnnotation(currentMember, currentBytecode, lineAnnotation);
 
 				break;
 			}
@@ -608,8 +612,12 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 				String reason = tagAttrs.get(ATTR_REASON);
 				String annotationText = buildInlineAnnotation(parseDictionary, lastMethodAttrs, callAttrs, reason, false);
+				
+				IMetaMember inlinedMember = ParseUtil.lookupMember(lastMethodAttrs.get(ATTR_ID), parseDictionary, model);
 
-				putAnnotation(currentMember, currentBytecode, new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL));
+				LineAnnotation lineAnnotation = new LineAnnotation(annotationText, BCAnnotationType.INLINE_FAIL, inlinedMember);
+								
+				putAnnotation(currentMember, currentBytecode, lineAnnotation);
 
 				break;
 			}

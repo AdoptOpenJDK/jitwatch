@@ -12,10 +12,8 @@ import javafx.scene.control.TableCell;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.report.Report;
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
-import org.adoptopenjdk.jitwatch.ui.triview.ITriView;
-import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 
 public class LinkedBCICell extends TableCell<IReportRowBean, Report>
 {
@@ -52,8 +50,7 @@ public class LinkedBCICell extends TableCell<IReportRowBean, Report>
 						member.setSelectedCompilation(report.getCompilationIndex());
 					}
 
-					ITriView triViewAccesor = triViewAccessor.openTriView(member, false);
-					triViewAccesor.lineHighlighted(report.getBytecodeOffset(), LineType.BYTECODE_BCI);
+					triViewAccessor.openTriView(member, false, report.getBytecodeOffset());
 				}
 			});
 

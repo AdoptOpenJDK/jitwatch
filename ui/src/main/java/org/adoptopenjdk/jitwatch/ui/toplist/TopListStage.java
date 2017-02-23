@@ -41,7 +41,7 @@ import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.NativeMethodSizeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.StaleTaskToplistVisitable;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class TopListStage extends Stage

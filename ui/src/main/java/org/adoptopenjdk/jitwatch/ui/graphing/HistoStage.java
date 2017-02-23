@@ -16,7 +16,7 @@ import org.adoptopenjdk.jitwatch.histo.IHistoVisitable;
 import org.adoptopenjdk.jitwatch.histo.InlineSizeHistoVisitable;
 import org.adoptopenjdk.jitwatch.histo.NativeSizeHistoWalker;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 

@@ -5,7 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.triview.source;
 
-import org.adoptopenjdk.jitwatch.ui.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
 import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;

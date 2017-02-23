@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,11 +16,6 @@ public final class OSUtil
 	public enum OperatingSystem
 	{
 		WIN, MAC, LINUX
-	}
-
-	public enum Architecture
-	{
-		BIT32, BIT64
 	}
 	
 	public static OperatingSystem getOperatingSystem()
@@ -51,15 +47,18 @@ public final class OSUtil
 
 	public static Architecture getArchitecture()
 	{
-		String osArch = System.getProperty("os.arch");
-
-		if (osArch != null && osArch.contains("64"))
+		return getArchitecture(System.getProperty("os.arch"));
+	}
+	
+	public static Architecture getArchitecture(String arch)
+	{
+		if (arch != null && arch.contains("64"))
 		{
-			return Architecture.BIT64;
+			return Architecture.X86_64;
 		}
 		else
 		{
-			return Architecture.BIT32;
+			return Architecture.X86_32;
 		}
 	}
 }

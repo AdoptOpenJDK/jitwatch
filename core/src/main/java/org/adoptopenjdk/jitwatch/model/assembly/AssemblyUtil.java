@@ -1,19 +1,37 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_ENTRY_POINT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_POSTFIX;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PERCENT;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AssemblyUtil
 {
@@ -23,8 +41,9 @@ public final class AssemblyUtil
 	private static final String PART_ADDRESS = "(" + S_HEX_PREFIX + "[a-f0-9]+):";
 	private static final String PART_INSTRUCTION = "([0-9a-zA-Z:_\\(\\)\\[\\]\\+\\*\\$,\\-%\\s]+)";
 	private static final String PART_COMMENT = "([;#].*)?";
-	
-	private static final Pattern ASSEMBLY_CONSTANT = Pattern.compile("^([\\$]?(" + S_HEX_PREFIX + ")?[a-f0-9]+[" + S_HEX_POSTFIX + "]?)$");
+
+	private static final Pattern ASSEMBLY_CONSTANT = Pattern
+			.compile("^([\\$]?(" + S_HEX_PREFIX + ")?[a-f0-9]+[" + S_HEX_POSTFIX + "]?)$");
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT);
@@ -49,6 +68,8 @@ public final class AssemblyUtil
 		String lastLine = null;
 
 		AssemblyMethod method = null;
+		
+		Architecture arch = null;
 
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -76,6 +97,11 @@ public final class AssemblyUtil
 			}
 			else if (line.startsWith(S_OPEN_SQUARE_BRACKET))
 			{
+				if (line.startsWith("[Disassembling for mach"))
+				{
+					arch = Architecture.parseFromLogLine(line);
+				}
+				
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("new AssemblyBlock: {}", line);
@@ -282,7 +308,8 @@ public final class AssemblyUtil
 
 				if (mnemonic == null)
 				{
-					if ("data64".equals(part) || "data32".equals(part) || "data16".equals(part) || "data8".equals(part) || "lock".equals(part))
+					if ("data64".equals(part) || "data32".equals(part) || "data16".equals(part) || "data8".equals(part)
+							|| "lock".equals(part))
 					{
 						prefixes.add(part);
 					}
@@ -361,7 +388,7 @@ public final class AssemblyUtil
 		}
 		return addressValue;
 	}
-	
+
 	public static boolean isConstant(String mnemonic, String operand)
 	{
 		return ASSEMBLY_CONSTANT.matcher(operand).find() && !isJump(mnemonic);
@@ -369,62 +396,63 @@ public final class AssemblyUtil
 
 	public static boolean isRegister(String mnemonic, String operand)
 	{
-		return operand.startsWith(S_PERCENT) || operand.contains("(%") || operand.contains(S_OPEN_SQUARE_BRACKET) || (!isConstant(mnemonic, operand) && !isAddress(mnemonic, operand));
+		return operand.startsWith(S_PERCENT) || operand.contains("(%") || operand.contains(S_OPEN_SQUARE_BRACKET)
+				|| (!isConstant(mnemonic, operand) && !isAddress(mnemonic, operand));
 	}
 
 	public static boolean isAddress(String mnemonic, String operand)
 	{
 		return (operand.startsWith(S_HEX_PREFIX) || operand.endsWith(S_HEX_POSTFIX)) && isJump(mnemonic);
 	}
-	
+
 	public static boolean isJump(String mnemonic)
 	{
 		boolean result = false;
-		
+
 		if (mnemonic != null)
-		{		
+		{
 			result = mnemonic.toLowerCase().startsWith("j") || mnemonic.toLowerCase().startsWith("call");
 		}
-		
+
 		return result;
 	}
-	
+
 	public static String extractRegisterName(final String input)
 	{
 		String regName = input;
-		
+
 		int indexOpenParentheses = input.indexOf(C_OPEN_PARENTHESES);
 		int indexCloseParentheses = input.indexOf(C_CLOSE_PARENTHESES);
 
 		if (indexOpenParentheses != -1 && indexCloseParentheses != -1)
 		{
-			regName = regName.substring(indexOpenParentheses+1, indexCloseParentheses);
+			regName = regName.substring(indexOpenParentheses + 1, indexCloseParentheses);
 		}
-		
+
 		int indexOpenSquareBracket = regName.indexOf(C_OPEN_SQUARE_BRACKET);
 		int indexCloseSquareBracket = regName.indexOf(C_CLOSE_SQUARE_BRACKET);
-		
+
 		if (indexOpenSquareBracket != -1 && indexCloseSquareBracket != -1)
 		{
-			regName = regName.substring(indexOpenSquareBracket+1, indexCloseSquareBracket);
+			regName = regName.substring(indexOpenSquareBracket + 1, indexCloseSquareBracket);
 		}
-		
+
 		if (regName.startsWith("*"))
 		{
 			regName = regName.substring(1);
 		}
-		
+
 		if (regName.startsWith(S_PERCENT))
 		{
 			regName = regName.substring(1);
 		}
-		
+
 		StringBuilder builder = new StringBuilder();
-		
+
 		for (int i = 0; i < regName.length(); i++)
 		{
 			char c = regName.charAt(i);
-			
+
 			if (Character.isAlphabetic(c) || Character.isDigit(c))
 			{
 				builder.append(c);
@@ -434,9 +462,9 @@ public final class AssemblyUtil
 				break;
 			}
 		}
-		
+
 		regName = builder.toString();
-		
+
 		return regName;
 	}
 }

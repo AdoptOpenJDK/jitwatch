@@ -11,7 +11,7 @@ import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.ui.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
