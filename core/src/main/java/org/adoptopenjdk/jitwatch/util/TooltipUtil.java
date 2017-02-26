@@ -35,17 +35,6 @@ public final class TooltipUtil
 		builder.append("Class: ").append(ParseUtil.lookupType(holder, parseDictionary)).append(S_NEWLINE);
 		builder.append("Method: ").append(StringUtil.replaceXMLEntities(methodName)).append(S_NEWLINE);
 
-		builder.append("Compiled: ");
-
-		if (methodAttrs.containsKey(ATTR_COMPILE_ID) || inlined)
-		{
-			builder.append("Yes\n");
-		}
-		else
-		{
-			builder.append("No\n");
-		}
-
 		builder.append("Inlined: ");
 
 		if (inlined)

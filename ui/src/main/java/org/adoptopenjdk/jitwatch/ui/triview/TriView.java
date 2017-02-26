@@ -93,6 +93,7 @@ public class TriView extends Stage implements ILineListener
 	private Button btnCompileChain;
 	private Button btnJITJournal;
 	private Button btnLineTable;
+	private Button btnInlinedInto;
 
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
 	private ComboBox<IMetaMember> comboMember;
@@ -190,6 +191,20 @@ public class TriView extends Stage implements ILineListener
 		});
 		btnLineTable.setTooltip(new Tooltip("Show LineNumberTable for current bytecode"));
 
+		btnInlinedInto = new Button("Inlined into");
+		btnInlinedInto.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				if (currentMember != null)
+				{
+					parent.openInlinedIntoReport(currentMember);
+				}
+			}
+		});
+		btnInlinedInto.setTooltip(new Tooltip("Show where this method was inlined into"));
+
 		compilationInfo = new CompilationInfo();
 
 		Region spacerTop = new Region();
@@ -204,6 +219,7 @@ public class TriView extends Stage implements ILineListener
 		hBoxToolBarButtons.getChildren().add(btnCompileChain);
 		hBoxToolBarButtons.getChildren().add(btnJITJournal);
 		hBoxToolBarButtons.getChildren().add(btnLineTable);
+		hBoxToolBarButtons.getChildren().add(btnInlinedInto);
 		hBoxToolBarButtons.getChildren().add(checkMouseover);
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(compilationInfo);
@@ -636,6 +652,8 @@ public class TriView extends Stage implements ILineListener
 		btnJITJournal.setDisable(!isCompiled);
 		
 		btnLineTable.setDisable(currentMember == null);
+		
+		btnInlinedInto.setDisable(currentMember == null);
 	}
 
 	private void applyActionsIfOffsetMismatchDetected(StringBuilder statusBarBuilder)

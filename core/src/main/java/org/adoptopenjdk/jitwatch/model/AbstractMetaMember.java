@@ -234,7 +234,18 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public String getReturnTypeName()
 	{
-		return (isConstructor() || returnType == null) ? S_TYPE_NAME_VOID : ParseUtil.expandParameterType(returnType.getName());
+		String result = null;
+
+		if (isConstructor() || returnType == null)
+		{
+			result = S_TYPE_NAME_VOID;
+		}
+		else
+		{
+			result = ParseUtil.expandParameterType(returnType.getName());
+		}
+
+		return result;
 	}
 
 	@Override
@@ -388,7 +399,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	private void storeCompilation(Compilation compilation)
 	{
 		compilations.add(compilation);
-		
+
 		selectedCompilation = compilations.size() - 1;
 	}
 
@@ -553,35 +564,27 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			builder.append(memberName);
 		}
 
-		//TODO return type and name should uniquely identify a method
-		
-		/* 
-		builder.append(REGEX_ZERO_OR_MORE_SPACES);
+		// TODO return type and name should uniquely identify a method
 
-		builder.append(S_ESCAPED_OPEN_PARENTHESES);
-
-		if (paramTypes.size() > 0)
-		{
-			for (Class<?> paramClass : paramTypes)
-			{
-				builder.append(REGEX_ZERO_OR_MORE_SPACES);
-
-				String paramType = expandParamRegEx(paramClass.getName());
-
-				builder.append(paramType);
-				builder.append(REGEX_ONE_OR_MORE_SPACES);
-				builder.append(REGEX_UNICODE_PARAM_NAME);
-				builder.append(S_COMMA);
-			}
-
-			builder.deleteCharAt(builder.length() - 1);
-		}
-
-		builder.append(REGEX_ZERO_OR_MORE_SPACES);
-		builder.append(S_ESCAPED_CLOSE_PARENTHESES);
-		builder.append(REGEX_GROUP_ANY);
-		builder.append(C_DOLLAR);
-		*/
+		/*
+		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
+		 * 
+		 * builder.append(S_ESCAPED_OPEN_PARENTHESES);
+		 * 
+		 * if (paramTypes.size() > 0) { for (Class<?> paramClass : paramTypes) {
+		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
+		 * 
+		 * String paramType = expandParamRegEx(paramClass.getName());
+		 * 
+		 * builder.append(paramType); builder.append(REGEX_ONE_OR_MORE_SPACES);
+		 * builder.append(REGEX_UNICODE_PARAM_NAME); builder.append(S_COMMA); }
+		 * 
+		 * builder.deleteCharAt(builder.length() - 1); }
+		 * 
+		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
+		 * builder.append(S_ESCAPED_CLOSE_PARENTHESES);
+		 * builder.append(REGEX_GROUP_ANY); builder.append(C_DOLLAR);
+		 */
 
 		return builder.toString();
 	}

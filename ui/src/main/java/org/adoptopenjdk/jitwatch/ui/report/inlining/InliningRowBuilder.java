@@ -96,9 +96,9 @@ public final class InliningRowBuilder
 		metaClass.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		member.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		compilation.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
-		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.12));
-		success.prefWidthProperty().bind(tv.widthProperty().multiply(0.1));
-		reason.prefWidthProperty().bind(tv.widthProperty().multiply(0.18));
+		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.10));
+		success.prefWidthProperty().bind(tv.widthProperty().multiply(0.08));
+		reason.prefWidthProperty().bind(tv.widthProperty().multiply(0.22));
 
 		tv.getColumns().add(metaClass);
 		tv.getColumns().add(member);

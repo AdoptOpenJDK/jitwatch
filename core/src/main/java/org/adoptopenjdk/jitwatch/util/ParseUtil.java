@@ -122,13 +122,13 @@ public final class ParseUtil
 
 		return result;
 	}
-	
+
 	public static long parseStampFromTag(Tag tag)
 	{
 		String attrValue = tag.getAttributes().get(ATTR_STAMP);
 
 		long result = 0;
-		
+
 		if (attrValue != null)
 		{
 			result = parseStamp(attrValue);
@@ -137,16 +137,16 @@ public final class ParseUtil
 		{
 			logger.error("attribute {} missing from tag {}", ATTR_STAMP, tag.toString(true));
 		}
-		
+
 		return result;
 	}
-	
+
 	public static long parseLongAttributeFromTag(Tag tag, String attrName)
 	{
 		String attrValue = tag.getAttributes().get(attrName);
 
 		long result = 0;
-		
+
 		if (attrValue != null)
 		{
 			result = Long.parseLong(attrValue);
@@ -155,7 +155,7 @@ public final class ParseUtil
 		{
 			logger.error("attribute {} missing from tag {}", attrName, tag.toString(true));
 		}
-		
+
 		return result;
 	}
 
@@ -220,25 +220,47 @@ public final class ParseUtil
 		throw new RuntimeException("Unknown class for " + c);
 	}
 
-	/*
-	 * [C => char[] [[I => int[][] [Ljava.lang.Object; => java.lang.Object[]
-	 */
+	public static int getArrayDepth(String input)
+	{
+		int result = 0;
+
+		for (int i = 0; i < input.length(); i++)
+		{
+			char c = input.charAt(i);
+
+			if (c == C_OPEN_SQUARE_BRACKET)
+			{
+				result++;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	// I => int
+	// [C => char[]
+	// [[I => int[][]
+	// [Ljava.lang.Object; => java.lang.Object[]
 	public static String expandParameterType(String name)
 	{
 		StringBuilder builder = new StringBuilder();
 
-		int arrayDepth = 0;
-		int pos = 0;
+		int arrayDepth = getArrayDepth(name);
 
-		outerloop: while (pos < name.length())
+		int nameLengthWithoutArrayDepth = name.length() - arrayDepth;
+		
+		int nameStart = arrayDepth;
+
+		if (nameLengthWithoutArrayDepth == 1)
 		{
-			char c = name.charAt(pos);
+			char c = name.charAt(nameStart);
 
 			switch (c)
 			{
-			case C_OPEN_SQUARE_BRACKET:
-				arrayDepth++;
-				break;
 			case TYPE_SHORT:
 				builder.append(S_TYPE_NAME_SHORT);
 				break;
@@ -263,21 +285,15 @@ public final class ParseUtil
 			case TYPE_FLOAT:
 				builder.append(S_TYPE_NAME_FLOAT);
 				break;
-			case C_SEMICOLON:
-				break;
-			default:
-				if (name.charAt(pos) == C_OBJECT_REF && name.endsWith(S_SEMICOLON))
-				{
-					builder.append(name.substring(pos + 1, name.length() - 1));
-				}
-				else
-				{
-					builder.append(name.substring(pos));
-				}
-				break outerloop;
 			}
-
-			pos++;
+		}
+		else if (name.charAt(nameStart) == C_OBJECT_REF && name.endsWith(S_SEMICOLON))
+		{
+			builder.append(name.substring(nameStart + 1, name.length() - 1));
+		}
+		else
+		{
+			builder.append(name.substring(nameStart));
 		}
 
 		for (int i = 0; i < arrayDepth; i++)
@@ -1060,7 +1076,7 @@ public final class ParseUtil
 		}
 
 		MetaClass metaClass = null;
-		
+
 		try
 		{
 			Class<?> clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
@@ -1081,7 +1097,7 @@ public final class ParseUtil
 		{
 			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
 		}
-		
+
 		return metaClass;
 	}
 
