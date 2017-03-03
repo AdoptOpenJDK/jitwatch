@@ -11,8 +11,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -793,17 +791,13 @@ public class TestBytecodeLoader
 		String methodName = "exampleOverloadedMethod";
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass }, int.class);
-
-		URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
+		
+		final File currentClassFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 
 		List<String> classPath = new ArrayList<String>();
 
-		for (URL url : urls)
-		{
-			String filesystemPath = new File(url.toURI()).toString();
-			classPath.add(filesystemPath);
-		}
-
+		classPath.add(currentClassFile.toURI().toString());
+		
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
