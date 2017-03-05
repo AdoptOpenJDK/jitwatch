@@ -6,7 +6,6 @@
 package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COUNT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_HOLDER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_IICOUNT;

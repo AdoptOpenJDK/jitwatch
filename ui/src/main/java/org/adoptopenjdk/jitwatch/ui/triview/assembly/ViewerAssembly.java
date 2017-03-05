@@ -30,6 +30,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
+import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
@@ -45,6 +46,8 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 public class ViewerAssembly extends Viewer
 {
 	private DecimalFormat formatThousandsUnderscore;
+	
+	private IAssemblyParser parser; //TODO choose parser
 
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
@@ -61,6 +64,8 @@ public class ViewerAssembly extends Viewer
 
 	public void setAssemblyMethod(AssemblyMethod asmMethod, boolean showLocalLabels)
 	{
+		parser = AssemblyUtil.getParserForArchitecture(asmMethod.getArchitecture());
+		
 		lastScrollIndex = -1;
 
 		List<Label> labels = new ArrayList<>();
@@ -153,15 +158,15 @@ public class ViewerAssembly extends Viewer
 
 	private void decodeOperand(String mnemonic, String operand, StringBuilder builder)
 	{
-		if (AssemblyUtil.isRegister(mnemonic, operand))
+		if (parser.isRegister(mnemonic, operand))
 		{
 			builder.append(decodeRegister(operand));
 		}
-		else if (AssemblyUtil.isConstant(mnemonic, operand))
+		else if (parser.isConstant(mnemonic, operand))
 		{
 			builder.append(getConstantLabel(operand));
 		}
-		else if (AssemblyUtil.isAddress(mnemonic, operand))
+		else if (parser.isAddress(mnemonic, operand))
 		{
 			builder.append("Address ");
 			builder.append(operand);
@@ -207,7 +212,7 @@ public class ViewerAssembly extends Viewer
 		// https://sourceware.org/binutils/docs/as/i386_002dRegs.html#i386_002dRegs
 		// http://www.x86-64.org/documentation/assembly.html
 
-		String regName = AssemblyUtil.extractRegisterName(input);
+		String regName = parser.extractRegisterName(input);
 	
 		if (regName.startsWith("e"))
 		{

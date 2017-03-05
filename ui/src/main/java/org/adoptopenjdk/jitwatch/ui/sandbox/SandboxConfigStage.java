@@ -12,7 +12,6 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
 import org.adoptopenjdk.jitwatch.ui.filechooser.FileChooserList;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
-import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -50,7 +49,7 @@ public class SandboxConfigStage extends Stage
 	private CheckBox checkBoxPrintAssembly;
 	private CheckBox checkBoxDisableInlining;
 
-	private IStageClosedListener parent;
+	private IStageClosedListener closedListener;
 	private JITWatchConfig config;
 	private FileChooserList chooserClasses;
 	private VMLanguageList vmLanguageList;
@@ -61,9 +60,9 @@ public class SandboxConfigStage extends Stage
 
 	private static final Logger logger = LoggerFactory.getLogger(SandboxConfigStage.class);
 
-	public SandboxConfigStage(final IStageClosedListener parent, final JITWatchConfig config)
+	public SandboxConfigStage(final IStageClosedListener closedListener, final JITWatchConfig config)
 	{
-		this.parent = parent;
+		this.closedListener = closedListener;
 		this.config = config;
 
 		initStyle(StageStyle.UTILITY);
@@ -132,7 +131,20 @@ public class SandboxConfigStage extends Stage
 
 				config.saveConfig();
 
-				parent.handleStageClosed(SandboxConfigStage.this);
+				closedListener.handleStageClosed(SandboxConfigStage.this);
+				close();
+			}
+		};
+	}
+
+	private EventHandler<ActionEvent> getEventHandlerForCancelButton()
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				closedListener.handleStageClosed(SandboxConfigStage.this);
 				close();
 			}
 		};
@@ -703,8 +715,7 @@ public class SandboxConfigStage extends Stage
 		Button btnCancel = new Button("Cancel");
 
 		btnSave.setOnAction(getEventHandlerForSaveButton());
-
-		btnCancel.setOnAction(StageManager.getCloseHandler(this));
+		btnCancel.setOnAction(getEventHandlerForCancelButton());
 
 		hbox.getChildren().add(btnCancel);
 		hbox.getChildren().add(btnSave);

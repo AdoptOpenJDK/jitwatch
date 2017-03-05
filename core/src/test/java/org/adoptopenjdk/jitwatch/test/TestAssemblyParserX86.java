@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,14 +10,16 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyLabels;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
+import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.junit.Test;
 
-public class TestAssemblyUtil
+public class TestAssemblyParserX86 extends AbstractAssemblyTest
 {
 	@Test
 	public void testAssemblyParse()
@@ -255,7 +257,9 @@ public class TestAssemblyUtil
 			builder.append(line).append(S_NEWLINE);
 		}
 
-		AssemblyMethod asmMethod = AssemblyUtil.parseAssembly(builder.toString());
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+				
+		AssemblyMethod asmMethod = parser.parseAssembly(builder.toString());
 
 		String header = asmMethod.getHeader();
 
@@ -304,8 +308,10 @@ public class TestAssemblyUtil
 	public void testInstructionParse()
 	{
 		String line = "0x00007f4475904140: mov  0x8(%rsi),%r10d ;comment";
+		
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -328,7 +334,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f447590414d: data32 xchg %ax,%ax";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -355,7 +363,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f447590416e: hlt";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -377,7 +387,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007fbbc41082e5: data32 data32 nopw 0x0(%rax,%rax,1)";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -402,7 +414,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00007f54f9bfd2f0: mov    %eax,-0x14000(%rsp)";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -425,7 +439,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x0000000110aa2ee5: mov    QWORD PTR [rsp+0x78],rax";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -448,7 +464,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x0000000110aa2ee5: data32 data32 nop WORD PTR [rax+rax*1+0x0]";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -473,7 +491,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00000001024a210c: lock idiv DWORD PTR [rax]";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -497,7 +517,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x00000001024a18bc: data16 data16 xchg ax,ax";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+		
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -523,7 +545,9 @@ public class TestAssemblyUtil
 	{
 		String line = "0x0000000106d035e0: call   Stub::jshort_disjoint_arraycopy";
 
-		AssemblyInstruction instr = AssemblyUtil.createInstruction(new AssemblyLabels(), line);
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+
+		AssemblyInstruction instr = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instr);
 
@@ -540,29 +564,26 @@ public class TestAssemblyUtil
 		assertEquals("Stub::jshort_disjoint_arraycopy", operands.get(0));
 	}
 
-	enum OperandType
-	{
-		ADDRESS, CONSTANT, REGISTER
-	}
-
 	private void testOperand(OperandType type, String mnemonic, String operand)
 	{
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+		
 		switch (type)
 		{
 		case ADDRESS:
-			assertTrue(AssemblyUtil.isAddress(mnemonic, operand));
-			assertFalse(AssemblyUtil.isConstant(mnemonic, operand));
-			assertFalse(AssemblyUtil.isRegister(mnemonic, operand));
+			assertTrue(parser.isAddress(mnemonic, operand));
+			assertFalse(parser.isConstant(mnemonic, operand));
+			assertFalse(parser.isRegister(mnemonic, operand));
 			break;
 		case CONSTANT:
-			assertFalse(AssemblyUtil.isAddress(mnemonic, operand));
-			assertTrue(AssemblyUtil.isConstant(mnemonic, operand));
-			assertFalse(AssemblyUtil.isRegister(mnemonic, operand));
+			assertFalse(parser.isAddress(mnemonic, operand));
+			assertTrue(parser.isConstant(mnemonic, operand));
+			assertFalse(parser.isRegister(mnemonic, operand));
 			break;
 		case REGISTER:
-			assertFalse(AssemblyUtil.isAddress(mnemonic, operand));
-			assertFalse(AssemblyUtil.isConstant(mnemonic, operand));
-			assertTrue(AssemblyUtil.isRegister(mnemonic, operand));
+			assertFalse(parser.isAddress(mnemonic, operand));
+			assertFalse(parser.isConstant(mnemonic, operand));
+			assertTrue(parser.isRegister(mnemonic, operand));
 			break;
 		}
 	}
@@ -592,12 +613,14 @@ public class TestAssemblyUtil
 	@Test
 	public void testExtractRegisterName()
 	{
-		assertEquals("rsp", AssemblyUtil.extractRegisterName("rsp"));
-		assertEquals("rbp", AssemblyUtil.extractRegisterName("%rbp"));
-		assertEquals("r10", AssemblyUtil.extractRegisterName("*%r10"));
-		assertEquals("rsp", AssemblyUtil.extractRegisterName("QWORD PTR [rsp+0x60]"));
-		assertEquals("rsp", AssemblyUtil.extractRegisterName("-0x14000(%rsp)"));
-		assertEquals("rax", AssemblyUtil.extractRegisterName("[rax+rax*1+0x0]"));
-		assertEquals("rdx", AssemblyUtil.extractRegisterName("(%rdx,%rbx,1)"));
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.X86_64);
+		
+		assertEquals("rsp", parser.extractRegisterName("rsp"));
+		assertEquals("rbp", parser.extractRegisterName("%rbp"));
+		assertEquals("r10", parser.extractRegisterName("*%r10"));
+		assertEquals("rsp", parser.extractRegisterName("QWORD PTR [rsp+0x60]"));
+		assertEquals("rsp", parser.extractRegisterName("-0x14000(%rsp)"));
+		assertEquals("rax", parser.extractRegisterName("[rax+rax*1+0x0]"));
+		assertEquals("rdx", parser.extractRegisterName("(%rdx,%rbx,1)"));
 	}
 }

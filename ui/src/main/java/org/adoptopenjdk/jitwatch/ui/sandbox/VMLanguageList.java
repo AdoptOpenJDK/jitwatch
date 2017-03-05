@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -76,7 +76,7 @@ public class VMLanguageList extends FlowPane implements IStageClosedListener
 					if (openVMLCStage == null)
 					{
 						openVMLCStage = new VMLanguageConfigStage(VMLanguageList.this, config, lang);
-						StageManager.addAndShow(parent, openVMLCStage);
+						StageManager.addAndShow(parent, openVMLCStage, VMLanguageList.this);
 					}
 				}
 			});

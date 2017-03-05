@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -24,8 +24,10 @@ import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
+import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,8 @@ public class AssemblyProcessor
 	private String nativeAddress = null;
 
 	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
+
+	private Architecture architecture = null;
 
 	public AssemblyProcessor()
 	{
@@ -75,6 +79,23 @@ public class AssemblyProcessor
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("handleLine:{}", line);
+		}
+
+		if (line.startsWith("[Disassembling for mach"))
+		{
+			architecture = Architecture.parseFromLogLine(line);
+
+			if (architecture == null)
+			{
+				logger.error("Could not determine architecture from '{}'", line);
+			}
+			else
+			{
+				if (DEBUG_LOGGING_ASSEMBLY)
+				{
+					logger.debug("Detected architecture: {}", architecture);
+				}
+			}
 		}
 
 		if (S_HASH.equals(previousLine) && line.startsWith("{method}"))
@@ -149,20 +170,25 @@ public class AssemblyProcessor
 
 	public void complete()
 	{
-		if (DEBUG_LOGGING_ASSEMBLY)
-		{
-			// logger.debug("completed assembly\n{}", builder.toString());
-		}
-
 		String asmString = builder.toString().trim();
 
 		if (asmString.length() > 0)
 		{
-			AssemblyMethod assemblyMethod = AssemblyUtil.parseAssembly(asmString);
+			IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(architecture);
 
-			assemblyMethod.setNativeAddress(nativeAddress);
+			if (parser != null)
+			{
+				if (DEBUG_LOGGING_ASSEMBLY)
+				{
+					logger.debug("Using Assembly Parser {}", parser.getClass().getName());
+				}
 
-			assemblyMethods.add(assemblyMethod);
+				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString);
+
+				assemblyMethod.setNativeAddress(nativeAddress);
+
+				assemblyMethods.add(assemblyMethod);
+			}
 		}
 
 		builder.delete(0, builder.length());
@@ -176,7 +202,7 @@ public class AssemblyProcessor
 		for (AssemblyMethod assemblyMethod : assemblyMethods)
 		{
 			String asmSignature = assemblyMethod.getAssemblyMethodSignature();
-			
+
 			MemberSignatureParts msp = null;
 
 			IMetaMember currentMember = null;
@@ -187,11 +213,11 @@ public class AssemblyProcessor
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Parsed assembly sig {}\nfrom {}", msp, asmSignature);
+					logger.debug("Parsed assembly sig\n{}\nfrom {}", msp, asmSignature);
 				}
 
 				MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
-				
+
 				if (metaClass != null)
 				{
 					currentMember = metaClass.getMemberForSignature(msp);
@@ -215,7 +241,7 @@ public class AssemblyProcessor
 				{
 					logger.debug("Found member {}", currentMember);
 				}
-				
+
 				currentMember.addAssembly(assemblyMethod);
 
 				if (DEBUG_LOGGING_ASSEMBLY)
@@ -227,7 +253,7 @@ public class AssemblyProcessor
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Didn't find member for {}", msp);
+					logger.debug("Didn't find member for\n{}", msp);
 				}
 			}
 		}

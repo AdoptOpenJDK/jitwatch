@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.util;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -32,8 +34,11 @@ public final class DisassemblyUtil
 		{
 			File hsdisFile = binaryPath.toFile();
 
-			logger.debug("looking for hsdis binary: {}", hsdisFile);
-
+			if (DEBUG_LOGGING_ASSEMBLY)
+			{
+				logger.debug("looking for hsdis binary: {}", hsdisFile);
+			}
+			
 			if (hsdisFile.exists() && hsdisFile.isFile())
 			{
 				found = true;
@@ -62,7 +67,7 @@ public final class DisassemblyUtil
 
 		OperatingSystem os = OSUtil.getOperatingSystem();
 		Architecture arch = OSUtil.getArchitecture();
-
+		
 		String binaryName = null;
 
 		switch (arch)
@@ -88,9 +93,18 @@ public final class DisassemblyUtil
 			break;
 		}
 		case ARM_32:
+		{
+			binaryName = "hsdis-arm";
+			hsdisPath = Paths.get(hsdisPath.toString(), "arm", "server");
 			break;
+
+		}
 		case ARM_64:
+		{
+			binaryName = "hsdis-arm";
+			hsdisPath = Paths.get(hsdisPath.toString(), "arm64", "server"); // TODO untested
 			break;
+		}
 		default:
 			break;
 		}

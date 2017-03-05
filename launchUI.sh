@@ -26,5 +26,6 @@ CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
 CLASSPATH=$CLASSPATH:core/target/classes
 CLASSPATH=$CLASSPATH:ui/target/classes
+CLASSPATH=$CLASSPATH:ui/src/main/resources
 
 "$JAVA_HOME/bin/java" -Djava.library.path=$JAVA_HOME/lib/amd64 -cp "$CLASSPATH" $@ org.adoptopenjdk.jitwatch.launch.LaunchUI

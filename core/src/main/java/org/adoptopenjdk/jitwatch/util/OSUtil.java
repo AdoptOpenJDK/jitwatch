@@ -17,7 +17,7 @@ public final class OSUtil
 	{
 		WIN, MAC, LINUX
 	}
-	
+
 	public static OperatingSystem getOperatingSystem()
 	{
 		String osNameProperty = System.getProperty("os.name");
@@ -41,24 +41,40 @@ public final class OSUtil
 		}
 
 		logger.error("Unknown OS name: {}", osNameProperty);
-		
+
 		return null;
 	}
 
 	public static Architecture getArchitecture()
 	{
-		return getArchitecture(System.getProperty("os.arch"));
-	}
-	
-	public static Architecture getArchitecture(String arch)
-	{
-		if (arch != null && arch.contains("64"))
+		String arch = System.getProperty("os.arch");
+
+		if (arch != null)
 		{
-			return Architecture.X86_64;
+			if (arch.contains("arm"))
+			{
+				if (arch.contains("64"))
+				{
+					return Architecture.ARM_64;
+				}
+				else
+				{
+					return Architecture.ARM_32;
+				}
+			}
+			else if (arch.contains("86"))
+			{
+				if (arch.contains("64"))
+				{
+					return Architecture.X86_64;
+				}
+				else
+				{
+					return Architecture.X86_32;
+				}
+			}
 		}
-		else
-		{
-			return Architecture.X86_32;
-		}
+
+		return Architecture.X86_64;
 	}
 }

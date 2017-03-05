@@ -127,8 +127,14 @@ public class StageManager
 			scene.setRoot(newTopNode);
 		}
 	}
-
+	
 	public static void addAndShow(final Stage parent, final Stage childStage)
+	{
+		addAndShow(parent, childStage, null);
+
+	}
+
+	public static void addAndShow(final Stage parent, final Stage childStage, IStageClosedListener closedListener)
 	{
 		List<Stage> childrenOfParent = openStages.get(parent);
 
@@ -150,6 +156,11 @@ public class StageManager
 			@Override
 			public void handle(WindowEvent arg0)
 			{
+				if (closedListener != null)
+				{
+					closedListener.handleStageClosed(childStage);
+				}
+				
 				closeStage(childStage);
 			}
 		});

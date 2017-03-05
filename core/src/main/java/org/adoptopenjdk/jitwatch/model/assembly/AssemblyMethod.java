@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -22,9 +22,17 @@ public class AssemblyMethod
 	
 	private String assemblyMethodSignature;
 	
-	public AssemblyMethod(String assemblyMethodSignature)
+	private Architecture architecture;
+	
+	public AssemblyMethod(String assemblyMethodSignature, Architecture architecture)
 	{
 		this.assemblyMethodSignature = assemblyMethodSignature;
+		this.architecture = architecture;
+	}
+
+	public Architecture getArchitecture()
+	{
+		return architecture;
 	}
 
 	public String getAssemblyMethodSignature()
