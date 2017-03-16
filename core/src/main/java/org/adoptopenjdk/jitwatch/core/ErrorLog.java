@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,12 +10,12 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class ErrorLog
 {
-	private Map<String, Integer> errorCountMap = new TreeMap<>();
+	private Map<String, Integer> errorCountMap = new LinkedHashMap<>();
 
 	public void clear()
 	{

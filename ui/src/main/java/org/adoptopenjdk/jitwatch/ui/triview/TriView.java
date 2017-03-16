@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_TRI
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
+
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
@@ -597,7 +598,7 @@ public class TriView extends Stage implements ILineListener
 			public void run()
 			{
 				if (!finalSameClass)
-				{
+				{					
 					String source = null;
 
 					String sourceFileName = getClassBC().getSourceFile();
@@ -660,7 +661,7 @@ public class TriView extends Stage implements ILineListener
 	{
 		if (viewerBytecode.isOffsetMismatchDetected())
 		{
-			statusBarBuilder.append(C_SPACE).append("WARNING Class bytecode offsets do not match HotSpot log");
+			statusBarBuilder.append(C_SPACE).append("WARNING Class bytecode offsets do not match JIT log");
 
 			if (!classBytecodeMismatch)
 			{
@@ -672,7 +673,7 @@ public class TriView extends Stage implements ILineListener
 					public void run()
 					{
 						Dialogs.showOKDialog(TriView.this, "Wrong classes mounted for log file?",
-								"Warning! The bytecode for this class does not match the bytecode offsets in your HotSpot log."
+								"Warning! The bytecode for this class does not match the bytecode offsets in your JIT log."
 										+ S_NEWLINE
 										+ "Are the mounted classes the same ones used at runtime when the log was created?");
 					}

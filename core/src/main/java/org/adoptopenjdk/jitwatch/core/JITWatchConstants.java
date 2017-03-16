@@ -36,8 +36,8 @@ public final class JITWatchConstants
 
 	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
 	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
-	public static final int DEFAULT_COMPILER_THRESHOLD = 10000;
-
+	public static final int DEFAULT_COMPILER_THRESHOLD = 10000;	
+	
 	public static final String TAG_XML = "<?xml";
 	public static final String TAG_TTY = "<tty>";
 	public static final String TAG_TTY_CLOSE = "</tty>";
@@ -75,7 +75,6 @@ public final class JITWatchConstants
 
 	public static final String TAG_VM_VERSION = "vm_version";
 	public static final String TAG_RELEASE = "release";
-	public static final String TAG_TWEAK_VM = "TweakVM";
 
 	public static final String TAG_SWEEPER = "sweeper";
 	public static final String TAG_CODE_CACHE_FULL = "code_cache_full";
@@ -126,6 +125,7 @@ public final class JITWatchConstants
 	public static final String C2N = "c2n";
 	public static final String C1 = "C1";
 	public static final String C2 = "C2";
+	public static final String J9 = "J9";
 
 	public static final String ATTR_METHOD = METHOD;
 	public static final String ATTR_KLASS = "klass";

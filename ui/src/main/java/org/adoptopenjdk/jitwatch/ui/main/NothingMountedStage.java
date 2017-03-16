@@ -41,7 +41,7 @@ public class NothingMountedStage extends Stage
 		setTitle("No classes or sources mounted");
 		
         Label lblMsg1 = new Label("I see you've not configured any source or class locations?");
-        Text lblMsg2 = new Text("JITWatch will try and work out the classpath from the HotSpot log but if I miss\nanything then you might need to configure the paths manually!");
+        Text lblMsg2 = new Text("JITWatch will try and work out the classpath from the JIT log but if I miss\nanything then you might need to configure the paths manually!");
         
         CheckBox cbShowWarning = new CheckBox("Don't show this warning again.");
         cbShowWarning.setTooltip(new Tooltip("Don't show warning about no source or class files added."));

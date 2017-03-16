@@ -36,8 +36,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OBJECT_ARRAY_DEF;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PACKAGE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
@@ -52,6 +52,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_LONG;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_SHORT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public final class ParseUtil
 	public static String RETURN_REGEX_GROUP = "(.*)";
 
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
-			.compile("^" + CLASS_NAME_REGEX_GROUP + " " + METHOD_NAME_REGEX_GROUP + " " + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
+			.compile("^" + CLASS_NAME_REGEX_GROUP + S_SPACE + METHOD_NAME_REGEX_GROUP + S_SPACE + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';
@@ -334,7 +335,7 @@ public final class ParseUtil
 		if (logSignature != null)
 		{
 			MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(logSignature);
-
+			
 			metaMember = model.findMetaMember(msp);
 
 			if (metaMember == null)
@@ -805,8 +806,6 @@ public final class ParseUtil
 	{
 		String match = null;
 
-		logger.debug("findBestMatch: {}", member.toString());
-
 		if (lines != null)
 		{
 			int index = findBestLineMatchForMemberSignature(member, lines);
@@ -1068,7 +1067,7 @@ public final class ParseUtil
 		return result;
 	}
 
-	private static MetaClass lateLoadMetaClass(IReadOnlyJITDataModel model, String metaClassName)
+	public static MetaClass lateLoadMetaClass(IReadOnlyJITDataModel model, String metaClassName)
 	{
 		if (DEBUG_LOGGING)
 		{

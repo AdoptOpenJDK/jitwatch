@@ -8,18 +8,18 @@ package org.adoptopenjdk.jitwatch.compilation.codecache;
 import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationWalker;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CodeCacheEventWalker extends AbstractCompilationWalker
 {
 	private CodeCacheWalkerResult result = new CodeCacheWalkerResult();
 
 	private static final Logger logger = LoggerFactory.getLogger(CodeCacheEventWalker.class);
-	
+
 	public CodeCacheEventWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
@@ -42,32 +42,42 @@ public class CodeCacheEventWalker extends AbstractCompilationWalker
 				{
 					continue;
 				}
-				
+
 				String address = compilation.getNativeAddress(); // hex string
 
-				long addressLong = 0;
-
-				long stamp = compilation.getCompiledStamp();
-
-				try
+				if (address != null)
 				{
-					addressLong = Long.decode(address);
+					long addressLong = 0;
+
+					long stamp = compilation.getCompiledStamp();
+
+					try
+					{
+						if (address.startsWith("0x"))
+						{
+							addressLong = Long.decode(address);
+						}
+						else
+						{
+							addressLong = Long.parseLong(address, 16);
+						}
+					}
+					catch (NumberFormatException exception)
+					{
+
+						logger.error("Couldn't decode address {} on compilation {}", address, compilation);
+						continue; // don't allow a zero address
+					}
+
+					// intrinsic has no size info
+					int nativeCodeSize = compilation.getNativeSize();
+
+					CodeCacheEvent event = new CodeCacheEvent(CodeCacheEventType.COMPILATION, stamp, nativeCodeSize, 0);
+					event.setNativeAddress(addressLong);
+					event.setCompilation(compilation);
+
+					result.addEvent(event);
 				}
-				catch (NullPointerException | NumberFormatException exception)
-				{
-					
-					logger.error("Couldn't decode address {} on compilation {}", address, compilation);
-					continue; // don't allow a zero address
-				}
-
-				// intrinsic has no size info
-				int nativeCodeSize = compilation.getNativeSize();
-
-				CodeCacheEvent event = new CodeCacheEvent(CodeCacheEventType.COMPILATION, stamp, nativeCodeSize, 0);
-				event.setNativeAddress(addressLong);
-				event.setCompilation(compilation);
-
-				result.addEvent(event);
 			}
 		}
 	}

@@ -3,11 +3,12 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.core;
+package org.adoptopenjdk.jitwatch.parser;
 
 import java.io.File;
 import java.io.IOException;
 
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.SplitLog;
@@ -16,7 +17,7 @@ public interface ILogParser
 {
 	void setConfig(JITWatchConfig config);
 	
-	void processLogFile(File hotspotLog, ILogParseErrorListener listener) throws IOException;
+	void processLogFile(File logFile, ILogParseErrorListener listener) throws IOException;
 	
 	SplitLog getSplitLog();
 	
@@ -31,9 +32,7 @@ public interface ILogParser
 	void reset();
 		
 	boolean hasParseError();
-	
-	boolean isTweakVMLog();
-	
+		
 	String getVMCommand();
 	
 	void discardParsedLogs();

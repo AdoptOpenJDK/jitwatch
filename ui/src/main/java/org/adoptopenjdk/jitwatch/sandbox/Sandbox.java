@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,18 +16,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.CompressedOops;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.OnStackReplacement;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.TieredCompilation;
-import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.process.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.process.runtime.IRuntime;
@@ -362,7 +362,7 @@ public class Sandbox
 			config.saveConfig();
 		}
 
-		logListener.handleLogEntry("Parsing HotSpot log: " + sandboxLogFile.toString());
+		logListener.handleLogEntry("Parsing JIT log: " + sandboxLogFile.toString());
 
 		logParser.processLogFile(sandboxLogFile, sandboxStage);
 

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.core.IJITListener;
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.AnnotationException;
@@ -42,6 +41,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
+import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 

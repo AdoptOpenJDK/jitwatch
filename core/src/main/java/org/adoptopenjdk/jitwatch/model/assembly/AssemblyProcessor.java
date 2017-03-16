@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.core;
+package org.adoptopenjdk.jitwatch.model.assembly;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
@@ -24,10 +24,6 @@ import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
-import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
-import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

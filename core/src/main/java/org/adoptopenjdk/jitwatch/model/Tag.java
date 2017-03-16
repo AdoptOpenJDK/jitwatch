@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class Tag
 
 	public List<Tag> getChildren()
 	{
-		return children;
+		return Collections.unmodifiableList(children);
 	}
 
 	public boolean isSelfClosing()

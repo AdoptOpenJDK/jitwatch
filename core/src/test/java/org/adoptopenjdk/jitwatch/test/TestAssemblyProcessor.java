@@ -13,13 +13,13 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
 import org.junit.Before;
 import org.junit.Test;
 

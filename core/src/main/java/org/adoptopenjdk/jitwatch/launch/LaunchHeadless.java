@@ -16,13 +16,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.inline.HeadlessInlineVisitor;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
+import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
+import org.adoptopenjdk.jitwatch.parser.ParserFactory;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
@@ -40,7 +41,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 	private boolean outputFile;
 	private boolean showInlineFailedCalls;
 
-	private HotSpotLogParser parser;
+	private ILogParser parser;
 	private JITWatchConfig config;
 
 	private StringBuilder timelineBuilder = new StringBuilder();
@@ -59,7 +60,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 		config = new JITWatchConfig();
 
-		parser = new HotSpotLogParser(this);
+		parser = ParserFactory.getParser(this);
 		parser.setConfig(config);
 
 		parser.processLogFile(new File(logFile), this);

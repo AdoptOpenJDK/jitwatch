@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,14 +195,29 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	@Override
 	public IMetaMember findMetaMember(MemberSignatureParts msp)
 	{
-		MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
-
 		IMetaMember result = null;
 
+		MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
+		
+		if (metaClass == null)  // possible if no TraceClassLoading logs
+		{
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("No metaClass found, trying late load {}", msp.getFullyQualifiedClassName());
+			}
+			
+			metaClass = ParseUtil.lateLoadMetaClass(this, msp.getFullyQualifiedClassName());
+		}
+		
 		if (metaClass != null)
 		{
 			List<IMetaMember> metaList = metaClass.getMetaMembers();
 
+			if (DEBUG_LOGGING)
+			{
+				logger.debug("Comparing msp against {} members of metaClass {}", metaList.size(), metaClass.toString());
+			}
+			
 			for (IMetaMember member : metaList)
 			{
 				if (member.matchesSignature(msp, true))
@@ -244,7 +260,12 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			packageName = S_EMPTY;
 			className = fqClassName;
 		}
-
+		
+		if (DEBUG_LOGGING)
+		{
+			logger.debug("buildAndGetMetaClass {} {}", packageName, fqClassName);
+		}
+		
 		MetaPackage metaPackage = packageManager.getMetaPackage(packageName);
 
 		if (metaPackage == null)

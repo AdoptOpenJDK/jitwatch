@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.test;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TWEAK_VM;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -286,59 +285,6 @@ public class TestTagProcessor
 
 		assertEquals(TAG_RELEASE, tagRelease.getName());
 		assertEquals(line5, tagRelease.getTextContent());
-	}
-	
-	@Test
-	public void testTweakSelfClosingTag()
-	{
-		String line0 = "<vm_version>";
-		String line1 = "<TweakVM/>";
-		String line2 = "<name>";
-		String line3 = "Java HotSpot(TM) 64-Bit Server VM";
-		String line4 = "</name>";
-		String line5 = "<release>";
-		String line6 = "25.0-b70";
-		String line7 = "</release>";
-		String line8 = "<info>";
-		String line9 = "Java HotSpot(TM) 64-Bit Server VM (25.0-b70) for linux-amd64 JRE (1.8.0-b132), built on Mar  4 2014 03:07:25 by &quot;java_re&quot; with gcc 4.3.0 20080428 (RedHat 4.3.0-8)";
-		String line10 = "</info>";
-		String line11 = "</vm_version>";
-
-		String[] lines = new String[] { line0, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11 };
-
-		TagProcessor tp = new TagProcessor();
-
-		int count = 0;
-
-		Tag tag = null;
-
-		for (String line : lines)
-		{
-			tag = tp.processLine(line);
-
-			if (count++ < lines.length - 1)
-			{
-				assertNull(tag);
-			}
-		}
-
-		assertNotNull(tag);
-
-		assertEquals(TAG_VM_VERSION, tag.getName());
-
-		List<Tag> children = tag.getChildren();
-
-		assertEquals(4, children.size());
-
-		Tag tagTweakVM = children.get(0);
-
-		assertEquals(TAG_TWEAK_VM, tagTweakVM.getName());
-		assertEquals(null, tagTweakVM.getTextContent());
-
-		Tag tagRelease = children.get(2);
-
-		assertEquals(TAG_RELEASE, tagRelease.getName());
-		assertEquals(line6, tagRelease.getTextContent());
 	}
 
 	/*

@@ -26,6 +26,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
+import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
+import org.adoptopenjdk.jitwatch.logger.ILogListener;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
+import org.adoptopenjdk.jitwatch.process.IExternalProcess;
+import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
+import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -49,26 +69,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
-import org.adoptopenjdk.jitwatch.core.ILogParser;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.jvmlang.LanguageManager;
-import org.adoptopenjdk.jitwatch.logger.ILogListener;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.process.IExternalProcess;
-import org.adoptopenjdk.jitwatch.sandbox.Sandbox;
-import org.adoptopenjdk.jitwatch.ui.Dialogs;
-import org.adoptopenjdk.jitwatch.ui.Dialogs.Response;
-import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
-import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
-import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
-import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
-import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SandboxStage extends Stage implements ISandboxStage, IStageClosedListener, ILogListener, ILogParseErrorListener
 {
@@ -401,7 +401,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 	{
 		taLog.setText(S_EMPTY);
 		log("Sandbox ready");
-		log("HotSpot disassembler (hsdis) available: " + DisassemblyUtil.isDisassemblerAvailable());
+		log("Disassembler available: " + DisassemblyUtil.isDisassemblerAvailable());
 	}
 
 	private void loadLastEditorPanes()

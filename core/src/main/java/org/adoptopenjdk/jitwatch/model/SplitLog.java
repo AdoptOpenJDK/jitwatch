@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -13,14 +13,14 @@ public class SplitLog
 {
 	private List<NumberedLine> headerLines = new ArrayList<>();
 	private List<NumberedLine> classLoaderLines = new ArrayList<>();
-	private List<NumberedLine> logCompilationLines = new ArrayList<>();
+	private List<NumberedLine> compilationLines = new ArrayList<>();
 	private List<NumberedLine> assemblyLines = new ArrayList<>();
 	
 	public void clear()
 	{
 		headerLines.clear();
 		classLoaderLines.clear();
-		logCompilationLines.clear();
+		compilationLines.clear();
 		assemblyLines.clear();
 	}
 	
@@ -34,9 +34,9 @@ public class SplitLog
 		classLoaderLines.add(line);
 	}
 	
-	public void addLogCompilationLine(NumberedLine line)
+	public void addCompilationLine(NumberedLine line)
 	{
-		logCompilationLines.add(line);
+		compilationLines.add(line);
 	}
 	
 	public void addAssemblyLine(NumberedLine line)
@@ -54,9 +54,9 @@ public class SplitLog
 		return Collections.unmodifiableList(classLoaderLines);
 	}
 	
-	public List<NumberedLine> getLogCompilationLines()
+	public List<NumberedLine> getCompilationLines()
 	{
-		return Collections.unmodifiableList(logCompilationLines);
+		return Collections.unmodifiableList(compilationLines);
 	}
 	
 	public List<NumberedLine> getAssemblyLines()

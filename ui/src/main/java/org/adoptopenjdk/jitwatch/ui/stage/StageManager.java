@@ -134,7 +134,7 @@ public class StageManager
 
 	}
 
-	public static void addAndShow(final Stage parent, final Stage childStage, IStageClosedListener closedListener)
+	public static void addAndShow(final Stage parent, final Stage childStage, final IStageClosedListener closedListener)
 	{
 		List<Stage> childrenOfParent = openStages.get(parent);
 

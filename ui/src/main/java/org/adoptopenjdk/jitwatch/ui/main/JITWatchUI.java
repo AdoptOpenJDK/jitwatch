@@ -25,10 +25,7 @@ import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheEventWalker;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
 import org.adoptopenjdk.jitwatch.core.ErrorLog;
-import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
-import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.Compilation;
@@ -40,6 +37,10 @@ import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
 import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
+import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
+import org.adoptopenjdk.jitwatch.parser.ParserFactory;
+import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
@@ -143,7 +144,7 @@ public class JITWatchUI extends Application
 
 	private TextArea textAreaLog;
 
-	private File hsLogFile = null;
+	private File jitLogFile = null;
 
 	private String lastVmCommand = null;
 	private IMetaMember lastSelectedMember = null;
@@ -216,7 +217,7 @@ public class JITWatchUI extends Application
 	// Called by JFX
 	public JITWatchUI()
 	{
-		logParser = new HotSpotLogParser(this);
+		logParser = ParserFactory.getParser(this);
 	}
 
 	public JITWatchUI(String[] args)
@@ -233,7 +234,7 @@ public class JITWatchUI extends Application
 			{
 				try
 				{
-					logParser.processLogFile(hsLogFile, JITWatchUI.this);
+					logParser.processLogFile(jitLogFile, JITWatchUI.this);
 				}
 				catch (IOException ioe)
 				{
@@ -408,9 +409,9 @@ public class JITWatchUI extends Application
 			isReadingLogFile = false;
 			updateButtons();
 
-			if (hsLogFile != null)
+			if (jitLogFile != null)
 			{
-				log("Stopped parsing " + hsLogFile.getAbsolutePath());
+				log("Stopped parsing " + jitLogFile.getAbsolutePath());
 			}
 		}
 	}
@@ -450,7 +451,7 @@ public class JITWatchUI extends Application
 			public void handle(ActionEvent e)
 			{
 				stopParsing();
-				chooseHotSpotFile();
+				chooseJITLog();
 			}
 		});
 
@@ -802,13 +803,20 @@ public class JITWatchUI extends Application
 
 		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
 
-		if (hsLogFile == null)
+		if (jitLogFile == null)
 		{
-			log("Choose a HotSpot log file or open the Sandbox");
+			if (logParser instanceof HotSpotLogParser)
+			{
+				log("HotSpot mode. Choose a JIT log file or open the Sandbox");
+			}
+			else
+			{
+				log("J9 Mode. Choose a JIT log file (Sandbox only available for HotSpot)");
+			}
 		}
 		else
 		{
-			log("Using HotSpot log file: " + hsLogFile.getAbsolutePath());
+			log("Using JIT log file: " + jitLogFile.getAbsolutePath());
 		}
 		spMain.getItems().add(spCentre);
 		spMain.getItems().add(textAreaLog);
@@ -843,7 +851,7 @@ public class JITWatchUI extends Application
 		borderPane.setCenter(spMain);
 		borderPane.setBottom(hboxBottom);
 
-		stage.setTitle("JITWatch - HotSpot Compilation Inspector");
+		stage.setTitle("JITWatch - Just In Time Compilation Inspector");
 		stage.setScene(scene);
 		stage.show();
 
@@ -936,7 +944,12 @@ public class JITWatchUI extends Application
 
 	private void updateButtons()
 	{
-		btnStart.setDisable(hsLogFile == null || isReadingLogFile);
+		if (!(logParser instanceof HotSpotLogParser))
+		{
+			btnSandbox.setDisable(true);
+		}
+		
+		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
 		btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
@@ -1105,10 +1118,10 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	private void chooseHotSpotFile()
+	private void chooseJITLog()
 	{
 		FileChooser fc = new FileChooser();
-		fc.setTitle("Choose HotSpot log file");
+		fc.setTitle("Choose JIT log file");
 
 		String osNameProperty = System.getProperty("os.name");
 
@@ -1139,7 +1152,7 @@ public class JITWatchUI extends Application
 
 		if (result != null)
 		{
-			setHotSpotLogFile(result);
+			setJITLogFile(result);
 
 			JITWatchConfig config = getConfig();
 
@@ -1151,19 +1164,19 @@ public class JITWatchUI extends Application
 	}
 
 	// Call from UI thread
-	private void setHotSpotLogFile(File logFile)
+	private void setJITLogFile(File logFile)
 	{
-		hsLogFile = logFile;
+		jitLogFile = logFile;
 
-		getConfig().setLastLogDir(hsLogFile.getParent());
+		getConfig().setLastLogDir(jitLogFile.getParent());
 		getConfig().saveConfig();
 
 		clearTextArea();
-		log("Selected log file: " + hsLogFile.getAbsolutePath());
+		log("Selected log file: " + jitLogFile.getAbsolutePath());
 
 		log("\nUsing Config: " + getConfig().getProfileName());
 
-		log("\nClick Start button to process the HotSpot log");
+		log("\nClick Start button to process the JIT log");
 		updateButtons();
 
 		refreshLog();
@@ -1314,8 +1327,6 @@ public class JITWatchUI extends Application
 		lblHeap.setText(heapString);
 
 		btnErrorLog.setText("Errors (" + errorCount + S_CLOSE_PARENTHESES);
-
-		checkIfTweakLog();
 	}
 
 	private void clearTextArea()
@@ -1487,18 +1498,5 @@ public class JITWatchUI extends Application
 	public Stage getStageForDialog()
 	{
 		return stage;
-	}
-
-	// TOOD remove
-	private void checkIfTweakLog()
-	{
-		if (logParser != null && logParser.isTweakVMLog())
-		{
-			lblTweakLog.setText("TweakVM log detected! Enabling extra features.");
-		}
-		else
-		{
-			lblTweakLog.setText(S_EMPTY);
-		}
 	}
 }

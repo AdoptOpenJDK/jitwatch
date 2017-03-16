@@ -138,7 +138,7 @@ public class MemberSignatureParts
 
 		String[] parts = ParseUtil.splitLogSignatureWithRegex(toParse);
 
-		msp.fullyQualifiedClassName = parts[0];
+		msp.fullyQualifiedClassName = parts[0].replaceAll(S_SLASH, S_DOT);
 		msp.memberName = parts[1];
 
 		String paramTypes = parts[2];

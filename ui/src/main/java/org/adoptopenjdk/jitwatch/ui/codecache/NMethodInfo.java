@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.ui.codecache;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -18,8 +20,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 public class NMethodInfo extends HBox
 {
@@ -155,8 +155,15 @@ public class NMethodInfo extends HBox
 		String fqMemberName = compilationMember.toStringUnqualifiedMethodName(true, true);
 		lblMember.setText(fqMemberName);
 		lblMember.setTooltip(new Tooltip(fqMemberName));
-		
-		lblCompiler.setText(compilation.getCompiler() + " (Level " + compilation.getLevel() + ")");
+
+		String compilerString = compilation.getCompiler();
+
+		if (compilation.getLevel() != -1)
+		{
+			compilerString += " (Level " + compilation.getLevel() + ")";
+		}
+
+		lblCompiler.setText(compilerString);
 		lblCompilationNumber.setText(Integer.toString(1 + compilation.getIndex()) + " of " + compilationCount);
 
 		lblAddress.setText(Long.toHexString(event.getNativeAddress()));

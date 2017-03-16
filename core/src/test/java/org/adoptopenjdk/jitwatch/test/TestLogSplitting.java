@@ -12,10 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.adoptopenjdk.jitwatch.core.HotSpotLogParser;
-import org.adoptopenjdk.jitwatch.core.ILogParser;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
 import org.adoptopenjdk.jitwatch.model.SplitLog;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
+import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
 import org.junit.Test;
 
 public class TestLogSplitting
@@ -57,7 +57,7 @@ public class TestLogSplitting
 		SplitLog log = parser.getSplitLog();
 
 		assertEquals(15, log.getAssemblyLines().size());
-		assertEquals(6, log.getLogCompilationLines().size());
+		assertEquals(6, log.getCompilationLines().size());
 	}
 
 	private Path writeLinesToTempFileAndReturnPath(String[] lines) throws IOException
@@ -148,7 +148,7 @@ public class TestLogSplitting
 		assertEquals(45, log.getHeaderLines().size());
 
 		// <tty> not counted as it envelopes the main XML
-		assertEquals(1, log.getLogCompilationLines().size());
+		assertEquals(1, log.getCompilationLines().size());
 		assertEquals(8, log.getClassLoaderLines().size());
 
 		assertEquals("org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog", parser.getVMCommand());
@@ -232,6 +232,6 @@ public class TestLogSplitting
 		assertEquals(45, log.getHeaderLines().size());
 		assertEquals(1, log.getClassLoaderLines().size());
 		assertEquals(10, log.getAssemblyLines().size());
-		assertEquals(5, log.getLogCompilationLines().size());
+		assertEquals(5, log.getCompilationLines().size());
 	}
 }

@@ -9,8 +9,8 @@ import java.io.File;
 
 import javafx.stage.Stage;
 
-import org.adoptopenjdk.jitwatch.core.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 
 public interface ISandboxStage extends ILogParseErrorListener
 {
