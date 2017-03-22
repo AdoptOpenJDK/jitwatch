@@ -328,8 +328,10 @@
 					<configuration>
 						<source>${jdk.version}</source>
 						<target>${jdk.version}</target>
-						<compilerArgument>-Xlint:unchecked</compilerArgument>
-						<compilerArgument>-g:source,lines</compilerArgument>
+						<compilerArgs>
+							<arg>-Xlint:all</arg>
+							<arg>-g:source,lines</arg>
+						</compilerArgs>
 					</configuration>
 				</plugin>
 				<plugin>
