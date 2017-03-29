@@ -15,6 +15,8 @@ public enum Architecture
 
 	private static final String ARCH_X86_32 = "i386";
 	private static final String ARCH_X86_64 = "i386:x86-64";
+	private static final String ARCH_AMD_64 = "amd64";
+
 	private static final String ARCH_ARM_32 = "arm";
 	private static final String ARCH_ARM_64 = "arm-64";
 
@@ -29,6 +31,7 @@ public enum Architecture
 			case ARCH_X86_32:
 				return X86_32;
 			case ARCH_X86_64:
+			case ARCH_AMD_64:
 				return X86_64;
 			case ARCH_ARM_32:
 				return ARM_32;
