@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.
-0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.chrisnewland</groupId>
 	<artifactId>jitwatch-parent</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -35,7 +33,7 @@
 	<developers>
 		<developer>
 			<name>Chris Newland</name>
-			<url>http://www.chrisnewland.com</url>
+			<url>https://www.chrisnewland.com</url>
 			<email>chris@chrisnewland.com</email>
 			<timezone>GMT</timezone>
 		</developer>
@@ -99,7 +97,7 @@
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/chriswhocodes/jitwatch/issues</url>
+		<url>https://github.com/AdoptOpenJDK/jitwatch/issues</url>
 	</issueManagement>
 
 	<ciManagement>
@@ -116,12 +114,10 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git
-		</connection>
-		<developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git
-		</developerConnection>
+		<connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
+		<developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
 		<url>${project.url}</url>
-		<tag>jitwatch-1.0.1</tag>
+		<tag>jitwatch-1.1.0</tag>
 	</scm>
 
 	<properties>
