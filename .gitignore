@@ -19,3 +19,4 @@ build/
 .gradle
 hotspot_pid*
 *.iml
+*pom.xml.versionsBackup
