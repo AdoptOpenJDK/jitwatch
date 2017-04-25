@@ -3,7 +3,7 @@
 
 	<groupId>com.chrisnewland</groupId>
 	<artifactId>jitwatch-parent</artifactId>
-	<version>1.1.1-SNAPSHOT</version>
+	<version>1.1.1</version>
 
 	<packaging>pom</packaging>
 
@@ -117,7 +117,7 @@
 		<connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
 		<developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
 		<url>${project.url}</url>
-		<tag>jitwatch-parent-1.1.0</tag>
+		<tag>jitwatch-parent-1.1.1</tag>
 	</scm>
 
 	<properties>
