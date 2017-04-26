@@ -73,7 +73,7 @@
 	<target name="jar" depends="test, doJar" />
 
 	<target name="doJar">
-		<jar destfile="${target}/jitwatch-ui-1.1.0-SNAPSHOT.jar">
+		<jar destfile="${target}/jitwatch-ui-1.1.6-SNAPSHOT.jar">
 			<fileset dir="${main_classes}">
 				<include name="**/*.class" />
 			</fileset>

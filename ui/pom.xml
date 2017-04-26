@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.1.2-SNAPSHOT</version>
+		<version>1.1.6-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -146,7 +146,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>jitwatch</artifactId>
+			<artifactId>jitwatch-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
