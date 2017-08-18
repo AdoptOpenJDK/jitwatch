@@ -59,11 +59,28 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	{
 		this.vmVersionRelease = release;
 	}
-
-	@Override
-	public String getVmVersionRelease()
+	
+	public int getJDKMajorVersion()
 	{
-		return vmVersionRelease;
+		int result = 8; // fallback
+		
+		if (this.vmVersionRelease != null)
+		{
+			if (this.vmVersionRelease.contains("1.7"))
+			{
+				result = 7;
+			}
+			else if (this.vmVersionRelease.contains("1.8"))
+			{
+				result = 8;
+			}
+			else if (this.vmVersionRelease.startsWith("9"))
+			{
+				result = 9;
+			}
+		}
+		
+		return result;
 	}
 
 	public void reset()

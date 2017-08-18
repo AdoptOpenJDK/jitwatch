@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-20167 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -27,6 +27,8 @@ public class ClassBC
 	private ConstantPool constantPool;
 
 	private String sourceFile;
+	
+	private String moduleName;
 
 	private int majorVersion;
 	private int minorVersion;
@@ -223,6 +225,16 @@ public class ClassBC
 	public void setMinorVersion(int minorVersion)
 	{
 		this.minorVersion = minorVersion;
+	}
+	
+	public void setModuleName(String moduleName)
+	{
+		this.moduleName = moduleName;
+	}
+	
+	public String getModuleName()
+	{
+		return moduleName;
 	}
 
 	@Override

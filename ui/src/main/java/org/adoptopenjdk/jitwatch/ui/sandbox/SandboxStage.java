@@ -401,7 +401,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 	{
 		taLog.setText(S_EMPTY);
 		log("Sandbox ready");
-		log("Disassembler available: " + DisassemblyUtil.isDisassemblerAvailable());
+		log("Disassembler available: " + (DisassemblyUtil.isDisassemblerAvailable() ? DisassemblyUtil.getDisassemblerFilePath() : "Not found"));
 	}
 
 	private void loadLastEditorPanes()

@@ -169,7 +169,7 @@ public final class CompilationUtil
 
 			if (TAG_NMETHOD.equals(tagName))
 			{
-				if (C2N.equals(tag.getAttributes().get(ATTR_COMPILE_KIND)))
+				if (C2N.equalsIgnoreCase(tag.getAttributes().get(ATTR_COMPILE_KIND)))
 				{
 					result = true;
 				}
@@ -342,12 +342,12 @@ public final class CompilationUtil
 				{
 					if (!isStaleTask(task))
 					{
-						logger.warn("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(),
-								phasesParse.size());
-
 						if (DEBUG_LOGGING)
 						{
-							logger.debug("Task {}", task);
+							logger.debug("Unexpected parse phase count: buildIR({}), parse({})", phasesBuildIR.size(),
+									phasesParse.size());
+							
+							logger.debug("Task\n{}", task);
 						}
 
 						// possible JDK9 new format with no wrapping tag so

@@ -47,7 +47,7 @@ public interface IMetaMember
 	Map<String, String> getCompiledAttributes();
 
 	Compilation getCompilationByCompileID(String compileID);
-	Compilation getCompilationByNativeAddress(String address);
+	Compilation getCompilationByAddress(AssemblyMethod asmMethod);
 	
 	boolean isCompiled();
 	

@@ -10,8 +10,10 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
+
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ENTRY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
@@ -44,6 +46,8 @@ public class Compilation
 
 	private String nativeAddress;
 
+	private String entryAddress;
+
 	private int index;
 
 	private IMetaMember member;
@@ -69,6 +73,11 @@ public class Compilation
 	public String getNativeAddress()
 	{
 		return nativeAddress;
+	}
+
+	public String getEntryAddress()
+	{
+		return entryAddress;
 	}
 
 	public AssemblyMethod getAssembly()
@@ -140,11 +149,13 @@ public class Compilation
 
 		this.nativeAddress = attrs.get(ATTR_ADDRESS);
 
+		this.entryAddress = attrs.get(ATTR_ENTRY);
+
 		String compileKind = attrs.get(ATTR_COMPILE_KIND);
 
 		compiledStamp = ParseUtil.getStamp(attrs);
 
-		if (C2N.equals(compileKind))
+		if (C2N.equalsIgnoreCase(compileKind))
 		{
 			isC2N = true;
 			this.compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
@@ -245,7 +256,7 @@ public class Compilation
 
 			if (compiler != null)
 			{
-				builder.append(compiler);
+				builder.append(compiler.toUpperCase());
 			}
 
 			if (compileKind != null)
@@ -284,7 +295,7 @@ public class Compilation
 
 			if (compiler != null)
 			{
-				builder.append(compiler);
+				builder.append(compiler.toUpperCase());
 			}
 
 			if (compileKind != null)
@@ -334,7 +345,7 @@ public class Compilation
 				{
 				}
 			}
-			else if (C2.equals(tagAttributes.get(ATTR_COMPILER)))
+			else if (C2.equalsIgnoreCase(tagAttributes.get(ATTR_COMPILER)))
 			{
 				result = 4;
 			}

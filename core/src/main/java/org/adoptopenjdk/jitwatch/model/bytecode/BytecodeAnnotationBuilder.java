@@ -138,7 +138,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 		bcAnnotations.clear();
 
-		String vmVersion = model.getVmVersionRelease();
+		int jdkMajorVersion = model.getJDKMajorVersion();
 
 		if (member != null)
 		{
@@ -151,9 +151,9 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 			try
 			{
-				buildParseTagAnnotations(vmVersion, compilation);
+				buildParseTagAnnotations(jdkMajorVersion, compilation);
 
-				buildEliminationTagAnnotations(vmVersion, compilation);
+				buildEliminationTagAnnotations(jdkMajorVersion, compilation);
 			}
 			catch (LogParseException e)
 			{
@@ -175,14 +175,14 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		return bcAnnotations;
 	}
 
-	private void buildParseTagAnnotations(String vmVersion, Compilation compilation) throws LogParseException
+	private void buildParseTagAnnotations(int jdkMajorVersion, Compilation compilation) throws LogParseException
 	{
 		CompilationUtil.visitParseTagsOfCompilation(compilation, this);
 	}
 
-	private void buildEliminationTagAnnotations(String vmVersion, Compilation compilation) throws LogParseException
+	private void buildEliminationTagAnnotations(int jdkMajorVersion, Compilation compilation) throws LogParseException
 	{
-		if (vmVersion != null && vmVersion.startsWith("1.9"))
+		if (jdkMajorVersion == 9)
 		{
 			CompilationUtil.visitEliminationTagsOfCompilation(compilation, this);
 		}

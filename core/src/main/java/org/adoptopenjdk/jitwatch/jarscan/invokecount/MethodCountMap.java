@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -28,7 +28,7 @@ public class MethodCountMap
 		
 		if (count == null)
 		{
-			count = new Integer(1);
+			count = 1;
 		}
 		else
 		{

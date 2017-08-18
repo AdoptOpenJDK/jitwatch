@@ -256,9 +256,9 @@ public class TriView extends Stage implements ILineListener
 		comboMember.setConverter(new StringConverter<IMetaMember>()
 		{
 			@Override
-			public String toString(IMetaMember mm)
+			public String toString(IMetaMember metaMember)
 			{
-				return mm != null ? mm.toStringUnqualifiedMethodName(false, false) : "null";
+				return metaMember != null ? metaMember.toStringUnqualifiedMethodName(false, false) : "null";
 			}
 
 			@Override
@@ -602,14 +602,16 @@ public class TriView extends Stage implements ILineListener
 					String source = null;
 
 					String sourceFileName = getClassBC().getSourceFile();
-
+					
+					String moduleName = getClassBC().getModuleName();
+					
 					if (sourceFileName != null)
 					{
-						source = ResourceLoader.getSourceForFilename(sourceFileName, config.getSourceLocations());
+						source = ResourceLoader.getSourceForFilename(moduleName, sourceFileName, config.getSourceLocations());
 
 						if (source == null)
 						{
-							source = ResourceLoader.getSourceForClassName(memberClass.getFullyQualifiedName(),
+							source = ResourceLoader.getSourceForClassName(moduleName, memberClass.getFullyQualifiedName(),
 									config.getSourceLocations());
 						}
 					}

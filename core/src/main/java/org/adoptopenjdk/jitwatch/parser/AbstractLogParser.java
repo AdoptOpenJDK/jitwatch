@@ -44,7 +44,6 @@ import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
 import org.adoptopenjdk.jitwatch.model.SplitLog;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.slf4j.Logger;
@@ -59,8 +58,6 @@ public abstract class AbstractLogParser implements ILogParser
 	protected String vmCommand = null;
 
 	protected boolean reading = false;
-
-	protected boolean hasTraceClassLoad = false;
 
 	protected boolean hasParseError = false;
 	protected String errorDialogTitle;
@@ -79,8 +76,6 @@ public abstract class AbstractLogParser implements ILogParser
 	protected JITWatchConfig config = new JITWatchConfig();
 
 	protected TagProcessor tagProcessor;
-
-	protected AssemblyProcessor asmProcessor;
 
 	protected SplitLog splitLog = new SplitLog();
 
@@ -209,8 +204,6 @@ public abstract class AbstractLogParser implements ILogParser
 
 		splitLog.clear();
 
-		hasTraceClassLoad = false;
-
 		hasParseError = false;
 		errorDialogTitle = null;
 		errorDialogBody = null;
@@ -227,8 +220,6 @@ public abstract class AbstractLogParser implements ILogParser
 		processLineNumber = 0;
 
 		tagProcessor = new TagProcessor();
-
-		asmProcessor = new AssemblyProcessor();
 	}
 
 	@Override
@@ -377,22 +368,23 @@ public abstract class AbstractLogParser implements ILogParser
 
 		renameCompilationCompletedTimestamp(tag);
 
-		if (attrCompiler != null)
+		if (attrCompiler != null && attrCompiler.length() > 0)
 		{
-			if (C1.equals(attrCompiler))
+			if (C1.equalsIgnoreCase(attrCompiler))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_C1);
 			}
-			else if (C2.equals(attrCompiler))
+			else if (C2.equalsIgnoreCase(attrCompiler))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_C2);
 			}
-			else if (J9.equals(attrCompiler))
+			else if (J9.equalsIgnoreCase(attrCompiler))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_J9);
 			}
 			else
 			{
+				logger.error("Unexpected Compiler attribute: {} {}", attrCompiler, tag.toString(true));
 				logError("Unexpected Compiler attribute: " + attrCompiler);
 			}
 		}
@@ -400,7 +392,7 @@ public abstract class AbstractLogParser implements ILogParser
 		{
 			String attrCompileKind = tagAttributes.get(ATTR_COMPILE_KIND);
 
-			if (attrCompileKind != null && C2N.equals(attrCompileKind))
+			if (attrCompileKind != null && C2N.equalsIgnoreCase(attrCompileKind))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_C2N);
 			}
@@ -466,11 +458,11 @@ public abstract class AbstractLogParser implements ILogParser
 	private void handleMember(String signature, Map<String, String> attrs, EventType type, Tag tag)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-
+		
 		long stampTime = ParseUtil.getStamp(attrs);
 
 		if (metaMember != null)
-		{
+		{		
 			switch (type)
 			{
 			case QUEUE:

@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_HAT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_PARENTHESES;
@@ -16,17 +15,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_SIG_MATCH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_GROUP_ANY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ONE_OR_MORE_SPACES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PACKAGE_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PARAM_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_ZERO_OR_MORE_SPACES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE_BRACKET;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_SQUARE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_POLYMORPHIC_SIGNATURE;
@@ -323,7 +316,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		compilation.setTagTaskQueued(tagTaskQueued);
 
-		compilations.add(compilation);
+		storeCompilation(compilation);
 	}
 
 	@Override
@@ -344,13 +337,22 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public Compilation getCompilationByNativeAddress(String address)
+	public Compilation getCompilationByAddress(AssemblyMethod asmMethod)
 	{
 		Compilation result = null;
 
+		String entryAddress = asmMethod.getEntryAddress();
+
+		String nativeAddress = asmMethod.getNativeAddress();
+
 		for (Compilation compilation : compilations)
 		{
-			if (address.equals(compilation.getNativeAddress()))
+			if (entryAddress != null && entryAddress.equals(compilation.getEntryAddress()))
+			{
+				result = compilation;
+				break;
+			}
+			else if (nativeAddress != null && nativeAddress.equals(compilation.getNativeAddress()))
 			{
 				result = compilation;
 				break;
@@ -378,7 +380,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			// check if C2N stub
 			String compileKind = tagNMethod.getAttributes().get(ATTR_COMPILE_KIND);
 
-			if (C2N.equals(compileKind))
+			if (C2N.equalsIgnoreCase(compileKind))
 			{
 				compilation = createCompilation();
 
@@ -506,7 +508,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 			logger.debug("setAssembly on member {}", getFullyQualifiedMemberName());
 		}
 
-		Compilation compilation = getCompilationByNativeAddress(asmMethod.getNativeAddress());
+		Compilation compilation = getCompilationByAddress(asmMethod);
 
 		if (compilation != null)
 		{
@@ -514,7 +516,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 		else
 		{
-			logger.warn("Didn't find compilation to attach assembly for address {}", asmMethod.getNativeAddress());
+			logger.warn("{} Didn't find compilation to attach assembly for nativeAddress {} or entryAddress {}", getFullyQualifiedMemberName(),
+					asmMethod.getNativeAddress(), asmMethod.getEntryAddress());
 		}
 	}
 
@@ -645,6 +648,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return Math.max(0, Math.min(index, compilations.size() - 1));
 	}
 
+	@Override
 	public Compilation getCompilation(int index)
 	{
 		Compilation result = null;

@@ -37,7 +37,7 @@ public final class ResourceLoader
 	{
 	}
 
-	public static String getSourceForClassName(String fqName, List<String> sourceLocations)
+	public static String getSourceForClassName(String moduleName, String fqName, List<String> sourceLocations)
 	{
 		List<String> searchLocations = new ArrayList<>(sourceLocations);
 
@@ -66,7 +66,7 @@ public final class ResourceLoader
 		{
 			String filename = fqName.replace(S_DOT, File.separator) + S_DOT + suffix;
 
-			result = getSourceForFilename(filename, searchLocations);
+			result = getSourceForFilename(moduleName, filename, searchLocations);
 
 			if (result != null)
 			{
@@ -77,7 +77,7 @@ public final class ResourceLoader
 		return result;
 	}
 
-	public static String getSourceForFilename(String fileName, List<String> locations)
+	public static String getSourceForFilename(String moduleName, String fileName, List<String> locations)
 	{		
 		if (fileName.startsWith(S_SLASH))
 		{
@@ -88,13 +88,13 @@ public final class ResourceLoader
 
 		for (String location : locations)
 		{
-			File lf = new File(location);
+			File locationFile = new File(location);
 						
-			if (lf.exists())
+			if (locationFile.exists())
 			{
-				if (lf.isDirectory())
+				if (locationFile.isDirectory())
 				{
-					source = readFileInDirectory(lf, fileName);
+					source = readFileInDirectory(locationFile, fileName);
 
 					if (source != null)
 					{
@@ -103,7 +103,7 @@ public final class ResourceLoader
 				}
 				else
 				{				
-					source = readFileFromZip(lf, fileName);
+					source = readFileFromZip(moduleName, locationFile, fileName);
 
 					if (source != null)
 					{
@@ -147,7 +147,7 @@ public final class ResourceLoader
 	{
 		Properties result = new Properties();
 
-		String manifestSource = readFileFromZip(zipFile, "META-INF/MANIFEST.MF");
+		String manifestSource = readFileFromZip(null, zipFile, "META-INF/MANIFEST.MF");
 
 		if (manifestSource != null)
 		{
@@ -163,19 +163,24 @@ public final class ResourceLoader
 		return result;
 	}
 
-	public static String readFileFromZip(File zipFile, String fileName)
+	public static String readFileFromZip(String moduleName, File zipFileName, String sourceFileName)
 	{
 		String result = null;
 
-		fileName = fileName.replace(S_BACKSLASH, S_SLASH);
+		sourceFileName = sourceFileName.replace(S_BACKSLASH, S_SLASH);
 		
-		try (ZipFile zf = new ZipFile(zipFile))
+		if (moduleName != null)
 		{
-			ZipEntry entry = zf.getEntry(fileName);
+			sourceFileName = moduleName + S_SLASH + sourceFileName;
+		}
+				
+		try (ZipFile zipFile = new ZipFile(zipFileName))
+		{
+			ZipEntry entry = zipFile.getEntry(sourceFileName);
 
 			if (entry != null)
 			{				
-				try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry))))
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry))))
 				{
 					StringBuilder sb = new StringBuilder();
 
@@ -193,7 +198,7 @@ public final class ResourceLoader
 		}
 		catch (IOException ioe)
 		{
-			logger.error("Could not read file {} from zip {}", fileName, zipFile.getName(), ioe);
+			logger.error("Could not read file {} from zip {}", sourceFileName, zipFileName.getName(), ioe);
 		}
 
 		return result;

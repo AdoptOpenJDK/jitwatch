@@ -18,10 +18,11 @@ public interface IReadOnlyJITDataModel
     List<CodeCacheEvent> getCodeCacheEvents();
     
     Tag getEndOfLogTag();
-
-    String getVmVersionRelease();
+    
+    int getJDKMajorVersion();
     
 	IMetaMember findMetaMember(MemberSignatureParts msp);
     
 	MetaClass buildAndGetMetaClass(Class<?> clazz);
+	
 }

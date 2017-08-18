@@ -15,6 +15,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,36 +151,35 @@ public final class FileUtil
 	
 	public static File getJDKSourceZip()
 	{
-		String jrePath = System.getProperty("java.home");
+		String javaHome = System.getProperty("java.home");
 
-		File jreDir = new File(jrePath);
-
-		File result = null;
-
-		if (jreDir.exists() && jreDir.isDirectory())
+		String srcDotZip = "src.zip";
+		
+		List<Path> possiblePaths = new ArrayList<>();
+		
+		possiblePaths.add(Paths.get(javaHome, srcDotZip));
+		possiblePaths.add(Paths.get(javaHome, "jre", srcDotZip));
+		possiblePaths.add(Paths.get(javaHome, "jre", "lib", srcDotZip));
+		possiblePaths.add(Paths.get(javaHome, "lib", srcDotZip));
+		
+		if (javaHome.contains("jre"))
 		{
-			File srcZipFile = new File(jreDir, "src.zip");
-
-			if (srcZipFile.exists() && srcZipFile.isFile())
-			{
-				result = srcZipFile;
-			}
-			else
-			{
-				File parentDir = jreDir.getParentFile();
-
-				if (parentDir.exists() && parentDir.isDirectory())
-				{
-					srcZipFile = new File(parentDir, "src.zip");
-
-					if (srcZipFile.exists() && srcZipFile.isFile())
-					{
-						result = srcZipFile;
-					}
-				}
-			}
+			possiblePaths.add(Paths.get(javaHome, "..", srcDotZip));
 		}
 
+		File result = null;
+		
+		for (Path path : possiblePaths)
+		{
+			File file = path.toFile();
+						
+			if (file.exists() && file.isFile())
+			{
+				result = file;
+				break;
+			}
+		}
+		
 		return result;
 	}
 }

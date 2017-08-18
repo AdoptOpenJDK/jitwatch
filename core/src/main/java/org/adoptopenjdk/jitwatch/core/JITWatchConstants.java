@@ -82,6 +82,7 @@ public final class JITWatchConstants
 
 	public static final String TAG_TASK_QUEUED = "task_queued";
 	public static final String TAG_NMETHOD = "nmethod";
+	public static final String TAG_PRINT_NMETHOD = "print_nmethod";
 	public static final String TAG_TASK = "task";
 	public static final String TAG_BC = "bc";
 	public static final String TAG_CALL = "call";
@@ -162,6 +163,7 @@ public final class JITWatchConstants
 	public static final String ATTR_ACTION = "action";
 	public static final String ATTR_COMMENT = "comment";
 	public static final String ATTR_ADDRESS = "address";
+	public static final String ATTR_ENTRY = "entry";
 	public static final String ATTR_PREALLOCATED = "preallocated";
 	public static final String ATTR_KIND = "kind";
 
@@ -306,6 +308,7 @@ public final class JITWatchConstants
 
 	public static final String S_BYTECODE_MINOR_VERSION = "minor version:";
 	public static final String S_BYTECODE_MAJOR_VERSION = "major version:";
+	public static final String S_BYTECODE_CLASSFILE = "Classfile";
 	public static final String S_BYTECODE_SIGNATURE = "Signature:";
 	public static final String S_BYTECODE_SOURCE_FILE= "SourceFile:";
 

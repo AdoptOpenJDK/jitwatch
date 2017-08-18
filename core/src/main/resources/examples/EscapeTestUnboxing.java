@@ -13,8 +13,8 @@ public class EscapeTestUnboxing
         {
             if (random.nextBoolean())
             {
-                Integer asInteger = new Integer(i);
-    
+                Integer asInteger = Integer.valueOf(i);
+
                 sum += asInteger;
             }
         }

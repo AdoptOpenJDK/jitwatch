@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
@@ -17,16 +19,19 @@ public class AssemblyMethod
 	private String header;
 
 	private List<AssemblyBlock> blocks = new ArrayList<>();
-	
+
 	private String nativeAddress;
-	
+
+	private String entryAddress;
+
 	private String assemblyMethodSignature;
-	
+
 	private Architecture architecture;
-	
-	public AssemblyMethod(String assemblyMethodSignature, Architecture architecture)
+
+	private static final Logger logger = LoggerFactory.getLogger(AssemblyMethod.class);
+
+	public AssemblyMethod(Architecture architecture)
 	{
-		this.assemblyMethodSignature = assemblyMethodSignature;
 		this.architecture = architecture;
 	}
 
@@ -35,11 +40,21 @@ public class AssemblyMethod
 		return architecture;
 	}
 
+	public void setAssemblyMethodSignature(String sig)
+	{
+		this.assemblyMethodSignature = sig;
+
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("Received signature: '{}'", sig);
+		}
+	}
+
 	public String getAssemblyMethodSignature()
 	{
 		return assemblyMethodSignature;
 	}
-	
+
 	public void setHeader(String header)
 	{
 		this.header = header;
@@ -76,15 +91,25 @@ public class AssemblyMethod
 
 		return width;
 	}
-	
+
 	public String getNativeAddress()
 	{
 		return nativeAddress;
 	}
 
 	public void setNativeAddress(String nativeAddress)
-	{		
+	{
 		this.nativeAddress = nativeAddress;
+	}
+
+	public String getEntryAddress()
+	{
+		return entryAddress;
+	}
+
+	public void setEntryAddress(String entryAddress)
+	{
+		this.entryAddress = entryAddress;
 	}
 
 	@Override

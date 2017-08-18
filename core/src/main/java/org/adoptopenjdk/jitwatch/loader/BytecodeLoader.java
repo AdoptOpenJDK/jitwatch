@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -36,6 +36,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CLASSFILE;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public final class BytecodeLoader
 	 */
 	public static MetaClass buildMetaClassFromClass(String fqClassName)
 	{
-		//TODO implement
+		// TODO implement
 		return null;
 	}
 
@@ -123,7 +124,7 @@ public final class BytecodeLoader
 		try
 		{
 			JavapProcess javapProcess;
-			
+
 			if (javapPath != null)
 			{
 				javapProcess = new JavapProcess(javapPath);
@@ -253,6 +254,26 @@ public final class BytecodeLoader
 					if (majorVersion != -1)
 					{
 						classBytecode.setMajorVersion(majorVersion);
+					}
+				}
+				else if (line.startsWith(S_BYTECODE_CLASSFILE))
+				{
+					String modules = "/modules/";
+
+					int startIndex = line.indexOf(modules);
+
+					if (startIndex != -1)
+					{
+						startIndex += modules.length();
+
+						int endIndex = line.indexOf('/', startIndex);
+
+						if (endIndex != -1)
+						{
+							String moduleName = line.substring(startIndex, endIndex);
+
+							classBytecode.setModuleName(moduleName);
+						}
 					}
 				}
 				else if (line.startsWith(S_BYTECODE_SOURCE_FILE))

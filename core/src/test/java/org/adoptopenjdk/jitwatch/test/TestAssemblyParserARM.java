@@ -5,7 +5,13 @@
  */
 package org.adoptopenjdk.jitwatch.test;
 
+import org.junit.Test;
+
 public class TestAssemblyParserARM extends AbstractAssemblyTest
 {
-	
+	@Test
+	public void writeSomeTestsChris()
+	{
+
+	}
 }

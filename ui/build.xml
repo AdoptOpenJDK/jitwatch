@@ -7,6 +7,7 @@
 	<property name="test_classes" location="${target}/test-classes" />
 	<property name="lib" value="../lib" />
 	<property environment="env" />
+	<loadproperties srcfile="../build.properties"/>
 
 	<property name="core_main_classes" location="../core/target/classes" />
 	<property name="core_test_classes" location="../core/target/test-classes" />
@@ -73,7 +74,7 @@
 	<target name="jar" depends="test, doJar" />
 
 	<target name="doJar">
-		<jar destfile="${target}/jitwatch-ui-1.1.6-SNAPSHOT.jar">
+		<jar destfile="${target}/jitwatch-ui-${version}-SNAPSHOT.jar">
 			<fileset dir="${main_classes}">
 				<include name="**/*.class" />
 			</fileset>
@@ -93,8 +94,8 @@
 	<target name="doRun">
 		<java classname="org.adoptopenjdk.jitwatch.launch.LaunchUI" classpathref="classpath">
 			<classpath>
-                                <pathelement location="../core/target/jitwatch-1.1.0-SNAPSHOT.jar" />
-                                <pathelement location="${target}/jitwatch-ui-1.1.0-SNAPSHOT.jar" />
+                                <pathelement location="../core/target/jitwatch-${version}-SNAPSHOT.jar" />
+                                <pathelement location="${target}/jitwatch-ui-${version}-SNAPSHOT.jar" />
 			</classpath>
 		</java>
 	</target>

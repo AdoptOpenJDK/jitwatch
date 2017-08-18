@@ -10,14 +10,13 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASS
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_METHOD_MARK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_START;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_APOSTROPHE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.LogParseException;
@@ -42,12 +41,17 @@ public class AssemblyProcessor
 
 	private String nativeAddress = null;
 
+	private String entryAddress = null;
+
 	private List<AssemblyMethod> assemblyMethods = new ArrayList<>();
 
 	private Architecture architecture = null;
 
-	public AssemblyProcessor()
+	private int jdkMajorVersion;
+
+	public AssemblyProcessor(int jdkMajorVersion)
 	{
+		this.jdkMajorVersion = jdkMajorVersion;
 	}
 
 	public List<AssemblyMethod> getAssemblyMethods()
@@ -60,6 +64,7 @@ public class AssemblyProcessor
 		assemblyMethods.clear();
 		builder.delete(0, builder.length());
 		nativeAddress = null;
+		entryAddress = null;
 		previousLine = null;
 		assemblyStarted = false;
 		methodStarted = false;
@@ -68,7 +73,7 @@ public class AssemblyProcessor
 
 	public void handleLine(final String inLine)
 	{
-		String line = inLine.replaceFirst("^ +", "");
+		String line = inLine.replaceFirst("^ +", ""); // JMH ???
 
 		line = StringUtil.replaceXMLEntities(line);
 
@@ -104,7 +109,34 @@ public class AssemblyProcessor
 			line = S_HASH + S_SPACE + line;
 		}
 
-		if (line.startsWith(NATIVE_CODE_START))
+		if (jdkMajorVersion >= 9)
+		{
+			if (line.trim().startsWith("total in heap"))
+			{
+				nativeAddress = getStartAddress(line);
+
+				if (nativeAddress != null)
+				{
+					nativeAddress = nativeAddress.trim();
+				}
+			}
+			else if (line.trim().endsWith(" bytes"))
+			{
+				entryAddress = getStartAddress(line);
+
+				if (entryAddress != null)
+				{
+					entryAddress = entryAddress.trim();
+				}
+			}
+			else if (line.trim().endsWith("</print_nmethod>"))
+			{
+				complete();
+			}
+		}
+
+		if (line.startsWith(NATIVE_CODE_START) || line.startsWith("Compiled method")
+				|| line.startsWith("----------------------------------------------------------------------"))
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
@@ -118,7 +150,15 @@ public class AssemblyProcessor
 				complete();
 			}
 
-			nativeAddress = StringUtil.getSubstringBetween(line, NATIVE_CODE_START, S_COLON).trim();
+			if (jdkMajorVersion < 9)
+			{
+				nativeAddress = StringUtil.getSubstringBetween(line, NATIVE_CODE_START, S_COLON);
+
+				if (nativeAddress != null)
+				{
+					nativeAddress = nativeAddress.trim();
+				}
+			}
 		}
 		else if (assemblyStarted)
 		{
@@ -164,9 +204,30 @@ public class AssemblyProcessor
 		previousLine = line;
 	}
 
+	private String getStartAddress(String line)
+	{
+		String result = null;
+
+		int startIndex = line.indexOf("[0x");
+
+		if (startIndex != -1)
+		{
+			int endIndex = line.indexOf(',', startIndex);
+
+			result = line.substring(startIndex + 1, endIndex);
+		}
+
+		return result;
+	}
+
 	public void complete()
 	{
 		String asmString = builder.toString().trim();
+
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("complete({})", asmString.length());
+		}
 
 		if (asmString.length() > 0)
 		{
@@ -176,14 +237,22 @@ public class AssemblyProcessor
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Using Assembly Parser {}", parser.getClass().getName());
+					logger.debug("Using assembly parser {}", parser.getClass().getName());
 				}
 
 				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString);
 
 				assemblyMethod.setNativeAddress(nativeAddress);
+				assemblyMethod.setEntryAddress(entryAddress);
 
 				assemblyMethods.add(assemblyMethod);
+			}
+			else
+			{
+				if (DEBUG_LOGGING_ASSEMBLY)
+				{
+					logger.error("No assembly parser found for {}", architecture);
+				}
 			}
 		}
 
@@ -195,6 +264,11 @@ public class AssemblyProcessor
 
 	public void attachAssemblyToMembers(PackageManager packageManager)
 	{
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("Attaching {} assembly methods", assemblyMethods.size());
+		}
+
 		for (AssemblyMethod assemblyMethod : assemblyMethods)
 		{
 			String asmSignature = assemblyMethod.getAssemblyMethodSignature();
@@ -242,7 +316,7 @@ public class AssemblyProcessor
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.info("Set assembly on {} {}", currentMember, assemblyMethod.toString());
+					logger.debug("Set assembly on member {} {}", currentMember, assemblyMethod.toString());
 				}
 			}
 			else

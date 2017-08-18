@@ -38,7 +38,7 @@ public class TestResourceLoader
 		List<String> sourceLocations = new ArrayList<>();
 		sourceLocations.add(tempJarPath.toString());
 
-		String mySource = ResourceLoader.getSourceForClassName(getClass().getName(), sourceLocations);
+		String mySource = ResourceLoader.getSourceForClassName(null, getClass().getName(), sourceLocations);
 
 		// a really unique comment
 		// 1234567896465487946542165467987654646879764684

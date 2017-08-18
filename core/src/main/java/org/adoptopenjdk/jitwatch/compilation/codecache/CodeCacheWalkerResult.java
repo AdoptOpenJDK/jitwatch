@@ -41,7 +41,7 @@ public class CodeCacheWalkerResult
 			highestAddress = nativeCodeEnd;
 		}
 		else
-		{
+		{			
 			lowestAddress = Math.min(nativeCodeStart, lowestAddress);
 			highestAddress = Math.max(nativeCodeEnd, highestAddress);
 		}

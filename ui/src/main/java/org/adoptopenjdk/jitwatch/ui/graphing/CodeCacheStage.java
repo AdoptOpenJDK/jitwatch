@@ -67,6 +67,8 @@ public class CodeCacheStage extends AbstractGraphStage
 			CodeCacheEvent firstEvent = codeCacheEvents.get(0);
 			minX = firstEvent.getStamp();
 
+			double firstNonZeroY = 0;
+
 			Tag endOfLogTag = mainUI.getJITDataModel().getEndOfLogTag();
 
 			if (endOfLogTag != null)
@@ -83,6 +85,11 @@ public class CodeCacheStage extends AbstractGraphStage
 			minY = firstEvent.getFreeCodeCache();
 			maxY = firstEvent.getFreeCodeCache();
 
+			if (minY != 0)
+			{
+				firstNonZeroY = minY;
+			}
+
 			// find ranges
 			for (CodeCacheEvent event : codeCacheEvents)
 			{
@@ -90,6 +97,13 @@ public class CodeCacheStage extends AbstractGraphStage
 
 				if (freeCodeCache > 0)
 				{
+					if (minY == 0)
+					{
+						minY = freeCodeCache;
+
+						firstNonZeroY = minY;
+					}
+
 					if (freeCodeCache > maxY)
 					{
 						maxY = freeCodeCache;
@@ -104,11 +118,11 @@ public class CodeCacheStage extends AbstractGraphStage
 			drawAxes();
 
 			double lastCX = graphGapLeft + normaliseX(minX);
-			double lastCY = graphGapTop + normaliseY(firstEvent.getFreeCodeCache());
+			double lastCY = graphGapTop + normaliseY(firstNonZeroY);
 
 			Color colourLine = Color.BLUE;
 			double lineWidth = 2.0;
-
+			
 			for (CodeCacheEvent event : codeCacheEvents)
 			{
 				long stamp = event.getStamp();
@@ -120,10 +134,11 @@ public class CodeCacheStage extends AbstractGraphStage
 				{
 				case COMPILATION:
 					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, event, x);
+					lastCX = x;
+					lastCY = y;
 					break;
 
 				case SWEEPER:
-					y = addToGraph(lastCX, lastCY, colourLine, lineWidth, event, x);
 					showLabel("Sweep", Color.WHITE, x, y);
 					break;
 
@@ -131,9 +146,6 @@ public class CodeCacheStage extends AbstractGraphStage
 					showLabel("Code Cache Full", Color.RED, x, y);
 					break;
 				}
-
-				lastCY = y;
-				lastCX = x;
 			}
 
 			continueLineToEndOfXAxis(lastCX, lastCY, colourLine, lineWidth);
@@ -153,7 +165,7 @@ public class CodeCacheStage extends AbstractGraphStage
 		gc.setFill(colourLine);
 		gc.setStroke(colourLine);
 		gc.setLineWidth(lineWidth);
-
+		
 		gc.strokeLine(fix(lastCX), fix(lastCY), fix(x), fix(y));
 		return y;
 	}

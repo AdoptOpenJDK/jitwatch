@@ -15,6 +15,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_HEADER_TAGS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_AT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_FILE_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CLOSE_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE_FULL;
@@ -23,6 +24,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOTSPOT_LOG_D
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CDATA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OPEN_CLOSE_CDATA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PRINT_NMETHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_RELEASE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_START_COMPILE_THREAD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_SWEEPER;
@@ -32,6 +34,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,6 +50,7 @@ import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
 import org.adoptopenjdk.jitwatch.model.NumberedLine;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.parser.AbstractLogParser;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
@@ -59,17 +63,6 @@ public class HotSpotLogParser extends AbstractLogParser
 
 	private void checkIfErrorDialogNeeded()
 	{
-		if (!hasParseError)
-		{
-			if (!hasTraceClassLoad)
-			{
-				hasParseError = true;
-
-				errorDialogTitle = "Missing VM Switch -XX:+TraceClassLoading";
-				errorDialogBody = "JITWatch requires the -XX:+TraceClassLoading VM switch to be used.\nPlease recreate your log file with this switch enabled.";
-			}
-		}
-
 		if (hasParseError)
 		{
 			errorListener.handleError(errorDialogTitle, errorDialogBody);
@@ -140,10 +133,12 @@ public class HotSpotLogParser extends AbstractLogParser
 
 	private void parseAssemblyLines()
 	{
-		if (DEBUG_LOGGING)
+		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("parseAssemblyLines()");
 		}
+
+		AssemblyProcessor asmProcessor = new AssemblyProcessor(model.getJDKMajorVersion());
 
 		for (NumberedLine numberedLine : splitLog.getAssemblyLines())
 		{
@@ -199,7 +194,7 @@ public class HotSpotLogParser extends AbstractLogParser
 			logger.error("Exception while splitting log file", ioe);
 		}
 	}
-	
+
 	private boolean skipLine(final String line, final Set<String> skipSet)
 	{
 		boolean isSkip = false;
@@ -260,34 +255,57 @@ public class HotSpotLogParser extends AbstractLogParser
 				// jmh does this with perf annotations
 				// Ignore this line
 			}
-			else
+			else if (currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD) != -1)
 			{
 				// need to cope with nmethod appearing on same line as last hlt
 				// 0x0000 hlt <nmethod compile_id= ....
 
 				int indexNMethod = currentLine.indexOf(S_OPEN_ANGLE + TAG_NMETHOD);
 
-				if (indexNMethod != -1)
+				if (DEBUG_LOGGING)
 				{
-					if (DEBUG_LOGGING)
-					{
-						logger.debug("detected nmethod tag mangled with assembly");
-					}
-
-					String assembly = currentLine.substring(0, indexNMethod);
-
-					String remainder = currentLine.substring(indexNMethod);
-
-					numberedLine.setLine(assembly);
-
-					splitLog.addAssemblyLine(numberedLine);
-
-					handleLogLine(remainder);
+					logger.debug("detected nmethod tag mangled with assembly");
 				}
-				else
+
+				String assembly = currentLine.substring(0, indexNMethod);
+
+				String remainder = currentLine.substring(indexNMethod);
+
+				numberedLine.setLine(assembly);
+
+				splitLog.addAssemblyLine(numberedLine);
+
+				handleLogLine(remainder);
+
+			}
+			else if (currentLine.indexOf(S_OPEN_ANGLE + S_SLASH + TAG_PRINT_NMETHOD) != -1)
+			{
+				// need to cope with </print_nmethod> appearing on same last as
+				// last assembly statement
+				// ImmutableOopMap{rsi=Oop }pc offsets: 182 192 197 206 215
+				// </print_nmethod>
+
+				int indexClosePrintNmethod = currentLine.indexOf(S_OPEN_ANGLE + S_SLASH + TAG_PRINT_NMETHOD);
+
+				if (DEBUG_LOGGING)
 				{
-					splitLog.addAssemblyLine(numberedLine);
+					logger.debug("detected </print_nmethod> tag mangled with assembly");
 				}
+
+				String assembly = currentLine.substring(0, indexClosePrintNmethod);
+
+				String remainder = currentLine.substring(indexClosePrintNmethod);
+
+				numberedLine.setLine(assembly);
+
+				splitLog.addAssemblyLine(numberedLine);
+
+				handleLogLine(remainder);
+
+			}
+			else
+			{
+				splitLog.addAssemblyLine(numberedLine);
 			}
 		}
 	}
@@ -367,7 +385,6 @@ public class HotSpotLogParser extends AbstractLogParser
 		model.getJITStats().incCompilerThreads();
 	}
 
-
 	private void buildParsedClasspath()
 	{
 		if (DEBUG_LOGGING)
@@ -396,11 +413,6 @@ public class HotSpotLogParser extends AbstractLogParser
 
 	private void buildParsedClasspath(String inCurrentLine)
 	{
-		if (!hasTraceClassLoad)
-		{
-			hasTraceClassLoad = true;
-		}
-
 		final String FROM_SPACE = "from ";
 
 		String originalLocation = null;

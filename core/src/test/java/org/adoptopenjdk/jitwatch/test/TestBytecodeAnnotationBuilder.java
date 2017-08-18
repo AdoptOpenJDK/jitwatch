@@ -1723,7 +1723,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.9.0");
+		model.setVmVersionRelease("9");
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 

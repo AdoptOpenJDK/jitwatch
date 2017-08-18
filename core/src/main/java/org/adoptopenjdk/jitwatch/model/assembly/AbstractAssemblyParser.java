@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.model.assembly;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
@@ -24,7 +29,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 	{
 		this.architecture = architecture;
 	}
-	
+
 	public Architecture getArchitecture()
 	{
 		return architecture;
@@ -41,14 +46,15 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 		StringBuilder headerBuilder = new StringBuilder();
 
 		AssemblyBlock currentBlock = new AssemblyBlock();
-		currentBlock.setTitle(NATIVE_CODE_ENTRY_POINT);
 
 		AssemblyInstruction lastInstruction = null;
 
 		String lastLine = null;
 
-		AssemblyMethod method = null;
+		AssemblyMethod method = new AssemblyMethod(architecture);
 
+		boolean seenInstructions = false;
+		
 		for (int i = 0; i < lines.length; i++)
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
@@ -56,12 +62,13 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 				logger.debug("line: '{}'", lines[i]);
 			}
 
-			if (i == 0)
+			if (lines[i].trim().startsWith("# {method}"))
 			{
-				method = new AssemblyMethod(lines[i], architecture);
+				method.setAssemblyMethodSignature(lines[i]);
 			}
 
 			String line = lines[i].replace(S_ENTITY_APOS, S_QUOTE);
+
 			line = line.replaceFirst("^ +", "");
 
 			if (line.startsWith(S_HASH))
@@ -75,14 +82,21 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 			}
 			else if (line.startsWith(S_OPEN_SQUARE_BRACKET))
 			{
-				if (DEBUG_LOGGING_ASSEMBLY)
+				if (!"[Constants]".equals(line))
 				{
-					logger.debug("new AssemblyBlock: {}", line);
-				}
+					if (currentBlock.getTitle() != null)
+					{
+						method.addBlock(currentBlock);
 
-				method.addBlock(currentBlock);
-				currentBlock = new AssemblyBlock();
-				currentBlock.setTitle(line);
+						if (DEBUG_LOGGING_ASSEMBLY)
+						{
+							logger.debug("stored AssemblyBlock: {} at {}", currentBlock.getTitle(), method.getBlocks().size() - 1);
+						}
+					}
+
+					currentBlock = new AssemblyBlock();
+					currentBlock.setTitle(line);
+				}
 			}
 			else if (line.startsWith(S_SEMICOLON))
 			{
@@ -100,7 +114,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 			{
 				AssemblyInstruction instr = createInstruction(labels, line);
 
-				if (instr == null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
+				if (instr == null && lastLine != null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
 						&& !line.contains(' ' + S_HEX_PREFIX))
 				{
 					// remove last newline
@@ -112,7 +126,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 					// lastUntrimmedLine at end of loop
 					line = lastLine + line;
 				}
-				else if (instr == null && lastLine.trim().startsWith(S_SEMICOLON) && lastInstruction != null)
+				else if (instr == null && lastLine != null && lastLine.trim().startsWith(S_SEMICOLON) && lastInstruction != null)
 				{
 					lastInstruction.appendToLastCommentLine(line);
 
@@ -123,6 +137,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 				else
 				{
 					boolean replaceLast = false;
+
 					if (instr == null && i < lines.length - 1)
 					{
 						// try appending current and next lines together
@@ -148,6 +163,8 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 
 					if (instr != null)
 					{
+						seenInstructions = true;
+						
 						if (replaceLast)
 						{
 							currentBlock.replaceLastInstruction(instr);
@@ -155,17 +172,36 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 						else
 						{
 							currentBlock.addInstruction(instr);
+
+							if (DEBUG_LOGGING_ASSEMBLY)
+							{
+								logger.debug("Added instruction {} pos {}", instr.toString(),
+										currentBlock.getInstructions().size() - 1);
+							}
+						}
+
+						if (currentBlock.getTitle() == null)
+						{
+							currentBlock.setTitle(NATIVE_CODE_ENTRY_POINT);
 						}
 
 						lastInstruction = instr;
 					}
 					else
 					{
-						logger.error("Could not parse assembly: {}", line);
+						if (seenInstructions && !line.trim().startsWith("ImmutableOopMap"))
+						{
+							logger.error("Could not parse assembly: {}", line);
+						}
 					}
 				}
 			}
 			lastLine = line;
+		}
+
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("default AssemblyBlock: {} at {}", currentBlock.getTitle(), method.getBlocks().size());
 		}
 
 		method.addBlock(currentBlock);

@@ -7,6 +7,7 @@
 	<property name="test_classes" location="${target}/test-classes" />
 	<property name="lib" value="../lib" />
 	<property environment="env" />
+        <loadproperties srcfile="../build.properties"/>
 
 	<target name="clean">
 		<delete quiet="true" dir="${target}" />
@@ -65,7 +66,7 @@
 	<target name="jar" depends="test, doJar" />
 
 	<target name="doJar">
-		<jar destfile="${target}/jitwatch-core-1.1.6-SNAPSHOT.jar">
+		<jar destfile="${target}/jitwatch-core-${version}-SNAPSHOT.jar">
 			<fileset dir="${main_classes}">
 				<include name="**/*.class" />
 			</fileset>

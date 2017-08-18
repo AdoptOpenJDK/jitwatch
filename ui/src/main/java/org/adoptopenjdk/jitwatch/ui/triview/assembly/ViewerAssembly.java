@@ -268,7 +268,6 @@ public class ViewerAssembly extends Viewer
 			builder.append(" (stack pointer)");
 		}
 		
-		
 		if (input.startsWith("*"))
 		{
 			builder.append(" (indirect)");

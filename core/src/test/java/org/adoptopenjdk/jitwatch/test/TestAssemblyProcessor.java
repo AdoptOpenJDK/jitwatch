@@ -27,7 +27,7 @@ public class TestAssemblyProcessor
 {
 	private JITDataModel model;
 
-	private static final String[] SINGLE_ASSEMBLY_METHOD = new String[] {
+	private static final String[] JDK8_SINGLE_ASSEMBLY_METHOD = new String[] {
 			"Decoding compiled method 0x00007f7d73364190:",
 			"Code:",
 			"[Disassembling for mach=&apos;i386:x86-64&apos;]",
@@ -71,14 +71,16 @@ public class TestAssemblyProcessor
 	@Test
 	public void testSingleAsmMethod() throws ClassNotFoundException
 	{
-		String[] lines = SINGLE_ASSEMBLY_METHOD;
+		String[] lines = JDK8_SINGLE_ASSEMBLY_METHOD;
 
 		String nmethodAddress = "0x00007f7d73364190";
 
 		IMetaMember createdMember = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod", void.class,
 				new Class<?>[0], nmethodAddress);
-
-		performAssemblyParsingOn(lines);
+		
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 
 		AssemblyMethod assemblyMethod = createdMember.getLastCompilation().getAssembly();
 
@@ -371,8 +373,10 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
@@ -390,9 +394,9 @@ public class TestAssemblyProcessor
 		assertEquals(4, instructions.size());
 	}
 
-	private void performAssemblyParsingOn(String[] lines)
+	private AssemblyProcessor performAssemblyParsingOn(int jdkMajorVersion, String[] lines)
 	{
-		AssemblyProcessor asmProcessor = new AssemblyProcessor();
+		AssemblyProcessor asmProcessor = new AssemblyProcessor(jdkMajorVersion);
 
 		for (String line : lines)
 		{
@@ -405,9 +409,8 @@ public class TestAssemblyProcessor
 		}
 
 		asmProcessor.complete();
-
-		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
-
+		
+		return asmProcessor;
 	}
 
 	@Test
@@ -440,7 +443,9 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress);
 
-		performAssemblyParsingOn(lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+				
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 
 		assertNotNull(member);
 
@@ -508,8 +513,10 @@ public class TestAssemblyProcessor
 		IMetaMember member2 = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress2);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
@@ -592,8 +599,10 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, "java.lang.String", "hashCode", int.class, new Class<?>[0],
 				nmethodAddress1);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
@@ -657,8 +666,10 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		assertNotNull(member);
 
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
@@ -715,8 +726,10 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod2", void.class,
 				new Class<?>[] { Class.forName("[Ljava.lang.String;") }, nmethodAddress1);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
@@ -780,8 +793,10 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
-		performAssemblyParsingOn(lines);
-
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		
+		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
+		
 		AssemblyMethod assemblyMethod = member.getLastCompilation().getAssembly();
 
 		assertNotNull(assemblyMethod);
@@ -800,5 +815,149 @@ public class TestAssemblyProcessor
 		AssemblyBlock block1 = asmBlocks.get(1);
 		List<AssemblyInstruction> instructions1 = block1.getInstructions();
 		assertEquals(9, instructions1.size());
+	}
+	
+	@Test
+	public void testJDK9NativeAndNonNativeAssembly()
+	{
+		String[] lines  = new String[]{
+				"Compiled method (c1)     142   35       3       java.nio.DirectLongBufferU::ix (10 bytes)",
+				" total in heap  [0x00007f81ed8e7b10,0x00007f81ed8e7eb0] = 928",
+				" relocation     [0x00007f81ed8e7c80,0x00007f81ed8e7ca8] = 40",
+				" main code      [0x00007f81ed8e7cc0,0x00007f81ed8e7da0] = 224",
+				" stub code      [0x00007f81ed8e7da0,0x00007f81ed8e7e30] = 144",
+				" metadata       [0x00007f81ed8e7e30,0x00007f81ed8e7e38] = 8",
+				" scopes data    [0x00007f81ed8e7e38,0x00007f81ed8e7e58] = 32",
+				" scopes pcs     [0x00007f81ed8e7e58,0x00007f81ed8e7ea8] = 80",
+				" dependencies   [0x00007f81ed8e7ea8,0x00007f81ed8e7eb0] = 8",
+				"----------------------------------------------------------------------",
+				"Loaded disassembler from /home/chris/jdk-9/lib/server/hsdis-amd64.so",
+				"java/nio/DirectLongBufferU.ix(I)J  [0x00007f81ed8e7cc0, 0x00007f81ed8e7e30]  368 bytes",
+				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
+				"[Entry Point]",
+				"[Constants]",
+				"  # {method} {0x00007f81c0354508} &apos;ix&apos; &apos;(I)J&apos; in &apos;java/nio/DirectLongBufferU&apos;",
+				"  # this:     rsi:rsi   = &apos;java/nio/DirectLongBufferU&apos;",
+				"  # parm0:    rdx       = int",
+				"  #           [sp+0x50]  (sp of caller)",
+				"  0x00007f81ed8e7cc0: mov    0x8(%rsi),%r10d",
+				"  0x00007f81ed8e7cc4: shl    $0x3,%r10",
+				"  0x00007f81ed8e7cc8: cmp    %rax,%r10",
+				"  0x00007f81ed8e7ccb: jne    0x00007f81ed395000  ;   {runtime_call ic_miss_stub}",
+				"  0x00007f81ed8e7cd1: data16 data16 nopw 0x0(%rax,%rax,1)",
+				"  0x00007f81ed8e7cdc: data16 data16 xchg %ax,%ax",
+				"[Verified Entry Point]",
+				"  0x00007f81ed8e7ce0: mov    %eax,-0x14000(%rsp)",
+				"  0x00007f81ed8e7ce7: push   %rbp",
+				"  0x00007f81ed8e7ce8: sub    $0x40,%rsp",
+				"  0x00007f81ed8e7cec: movabs $0x7f81c039bed8,%rcx  ;   {metadata(method data for {method} {0x00007f81c0354508} &apos;ix&apos; &apos;(I)J&apos; in &apos;java/nio/DirectLongBufferU&apos;)}",
+				"  0x00007f81ed8e7cf6: mov    0xfc(%rcx),%eax",
+				"  0x00007f81ed8e7cfc: add    $0x8,%eax",
+				"  0x00007f81ed8e7cff: mov    %eax,0xfc(%rcx)",
+				"  0x00007f81ed8e7d05: and    $0x1ff8,%eax",
+				"  0x00007f81ed8e7d0b: cmp    $0x0,%eax",
+				"  0x00007f81ed8e7d9b: hlt    ",
+				"  0x00007f81ed8e7d9c: hlt    ",
+				"  0x00007f81ed8e7d9d: hlt    ",
+				"  0x00007f81ed8e7d9e: hlt    ",
+				"  0x00007f81ed8e7d9f: hlt    ",
+				"[Exception Handler]",
+				"[Stub Code]",
+				"  0x00007f81ed8e7da0: callq  0x00007f81ed3cbb80  ;   {no_reloc}",
+				"  0x00007f81ed8e7da5: mov    %rsp,-0x28(%rsp)",
+				"  0x00007f81ed8e7daa: sub    $0x80,%rsp",
+				"  0x00007f81ed8e7db1: mov    %rax,0x78(%rsp)",
+				"  0x00007f81ed8e7df2: mov    %r14,0x8(%rsp)",
+				"  0x00007f81ed8e7df7: mov    %r15,(%rsp)",
+				"  0x00007f81ed8e7dfb: movabs $0x7f820db02afa,%rdi  ;   {external_word}",
+				"  0x00007f81ed8e7e05: movabs $0x7f81ed8e7da5,%rsi  ;   {internal_word}",
+				"  0x00007f81ed8e7e0f: mov    %rsp,%rdx",
+				"  0x00007f81ed8e7e12: and    $0xfffffffffffffff0,%rsp",
+				"  0x00007f81ed8e7e16: callq  0x00007f820d7ac350  ;   {runtime_call MacroAssembler::debug64(char*, long, long*)}",
+				"  0x00007f81ed8e7e1b: hlt    ",
+				"[Deopt Handler Code]",
+				"  0x00007f81ed8e7e1c: movabs $0x7f81ed8e7e1c,%r10  ;   {section_word}",
+				"  0x00007f81ed8e7e26: push   %r10",
+				"  0x00007f81ed8e7e28: jmpq   0x00007f81ed396820  ;   {runtime_call DeoptimizationBlob}",
+				"  0x00007f81ed8e7e2d: hlt    ",
+				"  0x00007f81ed8e7e2e: hlt    ",
+				"  0x00007f81ed8e7e2f: hlt    ",
+				"",
+				"ImmutableOopMap{rsi=Oop }pc offsets: 142 </print_nmethod>",
+				"----------------------------------------------------------------------",
+				"java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V  [0x00007f81f4e124e0, 0x00007f81f4e126e8]  520 bytes",
+				"[Entry Point]",
+				"  # {method} {0x00007f81c00ca6b0} &apos;arraycopy&apos; &apos;(Ljava/lang/Object;ILjava/lang/Object;II)V&apos; in &apos;java/lang/System&apos;",
+				"  # parm0:    rsi:rsi   = &apos;java/lang/Object&apos;",
+				"  # parm1:    rdx       = int",
+				"  # parm2:    rcx:rcx   = &apos;java/lang/Object&apos;",
+				"  # parm3:    r8        = int",
+				"  # parm4:    r9        = int",
+				"  #           [sp+0x60]  (sp of caller)",
+				"  0x00007f81f4e124e0: mov    0x8(%rsi),%r10d",
+				"  0x00007f81f4e124e4: shl    $0x3,%r10",
+				"  0x00007f81f4e124e8: cmp    %r10,%rax",
+				"  0x00007f81f4e124eb: je     0x00007f81f4e124f8",
+				"  0x00007f81f4e124f1: jmpq   0x00007f81ed395000  ;   {runtime_call ic_miss_stub}",
+				"  0x00007f81f4e124f6: xchg   %ax,%ax",
+				"[Verified Entry Point]",
+				"  0x00007f81f4e124f8: mov    %eax,-0x14000(%rsp)",
+				"  0x00007f81f4e124ff: push   %rbp",
+				"  0x00007f81f4e12500: mov    %rsp,%rbp",
+				"  0x00007f81f4e12503: sub    $0x50,%rsp",
+				"  0x00007f81f4e126e4: hlt    ",
+				"  0x00007f81f4e126e5: hlt    ",
+				"  0x00007f81f4e126e6: hlt    ",
+				"  0x00007f81f4e126e7: hlt    ",
+				"Compiled method (c1)     144   37       3       java.lang.String::length (11 bytes)",
+				" total in heap  [0x00007f81ed8e7f10,0x00007f81ed8e8458] = 1352",
+				" relocation     [0x00007f81ed8e8080,0x00007f81ed8e80b8] = 56",
+				" main code      [0x00007f81ed8e80c0,0x00007f81ed8e82a0] = 480",
+				" stub code      [0x00007f81ed8e82a0,0x00007f81ed8e8330] = 144",
+				" metadata       [0x00007f81ed8e8330,0x00007f81ed8e8340] = 16",
+				" scopes data    [0x00007f81ed8e8340,0x00007f81ed8e8390] = 80",
+				" scopes pcs     [0x00007f81ed8e8390,0x00007f81ed8e8440] = 176",
+				" dependencies   [0x00007f81ed8e8440,0x00007f81ed8e8448] = 8",
+				" nul chk table  [0x00007f81ed8e8448,0x00007f81ed8e8458] = 16",
+				"----------------------------------------------------------------------",
+				"java/lang/String.length()I  [0x00007f81ed8e80c0, 0x00007f81ed8e8330]  624 bytes",
+				"[Entry Point]",
+				"[Constants]",
+				"  # {method} {0x00007f81c00adc40} &apos;length&apos; &apos;()I&apos; in &apos;java/lang/String&apos;",
+				"  #           [sp+0x40]  (sp of caller)",
+				"  0x00007f81ed8e80c0: mov    0x8(%rsi),%r10d",
+				"  0x00007f81ed8e80c4: shl    $0x3,%r10",
+				"  0x00007f81ed8e80c8: cmp    %rax,%r10",
+				"  0x00007f81ed8e80cb: jne    0x00007f81ed395000  ;   {runtime_call ic_miss_stub}",
+				"  0x00007f81ed8e80d1: data16 data16 nopw 0x0(%rax,%rax,1)",
+				"  0x00007f81ed8e80dc: data16 data16 xchg %ax,%ax",
+				"[Verified Entry Point]",
+				"  0x00007f81ed8e80e0: mov    %eax,-0x14000(%rsp)",
+				"  0x00007f81ed8e80e7: push   %rbp",
+				"  0x00007f81ed8e80e8: sub    $0x30,%rsp"
+				};
+		
+
+		performAssemblyParsingOn(9 ,lines);
+
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(9,lines);
+		
+		assertEquals(3, asmProcessor.getAssemblyMethods().size());
+		
+		AssemblyMethod method0 = asmProcessor.getAssemblyMethods().get(0);
+		AssemblyMethod method1 = asmProcessor.getAssemblyMethods().get(1);
+		AssemblyMethod method2 = asmProcessor.getAssemblyMethods().get(2);
+		
+		assertEquals("# {method} {0x00007f81c0354508} 'ix' '(I)J' in 'java/nio/DirectLongBufferU'", method0.getAssemblyMethodSignature());
+		assertEquals("# {method} {0x00007f81c00ca6b0} 'arraycopy' '(Ljava/lang/Object;ILjava/lang/Object;II)V' in 'java/lang/System'", method1.getAssemblyMethodSignature());
+		assertEquals("# {method} {0x00007f81c00adc40} 'length' '()I' in 'java/lang/String'", method2.getAssemblyMethodSignature());
+		
+		assertEquals("0x00007f81ed8e7b10", method0.getNativeAddress());
+		assertEquals("0x00007f81ed8e7cc0", method0.getEntryAddress());
+
+		assertEquals("0x00007f81f4e124e0", method1.getEntryAddress());
+		
+		assertEquals("0x00007f81ed8e7f10", method2.getNativeAddress());
+		assertEquals("0x00007f81ed8e80c0", method2.getEntryAddress());		
 	}
 }

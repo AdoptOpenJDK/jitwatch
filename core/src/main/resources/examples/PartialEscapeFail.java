@@ -34,7 +34,7 @@ public class PartialEscapeFail
 
         for (int i = 0; i < 100_000_000; i++)
         {
-            Integer integer = new Integer(i);
+            Integer integer = Integer.valueOf(i);
 
             if (random.nextBoolean())
             {

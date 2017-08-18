@@ -38,7 +38,7 @@ public final class DisassemblyUtil
 			{
 				logger.debug("looking for hsdis binary: {}", hsdisFile);
 			}
-			
+
 			if (hsdisFile.exists() && hsdisFile.isFile())
 			{
 				found = true;
@@ -52,6 +52,11 @@ public final class DisassemblyUtil
 	{
 		String javaHome = System.getProperty("java.home");
 
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("java.home is {}", javaHome);
+		}
+
 		Path hsdisPath = Paths.get(javaHome);
 
 		Path hsdisPathJRE = Paths.get(hsdisPath.toString(), "jre", "lib");
@@ -59,15 +64,30 @@ public final class DisassemblyUtil
 		if (hsdisPathJRE.toFile().exists())
 		{
 			hsdisPath = hsdisPathJRE;
+
+			if (DEBUG_LOGGING_ASSEMBLY)
+			{
+				logger.debug("jre lib folder found {}", hsdisPathJRE);
+			}
 		}
 		else
 		{
 			hsdisPath = Paths.get(hsdisPath.toString(), "lib");
 		}
 
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("looking in {}", hsdisPath);
+		}
+
 		OperatingSystem os = OSUtil.getOperatingSystem();
 		Architecture arch = OSUtil.getArchitecture();
-		
+
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("OS: {} Arch: {}", os, arch);
+		}
+
 		String binaryName = null;
 
 		switch (arch)
@@ -82,14 +102,20 @@ public final class DisassemblyUtil
 		{
 			binaryName = "hsdis-amd64";
 
-			if (os != null && !os.equals(OperatingSystem.MAC))
+			Path hsdisPathAMD64 = Paths.get(hsdisPath.toString(), "amd64");
+
+			if (hsdisPathAMD64.toFile().exists())
 			{
-				hsdisPath = Paths.get(hsdisPath.toString(), "amd64", "server");
+				hsdisPath = hsdisPathAMD64;
 			}
-			else
+
+			Path hsdisPathServer = Paths.get(hsdisPath.toString(), "server");
+
+			if (hsdisPathServer.toFile().exists())
 			{
-				hsdisPath = Paths.get(hsdisPath.toString(), "server");
+				hsdisPath = hsdisPathServer;
 			}
+
 			break;
 		}
 		case ARM_32:
@@ -102,7 +128,8 @@ public final class DisassemblyUtil
 		case ARM_64:
 		{
 			binaryName = "hsdis-arm";
-			hsdisPath = Paths.get(hsdisPath.toString(), "arm64", "server"); // TODO untested
+			hsdisPath = Paths.get(hsdisPath.toString(), "arm64", "server"); // TODO
+																			// untested
 			break;
 		}
 		default:
