@@ -62,6 +62,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.process.javap.JavapProcess;
+import org.adoptopenjdk.jitwatch.process.javap.ReflectionJavap;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,39 +114,51 @@ public final class BytecodeLoader
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, Path javapPath,
 			boolean cacheBytecode)
-	{
+	{		
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
 
-			logger.info("Class locations: {}", StringUtil.listToString(classLocations));
+			logger.debug("Class locations: {}", StringUtil.listToString(classLocations));
 		}
 
+		ClassBC classBytecode = null;
+			
 		try
-		{
-			JavapProcess javapProcess;
-
-			if (javapPath != null)
+		{		
+			String byteCodeString = null;
+			
+			if (ReflectionJavap.canUseReflectionJavap())
 			{
-				javapProcess = new JavapProcess(javapPath);
+				byteCodeString = ReflectionJavap.getBytecode(classLocations, fqClassName);
 			}
 			else
 			{
-				javapProcess = new JavapProcess();
+				JavapProcess javapProcess;
+	
+				if (javapPath != null)
+				{
+					javapProcess = new JavapProcess(javapPath);
+				}
+				else
+				{
+					javapProcess = new JavapProcess();
+				}
+	
+				javapProcess.execute(classLocations, fqClassName);
+	
+				byteCodeString = javapProcess.getOutputStream();
+	
 			}
-
-			javapProcess.execute(classLocations, fqClassName);
-
-			String byteCodeString = javapProcess.getOutputStream();
-
-			return parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
+			
+			classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);			
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Could not fetch bytecode for {}", fqClassName, e);
 		}
 
-		return null;
+		return classBytecode;
 	}
 
 	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString, boolean cacheBytecode)
