@@ -91,6 +91,35 @@ public class JarScan
 		}
 	}
 
+	public void iterateFolder(File root, File folder) throws IOException
+	{
+		int rootLength = root.getAbsolutePath().length() + 1;
+
+		List<String> classLocations = new ArrayList<>();
+
+		classLocations.add(root.getPath());
+
+		File[] children = folder.listFiles();
+
+		for (File child : children)
+		{
+			String fileName = child.getAbsolutePath();
+
+			fileName = fileName.substring(rootLength, fileName.length());
+
+			if (child.isFile() && fileName.endsWith(S_DOT_CLASS))
+			{
+				String fqName = fileName.replace(S_SLASH, S_DOT).substring(0, fileName.length() - S_DOT_CLASS.length());
+
+				process(classLocations, fqName);
+			}
+			else if (child.isDirectory())
+			{
+				iterateFolder(root, child);
+			}
+		}
+	}
+
 	public void addAllowedPackagePrefix(String prefix)
 	{
 		allowedPackagePrefixes.add(prefix);
@@ -161,7 +190,7 @@ public class JarScan
 
 		String SEPARATOR = "---------------------------------------------------------------------------------------------------";
 
-		builder.append("JarScan --mode=<mode> [options] [params] <jars>").append(S_NEWLINE);
+		builder.append("JarScan --mode=<mode> [options] [params] <jars and class folders>").append(S_NEWLINE);
 		builder.append(SEPARATOR).append(S_NEWLINE);
 		builder.append("Options:").append(S_NEWLINE);
 		builder.append("     --packages=a,b,c     Only include methods from named packages. E.g. --packages=java.util.*")
@@ -391,15 +420,22 @@ public class JarScan
 				continue;
 			}
 
-			File jarFile = new File(arg);
+			File fileArg = new File(arg);
 
-			if (jarFile.exists() && jarFile.isFile())
+			if (fileArg.exists())
 			{
-				scanner.iterateJar(jarFile);
+				if (fileArg.isFile())
+				{
+					scanner.iterateJar(fileArg);
+				}
+				else if (fileArg.isDirectory())
+				{
+					scanner.iterateFolder(fileArg, fileArg);
+				}
 			}
 			else
 			{
-				System.err.println("Could not scan jar " + jarFile.toString());
+				System.err.println("Could not scan " + fileArg.toString());
 			}
 		}
 
