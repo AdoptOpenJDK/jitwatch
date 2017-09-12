@@ -9,6 +9,8 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 <h3>For instructions and screenshots see the wiki</h3>
 <h3>https://github.com/AdoptOpenJDK/jitwatch/wiki</h3>
 
+The JITWatch user interface is built using JavaFX. This is included in the Oracle JDK. If you are using a JDK that does not include JavaFX (e.g. Azul Zulu, or some flavour of packaged OpenJDK on Linux) then you can download a pre-built OpenJFX jar from https://chriswhocodes.com and put it in your build classpath.
+
 <h2>ant</h2>
 <pre>ant clean compile test run</pre>
 
