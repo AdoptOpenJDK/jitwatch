@@ -48,23 +48,6 @@ public final class UserInterfaceUtil
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 
-	public static void getBytecodeAndUpdateUI(final IMetaMember member, final IReadOnlyJITDataModel model,
-			final List<String> classLocations, final BytecodeReceivingRunnable bcRunnable)
-	{
-		new Thread(new Runnable()
-		{
-			public void run()
-			{
-				ClassBC classBC = member.getMetaClass().getClassBytecode(model, classLocations);
-
-				bcRunnable.setClassBC(classBC);
-
-				Platform.runLater(bcRunnable);
-			}
-		}).start();
-
-	}
-
 	private static Image loadResource(String path)
 	{
 		InputStream inputStream = UserInterfaceUtil.class.getResourceAsStream(path);

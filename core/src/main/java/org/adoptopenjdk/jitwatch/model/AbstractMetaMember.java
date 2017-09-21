@@ -49,7 +49,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	protected MetaClass metaClass;
 	private List<Compilation> compilations;
-	private int selectedCompilation;
+	private int selectedCompilationIndex;
 
 	private boolean isCompiled = false;
 
@@ -402,14 +402,14 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		compilations.add(compilation);
 
-		selectedCompilation = compilations.size() - 1;
+		selectedCompilationIndex = compilations.size() - 1;
 	}
 
 	private Compilation createCompilation()
 	{
 		int nextIndex = compilations.size();
 
-		selectedCompilation = nextIndex;
+		selectedCompilationIndex = nextIndex;
 
 		return new Compilation(this, nextIndex);
 	}
@@ -664,13 +664,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	@Override
 	public void setSelectedCompilation(int index)
 	{
-		this.selectedCompilation = makeSafeIndex(index);
+		this.selectedCompilationIndex = makeSafeIndex(index);
 	}
 
 	@Override
 	public Compilation getSelectedCompilation()
 	{
-		return getCompilation(selectedCompilation);
+		return getCompilation(selectedCompilationIndex);
 	}
 
 	@Override

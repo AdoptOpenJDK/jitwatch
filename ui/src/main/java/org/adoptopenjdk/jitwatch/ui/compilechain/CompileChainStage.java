@@ -7,10 +7,18 @@ package org.adoptopenjdk.jitwatch.ui.compilechain;
 
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
+import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.ui.compilationchooser.CompilationChooser;
+import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
+import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.EventHandler;
@@ -19,6 +27,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -27,18 +36,19 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class CompileChainStage extends Stage
+public class CompileChainStage extends Stage implements ICompilationChangeListener, IRedrawable
 {
 	private ScrollPane scrollPane;
 	private Pane pane;
 	private IStageAccessProxy stageAccess;
+	private CompilationChooser compilationChooser;
 
 	private CompileNode rootNode;
 
 	private static final double X_OFFSET = 16;
 	private static final double Y_OFFSET = 16;
 
-	private double y = Y_OFFSET;
+	private double y;
 
 	private static final double X_GAP = 25;
 
@@ -52,42 +62,82 @@ public class CompileChainStage extends Stage
 		public Text text;
 	}
 
-	public CompileChainStage(final IStageAccessProxy stageAccess, CompileNode root)
+	private IReadOnlyJITDataModel model;
+
+	public CompileChainStage(IMemberSelectedListener selectionListener, final IStageAccessProxy stageAccess,
+			IReadOnlyJITDataModel model)
 	{
 		initStyle(StageStyle.DECORATED);
 
 		this.stageAccess = stageAccess;
 
-		this.rootNode = root;
+		this.model = model;
 
 		scrollPane = new ScrollPane();
+
 		pane = new Pane();
 
 		scrollPane.setContent(pane);
 
-		Scene scene = UserInterfaceUtil.getScene(scrollPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		compilationChooser = new CompilationChooser(selectionListener);
 
-		setTitle("Compile Chain: " + root.getMemberName() + " " + root.getCompilation().getSignature());
+		VBox verticalLayout = new VBox();
+
+		verticalLayout.getChildren().addAll(compilationChooser.getCombo(), scrollPane);
+
+		Scene scene = UserInterfaceUtil.getScene(verticalLayout, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+
+		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
+
+		pane.widthProperty().addListener(resizeListener);
+		pane.heightProperty().addListener(resizeListener);
 
 		setScene(scene);
-
-		redraw();
 	}
 
-	private void redraw()
+	@Override
+	public void compilationChanged(IMetaMember member)
 	{
-		showKey();
+		compilationChooser.compilationChanged(member);
 
-		show(rootNode, X_OFFSET, Y_OFFSET, 0);
-
-		if (rootNode.getChildren().isEmpty())
+		if (member != null)
 		{
-			Text text = new Text("No method calls made by " + rootNode.getMemberName() + " were inlined or JIT compiled");
-			text.setX(fix(X_OFFSET));
-			text.setY(fix(y));
-			text.setStrokeWidth(1.0);
+			buildTree(member);
+		}
+		else
+		{
+			rootNode = null;
+			redraw();
+		}
+	}
 
-			pane.getChildren().add(text);
+	private void clear()
+	{
+		y = Y_OFFSET;
+
+		pane.getChildren().clear();
+
+		showKey();
+	}
+
+	@Override
+	public void redraw()
+	{
+		if (rootNode != null)
+		{
+			clear();			
+			
+			show(rootNode, X_OFFSET, Y_OFFSET, 0);
+
+			if (rootNode.getChildren().isEmpty())
+			{
+				Text text = new Text("No method calls made by " + rootNode.getMemberName() + " were inlined or JIT compiled");
+				text.setX(fix(X_OFFSET));
+				text.setY(fix(y));
+				text.setStrokeWidth(1.0);
+
+				pane.getChildren().add(text);
+			}
 		}
 	}
 
@@ -268,5 +318,40 @@ public class CompileChainStage extends Stage
 				stageAccess.openTriView(node.getMember(), true);
 			}
 		});
+	}
+
+	private void buildTree(IMetaMember member)
+	{
+		Compilation selectedCompilation = member.getSelectedCompilation();
+		
+		String title = "Compile Chain: ";
+
+		if (selectedCompilation != null)
+		{
+			CompileChainWalker walker = new CompileChainWalker(model);
+
+			CompileNode root = walker.buildCallTree(selectedCompilation);
+
+			this.rootNode = root;
+
+			title += root.getMemberName() + " " + root.getCompilation().getSignature();
+
+			setTitle(title);
+		}
+		else
+		{
+			rootNode = null;
+			
+			clear();
+			
+			Text text = new Text(member.toString() + " was not JIT compiled");
+			text.setX(fix(X_OFFSET));
+			text.setY(fix(y));
+			text.setStrokeWidth(1.0);
+
+			pane.getChildren().add(text);
+		}
+
+		redraw();
 	}
 }

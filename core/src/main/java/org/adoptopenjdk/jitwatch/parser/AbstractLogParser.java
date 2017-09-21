@@ -213,7 +213,7 @@ public abstract class AbstractLogParser implements ILogParser
 		inHeader = false;
 
 		currentMember = null;
-
+		
 		vmCommand = null;
 
 		parseLineNumber = 0;

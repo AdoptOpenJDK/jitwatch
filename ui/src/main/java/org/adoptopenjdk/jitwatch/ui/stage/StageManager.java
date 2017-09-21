@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
@@ -31,22 +33,41 @@ public class StageManager
 {
 	private static Map<Stage, List<Stage>> openStages = new HashMap<>();
 
-	private static List<IStageClosedListener> listeners = new ArrayList<>();
+	private static List<IStageClosedListener> listenerStageClosed = new ArrayList<>();
+	private static List<ICompilationChangeListener> listenerCompilationChanged = new ArrayList<>();
 
 	private StageManager()
 	{
 	}
 
-	public static void registerListener(IStageClosedListener listener)
+	public static void registerStageClosedListener(IStageClosedListener listener)
 	{
-		listeners.add(listener);
+		listenerStageClosed.add(listener);
 	}
 
-	private static void notifyListeners(Stage stage)
+	public static void registerCompilationChangeListener(ICompilationChangeListener listener)
 	{
-		for (IStageClosedListener listener : listeners)
+		listenerCompilationChanged.add(listener);
+	}
+
+	public static void notifyCompilationChanged(IMetaMember member)
+	{
+		for (ICompilationChangeListener listener : listenerCompilationChanged)
+		{
+			listener.compilationChanged(member);
+		}
+	}
+
+	private static void notifyStageClosedListeners(Stage stage)
+	{
+		for (IStageClosedListener listener : listenerStageClosed)
 		{
 			listener.handleStageClosed(stage);
+
+			if (stage instanceof ICompilationChangeListener)
+			{
+				listenerCompilationChanged.remove((ICompilationChangeListener) stage);
+			}
 		}
 	}
 
@@ -127,7 +148,7 @@ public class StageManager
 			scene.setRoot(newTopNode);
 		}
 	}
-	
+
 	public static void addAndShow(final Stage parent, final Stage childStage)
 	{
 		addAndShow(parent, childStage, null);
@@ -146,6 +167,11 @@ public class StageManager
 
 		childrenOfParent.add(childStage);
 
+		if (childStage instanceof ICompilationChangeListener)
+		{
+			registerCompilationChangeListener((ICompilationChangeListener)childStage);
+		}
+		
 		if (UserInterfaceUtil.ADD_CLOSE_DECORATION)
 		{
 			addCloseButton(childStage);
@@ -160,7 +186,7 @@ public class StageManager
 				{
 					closedListener.handleStageClosed(childStage);
 				}
-				
+
 				closeStage(childStage);
 			}
 		});
@@ -206,7 +232,7 @@ public class StageManager
 			}
 		}
 
-		notifyListeners(stage);
+		notifyStageClosedListeners(stage);
 
 		openStages.remove(stage);
 

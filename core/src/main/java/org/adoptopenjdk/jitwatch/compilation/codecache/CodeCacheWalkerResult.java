@@ -28,6 +28,8 @@ public class CodeCacheWalkerResult
 	public void reset()
 	{
 		events.clear();
+		lowestAddress = 0;
+		highestAddress = 0;
 	}
 
 	public void addEvent(CodeCacheEvent event)
@@ -71,5 +73,12 @@ public class CodeCacheWalkerResult
 	public long getHighestAddress()
 	{
 		return highestAddress;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CodeCacheWalkerResult [events=" + events + ", lowestAddress=" + lowestAddress + ", highestAddress=" + highestAddress
+				+ "]";
 	}
 }

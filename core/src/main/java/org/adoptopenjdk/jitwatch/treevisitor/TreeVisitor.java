@@ -23,9 +23,9 @@ public final class TreeVisitor
 		visitable.reset();
 
 		List<MetaPackage> roots = model.getPackageManager().getRootPackages();
-
+				
 		for (MetaPackage mp : roots)
-		{
+		{			
 			walkPackage(mp, visitable);
 		}
 	}

@@ -37,15 +37,17 @@ public class ClassTree extends VBox
 
 	private boolean sameVmCommand;
 	private Set<String> openPackageNodes = new HashSet<>();
-	
+
 	private CheckBox cbHideInterfaces;
 	private CheckBox cbHideUncompiled;
-	
+
+	private boolean selectedProgrammatically = false;
+
 	public ClassTree(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.parent = parent;
 		this.config = config;
-		
+
 		final String cbStyle = "-fx-background-color:#dddddd; -fx-padding:4px";
 
 		cbHideInterfaces = new CheckBox("Hide interfaces");
@@ -60,7 +62,7 @@ public class ClassTree extends VBox
 				config.setHideInterfaces(newVal);
 				config.saveConfig();
 
-				parent.clearAndRefreshTreeView();
+				parent.clearAndRefreshTreeView(true);
 			}
 		});
 
@@ -78,7 +80,7 @@ public class ClassTree extends VBox
 				config.setShowOnlyCompiledClasses(newVal);
 				config.saveConfig();
 
-				parent.clearAndRefreshTreeView();
+				parent.clearAndRefreshTreeView(true);
 			}
 		});
 
@@ -99,13 +101,16 @@ public class ClassTree extends VBox
 			public void changed(ObservableValue<? extends TreeItem<Object>> observableValue, TreeItem<Object> oldItem,
 					TreeItem<Object> newItem)
 			{
-				if (newItem != null)
+				if (!selectedProgrammatically)
 				{
-					Object value = newItem.getValue();
-
-					if (value instanceof MetaClass)
+					if (newItem != null)
 					{
-						parent.metaClassSelectedFromClassTree((MetaClass) value);
+						Object value = newItem.getValue();
+
+						if (value instanceof MetaClass)
+						{
+							parent.metaClassSelectedFromClassTree((MetaClass) value);
+						}
 					}
 				}
 			}
@@ -121,11 +126,16 @@ public class ClassTree extends VBox
 
 		treeView.prefHeightProperty().bind(heightProperty());
 	}
-	
+
 	public void handleConfigUpdate(JITWatchConfig config)
 	{
 		cbHideInterfaces.setSelected(config.isHideInterfaces());
 		cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
+	}
+	
+	public boolean isHidingClassesWithNoCompiledMethods()
+	{
+		return cbHideInterfaces.isSelected();
 	}
 
 	private TreeItem<Object> findOrCreateTreeItem(final TreeItem<Object> parent, final Object value)
@@ -195,7 +205,7 @@ public class ClassTree extends VBox
 						}
 					}
 				});
-				
+
 				if (sameVmCommand && openPackageNodes.contains(packageName))
 				{
 					found.setExpanded(true);
@@ -221,7 +231,7 @@ public class ClassTree extends VBox
 
 		return found;
 	}
-	
+
 	public void clearOpenPackageHistory()
 	{
 		openPackageNodes.clear();
@@ -233,18 +243,19 @@ public class ClassTree extends VBox
 	}
 
 	/*
-	 * @param boolean sameVmCommand. Same class file executed so maintain expanded nodes.
+	 * @param boolean sameVmCommand. Same class file executed so maintain
+	 * expanded nodes.
 	 */
 	public void showTree(boolean sameVmCommand)
-	{		
+	{
 		this.sameVmCommand = sameVmCommand;
-		
+
 		List<MetaPackage> roots = parent.getPackageManager().getRootPackages();
 
 		for (MetaPackage mp : roots)
 		{
 			boolean allowed = true;
-			
+
 			if (!mp.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
 			{
 				allowed = false;
@@ -306,7 +317,9 @@ public class ClassTree extends VBox
 
 	public void select(TreeItem<Object> node)
 	{
+		selectedProgrammatically = true;
 		treeView.getSelectionModel().select(node);
+		selectedProgrammatically = false;
 	}
 
 	public void scrollTo(int rowsAbove)

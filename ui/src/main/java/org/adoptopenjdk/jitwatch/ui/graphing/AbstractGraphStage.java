@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,9 +15,9 @@ import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
+import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
+import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -26,7 +26,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public abstract class AbstractGraphStage extends Stage
+public abstract class AbstractGraphStage extends Stage implements IRedrawable
 {
 	protected Canvas canvas;
 	protected GraphicsContext gc;
@@ -89,19 +89,10 @@ public abstract class AbstractGraphStage extends Stage
 
 		initStyle(StageStyle.DECORATED);
 
-		class SceneResizeListener implements ChangeListener<Number>
-		{
-			@Override
-			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
-			{
-				redraw();
-			}
-		}
-
-		SceneResizeListener rl = new SceneResizeListener();
-
-		canvas.widthProperty().addListener(rl);
-		canvas.heightProperty().addListener(rl);
+		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
+		
+		canvas.widthProperty().addListener(resizeListener);
+		canvas.heightProperty().addListener(resizeListener);
 	}
 
 	public abstract void redraw();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -107,7 +107,6 @@ public class ClassSearch extends Region
 
 	public void setText(String text)
 	{
-		// yuck
 		ignoreChanges = true;
 
 		tfSearch.setText(text);

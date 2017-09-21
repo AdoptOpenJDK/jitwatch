@@ -9,5 +9,7 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface IMemberSelectedListener
 {
-	void setSelectedMetaMember(IMetaMember member, boolean openTriView);
+	void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView);
+	
+	void selectCompilation(IMetaMember member, int compilationIndex);
 }

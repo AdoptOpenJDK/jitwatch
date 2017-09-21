@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.ui.codecache;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +16,12 @@ import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
+import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
 
 import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -44,10 +44,8 @@ import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class CodeCacheLayoutStage extends Stage
+public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompilationChangeListener
 {
-	protected JITWatchUI mainUI;
-
 	private CodeCacheWalkerResult codeCacheData;
 
 	private long lowAddress;
@@ -92,12 +90,11 @@ public class CodeCacheLayoutStage extends Stage
 
 	private static final Color OTHER_MEMBER_COMPILATIONS = Color.rgb(0, 0, 128);
 
-	private long lastResizeRedraw = 0;
-	private boolean redrawRequired = false;
+	private JITWatchUI parent;
 
 	public CodeCacheLayoutStage(final JITWatchUI parent)
 	{
-		this.mainUI = parent;
+		this.parent = parent;
 
 		this.zoom = 1;
 
@@ -135,59 +132,10 @@ public class CodeCacheLayoutStage extends Stage
 
 		vBoxControls.prefWidthProperty().bind(scene.widthProperty());
 
-		class SceneResizeListener implements ChangeListener<Number>
-		{
-			@Override
-			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2)
-			{
-				long now = System.currentTimeMillis();
+		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
 
-				if (now - lastResizeRedraw > 200)
-				{
-					redraw();
-
-					redrawRequired = true;
-
-					lastResizeRedraw = now;
-
-					new Thread(new Runnable()
-					{
-						@Override
-						public void run() // off UI thread
-						{
-							try
-							{
-								Thread.sleep(500); // wait is off UI thread
-
-								Platform.runLater(new Runnable()
-								{
-									@Override
-									public void run() // on UI thread
-									{
-										if (redrawRequired)
-										{
-											redraw();
-										}
-									}
-								});
-							}
-							catch (InterruptedException e)
-							{
-							}
-						}
-					}).start();
-				}
-				else
-				{
-					redrawRequired = true; // we skipped a redraw
-				}
-			}
-		}
-
-		SceneResizeListener rl = new SceneResizeListener();
-
-		scene.widthProperty().addListener(rl);
-		scene.heightProperty().addListener(rl);
+		scene.widthProperty().addListener(resizeListener);
+		scene.heightProperty().addListener(resizeListener);
 
 		setTitle("Code Cache Layout");
 
@@ -314,7 +262,7 @@ public class CodeCacheLayoutStage extends Stage
 		lblNMethodCount = new Label();
 		lblNMethodCount.setMinWidth(addressLabelWidth);
 		lblNMethodCount.getStyleClass().add("readonly-label");
-		
+
 		lblLowAddress = new Label();
 		lblLowAddress.setMinWidth(addressLabelWidth);
 		lblLowAddress.getStyleClass().add("readonly-label");
@@ -338,7 +286,7 @@ public class CodeCacheLayoutStage extends Stage
 		boolean ok = false;
 
 		pane.getChildren().clear();
-		
+
 		lblNMethodCount.setText(S_EMPTY);
 		lblLowAddress.setText(S_EMPTY);
 		lblHighAddress.setText(S_EMPTY);
@@ -346,9 +294,9 @@ public class CodeCacheLayoutStage extends Stage
 
 		nMethodInfo.clear();
 
-		codeCacheData = mainUI.getCodeCacheWalkerResult();
+		codeCacheData = parent.getCodeCacheWalkerResult();
 
-		if (codeCacheData != null)
+		if (codeCacheData != null && !codeCacheData.getEvents().isEmpty())
 		{
 			lowAddress = codeCacheData.getLowestAddress();
 			highAddress = codeCacheData.getHighestAddress();
@@ -384,7 +332,12 @@ public class CodeCacheLayoutStage extends Stage
 
 		// long start = System.currentTimeMillis();
 
-		IMetaMember selectedMember = mainUI.getSelectedMember();
+		IMetaMember selectedMember = parent.getSelectedMember();
+
+		if (selectedMember == null)
+		{
+			return;
+		}
 
 		Compilation selectedCompilation = selectedMember == null ? null : selectedMember.getSelectedCompilation();
 
@@ -398,13 +351,13 @@ public class CodeCacheLayoutStage extends Stage
 			{
 				continue;
 			}
-			
+
 			final Compilation eventCompilation = event.getCompilation();
 
 			final IMetaMember compilationMember = eventCompilation.getMember();
 
 			if (eventCompilation != null)
-			{			
+			{
 				if (selectedMember != null && selectedMember.equals(compilationMember))
 				{
 					eventsOfSelectedMember.add(event);
@@ -477,22 +430,22 @@ public class CodeCacheLayoutStage extends Stage
 	private boolean showEvent(CodeCacheEvent event)
 	{
 		boolean result = true;
-	
+
 		int level = event.getCompilationLevel();
-		
+
 		if (!drawC1 && level >= 1 && level <= 3)
 		{
 			result = false;
 		}
-		
+
 		if (!drawC2 && level == 4)
 		{
 			result = false;
 		}
-		
+
 		return result;
 	}
-	
+
 	private void plotMarker(double x, double h, double w, IMetaMember compilationMember, int compilationIndex)
 	{
 		double side = h * 0.04;
@@ -504,13 +457,7 @@ public class CodeCacheLayoutStage extends Stage
 		double bottom = h;
 
 		Polygon triangle = new Polygon();
-		triangle.getPoints().addAll(new Double[] {
-				left,
-				bottom,
-				centre,
-				top,
-				right,
-				bottom });
+		triangle.getPoints().addAll(new Double[] { left, bottom, centre, top, right, bottom });
 
 		triangle.setFill(Color.WHITE);
 		triangle.setStroke(Color.BLACK);
@@ -542,7 +489,7 @@ public class CodeCacheLayoutStage extends Stage
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				mainUI.setCompilationOnSelectedMember(compilationMember, compilationIndex);
+				parent.selectCompilation(compilationMember, compilationIndex);
 			}
 		});
 	}
@@ -600,18 +547,18 @@ public class CodeCacheLayoutStage extends Stage
 					}
 
 					CodeCacheEvent event = events.get(currentEvent++);
-					
+
 					if (!showEvent(event))
 					{
 						continue;
 					}
-					
+
 					final Compilation eventCompilation = event.getCompilation();
 
 					final IMetaMember compilationMember = eventCompilation.getMember();
 
 					if (eventCompilation != null)
-					{						
+					{
 						long addressOffset = event.getNativeAddress() - lowAddress;
 
 						double scaledAddress = (double) addressOffset / (double) addressRange;
@@ -664,25 +611,31 @@ public class CodeCacheLayoutStage extends Stage
 
 	void selectPrevCompilation()
 	{
-		IMetaMember selectedMember = mainUI.getSelectedMember();
+		IMetaMember selectedMember = parent.getSelectedMember();
 
 		if (selectedMember != null && selectedMember.getSelectedCompilation() != null)
 		{
 			int prevIndex = selectedMember.getSelectedCompilation().getIndex() - 1;
 
-			mainUI.setCompilationOnSelectedMember(selectedMember, prevIndex);
+			parent.selectCompilation(selectedMember, prevIndex);
 		}
 	}
 
 	void selectNextCompilation()
 	{
-		IMetaMember selectedMember = mainUI.getSelectedMember();
+		IMetaMember selectedMember = parent.getSelectedMember();
 
 		if (selectedMember != null && selectedMember.getSelectedCompilation() != null)
 		{
 			int nextIndex = selectedMember.getSelectedCompilation().getIndex() + 1;
 
-			mainUI.setCompilationOnSelectedMember(selectedMember, nextIndex);
+			parent.selectCompilation(selectedMember, nextIndex);
 		}
+	}
+
+	@Override
+	public void compilationChanged(IMetaMember member)
+	{
+		redraw();
 	}
 }

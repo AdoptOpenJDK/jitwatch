@@ -31,6 +31,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompileTimeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
@@ -41,7 +42,7 @@ import org.adoptopenjdk.jitwatch.toplist.MemberScore;
 import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.NativeMethodSizeTopListVisitable;
 import org.adoptopenjdk.jitwatch.toplist.StaleTaskToplistVisitable;
-import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class TopListStage extends Stage
@@ -53,38 +54,35 @@ public class TopListStage extends Stage
 
 	private TopListWrapper topListWrapper;
 
-	public TopListStage(final JITWatchUI parent)
+	public TopListStage(final IMemberSelectedListener selectionListener, IReadOnlyJITDataModel model)
 	{
 		initStyle(StageStyle.DECORATED);
 
 		int width = 800;
 		int height = 480;
 
-		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods", new NativeMethodSizeTopListVisitable(
-				parent.getJITDataModel(), true), new String[] { "Bytes", MEMBER });
-		
-		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons", new InliningFailReasonTopListVisitable(
-				parent.getJITDataModel(), true), new String[] { "Count", "Reason" });
-		
-		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics", new MostUsedIntrinsicsTopListVisitable(
-				parent.getJITDataModel(), true), new String[] { "Count", "Intrinsic" });
-		
-		TopListWrapper tlHotThrows = new TopListWrapper("Hot throws", new HotThrowTopListVisitable(
-				parent.getJITDataModel(), true), new String[] { "Count", "Hot Throw" });
-		
-		TopListWrapper tlLargestBytecode = new TopListWrapper("Largest Bytecode Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
-		
+		TopListWrapper tlLargestNative = new TopListWrapper("Largest Native Methods",
+				new NativeMethodSizeTopListVisitable(model, true), new String[] { "Bytes", MEMBER });
+
+		TopListWrapper tlInlineFailReasons = new TopListWrapper("Inlining Failure Reasons",
+				new InliningFailReasonTopListVisitable(model, true), new String[] { "Count", "Reason" });
+
+		TopListWrapper tlIntrinsics = new TopListWrapper("Most-used Intrinsics",
+				new MostUsedIntrinsicsTopListVisitable(model, true), new String[] { "Count", "Intrinsic" });
+
+		TopListWrapper tlHotThrows = new TopListWrapper("Hot throws", new HotThrowTopListVisitable(model, true),
+				new String[] { "Count", "Hot Throw" });
+
+		TopListWrapper tlLargestBytecode = new TopListWrapper("Largest Bytecode Methods",
+				new CompiledAttributeTopListVisitable(model, ATTR_BYTES, true), new String[] { "Bytes", MEMBER });
+
 		TopListWrapper tlSlowestCompilation = new TopListWrapper("Slowest Compilation Times",
-				new CompileTimeTopListVisitable(parent.getJITDataModel(), true), new String[] {
-						"Milliseconds",
-						MEMBER });
-		
-		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods", new CompiledAttributeTopListVisitable(
-				parent.getJITDataModel(), ATTR_DECOMPILES, true), new String[] { "Decompiles", MEMBER });
-		
-		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(
-				parent.getJITDataModel(), false)
+				new CompileTimeTopListVisitable(model, true), new String[] { "Milliseconds", MEMBER });
+
+		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods",
+				new CompiledAttributeTopListVisitable(model, ATTR_DECOMPILES, true), new String[] { "Decompiles", MEMBER });
+
+		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(model, false)
 		{
 			@Override
 			public void visit(IMetaMember mm)
@@ -99,24 +97,24 @@ public class TopListStage extends Stage
 			}
 		}, new String[] { "Order", MEMBER });
 
-		TopListWrapper tlCompilationOrderOSR = new TopListWrapper("Compilation Order (OSR)", new AbstractTopListVisitable(
-				parent.getJITDataModel(), false)
-		{
-			@Override
-			public void visit(IMetaMember mm)
-			{
-				String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
-				String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
-				if (compileID != null && compileKind != null && OSR.equals(compileKind))
+		TopListWrapper tlCompilationOrderOSR = new TopListWrapper("Compilation Order (OSR)",
+				new AbstractTopListVisitable(model, false)
 				{
-					long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
-					topList.add(new MemberScore(mm, value));
-				}
-			}
-		}, new String[] { "Order", MEMBER });
-		
-		TopListWrapper tlStaleTasks = new TopListWrapper("Most Stale Tasks", new StaleTaskToplistVisitable(
-				parent.getJITDataModel(), true), new String[] { "Count", "Member" });
+					@Override
+					public void visit(IMetaMember mm)
+					{
+						String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
+						String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
+						if (compileID != null && compileKind != null && OSR.equals(compileKind))
+						{
+							long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
+							topList.add(new MemberScore(mm, value));
+						}
+					}
+				}, new String[] { "Order", MEMBER });
+
+		TopListWrapper tlStaleTasks = new TopListWrapper("Most Stale Tasks", new StaleTaskToplistVisitable(model, true),
+				new String[] { "Count", "Member" });
 
 		final Map<String, TopListWrapper> attrMap = new HashMap<>();
 
@@ -178,7 +176,7 @@ public class TopListStage extends Stage
 			{
 				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
 				{
-					parent.focusTreeOnMember((IMetaMember) newVal.getKey(), true);
+					selectionListener.selectMember((IMetaMember) newVal.getKey(), true, true);
 				}
 			}
 		});

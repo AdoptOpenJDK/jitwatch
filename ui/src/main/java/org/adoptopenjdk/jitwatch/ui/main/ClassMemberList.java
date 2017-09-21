@@ -60,11 +60,11 @@ public class ClassMemberList extends VBox
 		metaClass = null;
 	}
 
-	private void notifyListeners(IMetaMember member, boolean openTriView)
+	private void notifyListeners(IMetaMember member)
 	{
 		for (IMemberSelectedListener listener : listeners)
 		{
-			listener.setSelectedMetaMember(member, openTriView);
+			listener.selectMember(member, false, true);
 		}
 	}
 
@@ -99,7 +99,7 @@ public class ClassMemberList extends VBox
 			{
 				if (!selectedProgrammatically)
 				{
-					notifyListeners(newVal, true);
+					notifyListeners(newVal);
 				}
 			}
 		});
@@ -301,14 +301,17 @@ public class ClassMemberList extends VBox
 	{
 		this.metaClass = metaClass;
 
-		List<IMetaMember> members = metaClass.getMetaMembers();
-
-		if (members.size() > 0)
+		if (metaClass != null)
 		{
-			selectMember(members.get(0));
-		}
+			List<IMetaMember> members = metaClass.getMetaMembers();
 
-		refresh();
+			if (members.size() > 0)
+			{
+				selectMember(members.get(0));
+			}
+
+			refresh();
+		}
 	}
 
 	private void refresh()
@@ -336,7 +339,11 @@ public class ClassMemberList extends VBox
 
 	public void clearClassMembers()
 	{
+		selectedProgrammatically = true;
+
 		memberList.getItems().clear();
+
+		selectedProgrammatically = false;
 	}
 
 	public void selectMember(IMetaMember selected)
@@ -345,17 +352,20 @@ public class ClassMemberList extends VBox
 
 		memberList.getSelectionModel().clearSelection();
 
-		for (int i = 0; i < memberList.getItems().size(); i++)
+		if (selected != null)
 		{
-			IMetaMember member = memberList.getItems().get(i);
-
-			if (member.toString().equals(selected.toString()))
+			for (int i = 0; i < memberList.getItems().size(); i++)
 			{
-				memberList.getSelectionModel().select(i);
+				IMetaMember member = memberList.getItems().get(i);
 
-				memberList.getFocusModel().focus(i);
+				if (member.toString().equals(selected.toString()))
+				{
+					memberList.getSelectionModel().select(i);
 
-				memberList.scrollTo(i);
+					memberList.getFocusModel().focus(i);
+
+					memberList.scrollTo(i);
+				}
 			}
 		}
 

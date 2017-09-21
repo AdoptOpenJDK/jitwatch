@@ -33,7 +33,7 @@ public class CodeCacheEventWalker extends AbstractCompilationWalker
 
 	@Override
 	public void visit(IMetaMember metaMember)
-	{
+	{			
 		if (metaMember != null && metaMember.isCompiled())
 		{
 			for (Compilation compilation : metaMember.getCompilations())

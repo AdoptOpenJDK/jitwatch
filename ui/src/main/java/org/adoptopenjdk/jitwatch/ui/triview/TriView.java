@@ -32,13 +32,15 @@ import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
+import org.adoptopenjdk.jitwatch.ui.compilationchooser.CompilationChooser;
+import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
-import org.adoptopenjdk.jitwatch.util.BytecodeReceivingRunnable;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +72,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage implements ILineListener
+public class TriView extends Stage implements ILineListener, ICompilationChangeListener
 {
 	private IMetaMember currentMember;
 	private JITWatchConfig config;
@@ -99,8 +101,9 @@ public class TriView extends Stage implements ILineListener
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
 	private ComboBox<IMetaMember> comboMember;
 
-	private ObservableList<String> comboCompilationList = FXCollections.observableArrayList();
-	private ComboBox<String> comboSelectedCompilation;
+	private CompilationChooser compilationChooser;
+
+	private IMemberSelectedListener memberSelectionListener;
 
 	private ClassSearch classSearch;
 
@@ -119,11 +122,16 @@ public class TriView extends Stage implements ILineListener
 	private TriViewNavigationStack navigationStack;
 
 	private IReadOnlyJITDataModel model;
+	
+	private boolean selectedProgrammatically = false;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
 		this.config = config;
+
 		this.model = parent.getJITDataModel();
+
+		memberSelectionListener = parent;
 
 		setTitle("TriView - Source, Bytecode, Assembly Viewer - JITWatch");
 
@@ -239,13 +247,16 @@ public class TriView extends Stage implements ILineListener
 		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldVal, IMetaMember newVal)
+			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldMember, IMetaMember newMember)
 			{
 				if (!ignoreComboChanged)
 				{
-					if (newVal != null)
-					{
-						TriView.this.setMember(newVal, true, 0);
+					if (newMember != null)
+					{						
+						if (!selectedProgrammatically)
+						{
+							memberSelectionListener.selectMember(newMember, true, true);
+						}
 					}
 				}
 			}
@@ -302,7 +313,7 @@ public class TriView extends Stage implements ILineListener
 		setScene(scene);
 
 		checkColumns();
-		
+
 		updateButtons();
 	}
 
@@ -390,26 +401,9 @@ public class TriView extends Stage implements ILineListener
 
 		hbox.getChildren().add(checkLocalLabels);
 
-		comboSelectedCompilation = new ComboBox<>(comboCompilationList);
-		comboSelectedCompilation.setStyle("-fx-font-size: 10px");
+		compilationChooser = new CompilationChooser(memberSelectionListener);
 
-		comboSelectedCompilation.valueProperty().addListener(new ChangeListener<String>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
-			{
-				int index = comboSelectedCompilation.getSelectionModel().getSelectedIndex();
-
-				if (index >= 0 && index < currentMember.getCompilations().size())
-				{
-					currentMember.setSelectedCompilation(index);
-
-					updateBytecodeAndAssembly(false, 0);
-				}
-			}
-		});
-
-		hbox.getChildren().add(comboSelectedCompilation);
+		hbox.getChildren().add(compilationChooser.getCombo());
 
 		return hbox;
 	}
@@ -525,7 +519,12 @@ public class TriView extends Stage implements ILineListener
 
 		if (!members.isEmpty())
 		{
-			setMember(members.get(0), false, 0);
+			IMetaMember firstMember = members.get(0);
+			
+			if (!selectedProgrammatically)
+			{
+				memberSelectionListener.selectMember(firstMember, true, true);
+			}
 		}
 		else
 		{
@@ -545,7 +544,7 @@ public class TriView extends Stage implements ILineListener
 
 		setMember(member, force, jumpToSource, 0);
 	}
-	
+
 	public void setMember(IMetaMember member, boolean force, int highlightBCI)
 	{
 		boolean jumpToSource = true;
@@ -554,7 +553,18 @@ public class TriView extends Stage implements ILineListener
 	}
 
 	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
-	{
+	{		
+		selectedProgrammatically = true;
+
+		if (member == null)
+		{
+			clear();
+			
+			selectedProgrammatically = false;
+			
+			return;
+		}
+
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 
 		currentMember = member;
@@ -569,93 +579,75 @@ public class TriView extends Stage implements ILineListener
 		comboMember.setValue(currentMember);
 		ignoreComboChanged = false;
 
-		comboSelectedCompilation.getSelectionModel().clearSelection();
-		comboCompilationList.clear();
+		compilationChooser.compilationChanged(currentMember);
 
-		List<Compilation> compilations = currentMember.getCompilations();
-
-		for (Compilation compilation : compilations)
-		{
-			comboCompilationList.add(compilation.getSignature());
-		}
-
-		Compilation selectedCompilation = currentMember.getSelectedCompilation();
-
-		if (selectedCompilation != null)
-		{
-			int selectedCompilationIndex = selectedCompilation.getIndex();
-			comboSelectedCompilation.getSelectionModel().select(selectedCompilationIndex);
-		}
-				
 		updateButtons();
 
 		List<String> allClassLocations = config.getAllClassLocations();
 
 		final boolean finalSameClass = sameClass;
 
-		UserInterfaceUtil.getBytecodeAndUpdateUI(currentMember, model, allClassLocations, new BytecodeReceivingRunnable()
+		ClassBC classBC = member.getMetaClass().getClassBytecode(model, allClassLocations);
+
+		if (!finalSameClass)
 		{
-			public void run()
+			String source = null;
+
+			String sourceFileName = classBC.getSourceFile();
+
+			String moduleName = classBC.getModuleName();
+
+			if (sourceFileName != null)
 			{
-				if (!finalSameClass)
-				{					
-					String source = null;
+				source = ResourceLoader.getSourceForFilename(moduleName, sourceFileName, config.getSourceLocations());
 
-					String sourceFileName = getClassBC().getSourceFile();
-					
-					String moduleName = getClassBC().getModuleName();
-					
-					if (sourceFileName != null)
-					{
-						source = ResourceLoader.getSourceForFilename(moduleName, sourceFileName, config.getSourceLocations());
-
-						if (source == null)
-						{
-							source = ResourceLoader.getSourceForClassName(moduleName, memberClass.getFullyQualifiedName(),
-									config.getSourceLocations());
-						}
-					}
-
-					boolean lineNumbers = true;
-					boolean canHighlight = true;
-
-					if (source == null)
-					{
-						source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
-						lineNumbers = false;
-						canHighlight = false;
-					}
-
-					viewerSource.setContent(source, lineNumbers, canHighlight);
+				if (source == null)
+				{
+					source = ResourceLoader.getSourceForClassName(moduleName, memberClass.getFullyQualifiedName(),
+							config.getSourceLocations());
 				}
-
-				StringBuilder statusBarBuilder = new StringBuilder();
-				
-				updateStatusBarWithClassInformation(getClassBC(), statusBarBuilder);
-				
-				updateStatusBarIfCompiled(statusBarBuilder);
-
-				applyActionsIfOffsetMismatchDetected(statusBarBuilder);
-				
-				lblMemberInfo.setText(statusBarBuilder.toString());
-
-				updateBytecodeAndAssembly(jumpToSource, highlightBCI);
 			}
-		});
+
+			boolean lineNumbers = true;
+			boolean canHighlight = true;
+
+			if (source == null)
+			{
+				source = "Source of " + member.getMetaClass().getName() + " not found\nin the configured source locations.";
+				lineNumbers = false;
+				canHighlight = false;
+			}
+
+			viewerSource.setContent(source, lineNumbers, canHighlight);
+		}
+
+		StringBuilder statusBarBuilder = new StringBuilder();
+
+		updateStatusBarWithClassInformation(classBC, statusBarBuilder);
+
+		updateStatusBarIfCompiled(statusBarBuilder);
+
+		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
+
+		lblMemberInfo.setText(statusBarBuilder.toString());
+
+		updateBytecodeAndAssembly(jumpToSource, highlightBCI);
+		
+		selectedProgrammatically = false;
 	}
-	
+
 	private void updateButtons()
 	{
 		boolean isCompiled = currentMember != null ? currentMember.isCompiled() : false;
-		
-		comboSelectedCompilation.setVisible(isCompiled);
-		
+
+		compilationChooser.setVisible(isCompiled);
+
 		btnCompileChain.setDisable(!isCompiled);
-		
+
 		btnJITJournal.setDisable(!isCompiled);
-		
+
 		btnLineTable.setDisable(currentMember == null);
-		
+
 		btnInlinedInto.setDisable(currentMember == null);
 	}
 
@@ -781,7 +773,7 @@ public class TriView extends Stage implements ILineListener
 			comboMember.getSelectionModel().clearSelection();
 			comboMemberList.clear();
 			comboMemberList.addAll(memberClass.getMetaMembers());
-			
+
 			String fqName = memberClass.getFullyQualifiedName();
 			classSearch.setText(fqName);
 		}
@@ -791,22 +783,21 @@ public class TriView extends Stage implements ILineListener
 	{
 		comboMember.getSelectionModel().clearSelection();
 		comboMemberList.clear();
-		
-		comboCompilationList.clear();
-		comboSelectedCompilation.getSelectionModel().clearSelection();
-		
+
+		compilationChooser.clear();
+
 		paneSource.clear();
 		paneBytecode.clear();
 		paneAssembly.clear();
-		
+
 		compilationInfo.clear();
-		
+
 		currentMember = null;
-		
+
 		classSearch.clear();
-		
+
 		lblMemberInfo.setText(S_EMPTY);
-		
+
 		updateButtons();
 	}
 
@@ -1181,5 +1172,18 @@ public class TriView extends Stage implements ILineListener
 
 		focussedViewer = LineType.ASSEMBLY;
 		viewerAssembly.requestFocus();
+	}
+
+	@Override
+	public void compilationChanged(IMetaMember member)
+	{
+		currentMember = member;
+
+		compilationChooser.compilationChanged(member);
+
+		if (currentMember != null)
+		{
+			updateBytecodeAndAssembly(false, 0);
+		}
 	}
 }

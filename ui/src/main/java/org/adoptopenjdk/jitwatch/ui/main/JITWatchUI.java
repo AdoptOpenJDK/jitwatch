@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
-import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheEventWalker;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
 import org.adoptopenjdk.jitwatch.core.ErrorLog;
@@ -184,7 +182,7 @@ public class JITWatchUI extends Application
 	private CodeCacheLayoutStage codeCacheBlocksStage;
 	private TriView triViewStage;
 	private BrowserStage browserStage;
-		
+
 	private ReportStage reportStageSuggestions;
 	private ReportStage reportStageElminatedAllocations;
 	private ReportStage reportStageElidedLocks;
@@ -252,9 +250,9 @@ public class JITWatchUI extends Application
 		startDelayedByConfig = false;
 
 		isReadingLogFile = true;
-		
+
 		clear();
-		
+
 		Platform.runLater(new Runnable()
 		{
 			@Override
@@ -264,7 +262,7 @@ public class JITWatchUI extends Application
 			}
 		});
 	}
-	
+
 	private void clear()
 	{
 		lastVmCommand = logParser.getVMCommand();
@@ -272,30 +270,29 @@ public class JITWatchUI extends Application
 		lastSelectedClass = selectedMetaClass;
 
 		selectedMember = null;
+		codeCacheWalkerResult = null;
 
 		errorCount = 0;
 		errorLog.clear();
-		
+
 		reportListSuggestions.clear();
 		reportListEliminatedAllocations.clear();
 		reportListElidedLocks.clear();
-						
+
 		Platform.runLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
 				classMemberList.clear();
-				
+
 				StageManager.clearReportStages();
-				
-				codeCacheWalkerResult = null;
-				
+
 				if (triViewStage != null)
 				{
 					triViewStage.clear();
 				}
-				
+
 				classTree.handleConfigUpdate(getConfig());
 
 				updateButtons();
@@ -304,8 +301,8 @@ public class JITWatchUI extends Application
 				metaClassSelectedFromClassTree(null);
 
 				textAreaLog.clear();
-				
-				refreshOnce();
+
+				StageManager.notifyCompilationChanged(null);
 			}
 		});
 	}
@@ -323,8 +320,6 @@ public class JITWatchUI extends Application
 
 		buildElidedLocksReport();
 
-		buildCodeCacheResult();
-
 		Platform.runLater(new Runnable()
 		{
 			@Override
@@ -332,7 +327,7 @@ public class JITWatchUI extends Application
 			{
 				updateButtons();
 
-				refreshOnce();
+				StageManager.notifyCompilationChanged(selectedMember);
 			}
 		});
 
@@ -372,17 +367,22 @@ public class JITWatchUI extends Application
 		log("Found " + reportListElidedLocks.size() + " elided locks.");
 	}
 
-	private void buildCodeCacheResult()
-	{
+	private CodeCacheWalkerResult buildCodeCacheResult()
+	{		
 		CodeCacheEventWalker compilationWalker = new CodeCacheEventWalker(logParser.getModel());
 
 		compilationWalker.walkCompilations();
 
-		codeCacheWalkerResult = compilationWalker.getResult();
+		return compilationWalker.getResult();
 	}
 
 	public CodeCacheWalkerResult getCodeCacheWalkerResult()
-	{
+	{		
+		if (codeCacheWalkerResult == null || codeCacheWalkerResult.getEvents().isEmpty())
+		{
+			codeCacheWalkerResult = buildCodeCacheResult();
+		}
+
 		return codeCacheWalkerResult;
 	}
 
@@ -425,7 +425,7 @@ public class JITWatchUI extends Application
 	@Override
 	public void start(final Stage stage)
 	{
-		StageManager.registerListener(this);
+		StageManager.registerStageClosedListener(this);
 
 		this.stage = stage;
 
@@ -540,7 +540,7 @@ public class JITWatchUI extends Application
 			@Override
 			public void handle(ActionEvent e)
 			{
-				topListStage = new TopListStage(JITWatchUI.this);
+				topListStage = new TopListStage(JITWatchUI.this, getJITDataModel());
 
 				StageManager.addAndShow(JITWatchUI.this.stage, topListStage);
 
@@ -693,7 +693,7 @@ public class JITWatchUI extends Application
 				btnStats.setDisable(true);
 			}
 		});
-		
+
 		btnReset = new Button("Reset");
 		btnReset.setStyle("-fx-padding: 2 6;");
 		btnReset.setOnAction(new EventHandler<ActionEvent>()
@@ -762,9 +762,7 @@ public class JITWatchUI extends Application
 					{
 						selectedMember.setSelectedCompilation(newVal.getIndex());
 
-						openTriView(selectedMember, true);
-
-						refreshOnce();
+						setSelectedMetaMemberFromCompilationTable();
 					}
 				}
 			}
@@ -893,9 +891,21 @@ public class JITWatchUI extends Application
 	{
 		openTriView(member, force, 0);
 	}
-	
+
 	@Override
 	public void openTriView(IMetaMember member, boolean force, int highlightBCI)
+	{
+		openTriView();
+
+		selectMember(member, true, false);
+
+		if (member != null)
+		{
+			triViewStage.setMember(member, force, highlightBCI);
+		}
+	}
+
+	private void openTriView()
 	{
 		if (triViewStage == null)
 		{
@@ -904,11 +914,6 @@ public class JITWatchUI extends Application
 			StageManager.addAndShow(this.stage, triViewStage);
 
 			btnTriView.setDisable(true);
-		}
-
-		if (member != null)
-		{
-			triViewStage.setMember(member, force, highlightBCI);
 		}
 	}
 
@@ -948,7 +953,7 @@ public class JITWatchUI extends Application
 		{
 			btnSandbox.setDisable(true);
 		}
-		
+
 		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
@@ -957,11 +962,11 @@ public class JITWatchUI extends Application
 		btnReportElidedLocks.setText("-Locks (" + reportListElidedLocks.size() + S_CLOSE_PARENTHESES);
 	}
 
-	public boolean focusTreeOnClass(MetaClass metaClass)
+	public boolean focusTreeOnClass(MetaClass metaClass, boolean unsetSelection)
 	{
 		List<String> path = metaClass.getTreePath();
 
-		clearAndRefreshTreeView();
+		clearAndRefreshTreeView(unsetSelection);
 
 		TreeItem<Object> curNode = classTree.getRootItem();
 
@@ -1018,21 +1023,59 @@ public class JITWatchUI extends Application
 		return found;
 	}
 
-	public void focusTreeOnMember(IMetaMember member, boolean openTriView)
+	public void focusTreeOnMember(IMetaMember member)
 	{
 		if (member != null)
 		{
 			MetaClass metaClass = member.getMetaClass();
 
-			boolean found = focusTreeOnClass(metaClass);
+			boolean found = focusTreeOnClass(metaClass, true);
 
 			if (found)
 			{
 				classMemberList.selectMember(member);
 
-				setSelectedMetaMember(member, openTriView);
+				selectMember(member, false, true);
 
 				lastSelectedMember = null;
+			}
+		}
+	}
+
+	public void focusTreeInternal(IMetaMember member)
+	{
+		if (member != null)
+		{
+			MetaClass metaClass = member.getMetaClass();
+
+			boolean found = focusTreeOnClass(metaClass, false);
+
+			if (found)
+			{
+				classMemberList.clearClassMembers();
+
+				selectedMetaClass = metaClass;
+
+				classMemberList.setMetaClass(metaClass);
+
+				classMemberList.selectMember(member);
+
+				lastSelectedMember = null;
+			}
+			else
+			{
+				log("Could not focus tree on " + member.toStringUnqualifiedMethodName(false, true));
+				
+				if (classTree.isHidingClassesWithNoCompiledMethods())
+				{
+					log("Perhaps this class doesn't contain any compiled methods and 'Hide uncompiled classes' is selected");
+				}
+
+				classMemberList.clearClassMembers();
+
+				classMemberList.setMetaClass(null);
+
+				classMemberList.selectMember(null);
 			}
 		}
 	}
@@ -1054,20 +1097,12 @@ public class JITWatchUI extends Application
 	{
 		if (member != null && member.isCompiled())
 		{
-			CompileChainWalker walker = new CompileChainWalker(logParser.getModel());
+			CompileChainStage compileChainStage = new CompileChainStage((IMemberSelectedListener) this, (IStageAccessProxy) this,
+					logParser.getModel());
 
-			CompileNode root = walker.buildCallTree(member.getSelectedCompilation());
+			compileChainStage.compilationChanged(member);
 
-			if (root != null)
-			{
-				CompileChainStage ccs = new CompileChainStage(this, root);
-
-				StageManager.addAndShow(this.stage, ccs);
-			}
-			else
-			{
-				logger.error("Could not open CompileChain - root node was null");
-			}
+			StageManager.addAndShow(this.stage, compileChainStage);
 		}
 	}
 
@@ -1104,7 +1139,7 @@ public class JITWatchUI extends Application
 			ReportStage inlinedIntoStage = new ReportStage(JITWatchUI.this,
 					"Inlining report for callee " + member.toStringUnqualifiedMethodName(true, true), ReportStageType.INLINING,
 					inlinedIntoMemberList);
-			
+
 			StageManager.addAndShow(JITWatchUI.this.stage, inlinedIntoStage);
 		}
 	}
@@ -1201,41 +1236,56 @@ public class JITWatchUI extends Application
 		return same;
 	}
 
-	@Override
-	public void setSelectedMetaMember(IMetaMember member, boolean openTriView)
+	private void setSelectedMetaMemberFromCompilationTable()
 	{
-		compilationRowList.clear();
+		StageManager.notifyCompilationChanged(selectedMember);
+	}
 
-		if (member == null)
-		{
-			return;
-		}
-
-		if (openTriView && triViewStage != null)
-		{
-			triViewStage.setMember(member, false);
-		}
+	@Override
+	public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
+	{
+		selectedProgrammatically = true;
 
 		selectedMember = member;
 
-		for (Compilation compilation : member.getCompilations())
-		{
-			CompilationTableRow row = new CompilationTableRow(compilation);
+		compilationRowList.clear();
 
-			compilationRowList.add(row);
+		if (selectedMember != null)
+		{
+			if (updateTree)
+			{
+				focusTreeInternal(selectedMember);
+			}
+
+			if (updateTriView)
+			{
+				openTriView();
+
+				triViewStage.setMember(selectedMember, true);
+			}
+
+			for (Compilation compilation : selectedMember.getCompilations())
+			{
+				CompilationTableRow row = new CompilationTableRow(compilation);
+
+				compilationRowList.add(row);
+			}
+
+			Compilation selectedCompilation = selectedMember.getSelectedCompilation();
+
+			if (selectedCompilation != null)
+			{
+				compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
+			}
+
+			StageManager.notifyCompilationChanged(selectedMember);
 		}
 
-		Compilation selectedCompilation = selectedMember.getSelectedCompilation();
-
-		if (selectedCompilation != null)
-		{
-			compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
-		}
-
-		refreshOnce();
+		selectedProgrammatically = false;
 	}
 
-	public void setCompilationOnSelectedMember(IMetaMember member, int compilationIndex)
+	@Override
+	public synchronized void selectCompilation(IMetaMember member, int compilationIndex)
 	{
 		selectedProgrammatically = true;
 
@@ -1245,23 +1295,10 @@ public class JITWatchUI extends Application
 		{
 			selectedMember.setSelectedCompilation(compilationIndex);
 
-			if (selectedMember.getSelectedCompilation() != null)
-			{
-				compilationTable.getSelectionModel().clearAndSelect(selectedMember.getSelectedCompilation().getIndex());
-			}
-
-			focusTreeOnMember(selectedMember, true);
+			selectMember(selectedMember, true, true);
 		}
 
 		selectedProgrammatically = false;
-	}
-
-	private void refreshOnce()
-	{
-		if (codeCacheBlocksStage != null)
-		{
-			codeCacheBlocksStage.redraw();
-		}
 	}
 
 	private void refresh()
@@ -1278,11 +1315,11 @@ public class JITWatchUI extends Application
 		{
 			if (lastSelectedMember != null)
 			{
-				focusTreeOnMember(lastSelectedMember, true);
+				focusTreeOnMember(lastSelectedMember);
 			}
 			else if (lastSelectedClass != null)
 			{
-				focusTreeOnClass(lastSelectedClass);
+				focusTreeOnClass(lastSelectedClass, true);
 			}
 		}
 
@@ -1345,10 +1382,13 @@ public class JITWatchUI extends Application
 		return selectedMember;
 	}
 
-	void clearAndRefreshTreeView()
+	void clearAndRefreshTreeView(boolean unsetSelection)
 	{
-		selectedMember = null;
-		selectedMetaClass = null;
+		if (unsetSelection)
+		{
+			selectedMember = null;
+			selectedMetaClass = null;
+		}
 
 		classTree.clear();
 		classTree.showTree(sameVmCommand());
@@ -1478,13 +1518,7 @@ public class JITWatchUI extends Application
 		classMemberList.clearClassMembers();
 		selectedMetaClass = metaClass;
 
-		setSelectedMetaMember(null, true);
-
-		if (metaClass == null)
-		{
-			// nothing selected
-			return;
-		}
+		selectMember(null, false, true);
 
 		classMemberList.setMetaClass(metaClass);
 	}
