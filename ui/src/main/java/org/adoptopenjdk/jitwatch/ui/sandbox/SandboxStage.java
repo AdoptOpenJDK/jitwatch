@@ -65,6 +65,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -299,7 +301,11 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 				showOutput(outputString);
 			}
 		});
+		
+		BorderPane borderPane = new BorderPane();
 
+		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		
 		HBox hBoxTools = new HBox();
 
 		hBoxTools.setSpacing(10);
@@ -312,7 +318,15 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 		hBoxTools.getChildren().add(btnResetSandbox);
 		hBoxTools.getChildren().add(comboBoxVMLanguage);
 		hBoxTools.getChildren().add(btnRun);
-		hBoxTools.getChildren().add(btnOutput);
+		hBoxTools.getChildren().add(btnOutput);		
+		
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		
+		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "Sandbox");
+		
+		hBoxTools.getChildren().add(spacer);
+		hBoxTools.getChildren().add(buttonSnapShot);
 
 		splitVertical.getItems().add(tabPane);
 		splitVertical.getItems().add(taLog);
@@ -323,13 +337,10 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 		vBoxMain.getChildren().add(hBoxTools);
 		vBoxMain.getChildren().add(splitVertical);
 
-		BorderPane borderPane = new BorderPane();
 		borderPane.setTop(hBoxTools);
 		borderPane.setCenter(splitVertical);
 
 		initialiseLog();
-
-		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
 
 		setScene(scene);
 

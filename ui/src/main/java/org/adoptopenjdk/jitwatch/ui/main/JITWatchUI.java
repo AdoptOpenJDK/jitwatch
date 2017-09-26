@@ -832,7 +832,9 @@ public class JITWatchUI extends Application
 
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
-
+		
+		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "JITWatch");
+		
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
@@ -844,6 +846,7 @@ public class JITWatchUI extends Application
 		hboxBottom.getChildren().add(lblTweakLog);
 		hboxBottom.getChildren().add(springRight);
 		hboxBottom.getChildren().add(lblVmVersion);
+		hboxBottom.getChildren().add(buttonSnapShot);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);

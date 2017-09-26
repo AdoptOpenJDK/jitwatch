@@ -5,22 +5,26 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
+import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
-import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -31,9 +35,12 @@ public final class UserInterfaceUtil
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
+	public static final Image IMAGE_CAMERA;
+
 	public static final String FONT_MONOSPACE_FAMILY;
 	public static final String FONT_MONOSPACE_SIZE;
-	public static final boolean ADD_CLOSE_DECORATION; // for fullscreen JavaFX systems
+	public static final boolean ADD_CLOSE_DECORATION; // for fullscreen JavaFX
+														// systems
 
 	private UserInterfaceUtil()
 	{
@@ -42,6 +49,7 @@ public final class UserInterfaceUtil
 	static
 	{
 		IMAGE_TICK = loadResource("/images/tick.png");
+		IMAGE_CAMERA = loadResource("/images/camera.png");
 
 		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", Font.font(java.awt.Font.MONOSPACED, 12).getName());
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
@@ -66,6 +74,60 @@ public final class UserInterfaceUtil
 		}
 
 		return result;
+	}
+
+	public static Button getSnapshotButton(final Scene scene, final String filenamePrefix)
+	{
+		Button buttonSnapShot = new Button();
+
+		Image image = UserInterfaceUtil.IMAGE_CAMERA;
+
+		buttonSnapShot.setGraphic(new ImageView(image));
+
+		buttonSnapShot.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				takeSnapShot(scene, filenamePrefix);
+			}
+		});
+
+		return buttonSnapShot;
+	}
+
+	private static void takeSnapShot(Scene scene, String filenamePrefix)
+	{
+		WritableImage imageSnap = new WritableImage((int) scene.getWidth(), (int) scene.getHeight());
+
+		scene.snapshot(imageSnap);
+
+		SimpleDateFormat sfd = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+
+		try
+		{
+			String snapshotFilename = filenamePrefix + "-snapshot-" + sfd.format(new Date()) + ".png";
+
+			Class<?> classImageIO = Class.forName("javax.imageio.ImageIO");
+
+			Class<?> classSwingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
+
+			Method methodWrite = classImageIO.getMethod("write",
+					new Class[] { java.awt.image.RenderedImage.class, String.class, File.class });
+
+			Method methodFromFXImage = classSwingFXUtils.getMethod("fromFXImage",
+					new Class[] { javafx.scene.image.Image.class, java.awt.image.BufferedImage.class });
+
+			methodWrite.invoke(null,
+					new Object[] {
+							methodFromFXImage.invoke(null, new Object[] { imageSnap, null }),
+							"png",
+							new File(snapshotFilename) });
+		}
+		catch (Throwable t)
+		{
+			logger.error("Could not create snapshot", t);
+		}
 	}
 
 	public static Scene getScene(Parent rootNode, double width, double height)

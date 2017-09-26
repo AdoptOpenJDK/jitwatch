@@ -23,10 +23,14 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -80,12 +84,24 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		scrollPane.setContent(pane);
 
 		compilationChooser = new CompilationChooser(selectionListener);
-
+		
 		VBox verticalLayout = new VBox();
-
-		verticalLayout.getChildren().addAll(compilationChooser.getCombo(), scrollPane);
-
+		
 		Scene scene = UserInterfaceUtil.getScene(verticalLayout, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+		
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+				
+		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "CompileChain");
+		
+		HBox hBox = new HBox();
+		
+		hBox.getChildren().add(compilationChooser.getCombo());
+		hBox.getChildren().add(spacer);
+		hBox.getChildren().add(buttonSnapShot);
+		
+		verticalLayout.getChildren().addAll(hBox, scrollPane);
+
 
 		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
 

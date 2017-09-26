@@ -109,7 +109,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	private CompilationInfo compilationInfo;
 
-	private Label lblMemberInfo;
+	private Label lblStatusBar;
 
 	private boolean ignoreComboChanged = false;
 
@@ -122,7 +122,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	private TriViewNavigationStack navigationStack;
 
 	private IReadOnlyJITDataModel model;
-	
+
 	private boolean selectedProgrammatically = false;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
@@ -252,7 +252,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				if (!ignoreComboChanged)
 				{
 					if (newMember != null)
-					{						
+					{
 						if (!selectedProgrammatically)
 						{
 							memberSelectionListener.selectMember(newMember, true, true);
@@ -303,12 +303,21 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
-		lblMemberInfo = new Label();
+		lblStatusBar = new Label();
+
+		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "TriView");
+
+		Region spacerStatus = new Region();
+		HBox.setHgrow(spacerStatus, Priority.ALWAYS);
+		
+		HBox hBoxStatusBar = new HBox();
+		hBoxStatusBar.setSpacing(16.0);
+		hBoxStatusBar.getChildren().addAll(lblStatusBar, spacerStatus, buttonSnapShot);
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);
 		vBox.getChildren().add(splitViewer);
-		vBox.getChildren().add(lblMemberInfo);
+		vBox.getChildren().add(hBoxStatusBar);
 
 		setScene(scene);
 
@@ -520,7 +529,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		if (!members.isEmpty())
 		{
 			IMetaMember firstMember = members.get(0);
-			
+
 			if (!selectedProgrammatically)
 			{
 				memberSelectionListener.selectMember(firstMember, true, true);
@@ -553,15 +562,15 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	}
 
 	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
-	{		
+	{
 		selectedProgrammatically = true;
 
 		if (member == null)
 		{
 			clear();
-			
+
 			selectedProgrammatically = false;
-			
+
 			return;
 		}
 
@@ -629,10 +638,10 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		applyActionsIfOffsetMismatchDetected(statusBarBuilder);
 
-		lblMemberInfo.setText(statusBarBuilder.toString());
+		lblStatusBar.setText(statusBarBuilder.toString());
 
 		updateBytecodeAndAssembly(jumpToSource, highlightBCI);
-		
+
 		selectedProgrammatically = false;
 	}
 
@@ -730,7 +739,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				compilationInfo.setBytecodeSize(Integer.toString(memberBytecode.size()));
 			}
 
-			lblMemberInfo.setText(S_EMPTY);
+			lblStatusBar.setText(S_EMPTY);
 		}
 	}
 
@@ -796,7 +805,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		classSearch.clear();
 
-		lblMemberInfo.setText(S_EMPTY);
+		lblStatusBar.setText(S_EMPTY);
 
 		updateButtons();
 	}
