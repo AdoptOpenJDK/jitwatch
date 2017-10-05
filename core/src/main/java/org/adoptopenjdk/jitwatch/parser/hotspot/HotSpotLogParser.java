@@ -138,7 +138,7 @@ public class HotSpotLogParser extends AbstractLogParser
 			logger.debug("parseAssemblyLines()");
 		}
 
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(model.getJDKMajorVersion());
+		AssemblyProcessor asmProcessor = new AssemblyProcessor();
 
 		for (NumberedLine numberedLine : splitLog.getAssemblyLines())
 		{

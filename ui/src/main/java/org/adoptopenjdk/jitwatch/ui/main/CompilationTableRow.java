@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.ui.main;
 
 import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
 import org.adoptopenjdk.jitwatch.model.Compilation;
+import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 public class CompilationTableRow
@@ -83,13 +84,13 @@ public class CompilationTableRow
 
 		if (result == null)
 		{
-			if (CompilationUtil.isStaleTask(compilation.getTagTask()))
+			result = "NA";
+
+			Task task = compilation.getTagTask();
+
+			if (task != null && CompilationUtil.isStaleTask(task))
 			{
 				result = "Stale task";
-			}
-			else
-			{
-				result = "NA";
 			}
 		}
 
@@ -99,7 +100,7 @@ public class CompilationTableRow
 	public String getLevel()
 	{
 		String result = null;
-		
+
 		int level = compilation.getLevel();
 
 		if (level == -1)

@@ -516,7 +516,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 		else
 		{
-			logger.warn("{} Didn't find compilation to attach assembly for nativeAddress {} or entryAddress {}", getFullyQualifiedMemberName(),
+			logger.warn("{} Didn't find compilation to attach assembly for nativeAddress:{} or entryAddress:{}", getFullyQualifiedMemberName(),
 					asmMethod.getNativeAddress(), asmMethod.getEntryAddress());
 		}
 	}

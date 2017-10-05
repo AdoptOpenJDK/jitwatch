@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.test;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_ANGLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,6 +21,8 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
+import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
+import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,7 +81,7 @@ public class TestAssemblyProcessor
 		IMetaMember createdMember = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod", void.class,
 				new Class<?>[0], nmethodAddress);
 		
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 
@@ -373,7 +376,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -394,9 +397,9 @@ public class TestAssemblyProcessor
 		assertEquals(4, instructions.size());
 	}
 
-	private AssemblyProcessor performAssemblyParsingOn(int jdkMajorVersion, String[] lines)
+	private AssemblyProcessor performAssemblyParsingOn(String[] lines)
 	{
-		AssemblyProcessor asmProcessor = new AssemblyProcessor(jdkMajorVersion);
+		AssemblyProcessor asmProcessor = new AssemblyProcessor();
 
 		for (String line : lines)
 		{
@@ -443,7 +446,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 				
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 
@@ -513,7 +516,7 @@ public class TestAssemblyProcessor
 		IMetaMember member2 = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress2);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -599,7 +602,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, "java.lang.String", "hashCode", int.class, new Class<?>[0],
 				nmethodAddress1);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -666,7 +669,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -726,7 +729,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "dummyMethod2", void.class,
 				new Class<?>[] { Class.forName("[Ljava.lang.String;") }, nmethodAddress1);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -793,7 +796,7 @@ public class TestAssemblyProcessor
 		IMetaMember member = UnitTestUtil.setUpTestMember(model, getClass().getName(), "add", int.class,
 				new Class<?>[] { int.class, int.class }, nmethodAddress1);
 
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(8,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		asmProcessor.attachAssemblyToMembers(model.getPackageManager());
 		
@@ -937,10 +940,7 @@ public class TestAssemblyProcessor
 				"  0x00007f81ed8e80e8: sub    $0x30,%rsp"
 				};
 		
-
-		performAssemblyParsingOn(9 ,lines);
-
-		AssemblyProcessor asmProcessor = performAssemblyParsingOn(9,lines);
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
 		
 		assertEquals(3, asmProcessor.getAssemblyMethods().size());
 		
@@ -959,5 +959,47 @@ public class TestAssemblyProcessor
 		
 		assertEquals("0x00007f81ed8e7f10", method2.getNativeAddress());
 		assertEquals("0x00007f81ed8e80c0", method2.getEntryAddress());		
+	}
+	
+	@Test
+	public void testRegressionGraalIssue265()
+	{
+		// <nmethod compile_id='125' compiler='C1' level='1' entry='0x00007fab74150300' size='736' address='0x00007fab74150190' relocation_offset='312' 
+		// insts_offset='368' stub_offset='496' scopes_data_offset='648' scopes_pcs_offset='664' dependencies_offset='728' metadata_offset='640' 
+		// method='java/lang/Integer intValue ()I' bytes='5' count='206' iicount='206' stamp='0.501'/>
+
+		String[] lines = new String[] {
+				"Loaded disassembler from /home/marschall/bin/java/graalvm-0.27/jre/lib/amd64/server/hsdis-amd64.so",
+				"----------------------------------------------------------------------",				
+				"java/lang/Integer.intValue  [0x00007fab74150300, 0x00007fab74150410]  272 bytes",
+				"[Disassembling for mach=&apos;i386:x86-64&apos;]",
+				"[Entry Point]",
+				"[Constants]",
+				"  # {method} {0x00007fab6194cf00} &apos;intValue&apos; &apos;()I&apos; in &apos;java/lang/Integer&apos;",
+				"  #           [sp+0x40]  (sp of caller)",
+				"  0x00007fab74150300: mov    0x8(%rsi),%r10d",
+				"  0x00007fab74150304: shl    $0x3,%r10",
+				"  0x00007fab74150308: cmp    %rax,%r10",
+				"  0x00007fab7415030b: jne    0x00007fab74047b60  ;   {runtime_call}",
+				"  0x00007fab74150311: data16 data16 nopw 0x0(%rax,%rax,1)",
+				"  0x00007fab7415031c: data16 data16 xchg %ax,%ax",
+				"[Verified Entry Point]",
+				"  0x00007fab74150320: mov    %eax,-0x14000(%rsp)",
+				"  0x00007fab74150327: push   %rbp",
+				"  0x00007fab74150328: sub    $0x30,%rsp         ;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
+				"                                                ; - java.lang.Integer::intValue@0 (line 893)",
+				"  0x00007fab7415032c: mov    0xc(%rsi),%eax     ;*getfield value {reexecute=0 rethrow=0 return_oop=0}",
+				"                                                ; - java.lang.Integer::intValue@1 (line 893)"
+				};
+
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
+		
+		assertEquals(1, asmProcessor.getAssemblyMethods().size());
+		
+		AssemblyMethod method0 = asmProcessor.getAssemblyMethods().get(0);
+		
+		assertEquals("# {method} {0x00007fab6194cf00} 'intValue' '()I' in 'java/lang/Integer'", method0.getAssemblyMethodSignature());
+
+		assertEquals("0x00007fab74150300", method0.getEntryAddress());		
 	}
 }

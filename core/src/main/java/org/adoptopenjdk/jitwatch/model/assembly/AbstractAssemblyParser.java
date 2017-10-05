@@ -54,7 +54,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 		AssemblyMethod method = new AssemblyMethod(architecture);
 
 		boolean seenInstructions = false;
-		
+
 		for (int i = 0; i < lines.length; i++)
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
@@ -117,8 +117,12 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 				if (instr == null && lastLine != null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
 						&& !line.contains(' ' + S_HEX_PREFIX))
 				{
-					// remove last newline
-					headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
+
+					if (headerBuilder.length() > 0)
+					{
+						// remove last newline
+						headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
+					}
 
 					headerBuilder.append(line).append(S_NEWLINE);
 
@@ -164,7 +168,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 					if (instr != null)
 					{
 						seenInstructions = true;
-						
+
 						if (replaceLast)
 						{
 							currentBlock.replaceLastInstruction(instr);

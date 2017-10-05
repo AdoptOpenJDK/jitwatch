@@ -47,11 +47,8 @@ public class AssemblyProcessor
 
 	private Architecture architecture = null;
 
-	private int jdkMajorVersion;
-
-	public AssemblyProcessor(int jdkMajorVersion)
+	public AssemblyProcessor()
 	{
-		this.jdkMajorVersion = jdkMajorVersion;
 	}
 
 	public List<AssemblyMethod> getAssemblyMethods()
@@ -109,30 +106,29 @@ public class AssemblyProcessor
 			line = S_HASH + S_SPACE + line;
 		}
 
-		if (jdkMajorVersion >= 9)
+		if (line.trim().startsWith("total in heap"))
 		{
-			if (line.trim().startsWith("total in heap"))
-			{
-				nativeAddress = getStartAddress(line);
+			String possibleNativeAddress = getStartAddress(line);
 
-				if (nativeAddress != null)
-				{
-					nativeAddress = nativeAddress.trim();
-				}
-			}
-			else if (line.trim().endsWith(" bytes"))
+			if (possibleNativeAddress != null)
 			{
-				entryAddress = getStartAddress(line);
+				nativeAddress = possibleNativeAddress.trim();
+			}
+		}
 
-				if (entryAddress != null)
-				{
-					entryAddress = entryAddress.trim();
-				}
-			}
-			else if (line.trim().endsWith("</print_nmethod>"))
+		if (line.trim().endsWith(" bytes"))
+		{
+			String possibleEntryAddress = getStartAddress(line);
+
+			if (possibleEntryAddress != null)
 			{
-				complete();
+				entryAddress = possibleEntryAddress.trim();
 			}
+		}
+
+		if (line.trim().endsWith("</print_nmethod>"))
+		{
+			complete();
 		}
 
 		if (line.startsWith(NATIVE_CODE_START) || line.startsWith("Compiled method")
@@ -150,14 +146,11 @@ public class AssemblyProcessor
 				complete();
 			}
 
-			if (jdkMajorVersion < 9)
-			{
-				nativeAddress = StringUtil.getSubstringBetween(line, NATIVE_CODE_START, S_COLON);
+			String possibleNativeAddress = StringUtil.getSubstringBetween(line, NATIVE_CODE_START, S_COLON);
 
-				if (nativeAddress != null)
-				{
-					nativeAddress = nativeAddress.trim();
-				}
+			if (possibleNativeAddress != null)
+			{
+				nativeAddress = possibleNativeAddress.trim();
 			}
 		}
 		else if (assemblyStarted)
@@ -237,7 +230,7 @@ public class AssemblyProcessor
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.debug("Using assembly parser {}", parser.getClass().getName());
+				logger.debug("Using assembly parser {}", parser.getClass().getName());
 				}
 
 				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString);
@@ -251,7 +244,7 @@ public class AssemblyProcessor
 			{
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
-					logger.error("No assembly parser found for {}", architecture);
+					logger.error("No assembly parser found for architecture '{}'", architecture);
 				}
 			}
 		}

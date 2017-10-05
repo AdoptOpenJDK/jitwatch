@@ -873,6 +873,5 @@ public class TestAssemblyParserX86 extends AbstractAssemblyTest
 
 		List<AssemblyInstruction> instructions4 = block4.getInstructions();
 		assertEquals(6, instructions4.size());
-
 	}
 }
