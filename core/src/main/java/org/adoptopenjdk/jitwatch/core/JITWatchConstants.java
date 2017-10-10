@@ -34,8 +34,8 @@ public final class JITWatchConstants
 	
 	public static final boolean DEBUG_MEMBER_CREATION = false;
 
-	public static final int DEFAULT_FREQ_INLINE_SIZE = 35;
-	public static final int DEFAULT_MAX_INLINE_SIZE = 325;
+	public static final int DEFAULT_FREQ_INLINE_SIZE = 325;
+	public static final int DEFAULT_MAX_INLINE_SIZE = 35;
 	public static final int DEFAULT_COMPILER_THRESHOLD = 10000;	
 	
 	public static final String TAG_XML = "<?xml";
