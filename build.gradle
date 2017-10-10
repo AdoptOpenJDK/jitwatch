@@ -4,7 +4,7 @@ buildscript {
    }
 
    dependencies {
-      classpath 'commons-io:commons-io:2.4'
+      classpath 'commons-io:commons-io:2.5'
    }
 }
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM
@@ -18,8 +18,8 @@ plugins {
    id 'jacoco'			// code coverage 
    id 'project-report'	// project reporting plugin
    id 'com.github.hierynomus.license' version '0.11.0'   // license checks
-   id 'com.github.ben-manes.versions' version '0.11.3'   // version checks
-   id 'com.jfrog.bintray' version '1.4'
+   id 'com.github.ben-manes.versions' version '0.15.0'   // version checks
+   id 'com.jfrog.bintray' version '1.7.3'
    id 'maven-publish'
 }
 

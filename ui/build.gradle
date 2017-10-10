@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'  	// similar to mvn exec:java
-    id 'com.github.johnrengelman.shadow' version '1.2.3'  // fat jar
+    id 'com.github.johnrengelman.shadow' version '2.0.1'  // fat jar
     id 'maven-publish'
 }
 

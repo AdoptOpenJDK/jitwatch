@@ -28,25 +28,25 @@ public class TestExecutionUtil
 	public void testExecuteDemo()
 	{
 		List<String> cp = new ArrayList<>();
-		
+
 		String userDir = System.getProperty("user.dir");
-		
+
 		//path for maven build
 		Path path = FileSystems.getDefault().getPath(userDir, "target", "classes");
-		
+
 		if (Files.exists(path)){
 			cp.add(path.toString());
 		}
-		
+
 		// path for gradle build
-		path = FileSystems.getDefault().getPath(userDir, "build", "classes", "main");
-		
+		path = FileSystems.getDefault().getPath(userDir, "build", "classes","java", "main");
+
 		if (Files.exists(path)){
 			cp.add(path.toString());
 		}
 
 		File libDir = Paths.get(userDir, "../lib").toFile();
-		
+
 		assertTrue(libDir.exists());
 		assertTrue(libDir.isDirectory());
 
