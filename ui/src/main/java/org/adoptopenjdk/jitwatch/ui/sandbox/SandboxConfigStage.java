@@ -501,8 +501,10 @@ public class SandboxConfigStage extends Stage
 		hbox.setSpacing(20);
 
 		hbox.getChildren().add(buildCheckBoxDisableInlining());
-		buildHBoxFreqInline(hbox);
+
 		buildHBoxMaxInline(hbox);
+
+		buildHBoxFreqInline(hbox);
 
 		return hbox;
 	}
