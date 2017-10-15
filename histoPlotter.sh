@@ -26,5 +26,7 @@ CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
 CLASSPATH=$CLASSPATH:core/target/classes
 CLASSPATH=$CLASSPATH:ui/target/classes
+CLASSPATH=$CLASSPATH:core/build/classes/java/main
+CLASSPATH=$CLASSPATH:ui/build/classes/java/main
 
 "$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.visualiser.HistoPlotter $@

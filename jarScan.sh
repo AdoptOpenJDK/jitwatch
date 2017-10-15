@@ -59,5 +59,7 @@ CLASSPATH=$CLASSPATH:$JITWATCH/lib/slf4j-api-1.7.7.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:$JITWATCH/core/target/classes
 CLASSPATH=$CLASSPATH:$JITWATCH/ui/target/classes
+CLASSPATH=$CLASSPATH:$JITWATCH/core/build/classes/java/main
+CLASSPATH=$CLASSPATH:$JITWATCH/ui/build/classes/java/main
 
 "$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.JarScan "$@"
