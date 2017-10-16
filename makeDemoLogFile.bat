@@ -65,6 +65,8 @@ echo "Building example HotSpot log"
 
 set CLASSPATH=core\target\classes
 set CLASSPATH=ui\target\classes
+set CLASSPATH=core\build\classes\java\main
+set CLASSPATH=ui\build\classes\java\main
 set CLASSPATH=%CLASSPATH%;lib\logback-classic-1.1.2.jar
 set CLASSPATH=%CLASSPATH%;lib\logback-core-1.1.2.jar
 set CLASSPATH=%CLASSPATH%;lib\slf4j-api-1.7.7.jar

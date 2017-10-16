@@ -77,6 +77,8 @@ echo "Building example HotSpot log"
 
 CLASSPATH=$CLASSPATH:core/target/classes
 CLASSPATH=$CLASSPATH:ui/target/classes
+CLASSPATH=$CLASSPATH:core/build/classes/java/main
+CLASSPATH=$CLASSPATH:ui/build/classes/java/main
 CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
 CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
