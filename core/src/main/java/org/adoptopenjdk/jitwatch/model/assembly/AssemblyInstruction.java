@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,7 +7,6 @@ package org.adoptopenjdk.jitwatch.model.assembly;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOUBLE_SPACE;
@@ -18,13 +17,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SAFEPOINT_POLL_
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AssemblyInstruction
 {
@@ -36,10 +30,6 @@ public class AssemblyInstruction
 	private List<String> commentLines = new ArrayList<>();
 	private final AssemblyLabels labels;
 	private boolean isSafePoint = false;
-
-	private static final Pattern PATTERN_ASSEMBLY_CALL_SIG = Pattern.compile("^; - (.*)::(.*)@(.*)\\s\\(line\\s(.*)\\)");
-
-	private static final Logger logger = LoggerFactory.getLogger(AssemblyInstruction.class);
 
 	public AssemblyInstruction(String annotation, long address, List<String> prefixes, String mnemonic, List<String> operands,
 			String firstComment, AssemblyLabels labels)
@@ -144,46 +134,6 @@ public class AssemblyInstruction
 			if (lastLine.contains(S_OPTIMIZED_VIRTUAL_CALL))
 			{
 				result = true;
-			}
-		}
-
-		return result;
-	}
-
-	public VirtualCallSite getOptimizedVirtualCallSiteOrNull()
-	{
-		VirtualCallSite result = null;
-
-		if (isOptimizedVCall())
-		{
-			// Oop comment
-			// *invoke comment
-			// callsite comment+
-			// optimized virtual_call
-
-			String callSiteCommentLine = commentLines.get(2);
-
-			Matcher matcher = PATTERN_ASSEMBLY_CALL_SIG.matcher(callSiteCommentLine);
-
-			if (matcher.find())
-			{
-				String className = matcher.group(1);
-				String methodName = matcher.group(2);
-				String bytecodeOffset = matcher.group(3);
-				String lineNumber = matcher.group(4);
-
-				try
-				{
-					result = new VirtualCallSite(className, methodName, Integer.parseInt(bytecodeOffset),
-							Integer.parseInt(lineNumber));
-				}
-				catch (NumberFormatException nfe)
-				{
-					if (DEBUG_LOGGING_ASSEMBLY)
-					{
-						logger.warn("Could not parse CallSite from line: {}", callSiteCommentLine);
-					}
-				}
 			}
 		}
 

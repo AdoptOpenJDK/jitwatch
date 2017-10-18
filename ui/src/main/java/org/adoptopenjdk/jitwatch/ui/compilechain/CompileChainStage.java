@@ -331,7 +331,7 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 			@Override
 			public void handle(MouseEvent arg0)
 			{
-				stageAccess.openTriView(node.getMember(), true);
+				stageAccess.openTriView(node.getMember());
 			}
 		});
 	}

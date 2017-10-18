@@ -50,7 +50,7 @@ public class LinkedBCICell extends TableCell<IReportRowBean, Report>
 						member.setSelectedCompilation(report.getCompilationIndex());
 					}
 
-					triViewAccessor.openTriView(member, false, report.getBytecodeOffset());
+					triViewAccessor.openTriView(member, true, report.getBytecodeOffset());
 				}
 			});
 

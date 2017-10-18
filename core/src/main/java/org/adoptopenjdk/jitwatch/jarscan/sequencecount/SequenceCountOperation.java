@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -72,11 +72,6 @@ public class SequenceCountOperation implements IJarScanOperation
 		});
 
 		return result;
-	}
-
-	public int getCountForChain(String chain)
-	{
-		return chainCountMap.get(chain);
 	}
 
 	public void reset()

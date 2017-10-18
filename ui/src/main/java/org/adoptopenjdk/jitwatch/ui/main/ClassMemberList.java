@@ -68,7 +68,7 @@ public class ClassMemberList extends VBox
 		}
 	}
 
-	public ClassMemberList(final IStageAccessProxy parent, final JITWatchConfig config)
+	public ClassMemberList(final IStageAccessProxy proxy, final JITWatchConfig config)
 	{
 		this.config = config;
 
@@ -113,8 +113,8 @@ public class ClassMemberList extends VBox
 			}
 		});
 
-		final ContextMenu menuCompiled = buildContextMenuCompiledMember(parent);
-		final ContextMenu menuUncompiled = buildContextMenuUncompiledMember(parent);
+		final ContextMenu menuCompiled = buildContextMenuCompiledMember(proxy);
+		final ContextMenu menuUncompiled = buildContextMenuUncompiledMember(proxy);
 
 		memberList.addEventHandler(MouseEvent.MOUSE_CLICKED, getEventHandlerContextMenu(menuCompiled, menuUncompiled));
 
@@ -159,7 +159,7 @@ public class ClassMemberList extends VBox
 		};
 	}
 
-	private ContextMenu buildContextMenuCompiledMember(IStageAccessProxy parent)
+	private ContextMenu buildContextMenuCompiledMember(IStageAccessProxy proxy)
 	{
 		final ContextMenu menu = new ContextMenu();
 
@@ -176,20 +176,18 @@ public class ClassMemberList extends VBox
 		menu.getItems().add(menuItemCallChain);
 		menu.getItems().add(menuItemOptimizedVCalls);
 
-		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
+		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(proxy));
 
-		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(parent));
+		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(proxy));
 
-		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(parent));
+		menuItemIntrinsics.setOnAction(getEventHandlerMenuItemIntrinsics(proxy));
 
-		menuItemCallChain.setOnAction(getEventHandlerMenuItemCallChain(parent));
-
-		menuItemOptimizedVCalls.setOnAction(getEventHandlerMenuItemOptimizedVCall(parent));
+		menuItemCallChain.setOnAction(getEventHandlerMenuItemCallChain(proxy));
 
 		return menu;
 	}
 
-	private ContextMenu buildContextMenuUncompiledMember(IStageAccessProxy parent)
+	private ContextMenu buildContextMenuUncompiledMember(IStageAccessProxy proxy)
 	{
 		ContextMenu menu = new ContextMenu();
 
@@ -199,37 +197,37 @@ public class ClassMemberList extends VBox
 		menu.getItems().add(menuItemTriView);
 		menu.getItems().add(menuItemInlinedInto);
 
-		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(parent));
-		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(parent));
+		menuItemTriView.setOnAction(getEventHandlerMenuItemTriView(proxy));
+		menuItemInlinedInto.setOnAction(getEventHandlerMenuItemInlinedInto(proxy));
 
 		return menu;
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemTriView(final IStageAccessProxy parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemTriView(final IStageAccessProxy proxy)
 	{
 		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openTriView(memberList.getSelectionModel().getSelectedItem(), false);
+				proxy.openTriView(memberList.getSelectionModel().getSelectedItem());
 			}
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemInlinedInto(final IStageAccessProxy parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemInlinedInto(final IStageAccessProxy proxy)
 	{
 		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openInlinedIntoReport(memberList.getSelectionModel().getSelectedItem());
+				proxy.openInlinedIntoReport(memberList.getSelectionModel().getSelectedItem());
 			}
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemIntrinsics(final IStageAccessProxy parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemIntrinsics(final IStageAccessProxy proxy)
 	{
 		return new EventHandler<ActionEvent>()
 		{
@@ -240,31 +238,19 @@ public class ClassMemberList extends VBox
 
 				String intrinsicsUsed = findIntrinsicsUsedByMember(member);
 
-				parent.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed, false, false);
+				proxy.openTextViewer("Intrinsics used by " + member.toString(), intrinsicsUsed, false, false);
 			}
 		};
 	}
 
-	private EventHandler<ActionEvent> getEventHandlerMenuItemCallChain(final IStageAccessProxy parent)
+	private EventHandler<ActionEvent> getEventHandlerMenuItemCallChain(final IStageAccessProxy proxy)
 	{
 		return new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.openCompileChain(memberList.getSelectionModel().getSelectedItem());
-			}
-		};
-	}
-
-	private EventHandler<ActionEvent> getEventHandlerMenuItemOptimizedVCall(final IStageAccessProxy parent)
-	{
-		return new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				parent.openOptmizedVCallReport(memberList.getSelectionModel().getSelectedItem());
+				proxy.openCompileChain(memberList.getSelectionModel().getSelectedItem());
 			}
 		};
 	}

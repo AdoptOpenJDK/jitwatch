@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -8,13 +8,10 @@ package org.adoptopenjdk.jitwatch.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-import org.adoptopenjdk.jitwatch.optimizedvcall.VirtualCallSite;
 import org.junit.Test;
 
 public class TestCompositeObjectEquality
@@ -55,52 +52,7 @@ public class TestCompositeObjectEquality
 
 		assertNotSame(table1, table2);
 	}
-
-	@Test
-	public void testVirtualCallSiteEqual()
-	{
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-
-		assertEquals(vcs1, vcs2);
-	}
-
-	@Test
-	public void testVirtualCallSiteNotEqualClass()
-	{
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("BarClass", "FooMember", 123, 456);
-
-		assertNotSame(vcs1, vcs2);
-	}
-
-	@Test
-	public void testVirtualCallSiteNotEqualMember()
-	{
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "BarMember", 123, 456);
-
-		assertNotSame(vcs1, vcs2);
-	}
-
-	@Test
-	public void testVirtualCallSiteNotEqualSource()
-	{
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "FooMember", 999, 456);
-
-		assertNotSame(vcs1, vcs2);
-	}
-
-	@Test
-	public void testVirtualCallSiteNotEqualBCI()
-	{
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "FooMember", 123, 999);
-
-		assertNotSame(vcs1, vcs2);
-	}
-
+	
 	public void test1()
 	{
 		System.out.println("test1");
@@ -183,23 +135,5 @@ public class TestCompositeObjectEquality
 		instruction2.setComment("bar");
 
 		assertNotSame(instruction1, instruction2);
-	}
-
-	@Test
-	public void testOptimizedVirtualCallEqual()
-	{
-		IMetaMember caller1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test1", new Class<?>[0], void.class);
-		IMetaMember callee1 = UnitTestUtil.createTestMetaMember(getClass().getName(), "test2", new Class<?>[0], void.class);
-
-		VirtualCallSite vcs1 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-		VirtualCallSite vcs2 = new VirtualCallSite("FooClass", "FooMember", 123, 456);
-
-		BytecodeInstruction instruction1 = new BytecodeInstruction();
-		BytecodeInstruction instruction2 = new BytecodeInstruction();
-
-		OptimizedVirtualCall ovc1 = new OptimizedVirtualCall(caller1, callee1, vcs1, instruction1);
-		OptimizedVirtualCall ovc2 = new OptimizedVirtualCall(caller1, callee1, vcs2, instruction2);
-
-		assertEquals(ovc1, ovc2);
 	}
 }

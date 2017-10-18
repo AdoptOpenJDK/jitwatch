@@ -32,9 +32,6 @@ import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.PackageManager;
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCall;
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallFinder;
-import org.adoptopenjdk.jitwatch.optimizedvcall.OptimizedVirtualCallVisitable;
 import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
@@ -52,7 +49,6 @@ import org.adoptopenjdk.jitwatch.ui.compilechain.CompileChainStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
-import org.adoptopenjdk.jitwatch.ui.optimizedvcall.OptimizedVirtualCallStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
@@ -168,7 +164,6 @@ public class JITWatchUI extends Application
 	private Button btnReportSuggestions;
 	private Button btnReportEliminatedAllocations;
 	private Button btnReportElidedLocks;
-	private Button btnOptimizedVirtualCalls;
 	private Button btnSandbox;
 
 	private Label lblHeap;
@@ -187,7 +182,6 @@ public class JITWatchUI extends Application
 	private ReportStage reportStageElminatedAllocations;
 	private ReportStage reportStageElidedLocks;
 
-	private OptimizedVirtualCallStage ovcStage;
 	private SandboxStage sandBoxStage;
 
 	private NothingMountedStage nothingMountedStage;
@@ -590,7 +584,7 @@ public class JITWatchUI extends Application
 					selectedMember = selectedMetaClass.getFirstConstructor();
 				}
 
-				openTriView(selectedMember, false);
+				openTriView(selectedMember);
 			}
 		});
 
@@ -636,25 +630,6 @@ public class JITWatchUI extends Application
 				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElidedLocks);
 
 				btnReportElidedLocks.setDisable(true);
-			}
-		});
-
-		btnOptimizedVirtualCalls = new Button("OVCs");
-		btnOptimizedVirtualCalls.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				OptimizedVirtualCallVisitable optimizedVCallVisitable = new OptimizedVirtualCallVisitable();
-
-				List<OptimizedVirtualCall> optimizedVirtualCalls = optimizedVCallVisitable
-						.buildOptimizedCalleeReport(logParser.getModel(), getConfig().getAllClassLocations());
-
-				ovcStage = new OptimizedVirtualCallStage(JITWatchUI.this, optimizedVirtualCalls);
-
-				StageManager.addAndShow(JITWatchUI.this.stage, ovcStage);
-
-				btnOptimizedVirtualCalls.setDisable(true);
 			}
 		});
 
@@ -744,7 +719,6 @@ public class JITWatchUI extends Application
 		hboxTop.getChildren().add(btnReportSuggestions);
 		hboxTop.getChildren().add(btnReportEliminatedAllocations);
 		hboxTop.getChildren().add(btnReportElidedLocks);
-		hboxTop.getChildren().add(btnOptimizedVirtualCalls);
 
 		compilationRowList = FXCollections.observableArrayList();
 		compilationTable = CompilationTableBuilder.buildTableMemberAttributes(compilationRowList);
@@ -890,9 +864,9 @@ public class JITWatchUI extends Application
 	}
 
 	@Override
-	public void openTriView(IMetaMember member, boolean force)
+	public void openTriView(IMetaMember member)
 	{
-		openTriView(member, force, 0);
+		openTriView(member, true, 0);
 	}
 
 	@Override
@@ -1106,23 +1080,6 @@ public class JITWatchUI extends Application
 			compileChainStage.compilationChanged(member);
 
 			StageManager.addAndShow(this.stage, compileChainStage);
-		}
-	}
-
-	@Override
-	public void openOptmizedVCallReport(IMetaMember member)
-	{
-		if (member.isCompiled())
-		{
-			OptimizedVirtualCallFinder finder = new OptimizedVirtualCallFinder(logParser.getModel(),
-					getConfig().getAllClassLocations());
-
-			List<OptimizedVirtualCall> optimizedVirtualCalls = finder.findOptimizedCalls(member);
-
-			OptimizedVirtualCallStage ovcs = new OptimizedVirtualCallStage(this, optimizedVirtualCalls);
-
-			StageManager.addAndShow(this.stage, ovcs);
-
 		}
 	}
 
@@ -1473,11 +1430,6 @@ public class JITWatchUI extends Application
 			case INLINING:
 				break;
 			}
-		}
-		else if (stage instanceof OptimizedVirtualCallStage)
-		{
-			btnOptimizedVirtualCalls.setDisable(false);
-			ovcStage = null;
 		}
 		else if (stage instanceof BrowserStage)
 		{
