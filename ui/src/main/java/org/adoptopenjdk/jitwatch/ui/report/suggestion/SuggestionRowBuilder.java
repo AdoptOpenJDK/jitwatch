@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -25,7 +25,7 @@ public final class SuggestionRowBuilder
 	{
 	}
 
-	public static TableView<IReportRowBean> buildTableSuggestion(ObservableList<IReportRowBean> rows)
+	public static TableView<IReportRowBean> buildTable(ObservableList<IReportRowBean> rows)
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 

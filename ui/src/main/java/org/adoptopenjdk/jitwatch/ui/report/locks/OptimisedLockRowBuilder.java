@@ -3,7 +3,7 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.report.elidedlock;
+package org.adoptopenjdk.jitwatch.ui.report.locks;
 
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
@@ -17,13 +17,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
-public final class ElidedLockRowBuilder
+public final class OptimisedLockRowBuilder
 {
-	private ElidedLockRowBuilder()
+	private OptimisedLockRowBuilder()
 	{
 	}
 
-	public static TableView<IReportRowBean> buildTableSuggestion(ObservableList<IReportRowBean> rows)
+	public static TableView<IReportRowBean> buildTable(ObservableList<IReportRowBean> rows)
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
@@ -82,9 +82,9 @@ public final class ElidedLockRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> elisionKind = new TableColumn<IReportRowBean, String>("Elision Kind");
-		elisionKind.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("elisionKind"));
-		elisionKind.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
+		TableColumn<IReportRowBean, String> optimisationKind = new TableColumn<IReportRowBean, String>("Optimisation Kind");
+		optimisationKind.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("optimisationKind"));
+		optimisationKind.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
 			public TableCell<IReportRowBean, String> call(TableColumn<IReportRowBean, String> col)
@@ -98,14 +98,14 @@ public final class ElidedLockRowBuilder
 		compilation.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.12));
 		directOrInline.prefWidthProperty().bind(tv.widthProperty().multiply(0.1));
-		elisionKind.prefWidthProperty().bind(tv.widthProperty().multiply(0.18));
+		optimisationKind.prefWidthProperty().bind(tv.widthProperty().multiply(0.18));
 
 		tv.getColumns().add(metaClass);
 		tv.getColumns().add(member);
 		tv.getColumns().add(compilation);
 		tv.getColumns().add(viewBCI);
 		tv.getColumns().add(directOrInline);
-		tv.getColumns().add(elisionKind);
+		tv.getColumns().add(optimisationKind);
 
 		tv.setItems(rows);
 

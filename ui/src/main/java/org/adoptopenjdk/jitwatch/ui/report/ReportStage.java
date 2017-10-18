@@ -16,12 +16,12 @@ import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.report.cell.LinkedBCICell;
 import org.adoptopenjdk.jitwatch.ui.report.cell.MemberTableCell;
-import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBean;
-import org.adoptopenjdk.jitwatch.ui.report.elidedlock.ElidedLockRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.inlining.InliningRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.inlining.InliningRowBuilder;
+import org.adoptopenjdk.jitwatch.ui.report.locks.OptimisedLockRowBean;
+import org.adoptopenjdk.jitwatch.ui.report.locks.OptimisedLockRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBuilder;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
@@ -74,19 +74,19 @@ public class ReportStage extends Stage
 		{
 		case SUGGESTION:
 			setTitle(title);
-			tableView = SuggestionRowBuilder.buildTableSuggestion(observableList);
+			tableView = SuggestionRowBuilder.buildTable(observableList);
 			break;
 		case ELIMINATED_ALLOCATION:
 			setTitle(title);
-			tableView = EliminatedAllocationRowBuilder.buildTableSuggestion(observableList);
+			tableView = EliminatedAllocationRowBuilder.buildTable(observableList);
 			break;
 		case ELIDED_LOCK:
 			setTitle(title);
-			tableView = ElidedLockRowBuilder.buildTableSuggestion(observableList);
+			tableView = OptimisedLockRowBuilder.buildTable(observableList);
 			break;
 		case INLINING:
 			setTitle(title);
-			tableView = InliningRowBuilder.buildTableSuggestion(observableList);
+			tableView = InliningRowBuilder.buildTable(observableList);
 			break;
 		}
 
@@ -153,7 +153,7 @@ public class ReportStage extends Stage
 						observableList.add(new EliminatedAllocationRowBean(report));
 						break;
 					case ELIDED_LOCK:
-						observableList.add(new ElidedLockRowBean(report));
+						observableList.add(new OptimisedLockRowBean(report));
 						break;
 					case INLINING:
 						observableList.add(new InliningRowBean(report));

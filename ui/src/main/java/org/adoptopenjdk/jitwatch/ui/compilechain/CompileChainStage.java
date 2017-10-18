@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.ui.compilechain;
 
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.Compilation;
@@ -22,8 +23,10 @@ import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
@@ -45,6 +48,9 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 	private ScrollPane scrollPane;
 	private Pane pane;
 	private IStageAccessProxy stageAccess;
+	
+	private Label labelRootNodeMember;
+
 	private CompilationChooser compilationChooser;
 
 	private CompileNode rootNode;
@@ -96,12 +102,17 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		
 		HBox hBox = new HBox();
 		
+		labelRootNodeMember = new Label();
+		
+		hBox.getChildren().add(labelRootNodeMember);
 		hBox.getChildren().add(compilationChooser.getCombo());
 		hBox.getChildren().add(spacer);
 		hBox.getChildren().add(buttonSnapShot);
 		
+		hBox.setSpacing(16.0);
+		hBox.setPadding(new Insets(4, 4, 4, 4));
+		
 		verticalLayout.getChildren().addAll(hBox, scrollPane);
-
 
 		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
 
@@ -350,13 +361,19 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 
 			this.rootNode = root;
 
-			title += root.getMemberName() + " " + root.getCompilation().getSignature();
+			String rootMemberName = getLabelText(root);
+			
+			title += rootMemberName + " " + root.getCompilation().getSignature();
 
 			setTitle(title);
+			
+			labelRootNodeMember.setText(rootMemberName);
 		}
 		else
 		{
 			rootNode = null;
+			
+			labelRootNodeMember.setText(S_EMPTY);
 			
 			clear();
 			

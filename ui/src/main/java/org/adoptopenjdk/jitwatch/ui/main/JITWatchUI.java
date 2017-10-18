@@ -39,8 +39,8 @@ import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
-import org.adoptopenjdk.jitwatch.report.escapeanalysis.lockelision.ElidedLocksWalker;
 import org.adoptopenjdk.jitwatch.report.inlining.InliningWalker;
+import org.adoptopenjdk.jitwatch.report.locks.OptimisedLocksWalker;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.browser.BrowserStage;
@@ -163,7 +163,7 @@ public class JITWatchUI extends Application
 	private Button btnTriView;
 	private Button btnReportSuggestions;
 	private Button btnReportEliminatedAllocations;
-	private Button btnReportElidedLocks;
+	private Button btnReportOptimisedLocks;
 	private Button btnSandbox;
 
 	private Label lblHeap;
@@ -180,7 +180,7 @@ public class JITWatchUI extends Application
 
 	private ReportStage reportStageSuggestions;
 	private ReportStage reportStageElminatedAllocations;
-	private ReportStage reportStageElidedLocks;
+	private ReportStage reportStageOptimisedLocks;
 
 	private SandboxStage sandBoxStage;
 
@@ -191,7 +191,7 @@ public class JITWatchUI extends Application
 
 	private List<Report> reportListSuggestions = new ArrayList<>();
 	private List<Report> reportListEliminatedAllocations = new ArrayList<>();
-	private List<Report> reportListElidedLocks = new ArrayList<>();
+	private List<Report> reportListOptimisedLocks = new ArrayList<>();
 
 	private CodeCacheWalkerResult codeCacheWalkerResult;
 
@@ -271,7 +271,7 @@ public class JITWatchUI extends Application
 
 		reportListSuggestions.clear();
 		reportListEliminatedAllocations.clear();
-		reportListElidedLocks.clear();
+		reportListOptimisedLocks.clear();
 
 		Platform.runLater(new Runnable()
 		{
@@ -312,7 +312,7 @@ public class JITWatchUI extends Application
 
 		buildEliminatedAllocationReport();
 
-		buildElidedLocksReport();
+		buildOptimisedLocksReport();
 
 		Platform.runLater(new Runnable()
 		{
@@ -350,15 +350,15 @@ public class JITWatchUI extends Application
 		log("Found " + reportListEliminatedAllocations.size() + "  eliminated allocations.");
 	}
 
-	private void buildElidedLocksReport()
+	private void buildOptimisedLocksReport()
 	{
-		log("Finding elided locks");
+		log("Finding optimised locks");
 
-		ElidedLocksWalker walker = new ElidedLocksWalker(logParser.getModel());
+		OptimisedLocksWalker walker = new OptimisedLocksWalker(logParser.getModel());
 
-		reportListElidedLocks = walker.getReports(new ScoreComparator());
+		reportListOptimisedLocks = walker.getReports(new ScoreComparator());
 
-		log("Found " + reportListElidedLocks.size() + " elided locks.");
+		log("Found " + reportListOptimisedLocks.size() + " optimised locks.");
 	}
 
 	private CodeCacheWalkerResult buildCodeCacheResult()
@@ -618,18 +618,18 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportElidedLocks = new Button("-Locks");
-		btnReportElidedLocks.setOnAction(new EventHandler<ActionEvent>()
+		btnReportOptimisedLocks = new Button("-Locks");
+		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				reportStageElidedLocks = new ReportStage(JITWatchUI.this, "JITWatch Elided Lock Report",
-						ReportStageType.ELIDED_LOCK, reportListElidedLocks);
+				reportStageOptimisedLocks = new ReportStage(JITWatchUI.this, "JITWatch Optimised Lock Report",
+						ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
 
-				StageManager.addAndShow(JITWatchUI.this.stage, reportStageElidedLocks);
+				StageManager.addAndShow(JITWatchUI.this.stage, reportStageOptimisedLocks);
 
-				btnReportElidedLocks.setDisable(true);
+				btnReportOptimisedLocks.setDisable(true);
 			}
 		});
 
@@ -718,7 +718,7 @@ public class JITWatchUI extends Application
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnReportSuggestions);
 		hboxTop.getChildren().add(btnReportEliminatedAllocations);
-		hboxTop.getChildren().add(btnReportElidedLocks);
+		hboxTop.getChildren().add(btnReportOptimisedLocks);
 
 		compilationRowList = FXCollections.observableArrayList();
 		compilationTable = CompilationTableBuilder.buildTableMemberAttributes(compilationRowList);
@@ -936,7 +936,7 @@ public class JITWatchUI extends Application
 
 		btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
 		btnReportEliminatedAllocations.setText("-Allocs (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
-		btnReportElidedLocks.setText("-Locks (" + reportListElidedLocks.size() + S_CLOSE_PARENTHESES);
+		btnReportOptimisedLocks.setText("-Locks (" + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass, boolean unsetSelection)
@@ -1424,8 +1424,8 @@ public class JITWatchUI extends Application
 				reportStageElminatedAllocations = null;
 				break;
 			case ELIDED_LOCK:
-				btnReportElidedLocks.setDisable(false);
-				reportStageElidedLocks = null;
+				btnReportOptimisedLocks.setDisable(false);
+				reportStageOptimisedLocks = null;
 				break;
 			case INLINING:
 				break;

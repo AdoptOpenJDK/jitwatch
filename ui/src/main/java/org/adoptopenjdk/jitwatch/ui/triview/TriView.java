@@ -309,10 +309,12 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		Region spacerStatus = new Region();
 		HBox.setHgrow(spacerStatus, Priority.ALWAYS);
-		
+
 		HBox hBoxStatusBar = new HBox();
 		hBoxStatusBar.setSpacing(16.0);
 		hBoxStatusBar.getChildren().addAll(lblStatusBar, spacerStatus, buttonSnapShot);
+
+		hBoxStatusBar.setPadding(new Insets(4, 4, 4, 4));
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);

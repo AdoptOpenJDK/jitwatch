@@ -36,6 +36,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -73,7 +75,7 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 	private Button btnZoomOut;
 	private Button btnZoomReset;
 	private Button btnAnimate;
-
+	
 	private CheckBox checkC1;
 	private CheckBox checkC2;
 
@@ -113,14 +115,14 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 		borderPane.setTop(scrollPane);
 
-		VBox vBoxControls = buildControls();
+		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
+
+		VBox vBoxControls = buildControls(scene);
 
 		borderPane.setCenter(vBoxControls);
 
 		borderPane.setBottom(nMethodInfo);
-
-		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-
+		
 		scrollPane.prefWidthProperty().bind(scene.widthProperty());
 		scrollPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.5));
 
@@ -142,22 +144,22 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 		setScene(scene);
 	}
 
-	private VBox buildControls()
+	private VBox buildControls(Scene scene)
 	{
 		VBox vBoxControls = new VBox();
 
-		vBoxControls.getChildren().addAll(buildControlButtons(), buildControlInfo());
+		vBoxControls.getChildren().addAll(buildControlButtons(scene), buildControlInfo());
 
 		return vBoxControls;
 	}
 
-	private HBox buildControlButtons()
+	private HBox buildControlButtons(Scene scene)
 	{
 		HBox hboxControls = new HBox();
 
 		hboxControls.setSpacing(10);
 		hboxControls.setAlignment(Pos.CENTER_LEFT);
-		hboxControls.setPadding(new Insets(4, 0, 0, 8));
+		hboxControls.setPadding(new Insets(4, 4, 0, 8));
 
 		btnZoomIn = new Button("Zoom In");
 		btnZoomOut = new Button("Zoom Out");
@@ -244,7 +246,12 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 			}
 		});
 
-		hboxControls.getChildren().addAll(checkC1, checkC2, btnZoomIn, btnZoomOut, btnZoomReset, btnAnimate, txtAnimationSeconds);
+		Region spacerStatus = new Region();
+		HBox.setHgrow(spacerStatus, Priority.ALWAYS);
+
+		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "CodeCache");
+
+		hboxControls.getChildren().addAll(checkC1, checkC2, btnZoomIn, btnZoomOut, btnZoomReset, btnAnimate, txtAnimationSeconds, spacerStatus, buttonSnapShot);
 
 		return hboxControls;
 	}

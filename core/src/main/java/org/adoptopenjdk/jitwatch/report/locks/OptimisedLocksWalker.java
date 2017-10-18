@@ -3,16 +3,16 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.report.escapeanalysis.lockelision;
+package org.adoptopenjdk.jitwatch.report.locks;
 
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.AbstractEscapeAnalysisWalker;
 
-public class ElidedLocksWalker extends AbstractEscapeAnalysisWalker
+public class OptimisedLocksWalker extends AbstractEscapeAnalysisWalker
 {
-	public ElidedLocksWalker(IReadOnlyJITDataModel model)
+	public OptimisedLocksWalker(IReadOnlyJITDataModel model)
 	{
 		super(model);
 	}

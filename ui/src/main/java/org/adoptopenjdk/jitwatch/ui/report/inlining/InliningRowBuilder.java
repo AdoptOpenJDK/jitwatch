@@ -23,7 +23,7 @@ public final class InliningRowBuilder
 	{
 	}
 
-	public static TableView<IReportRowBean> buildTableSuggestion(ObservableList<IReportRowBean> rows)
+	public static TableView<IReportRowBean> buildTable(ObservableList<IReportRowBean> rows)
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
