@@ -121,4 +121,23 @@ public class TestLineTable
 		assertEquals(46, table.findSourceLineForBytecodeOffset(82));
 		assertEquals(48, table.findSourceLineForBytecodeOffset(5000));
 	}
+	
+	@Test
+	public void testHighlightRange()
+	{
+		LineTable table = new LineTable(null);
+
+		table.add(new LineTableEntry(8, 0));
+		table.add(new LineTableEntry(9, 4));
+		table.add(new LineTableEntry(12, 6));
+		table.add(new LineTableEntry(12, 22));
+		table.add(new LineTableEntry(14, 14));
+		table.add(new LineTableEntry(17, 28));
+		table.add(new LineTableEntry(18, 53));
+		
+		int[] range = table.getSourceRange(8,25);
+		
+		assertEquals(12, range[0]);
+		assertEquals(14, range[1]);
+	}
 }

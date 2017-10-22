@@ -11,6 +11,8 @@ public interface ILineListener
 	
 	void lineHighlighted(int index, LineType lineType);
 	
+	void setRange(LineType lineType, int startRange, int endRange);
+	
 	void handleFocusSelf(LineType lineType);
 	void handleFocusNext();
 	void handleFocusPrev();

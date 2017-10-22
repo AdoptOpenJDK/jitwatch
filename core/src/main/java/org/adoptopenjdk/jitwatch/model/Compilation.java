@@ -5,22 +5,24 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ENTRY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_OSR_BCI;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ENTRY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_LEVEL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
 
 public class Compilation
 {
@@ -43,6 +45,10 @@ public class Compilation
 	private long compiledStamp;
 
 	private boolean isC2N;
+	
+	private boolean isOSR;
+	
+	private int osrBCI;
 
 	private String nativeAddress;
 
@@ -136,9 +142,29 @@ public class Compilation
 	{
 		this.tagTaskQueued = tagTaskQueued;
 
-		this.compileID = tagTaskQueued.getAttributes().get(ATTR_COMPILE_ID);
+		Map<String, String> attrs = tagTaskQueued.getAttributes();
+		
+		this.compileID = attrs.get(ATTR_COMPILE_ID);
 
-		queuedStamp = ParseUtil.getStamp(tagTaskQueued.getAttributes());
+		queuedStamp = ParseUtil.getStamp(attrs);
+		
+		String compileKind = attrs.get(ATTR_COMPILE_KIND);
+		String osrBCIString = attrs.get(ATTR_OSR_BCI);
+
+		if (OSR.equalsIgnoreCase(compileKind))
+		{
+			isOSR =true;
+			osrBCI = -1;
+			
+			try
+			{
+				osrBCI = Integer.parseInt(osrBCIString);
+			}
+			catch (NumberFormatException nfe)
+			{
+				//logger.error("Could not parse {} '{}'", ATTR_OSR_BCI, osrBCIString);
+			}
+		}
 	}
 
 	public void setTagNMethod(Tag tagNMethod)
@@ -393,4 +419,16 @@ public class Compilation
 	{
 		return failedTask;
 	}
+
+	public boolean isOSR()
+	{
+		return isOSR;
+	}
+
+	public int getOSRBCI()
+	{
+		return osrBCI;
+	}
+	
+	
 }

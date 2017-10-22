@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -25,5 +25,10 @@ public class NoOpLineListener implements ILineListener
 	@Override
 	public void handleFocusPrev()
 	{
+	}
+
+	@Override
+	public void setRange(LineType lineType, int startRange, int endRange)
+	{		
 	}
 }

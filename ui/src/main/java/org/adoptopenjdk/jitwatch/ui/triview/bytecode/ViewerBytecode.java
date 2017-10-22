@@ -21,6 +21,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.adoptopenjdk.jitwatch.report.Report;
@@ -45,6 +46,13 @@ import javafx.scene.paint.Color;
 
 public class ViewerBytecode extends Viewer
 {
+	private Compilation compilation;
+
+	private int startOSR = -1;
+	private int endOSR = -1;
+
+	private MemberBytecode memberBytecode;
+
 	private List<BytecodeInstruction> instructions = new ArrayList<>();
 
 	private boolean offsetMismatchDetected = false;
@@ -115,6 +123,7 @@ public class ViewerBytecode extends Viewer
 	public void highlightBytecodeOffset(int bci)
 	{
 		int index = getLineIndexForBytecodeOffset(bci);
+
 		highlightLine(index);
 	}
 
@@ -123,7 +132,7 @@ public class ViewerBytecode extends Viewer
 		offsetMismatchDetected = false;
 		instructions.clear();
 
-		MemberBytecode memberBytecode = member.getMemberBytecode();
+		memberBytecode = member.getMemberBytecode();
 
 		if (memberBytecode != null)
 		{
@@ -135,19 +144,68 @@ public class ViewerBytecode extends Viewer
 		lineAnnotations.clear();
 		lastScrollIndex = -1;
 
+		startOSR = -1;
+		endOSR = -1;
+		
+		startRange = -1;
+		endRange = -1;
+		
+		lineListener.setRange(LineType.SOURCE, -1, -1);
+		
 		List<Label> labels = new ArrayList<>();
 
 		if (!instructions.isEmpty())
 		{
 			try
 			{
-				Compilation compilation = member.getSelectedCompilation();
+				compilation = member.getSelectedCompilation();
 
 				if (compilation != null)
 				{
 					int compilationIndex = compilation.getIndex();
 
 					bcAnnotations = new BytecodeAnnotationBuilder(true).buildBytecodeAnnotations(member, compilationIndex, model);
+			
+					if (compilation.isOSR())
+					{
+						if (memberBytecode != null)
+						{
+							startOSR = compilation.getOSRBCI();
+
+							endOSR = memberBytecode.findLastBackBranchToBCI(startOSR);
+
+							int pos = 0;
+
+							for (BytecodeInstruction instruction : instructions)
+							{
+								int bci = instruction.getOffset();
+
+								if (bci == startOSR)
+								{
+									startRange = pos;
+								}
+								else if (bci == endOSR)
+								{
+									endRange = pos;
+								}
+
+								pos++;
+							}
+
+							if (startOSR != -1 && endOSR != -1)
+							{
+								LineTable lineTable = memberBytecode.getLineTable();
+								
+								int[] range = lineTable.getSourceRange(startOSR, endOSR);
+
+								int startIndex = range[0] - 1;
+
+								int endIndex = range[1];
+								
+								lineListener.setRange(LineType.SOURCE, startIndex, endIndex);
+							}
+						}
+					}
 				}
 			}
 			catch (AnnotationException annoEx)

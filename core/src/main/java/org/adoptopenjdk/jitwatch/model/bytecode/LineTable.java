@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -51,26 +51,81 @@ public class LineTable
 
 	public int getLastSourceLine()
 	{
-		return lineTableEntries.get(lineTableEntries.size() - 1).getSourceOffset();
+		return getSourceRange()[1];
+	}
+
+	public int[] getSourceRange(int startBCI, int endBCI)
+	{
+		boolean first = true;
+
+		int minSourceLine = 0;
+		int maxSourceLine = 0;
+
+		for (LineTableEntry entry : lineTableEntries)
+		{
+			int entryBCI = entry.getBytecodeOffset();
+			int entrySourceLine = entry.getSourceOffset();
+
+			if (entryBCI >= startBCI && entryBCI <= endBCI)
+			{
+				if (first)
+				{
+					minSourceLine = entrySourceLine;
+					maxSourceLine = entrySourceLine;
+					first = false;
+				}
+				else
+				{
+					minSourceLine = Math.min(entrySourceLine, minSourceLine);
+					maxSourceLine = Math.max(entrySourceLine, maxSourceLine);
+				}
+			}
+		}
+
+		return new int[] { minSourceLine, maxSourceLine };
+	}
+
+	public int[] getSourceRange()
+	{
+		boolean first = true;
+
+		int minSourceLine = 0;
+		int maxSourceLine = 0;
+
+		for (LineTableEntry entry : lineTableEntries)
+		{
+			int entrySourceLine = entry.getSourceOffset();
+
+			if (first)
+			{
+				minSourceLine = entrySourceLine;
+				maxSourceLine = entrySourceLine;
+				first = false;
+			}
+			else
+			{
+				minSourceLine = Math.min(entrySourceLine, minSourceLine);
+				maxSourceLine = Math.max(entrySourceLine, maxSourceLine);
+			}
+		}
+
+		return new int[] { minSourceLine, maxSourceLine };
 	}
 
 	public boolean sourceLineInRange(int sourceLine)
 	{
 		boolean result = false;
 
-		if (lineTableEntries.size() > 0)
+		int[] sourceRange = getSourceRange();
+
+		int minSourceLine = sourceRange[0];
+		int maxSourceLine = sourceRange[1];
+
+		result = (sourceLine >= minSourceLine) && (sourceLine <= maxSourceLine);
+
+		if (DEBUG_LOGGING_BYTECODE)
 		{
-			int maxIndex = lineTableEntries.size() - 1;
-
-			int minSourceLine = lineTableEntries.get(0).getSourceOffset();
-			int maxSourceLine = lineTableEntries.get(maxIndex).getSourceOffset();
-
-			result = (sourceLine >= minSourceLine) && (sourceLine <= maxSourceLine);
-
-			if (DEBUG_LOGGING_BYTECODE)
-			{
-				logger.debug("{} in range {}-{} : {}", sourceLine, minSourceLine, maxSourceLine, result);
-			}
+			logger.debug("{} in range {}-{} : {}", sourceLine, minSourceLine, maxSourceLine, result);
 		}
 
 		return result;
@@ -83,7 +138,7 @@ public class LineTable
 			@Override
 			public int compare(LineTableEntry o1, LineTableEntry o2)
 			{
-				return Integer.compare(o1.getSourceOffset(), o2.getSourceOffset());
+				return Integer.compare(o1.getBytecodeOffset(), o2.getBytecodeOffset());
 			}
 		});
 	}

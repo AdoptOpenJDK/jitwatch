@@ -136,6 +136,7 @@ public final class JITWatchConstants
 	public static final String ATTR_STAMP_COMPLETED = "stamp_completed";
 	public static final String ATTR_NAME = "name";
 	public static final String ATTR_BCI = "bci";
+	public static final String ATTR_OSR_BCI = "osr_bci";
 	public static final String ATTR_CODE = "code";
 	public static final String ATTR_COMPILER = "compiler";
 	public static final String ATTR_LEVEL = "level";

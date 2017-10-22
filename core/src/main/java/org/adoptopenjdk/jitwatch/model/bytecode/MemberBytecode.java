@@ -20,17 +20,17 @@ public class MemberBytecode
 	private List<BytecodeInstruction> bytecodeInstructions = new ArrayList<>();
 
 	private LineTable lineTable;
-	
+
 	private ExceptionTable exceptionTable;
 
 	private MemberSignatureParts msp;
 
 	private ClassBC classBytecode;
-	
+
 	private int size = 0;
 
 	private static final Logger logger = LoggerFactory.getLogger(MemberBytecode.class);
-	
+
 	private BytecodeAnnotations bytecodeAnnotations = new BytecodeAnnotations();
 
 	public MemberBytecode(ClassBC classBytecode, MemberSignatureParts msp)
@@ -45,7 +45,7 @@ public class MemberBytecode
 	{
 		return classBytecode;
 	}
-	
+
 	public BytecodeAnnotations getBytecodeAnnotations()
 	{
 		return bytecodeAnnotations;
@@ -59,15 +59,15 @@ public class MemberBytecode
 	public void setInstructions(List<BytecodeInstruction> bytecodeInstructions)
 	{
 		this.bytecodeInstructions = bytecodeInstructions;
-		
+
 		if (!bytecodeInstructions.isEmpty())
 		{
-			BytecodeInstruction instruction = bytecodeInstructions.get(bytecodeInstructions.size() -1);
-			
+			BytecodeInstruction instruction = bytecodeInstructions.get(bytecodeInstructions.size() - 1);
+
 			if (instruction != null)
 			{
 				int bci = instruction.getOffset();
-				
+
 				size = bci + 1;
 			}
 		}
@@ -77,17 +77,17 @@ public class MemberBytecode
 	{
 		return size;
 	}
-	
+
 	public List<BytecodeInstruction> getInstructions()
 	{
 		return bytecodeInstructions;
 	}
 
-	public BytecodeInstruction getBytecodeAtOffset(int bci)
+	public BytecodeInstruction getInstructionAtBCI(int bci)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
-			logger.debug("getBytecodeAtOffset({})", bci);
+			logger.debug("getInstructionAtBCI({})", bci);
 		}
 
 		BytecodeInstruction result = null;
@@ -113,6 +113,59 @@ public class MemberBytecode
 		return result;
 	}
 
+	public int findLastBackBranchToBCI(int bci)
+	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("findLastBackBranchToBCI({})", bci);
+		}
+
+		int lastBackBranchBCI = -1;
+
+		boolean inLoop = false;
+
+		for (BytecodeInstruction instruction : bytecodeInstructions)
+		{
+			if (instruction.getOffset() == bci)
+			{
+				inLoop = true;
+			}
+
+			if (inLoop)
+			{
+				Opcode opCode = instruction.getOpcode();
+
+				if (opCode == Opcode.GOTO || opCode == Opcode.GOTO_W)
+				{
+					List<IBytecodeParam> gotoParams = instruction.getParameters();
+
+					int paramCount = gotoParams.size();
+
+					if (paramCount == 1)
+					{
+						IBytecodeParam param = gotoParams.get(0);
+
+						if (param instanceof BCParamNumeric)
+						{
+							int gotoTarget =  ((BCParamNumeric) param).getValue();
+							
+							if (gotoTarget == bci)
+							{
+								lastBackBranchBCI = instruction.getOffset();
+							}
+						}
+					}
+					else
+					{
+						logger.error("Unexpected param count for {} {}", opCode, paramCount);
+					}
+				}
+			}
+		}
+
+		return lastBackBranchBCI;
+	}
+
 	public void addLineTableEntry(LineTableEntry entry)
 	{
 		lineTable.add(entry);
@@ -122,7 +175,7 @@ public class MemberBytecode
 	{
 		return lineTable;
 	}
-	
+
 	public void addExceptionTableEntry(ExceptionTableEntry entry)
 	{
 		exceptionTable.add(entry);

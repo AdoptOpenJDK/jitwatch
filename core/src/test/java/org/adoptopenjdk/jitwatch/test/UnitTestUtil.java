@@ -8,13 +8,13 @@ package org.adoptopenjdk.jitwatch.test;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_NMETHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -41,6 +41,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotationList;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeAnnotations;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
+import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.util.ClassUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -54,6 +55,29 @@ public class UnitTestUtil
 		Class<?> clazz = Class.forName(fqClassName);
 
 		return model.buildAndGetMetaClass(clazz);
+	}
+
+	public static MemberBytecode createMemberBytecode(String[] lines)
+	{
+		MemberBytecode mbc = new MemberBytecode(null, null);
+
+		mbc.setInstructions(getInstructions(lines));
+
+		return mbc;
+	}
+
+	private static List<BytecodeInstruction> getInstructions(String[] lines)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (String line : lines)
+		{
+			builder.append(line).append("\n");
+		}
+
+		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
+
+		return instructions;
 	}
 
 	public static HelperMetaMethod createTestMetaMember(String fqClassName, String methodName, Class<?>[] params,
@@ -93,7 +117,7 @@ public class UnitTestUtil
 		if (metaClass == null)
 		{
 			metaClass = new MetaClass(metaPackage, className);
-						
+
 			model.getPackageManager().addMetaClass(metaClass);
 		}
 
@@ -262,8 +286,8 @@ public class UnitTestUtil
 		}
 	}
 
-	public static BytecodeAnnotations buildAnnotations(boolean verifyBytecode, boolean processInlineAnnotations, IReadOnlyJITDataModel model, IMetaMember member, String[] logLines,
-			String[] bytecodeLines)
+	public static BytecodeAnnotations buildAnnotations(boolean verifyBytecode, boolean processInlineAnnotations,
+			IReadOnlyJITDataModel model, IMetaMember member, String[] logLines, String[] bytecodeLines)
 	{
 		UnitTestUtil.processLogLines(member, logLines);
 

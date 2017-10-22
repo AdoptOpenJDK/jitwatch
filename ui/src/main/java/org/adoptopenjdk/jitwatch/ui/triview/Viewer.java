@@ -65,7 +65,7 @@ public class Viewer extends VBox
 	private int scrollIndex = 0;
 	protected int lastScrollIndex = -1;
 	protected String originalSource;
-	
+
 	private double lastKnownGoodLineHeight = 15;
 
 	private static final String FONT_STYLE = "-fx-font-family:" + FONT_MONOSPACE_FAMILY + "; -fx-font-size:" + FONT_MONOSPACE_SIZE
@@ -75,6 +75,7 @@ public class Viewer extends VBox
 	public static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
 	public static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
 	public static final String STYLE_SAFEPOINT = FONT_STYLE + "-fx-background-color:yellow;";
+	public static final String STYLE_HIGHLIGHTED_RANGE = FONT_STYLE + "-fx-background-color:#ffdddd;";
 
 	protected Map<Integer, LineAnnotation> lineAnnotations = new HashMap<>();
 
@@ -86,6 +87,9 @@ public class Viewer extends VBox
 	protected LineType lineType = LineType.PLAIN;
 
 	private boolean isHighlighting;
+
+	protected int startRange = -1;
+	protected int endRange = -1;
 
 	public Viewer(IStageAccessProxy stageAccessProxy, boolean highlighting)
 	{
@@ -106,16 +110,48 @@ public class Viewer extends VBox
 
 		setup();
 	}
-	
+
+	private void highlightRange()
+	{
+		if (startRange != -1 && endRange != -1)
+		{
+			for (int i = startRange; i <= endRange; i++)
+			{
+				Label label = (Label) vBoxRows.getChildren().get(i);
+				label.setStyle(STYLE_HIGHLIGHTED_RANGE);
+			}
+		}
+	}
+
+	public int getStartRange()
+	{
+		return startRange;
+	}
+
+	public void setStartRange(int startRange)
+	{
+		this.startRange = startRange;
+	}
+
+	public int getEndRange()
+	{
+		return endRange;
+	}
+
+	public void setEndRange(int endRange)
+	{
+		this.endRange = endRange;
+	}
+
 	public void clear()
 	{
 		lineAnnotations.clear();
-		
+
 		vBoxRows.getChildren().clear();
-		
+
 		lastScrollIndex = -1;
 	}
-	
+
 	public LineType getLineType()
 	{
 		return lineType;
@@ -241,11 +277,11 @@ public class Viewer extends VBox
 	public void setContent(String inSource, boolean showLineNumbers, boolean canHighlight)
 	{
 		clear();
-		
+
 		String source = inSource;
-		
+
 		isHighlighting = canHighlight;
-		
+
 		if (source == null)
 		{
 			source = "Empty";
@@ -290,7 +326,7 @@ public class Viewer extends VBox
 		vBoxRows.getChildren().addAll(items);
 
 		int pos = 0;
-		
+
 		if (!isHighlighting)
 		{
 			clearAllHighlighting();
@@ -494,7 +530,7 @@ public class Viewer extends VBox
 		}
 	}
 
-	private void unhighlightLabel(Node node)
+	protected void unhighlightLabel(Node node)
 	{
 		if (node instanceof BytecodeLabel)
 		{
@@ -508,6 +544,8 @@ public class Viewer extends VBox
 		{
 			node.setStyle(STYLE_UNHIGHLIGHTED);
 		}
+
+		highlightRange();
 	}
 
 	public void unhighlightPrevious()
@@ -526,7 +564,7 @@ public class Viewer extends VBox
 	}
 
 	public void highlightLine(int index, boolean setScrollbar)
-	{	
+	{
 		unhighlightPrevious();
 
 		if (index >= vBoxRows.getChildren().size())
@@ -543,7 +581,7 @@ public class Viewer extends VBox
 			lastScrollIndex = index;
 
 			scrollIndex = index;
-			
+
 			if (setScrollbar)
 			{
 				setScrollBar();
@@ -608,7 +646,7 @@ public class Viewer extends VBox
 			double scrollMax = scrollPane.getVmax();
 			double scrollPaneHeight = scrollPane.getHeight();
 			double lineHeight = vBoxRows.getChildren().get(0).getBoundsInParent().getHeight();
-			
+
 			if (lineHeight == 0.0)
 			{
 				lineHeight = lastKnownGoodLineHeight;
@@ -617,20 +655,20 @@ public class Viewer extends VBox
 			{
 				lastKnownGoodLineHeight = lineHeight;
 			}
-						
+
 			double visibleLines = scrollPaneHeight / lineHeight;
 
 			double count = vBoxRows.getChildren().size() - visibleLines;
 
 			double scrollPercent = 0;
-			
+
 			if (count > 0)
 			{
 				scrollPercent = Math.max(scrollIndex - (visibleLines / 2), 0) / count;
 			}
-			
+
 			double scrollPos = scrollPercent * (scrollMax - scrollMin);
-			
+
 			scrollPane.setVvalue(scrollPos);
 		}
 	}

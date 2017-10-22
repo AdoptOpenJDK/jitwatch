@@ -8,13 +8,10 @@ package org.adoptopenjdk.jitwatch.test;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.InstructionSequence;
 import org.adoptopenjdk.jitwatch.jarscan.sequencecount.SequenceCountOperation;
-import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
-import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.Opcode;
 import org.junit.Test;
@@ -23,29 +20,6 @@ public class TestJarScan
 {
 	public static final boolean SHOW_OUTPUT = false;
 	
-	private List<BytecodeInstruction> getInstructions(String[] lines)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		for (String line : lines)
-		{
-			builder.append(line).append("\n");
-		}
-
-		List<BytecodeInstruction> instructions = BytecodeLoader.parseInstructions(builder.toString());
-
-		return instructions;
-	}
-
-	private MemberBytecode createMemberBytecode(String[] lines)
-	{
-		MemberBytecode mbc = new MemberBytecode(null, null);
-
-		mbc.setInstructions(getInstructions(lines));
-
-		return mbc;
-	}
-
 	@Test
 	public void testLongBytecodeChain1()
 	{
@@ -111,7 +85,7 @@ public class TestJarScan
 				"152: return"
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(1);
 
@@ -209,7 +183,7 @@ public class TestJarScan
 				"152: return"
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(6);
 
@@ -289,7 +263,7 @@ public class TestJarScan
 				"8: goto          0"
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(1);
 
@@ -321,7 +295,7 @@ public class TestJarScan
 				"8: goto          0"
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(2);
 
@@ -353,7 +327,7 @@ public class TestJarScan
 				"8: goto          0"
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(3);
 
@@ -384,7 +358,7 @@ public class TestJarScan
 				"3: return        "
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(1);
 
@@ -410,7 +384,7 @@ public class TestJarScan
 				"3: return        "
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(2);
 
@@ -456,7 +430,7 @@ public class TestJarScan
 				"43: athrow        "
 		};
 
-		MemberBytecode memberBytecode = createMemberBytecode(lines);
+		MemberBytecode memberBytecode = UnitTestUtil.createMemberBytecode(lines);
 
 		SequenceCountOperation counter = new SequenceCountOperation(3);
 

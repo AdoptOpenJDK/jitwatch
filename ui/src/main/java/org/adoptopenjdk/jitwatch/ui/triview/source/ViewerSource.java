@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,7 +11,7 @@ import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
 
 public class ViewerSource extends Viewer
-{
+{	
 	public ViewerSource(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
 		super(stageAccessProxy, lineListener, lineType, true);

@@ -688,9 +688,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	}
 
 	private void updateBytecodeAndAssembly(boolean focusSource, int highlightBCI)
-	{
+	{		
 		Compilation compilation = currentMember.getSelectedCompilation();
-
+		
 		compilationInfo.setCompilation(compilation);
 
 		viewerBytecode.setContent(currentMember);
@@ -850,6 +850,32 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 			break;
 		case ASSEMBLY:
 			highlightFromAssembly(index);
+			break;
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public void setRange(LineType lineType, int startIndex, int endIndex)
+	{
+		switch (lineType)
+		{
+		case SOURCE:
+			viewerSource.setStartRange(startIndex);
+			viewerSource.setEndRange(endIndex);
+			viewerSource.clearAllHighlighting();
+			break;
+		case BYTECODE:
+		case BYTECODE_BCI:
+			viewerBytecode.setStartRange(startIndex);
+			viewerBytecode.setEndRange(endIndex);
+			viewerBytecode.clearAllHighlighting();
+			break;
+		case ASSEMBLY:
+			viewerAssembly.setStartRange(startIndex);
+			viewerAssembly.setEndRange(endIndex);
+			viewerAssembly.clearAllHighlighting();
 			break;
 		default:
 			break;
