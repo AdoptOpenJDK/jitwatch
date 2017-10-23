@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -62,11 +62,11 @@ public final class JVMSUtil
 
 	public static boolean fetchJVMS()
 	{
-		String html = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
-		String css = NetUtil.fetchURL("http://docs.oracle.com/javase/specs/javaspec.css");
+		String html = NetUtil.fetchURL("https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html");
+		String css = NetUtil.fetchURL("https://docs.oracle.com/javase/specs/javaspec.css");
 
 		boolean result = false;
-
+		
 		if (html.length() > 0 && css.length() > 0)
 		{
 			Path pathHTML = Paths.get(new File(JVMS_HTML_FILENAME).toURI());

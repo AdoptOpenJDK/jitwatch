@@ -31,7 +31,7 @@ public final class NetUtil
 		BufferedReader in = null;
 
 		try
-		{
+		{			
 			URL url = new URL(toFetch);
 
 			in = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -39,7 +39,7 @@ public final class NetUtil
 			String inputLine;
 
 			while ((inputLine = in.readLine()) != null)
-			{
+			{				
 				builder.append(inputLine).append(S_NEWLINE);
 			}
 
