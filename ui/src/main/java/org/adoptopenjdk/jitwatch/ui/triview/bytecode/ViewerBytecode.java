@@ -146,12 +146,12 @@ public class ViewerBytecode extends Viewer
 
 		startOSR = -1;
 		endOSR = -1;
-		
-		startRange = -1;
-		endRange = -1;
-		
+
+		rangeStart = -1;
+		rangeEnd = -1;
+
 		lineListener.setRange(LineType.SOURCE, -1, -1);
-		
+
 		List<Label> labels = new ArrayList<>();
 
 		if (!instructions.isEmpty())
@@ -165,7 +165,7 @@ public class ViewerBytecode extends Viewer
 					int compilationIndex = compilation.getIndex();
 
 					bcAnnotations = new BytecodeAnnotationBuilder(true).buildBytecodeAnnotations(member, compilationIndex, model);
-			
+
 					if (compilation.isOSR())
 					{
 						if (memberBytecode != null)
@@ -182,11 +182,11 @@ public class ViewerBytecode extends Viewer
 
 								if (bci == startOSR)
 								{
-									startRange = pos;
+									rangeStart = pos;
 								}
 								else if (bci == endOSR)
 								{
-									endRange = pos;
+									rangeEnd = pos;
 								}
 
 								pos++;
@@ -195,13 +195,13 @@ public class ViewerBytecode extends Viewer
 							if (startOSR != -1 && endOSR != -1)
 							{
 								LineTable lineTable = memberBytecode.getLineTable();
-								
+
 								int[] range = lineTable.getSourceRange(startOSR, endOSR);
 
 								int startIndex = range[0] - 1;
 
 								int endIndex = range[1];
-								
+
 								lineListener.setRange(LineType.SOURCE, startIndex, endIndex);
 							}
 						}
@@ -270,6 +270,15 @@ public class ViewerBytecode extends Viewer
 
 		boolean hasEliminationAnnotation = false;
 
+		if (lineIndex >= rangeStart && lineIndex <= rangeEnd)
+		{
+			unhighlightedStyle = STYLE_HIGHLIGHTED_RANGE;
+		}
+		else
+		{
+			unhighlightedStyle = STYLE_UNHIGHLIGHTED;
+		}
+
 		if (bcAnnotations != null)
 		{
 			BytecodeAnnotationList list = bcAnnotations.getAnnotationList(member);
@@ -284,7 +293,7 @@ public class ViewerBytecode extends Viewer
 
 					Color colour = UserInterfaceUtil.getColourForBytecodeAnnotation(lastAnnotationType);
 
-					unhighlightedStyle = STYLE_UNHIGHLIGHTED + "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
+					unhighlightedStyle += "-fx-text-fill:" + toRGBCode(colour) + C_SEMICOLON;
 
 					instructionToolTipBuilder = new StringBuilder();
 

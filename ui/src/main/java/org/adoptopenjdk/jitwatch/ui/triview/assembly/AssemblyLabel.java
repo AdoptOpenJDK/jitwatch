@@ -1,16 +1,14 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui.triview.assembly;
 
-import javafx.scene.control.Label;
-
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
-import org.adoptopenjdk.jitwatch.ui.triview.Viewer;
+import org.adoptopenjdk.jitwatch.ui.triview.InstructionLabel;
 
-public class AssemblyLabel extends Label
+public class AssemblyLabel extends InstructionLabel
 {
 	private AssemblyInstruction instruction;
 	
@@ -23,17 +21,5 @@ public class AssemblyLabel extends Label
 	public AssemblyInstruction getInstruction()
 	{
 		return instruction;
-	}
-	
-	public String getUnhighlightedStyle()
-	{
-		if (instruction.isSafePoint())
-		{
-			return Viewer.STYLE_SAFEPOINT;	
-		}
-		else
-		{
-			return Viewer.STYLE_UNHIGHLIGHTED;
-		}	
 	}
 }

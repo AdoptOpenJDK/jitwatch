@@ -857,24 +857,21 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	}
 
 	@Override
-	public void setRange(LineType lineType, int startIndex, int endIndex)
+	public void setRange(LineType lineType, int rangeStart, int rangeEnd)
 	{
 		switch (lineType)
 		{
 		case SOURCE:
-			viewerSource.setStartRange(startIndex);
-			viewerSource.setEndRange(endIndex);
+			viewerSource.setRange(rangeStart, rangeEnd);
 			viewerSource.clearAllHighlighting();
 			break;
 		case BYTECODE:
 		case BYTECODE_BCI:
-			viewerBytecode.setStartRange(startIndex);
-			viewerBytecode.setEndRange(endIndex);
+			viewerBytecode.setRange(rangeStart, rangeEnd);
 			viewerBytecode.clearAllHighlighting();
 			break;
 		case ASSEMBLY:
-			viewerAssembly.setStartRange(startIndex);
-			viewerAssembly.setEndRange(endIndex);
+			viewerAssembly.setRange(rangeStart, rangeEnd);
 			viewerAssembly.clearAllHighlighting();
 			break;
 		default:

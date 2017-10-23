@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -45,8 +45,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener.LineType;
-import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
-import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.slf4j.Logger;
@@ -86,10 +84,10 @@ public class Viewer extends VBox
 	protected ILineListener lineListener;
 	protected LineType lineType = LineType.PLAIN;
 
-	private boolean isHighlighting;
+	protected boolean isHighlighting;
 
-	protected int startRange = -1;
-	protected int endRange = -1;
+	protected int rangeStart = -1;
+	protected int rangeEnd = -1;
 
 	public Viewer(IStageAccessProxy stageAccessProxy, boolean highlighting)
 	{
@@ -111,36 +109,25 @@ public class Viewer extends VBox
 		setup();
 	}
 
-	private void highlightRange()
+	public void setRange(int rangeStart, int rangeEnd)
 	{
-		if (startRange != -1 && endRange != -1)
+		this.rangeStart = rangeStart;
+		this.rangeEnd = rangeEnd;
+
+		int lineCount = vBoxRows.getChildren().size();
+
+		if (rangeStart >= 0 && rangeEnd <= lineCount)
 		{
-			for (int i = startRange; i <= endRange; i++)
+			for (int i = rangeStart; i <= rangeEnd; i++)
 			{
-				Label label = (Label) vBoxRows.getChildren().get(i);
-				label.setStyle(STYLE_HIGHLIGHTED_RANGE);
+				Node node = vBoxRows.getChildren().get(i);
+
+				if (node instanceof InstructionLabel)
+				{
+					((InstructionLabel) node).setUnhighlightedStyle(STYLE_HIGHLIGHTED_RANGE);
+				}
 			}
 		}
-	}
-
-	public int getStartRange()
-	{
-		return startRange;
-	}
-
-	public void setStartRange(int startRange)
-	{
-		this.startRange = startRange;
-	}
-
-	public int getEndRange()
-	{
-		return endRange;
-	}
-
-	public void setEndRange(int endRange)
-	{
-		this.endRange = endRange;
 	}
 
 	public void clear()
@@ -523,7 +510,7 @@ public class Viewer extends VBox
 	}
 
 	public void clearAllHighlighting()
-	{
+	{	
 		for (Node item : vBoxRows.getChildren())
 		{
 			unhighlightLabel(item);
@@ -532,20 +519,14 @@ public class Viewer extends VBox
 
 	protected void unhighlightLabel(Node node)
 	{
-		if (node instanceof BytecodeLabel)
-		{
-			node.setStyle(((BytecodeLabel) node).getUnhighlightedStyle());
-		}
-		else if (node instanceof AssemblyLabel)
-		{
-			node.setStyle(((AssemblyLabel) node).getUnhighlightedStyle());
+		if (node instanceof InstructionLabel)
+		{			
+			node.setStyle(((InstructionLabel) node).getUnhighlightedStyle());
 		}
 		else
 		{
 			node.setStyle(STYLE_UNHIGHLIGHTED);
 		}
-
-		highlightRange();
 	}
 
 	public void unhighlightPrevious()

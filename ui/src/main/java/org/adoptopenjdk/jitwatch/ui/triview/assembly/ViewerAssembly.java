@@ -46,8 +46,8 @@ import org.adoptopenjdk.jitwatch.util.StringUtil;
 public class ViewerAssembly extends Viewer
 {
 	private DecimalFormat formatThousandsUnderscore;
-	
-	private IAssemblyParser parser; //TODO choose parser
+
+	private IAssemblyParser parser; // TODO choose parser
 
 	public ViewerAssembly(IStageAccessProxy stageAccessProxy, ILineListener lineListener, LineType lineType)
 	{
@@ -65,7 +65,7 @@ public class ViewerAssembly extends Viewer
 	public void setAssemblyMethod(AssemblyMethod asmMethod, boolean showLocalLabels)
 	{
 		parser = AssemblyUtil.getParserForArchitecture(asmMethod.getArchitecture());
-		
+
 		lastScrollIndex = -1;
 
 		List<Label> labels = new ArrayList<>();
@@ -147,7 +147,7 @@ public class ViewerAssembly extends Viewer
 			builder.append("operand ").append(pos).append(": ");
 
 			decodeOperand(mnemonic, operand, builder);
-			
+
 			builder.append(S_NEWLINE);
 
 			pos++;
@@ -186,12 +186,12 @@ public class ViewerAssembly extends Viewer
 			{
 				operand = operand.substring(1);
 			}
-			
+
 			if (operand.endsWith(S_HEX_POSTFIX))
 			{
-				operand = S_HEX_PREFIX + operand.substring(0,  operand.length()-1);
+				operand = S_HEX_PREFIX + operand.substring(0, operand.length() - 1);
 			}
-			
+
 			long decimal = Long.decode(operand);
 
 			builder.append(S_SPACE).append(S_OPEN_PARENTHESES).append("Decimal: ").append(formatThousandsUnderscore.format(decimal))
@@ -213,7 +213,7 @@ public class ViewerAssembly extends Viewer
 		// http://www.x86-64.org/documentation/assembly.html
 
 		String regName = parser.extractRegisterName(input);
-	
+
 		if (regName.startsWith("e"))
 		{
 			builder.append("32-bit register ").append(regName);
@@ -267,7 +267,7 @@ public class ViewerAssembly extends Viewer
 		{
 			builder.append(" (stack pointer)");
 		}
-		
+
 		if (input.startsWith("*"))
 		{
 			builder.append(" (indirect)");
@@ -289,7 +289,10 @@ public class ViewerAssembly extends Viewer
 	{
 		AssemblyLabel lbl = new AssemblyLabel(instruction, annoWidth, line, showLocalLabels);
 
-		lbl.setStyle(lbl.getUnhighlightedStyle());
+		if (instruction.isSafePoint())
+		{
+			lbl.setUnhighlightedStyle(STYLE_SAFEPOINT);
+		}
 
 		return lbl;
 	}
