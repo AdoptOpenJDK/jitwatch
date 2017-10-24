@@ -1,14 +1,19 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.process.runtime;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -69,8 +74,29 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 	@Override
 	public String getClassToExecute(File fileToRun)
 	{
+		String packageName = S_EMPTY;
+		
+		try
+		{
+			String fileContents = new String(Files.readAllBytes(fileToRun.toPath()), StandardCharsets.UTF_8).trim();
+			
+			if (fileContents.startsWith("package "))
+			{
+				int indexEndOfLine = fileContents.indexOf(S_NEWLINE);
+				
+				if (indexEndOfLine != -1)
+				{
+					packageName = fileContents.substring("package".length(), indexEndOfLine).trim();
+					packageName = packageName.replace(';', '.');
+				}
+			}
+		}
+		catch (IOException e)
+		{
+		}
+		
 		String filename = fileToRun.getName();
-		return filename.substring(0, filename.length() - (VM_LANGUAGE_JAVA.length() + 1));
+		return packageName + filename.substring(0, filename.length() - (VM_LANGUAGE_JAVA.length() + 1));
 	}
 
 	@Override
