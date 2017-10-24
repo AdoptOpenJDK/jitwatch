@@ -72,7 +72,7 @@ public class MemberTableCell extends TableCell<IReportRowBean, Report>
 						member.setSelectedCompilation(report.getCompilationIndex());
 					}
 
-					triViewAccessor.openTriView(member, false, report.getBytecodeOffset());
+					triViewAccessor.openTriView(member, report.getBytecodeOffset());
 				}
 			});
 

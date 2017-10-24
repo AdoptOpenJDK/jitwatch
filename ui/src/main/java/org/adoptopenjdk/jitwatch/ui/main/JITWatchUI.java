@@ -866,11 +866,11 @@ public class JITWatchUI extends Application
 	@Override
 	public void openTriView(IMetaMember member)
 	{
-		openTriView(member, true, 0);
+		openTriView(member, 0);
 	}
 
 	@Override
-	public void openTriView(IMetaMember member, boolean force, int highlightBCI)
+	public void openTriView(IMetaMember member, int highlightBCI)
 	{
 		openTriView();
 
@@ -878,7 +878,7 @@ public class JITWatchUI extends Application
 
 		if (member != null)
 		{
-			triViewStage.setMember(member, force, highlightBCI);
+			triViewStage.setMember(member, true, highlightBCI);
 		}
 	}
 

@@ -14,7 +14,7 @@ public interface IStageAccessProxy
 {
 	void openTriView(IMetaMember member);
 	
-	void openTriView(IMetaMember member, boolean reloadMember, int highlightBCI);
+	void openTriView(IMetaMember member, int highlightBCI);
 		
 	void openBrowser(String title, String html, String stylesheet);
 	

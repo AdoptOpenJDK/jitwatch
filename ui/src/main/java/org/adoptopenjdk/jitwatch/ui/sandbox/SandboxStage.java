@@ -632,7 +632,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			@Override
 			public void run()
 			{
-				accessProxy.openTriView(member, true, 0);
+				accessProxy.openTriView(member, 0);
 			}
 		});
 	}
