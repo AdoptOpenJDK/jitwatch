@@ -116,15 +116,19 @@ public class Viewer extends VBox
 
 		int lineCount = vBoxRows.getChildren().size();
 
-		if (rangeStart >= 0 && rangeEnd <= lineCount)
+		for (int i = 0; i < lineCount; i++)
 		{
-			for (int i = rangeStart; i <= rangeEnd; i++)
-			{
-				Node node = vBoxRows.getChildren().get(i);
+			Node node = vBoxRows.getChildren().get(i);
 
-				if (node instanceof InstructionLabel)
+			if (node instanceof InstructionLabel)
+			{
+				if (i >= rangeStart && i <= rangeEnd)
 				{
 					((InstructionLabel) node).setUnhighlightedStyle(STYLE_HIGHLIGHTED_RANGE);
+				}
+				else
+				{
+					((InstructionLabel) node).setUnhighlightedStyle(STYLE_UNHIGHLIGHTED);
 				}
 			}
 		}
@@ -510,7 +514,7 @@ public class Viewer extends VBox
 	}
 
 	public void clearAllHighlighting()
-	{	
+	{
 		for (Node item : vBoxRows.getChildren())
 		{
 			unhighlightLabel(item);
@@ -520,7 +524,7 @@ public class Viewer extends VBox
 	protected void unhighlightLabel(Node node)
 	{
 		if (node instanceof InstructionLabel)
-		{			
+		{
 			node.setStyle(((InstructionLabel) node).getUnhighlightedStyle());
 		}
 		else
