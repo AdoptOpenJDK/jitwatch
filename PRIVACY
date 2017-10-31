@@ -1,0 +1,56 @@
+========================
+JITWatch Privacy Policy
+========================
+Version:             1.0
+Date   :      2017-10-31
+Author :   Chris Newland
+========================
+
+This document describes the privacy implications of using JITWatch to analyse your program code or JIT log files.
+
+============
+Talking back
+============
+
+JITWatch does not transmit any information about your usage of the program, the log files you load, or any code 
+you execute in the sandbox.
+
+=====================
+Downloading resources
+=====================
+
+The first time you double-click on a bytecode in the TriView screen JITWatch will attempt to download the 
+JVM Specification from the https://docs.oracle.com website.
+
+https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html
+https://docs.oracle.com/javase/specs/javaspec.css
+
+These downloads are made over the HTTPS protocol and once successfully downloaded they will be stored in your 
+ITWatch folder and will not be downloaded again.
+
+=============
+Build systems
+=============
+
+If you build JITWatch from source using maven or gradle then those build systems will download various further 
+dependencies required to compile, package, test, and execute the build targets.
+
+If you want to build JITWatch without downloading additional build dependencies please use the provided Apache 
+Ant build script (build.xml) which uses the local dependencies found in the lib folder.
+
+=======================
+Sharing JITWatch output
+=======================
+
+JITWatch contains a screenshot feature. If you share screenshots from JITWatch, or snippets of your LogCompilation 
+XML or disassembled compiled methods you may divulge information about your program that can be used to reverse 
+engineer the source code.
+
+====================
+jitwatch.com website
+====================
+
+The jitwatch.com website is served over HTTPS using LetsEncrypt SSL certificates. The website does not set any 
+cookies and does not use any JavaScript or tracking code such as Google Analytics. Your IP address will be 
+recorded in the webserver log files which are kept for 30 days for the purpose of diagnosing website errors and 
+then overwritten.
