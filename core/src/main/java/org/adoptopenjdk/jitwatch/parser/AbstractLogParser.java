@@ -15,6 +15,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.J9;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.JVMCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
@@ -381,6 +382,10 @@ public abstract class AbstractLogParser implements ILogParser
 			else if (J9.equalsIgnoreCase(attrCompiler))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_J9);
+			}
+			else if (JVMCI.equalsIgnoreCase(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_JVMCI);
 			}
 			else
 			{
