@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
 }
 
-// detect jfxrt.jar & tools.jar
+// detect jfxrt.jar
 ext {
 
     //fx path on 1.7
@@ -56,9 +56,6 @@ mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
 
 shadowJar {
     baseName = 'jitwatch'
-    if (jdk != 'jdk9') {
-        from project.files(toolsLocation)
-    }
 }
 
 publishing {

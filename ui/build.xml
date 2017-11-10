@@ -26,7 +26,6 @@
 			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
 			<!-- Java 8 stores jfxrt in a different location -->
 			<file name="${env.JAVA_HOME}/jre/lib/ext/jfxrt.jar" />
-			<file name="${env.JAVA_HOME}/lib/tools.jar" />
 		</filelist>
 	</path>
 
@@ -73,7 +72,7 @@
 
 	<target name="jar" depends="test, doJar" />
 
-	<target name="doJar">
+	<target name="doJar" depends="compile">
 		<jar destfile="${target}/jitwatch-ui-${version}-SNAPSHOT.jar">
 			<fileset dir="${main_classes}">
 				<include name="**/*.class" />

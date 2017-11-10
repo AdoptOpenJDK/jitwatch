@@ -1,8 +1,8 @@
 ========================
 JITWatch Privacy Policy
 ========================
-Version:             1.0
-Date   :      2017-10-31
+Version:            1.01
+Date   :      2017-11-10
 Author :   Chris Newland
 ========================
 
@@ -26,7 +26,7 @@ https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html
 https://docs.oracle.com/javase/specs/javaspec.css
 
 These downloads are made over the HTTPS protocol and once successfully downloaded they will be stored in your 
-ITWatch folder and will not be downloaded again.
+jitwatch folder and will not be downloaded again.
 
 =============
 Build systems
@@ -52,5 +52,4 @@ jitwatch.com website
 
 The jitwatch.com website is served over HTTPS using LetsEncrypt SSL certificates. The website does not set any 
 cookies and does not use any JavaScript or tracking code such as Google Analytics. Your IP address will be 
-recorded in the webserver log files which are kept for 30 days for the purpose of diagnosing website errors and 
-then overwritten.
+recorded in the webserver log files which are kept for up to 30 days for the purpose of diagnosing website errors.

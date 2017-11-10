@@ -28,13 +28,6 @@
 			</activation>
 			<!-- properties inherited from parent -->
 			<dependencies>
-				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>tools</artifactId>
-					<version>${jdk.version}</version>
-					<systemPath>${tools.jar}</systemPath>
-					<scope>system</scope>
-				</dependency>
 				<!-- System dependencies -->
 				<dependency>
 					<groupId>com.oracle</groupId>
@@ -52,16 +45,6 @@
 			<activation>
 				<jdk>1.8</jdk>
 			</activation>
-			<!-- properties inherited from parent -->
-			<dependencies>
-				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>tools</artifactId>
-					<version>${jdk.version}</version>
-					<systemPath>${tools.jar}</systemPath>
-					<scope>system</scope>
-				</dependency>
-			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 9 Profile ======== -->

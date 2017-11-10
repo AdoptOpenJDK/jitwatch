@@ -75,18 +75,6 @@ if (!hasProperty('jdk')) {
 
 
 allprojects {
-    // detect tools.jar
-    ext {
-        toolsLocation = new File("${System.properties['java.home']}/lib/tools.jar").absolutePath
-    }
-
-    File javaHome = new File(System.properties['java.home'])
-    javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
-    File file = new File(javaHome, 'lib/tools.jar')
-    if (file.exists()) {
-        toolsLocation = file.absolutePath
-    }
-
     configurations {
         // gradle does not have a 'system' nor 'provided' scope
         system
