@@ -66,7 +66,7 @@ public class StageManager
 
 			if (stage instanceof ICompilationChangeListener)
 			{
-				listenerCompilationChanged.remove((ICompilationChangeListener) stage);
+				listenerCompilationChanged.remove((ICompilationChangeListener)stage);
 			}
 		}
 	}

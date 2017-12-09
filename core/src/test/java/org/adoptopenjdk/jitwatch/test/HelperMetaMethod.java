@@ -53,6 +53,7 @@ public class HelperMetaMethod extends AbstractMetaMember
 		this.instructions = instructions;
 	}
 
+	@Override
 	public List<BytecodeInstruction> getInstructions()
 	{
 		return instructions;

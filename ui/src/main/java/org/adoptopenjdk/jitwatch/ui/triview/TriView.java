@@ -50,6 +50,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -124,6 +125,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	private IReadOnlyJITDataModel model;
 
 	private boolean selectedProgrammatically = false;
+
+	private int nextHightlightBCI = 0;
 
 	public TriView(final JITWatchUI parent, final JITWatchConfig config)
 	{
@@ -553,17 +556,66 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	{
 		boolean jumpToSource = true;
 
-		setMember(member, force, jumpToSource, 0);
+		asyncSetMember(member, force, jumpToSource, 0);
 	}
 
 	public void setMember(IMetaMember member, boolean force, int highlightBCI)
 	{
 		boolean jumpToSource = true;
 
-		setMember(member, force, jumpToSource, highlightBCI);
+		asyncSetMember(member, force, jumpToSource, highlightBCI);
 	}
 
-	public void setMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
+	private void setMember(IMetaMember member, boolean force, boolean jumpToSource, int highlightBCI)
+	{
+		asyncSetMember(member, force, jumpToSource, highlightBCI);
+	}
+
+	private void asyncSetMember(final IMetaMember member, final boolean force, final boolean jumpToSource, final int highlightBCI)
+	{
+		if (member.getMetaClass().hasClassBytecode())
+		{
+			doSetMember(member, force, jumpToSource, highlightBCI);
+		}
+		else
+		{
+			viewerSource.setContent("Loading source code", false, false);
+
+			viewerBytecode.setContent("Loading bytecode", false, false);	
+			
+			viewerAssembly.setContent("Looking for assembly", false, false);		
+
+			doAsyncSetMember(member, force, jumpToSource, highlightBCI);
+		}
+	}
+
+	private void doAsyncSetMember(final IMetaMember member, final boolean force, final boolean jumpToSource, final int highlightBCI)
+	{
+		Task<Void> task = new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				List<String> allClassLocations = config.getAllClassLocations();
+
+				member.getMetaClass().getClassBytecode(model, allClassLocations);
+
+				Platform.runLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						doSetMember(member, force, jumpToSource, highlightBCI);
+					}
+				});
+				return null;
+			}
+		};
+
+		new Thread(task).start();
+	}
+
+	private void doSetMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
 	{
 		selectedProgrammatically = true;
 
@@ -596,11 +648,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		List<String> allClassLocations = config.getAllClassLocations();
 
-		final boolean finalSameClass = sameClass;
-
 		ClassBC classBC = member.getMetaClass().getClassBytecode(model, allClassLocations);
 
-		if (!finalSameClass)
+		if (!sameClass)
 		{
 			String source = null;
 
@@ -688,9 +738,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	}
 
 	private void updateBytecodeAndAssembly(boolean focusSource, int highlightBCI)
-	{		
+	{
 		Compilation compilation = currentMember.getSelectedCompilation();
-		
+
 		compilationInfo.setCompilation(compilation);
 
 		viewerBytecode.setContent(currentMember);
@@ -1208,6 +1258,11 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		viewerAssembly.requestFocus();
 	}
 
+	public void setNextHighlightBCI(int bci)
+	{
+		this.nextHightlightBCI = bci;
+	}
+
 	@Override
 	public void compilationChanged(IMetaMember member)
 	{
@@ -1217,7 +1272,14 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		if (currentMember != null)
 		{
-			updateBytecodeAndAssembly(false, 0);
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					updateBytecodeAndAssembly(false, nextHightlightBCI);
+				}
+			});
 		}
 	}
 }

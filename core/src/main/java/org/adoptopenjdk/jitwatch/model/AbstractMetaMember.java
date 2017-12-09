@@ -18,14 +18,11 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_GROUP_ANY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.REGEX_UNICODE_PACKAGE_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_CLOSE_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ESCAPED_OPEN_SQUARE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_POLYMORPHIC_SIGNATURE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -310,16 +307,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	}
 
 	@Override
-	public void setTagTaskQueued(Tag tagTaskQueued)
-	{
-		Compilation compilation = createCompilation();
-
-		compilation.setTagTaskQueued(tagTaskQueued);
-
-		storeCompilation(compilation);
-	}
-
-	@Override
 	public Compilation getCompilationByCompileID(String compileID)
 	{
 		Compilation result = null;
@@ -362,94 +349,25 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
+
 	@Override
-	public void setTagNMethod(Tag tagNMethod)
-	{
-		isCompiled = true;
-
-		String compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
-
-		Compilation compilation = getCompilationByCompileID(compileID);
-
-		if (compilation != null)
-		{
-			compilation.setTagNMethod(tagNMethod);
-		}
-		else
-		{
-			// check if C2N stub
-			String compileKind = tagNMethod.getAttributes().get(ATTR_COMPILE_KIND);
-
-			if (C2N.equalsIgnoreCase(compileKind))
-			{
-				compilation = createCompilation();
-
-				compilation.setTagNMethod(tagNMethod);
-
-				storeCompilation(compilation);
-			}
-			else
-			{
-				logger.warn("Didn't find compilation with ID {}", compileID);
-			}
-		}
-
-		// inform package tree it contains class with a compiled method
-		getMetaClass().getPackage().setHasCompiledClasses();
-	}
-
-	private void storeCompilation(Compilation compilation)
+	public void storeCompilation(Compilation compilation)
 	{
 		compilations.add(compilation);
 
 		selectedCompilationIndex = compilations.size() - 1;
 	}
 
-	private Compilation createCompilation()
-	{
-		int nextIndex = compilations.size();
-
-		selectedCompilationIndex = nextIndex;
-
-		return new Compilation(this, nextIndex);
-	}
-
-	@Override
-	public void setTagTask(Task tagTask)
-	{
-		String compileID = tagTask.getAttributes().get(ATTR_COMPILE_ID);
-
-		Compilation compilation = getCompilationByCompileID(compileID);
-
-		if (compilation != null)
-		{
-			compilation.setTagTask(tagTask);
-		}
-		else
-		{
-			logger.warn("Didn't find compilation with ID {}", compileID);
-		}
-	}
-
-	@Override
-	public void setTagTaskDone(String compileID, Tag tagTaskDone)
-	{
-		Compilation compilation = getCompilationByCompileID(compileID);
-
-		if (compilation != null)
-		{
-			compilation.setTagTaskDone(tagTaskDone);
-		}
-		else
-		{
-			logger.warn("Didn't find compilation with ID {}", compileID);
-		}
-	}
-
 	@Override
 	public boolean isCompiled()
 	{
 		return isCompiled;
+	}
+	
+	@Override
+	public void setCompiled(boolean compiled)
+	{
+		isCompiled = compiled;
 	}
 
 	@Override

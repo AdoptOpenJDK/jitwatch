@@ -141,6 +141,9 @@ public class Viewer extends VBox
 		vBoxRows.getChildren().clear();
 
 		lastScrollIndex = -1;
+		
+		rangeStart = -1;
+		rangeEnd = -1;		
 	}
 
 	public LineType getLineType()
@@ -519,6 +522,9 @@ public class Viewer extends VBox
 		{
 			unhighlightLabel(item);
 		}
+		
+		rangeStart = -1;
+		rangeEnd = -1;
 	}
 
 	protected void unhighlightLabel(Node node)
@@ -656,5 +662,16 @@ public class Viewer extends VBox
 
 			scrollPane.setVvalue(scrollPos);
 		}
+	}
+	
+
+	public int getRangeStart()
+	{
+		return rangeStart;
+	}
+
+	public int getRangeEnd()
+	{
+		return rangeEnd;
 	}
 }

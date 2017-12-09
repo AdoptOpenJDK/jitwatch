@@ -12,11 +12,11 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
+import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
-import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
 
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
@@ -95,6 +95,7 @@ public abstract class AbstractGraphStage extends Stage implements IRedrawable
 		canvas.heightProperty().addListener(resizeListener);
 	}
 
+	@Override
 	public abstract void redraw();
 
 	protected void baseRedraw()
@@ -163,7 +164,7 @@ public abstract class AbstractGraphStage extends Stage implements IRedrawable
 		gc.fillText(text, fix(xPos + boxPad), fix(yPos));
 	}
 
-	private void drawXAxisTime()
+	protected void drawXAxisTime()
 	{
 		long xInc = getXStepTime();
 
@@ -302,6 +303,8 @@ public abstract class AbstractGraphStage extends Stage implements IRedrawable
 
 	protected double normaliseX(double value)
 	{
+		//System.out.println("normalise "+ value + " in " + minXQ + " to " + maxXQ);
+		
 		return normalise(value, minXQ, maxXQ, chartWidth, false);
 	}
 

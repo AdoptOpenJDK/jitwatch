@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Chris Newland.
+ * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+ * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+ */
 package org.adoptopenjdk.jitwatch.parser;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
@@ -35,6 +40,8 @@ import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.TagProcessor;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
+import org.adoptopenjdk.jitwatch.model.Compilation;
+import org.adoptopenjdk.jitwatch.model.CompilerThread;
 import org.adoptopenjdk.jitwatch.model.EventType;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
@@ -55,6 +62,8 @@ public abstract class AbstractLogParser implements ILogParser
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractLogParser.class);
 
 	protected JITDataModel model;
+
+	protected CompilerThread currentCompilerThread = null;
 
 	protected String vmCommand = null;
 
@@ -135,8 +144,8 @@ public abstract class AbstractLogParser implements ILogParser
 			if (DEBUG_LOGGING)
 			{
 				logger.debug("adding to classpath {}", uri.toString());
-			}			
-			
+			}
+
 			try
 			{
 				classpathURLList.add(uri.toURL());
@@ -214,7 +223,7 @@ public abstract class AbstractLogParser implements ILogParser
 		inHeader = false;
 
 		currentMember = null;
-		
+
 		vmCommand = null;
 
 		parseLineNumber = 0;
@@ -276,7 +285,7 @@ public abstract class AbstractLogParser implements ILogParser
 		{
 			logger.debug("addToClassModel {}", fqClassName);
 		}
-		
+
 		Class<?> clazz = null;
 
 		MetaClass metaClass = model.getPackageManager().getMetaClass(fqClassName);
@@ -338,7 +347,7 @@ public abstract class AbstractLogParser implements ILogParser
 		reset();
 
 		configureDisposableClassLoader();
-		
+
 		// tell listener to reset any data
 		jitListener.handleReadStart();
 
@@ -417,7 +426,7 @@ public abstract class AbstractLogParser implements ILogParser
 
 		if (tagTaskDone != null)
 		{
-			handleTaskDone(tagTaskDone);
+			handleTaskDone(tagTaskDone, currentMember);
 
 			if (tagCodeCache != null)
 			{
@@ -460,19 +469,111 @@ public abstract class AbstractLogParser implements ILogParser
 		}
 	}
 
+	private Compilation createCompilation(IMetaMember member)
+	{
+		int nextIndex = member.getCompilations().size();
+
+		Compilation compilation = new Compilation(member, nextIndex);
+
+		return compilation;
+	}
+
+	protected void setTagTaskQueued(Tag tagTaskQueued, IMetaMember metaMember)
+	{
+		Compilation compilation = createCompilation(metaMember);
+
+		compilation.setTagTaskQueued(tagTaskQueued);
+
+		metaMember.storeCompilation(compilation);
+	}
+
+	protected void setTagNMethod(Tag tagNMethod, IMetaMember member)
+	{
+		member.setCompiled(true);
+
+		String compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
+
+		Compilation compilation = member.getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagNMethod(tagNMethod);
+		}
+		else
+		{
+			// check if C2N stub
+			String compileKind = tagNMethod.getAttributes().get(ATTR_COMPILE_KIND);
+
+			if (C2N.equalsIgnoreCase(compileKind))
+			{
+				compilation = createCompilation(member);
+
+				compilation.setTagNMethod(tagNMethod);
+
+				member.storeCompilation(compilation);
+			}
+			else
+			{
+				logger.warn("Didn't find compilation with ID {}", compileID);
+			}
+		}
+
+		member.getMetaClass().getPackage().setHasCompiledClasses();
+	}
+
+	protected void setTagTask(Task tagTask, IMetaMember member)
+	{
+		String compileID = tagTask.getAttributes().get(ATTR_COMPILE_ID);
+
+		Compilation compilation = member.getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagTask(tagTask);
+			
+			if (currentCompilerThread != null)
+			{
+				currentCompilerThread.addCompilation(compilation);
+			}
+			else
+			{
+				logger.warn("No compiler thread set when I saw {}", tagTask.toString());
+			}
+		}
+		else
+		{
+			logger.warn("Didn't find compilation with ID {}", compileID);
+		}
+	}
+
+	private void setTagTaskDone(String compileID, Tag tagTaskDone, IMetaMember member)
+	{
+		Compilation compilation = member.getCompilationByCompileID(compileID);
+
+		if (compilation != null)
+		{
+			compilation.setTagTaskDone(tagTaskDone);
+		}
+		else
+		{
+			logger.warn("Didn't find compilation with ID {}", compileID);
+		}
+	}
+
 	private void handleMember(String signature, Map<String, String> attrs, EventType type, Tag tag)
 	{
 		IMetaMember metaMember = findMemberWithSignature(signature);
-		
+
 		long stampTime = ParseUtil.getStamp(attrs);
 
 		if (metaMember != null)
-		{		
+		{
 			switch (type)
 			{
 			case QUEUE:
 			{
-				metaMember.setTagTaskQueued(tag);
+				setTagTaskQueued(tag, metaMember);
+
 				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(queuedEvent);
 				logEvent(queuedEvent);
@@ -483,7 +584,7 @@ public abstract class AbstractLogParser implements ILogParser
 			case NMETHOD_C2N:
 			case NMETHOD_J9:
 			{
-				metaMember.setTagNMethod(tag);
+				setTagNMethod(tag, metaMember);
 				metaMember.getMetaClass().incCompiledMethodCount();
 				model.updateStats(metaMember, attrs);
 
@@ -494,7 +595,7 @@ public abstract class AbstractLogParser implements ILogParser
 				break;
 			case TASK:
 			{
-				metaMember.setTagTask((Task) tag);
+				setTagTask((Task) tag, metaMember);
 				currentMember = metaMember;
 			}
 				break;
@@ -504,7 +605,7 @@ public abstract class AbstractLogParser implements ILogParser
 		}
 	}
 
-	private void handleTaskDone(Tag tagTaskDone)
+	protected void handleTaskDone(Tag tagTaskDone, IMetaMember member)
 	{
 		Map<String, String> attrs = tagTaskDone.getAttributes();
 
@@ -514,7 +615,7 @@ public abstract class AbstractLogParser implements ILogParser
 			model.addNativeBytes(nmsize);
 		}
 
-		if (currentMember != null)
+		if (member != null)
 		{
 			Tag parent = tagTaskDone.getParent();
 
@@ -526,7 +627,7 @@ public abstract class AbstractLogParser implements ILogParser
 
 				if (compileID != null)
 				{
-					currentMember.setTagTaskDone(compileID, tagTaskDone);
+					setTagTaskDone(compileID, tagTaskDone, member);
 				}
 				else
 				{

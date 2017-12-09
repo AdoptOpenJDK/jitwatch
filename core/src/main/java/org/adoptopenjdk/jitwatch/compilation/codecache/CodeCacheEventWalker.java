@@ -38,7 +38,7 @@ public class CodeCacheEventWalker extends AbstractCompilationWalker
 		{
 			for (Compilation compilation : metaMember.getCompilations())
 			{
-				if (compilation.isFailedTask())
+				if (compilation.isFailed())
 				{
 					continue;
 				}
@@ -49,7 +49,7 @@ public class CodeCacheEventWalker extends AbstractCompilationWalker
 				{
 					long addressLong = 0;
 
-					long stamp = compilation.getCompiledStamp();
+					long stamp = compilation.getStampTaskCompilationStart();
 
 					try
 					{

@@ -18,7 +18,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1068,7 +1067,8 @@ public class TestBytecodeAnnotationBuilder
 		TagProcessor tp = new TagProcessor();
 		Tag tag = tp.processLine(tagText);
 
-		member.setTagNMethod(tag);
+		UnitTestLogParser parser = new UnitTestLogParser(UnitTestUtil.getNoOpJITListener());
+		parser.setTagNMethod(tag, member);
 
 		assertTrue(CompilationUtil.isJournalForCompile2NativeMember(tag));
 	}
@@ -1082,8 +1082,9 @@ public class TestBytecodeAnnotationBuilder
 
 		TagProcessor tp = new TagProcessor();
 		Tag tag = tp.processLine(tagText);
-
-		member.setTagNMethod(tag);
+		
+		UnitTestLogParser parser = new UnitTestLogParser(UnitTestUtil.getNoOpJITListener());
+		parser.setTagNMethod(tag, member);
 
 		assertFalse(CompilationUtil.isJournalForCompile2NativeMember(tag));
 	}

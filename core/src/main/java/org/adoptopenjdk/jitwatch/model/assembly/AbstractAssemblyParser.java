@@ -37,6 +37,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 
 	// TODO this is too much work
 	// save the string blocks and parse on demand
+	@Override
 	public AssemblyMethod parseAssembly(final String assemblyString)
 	{
 		final AssemblyLabels labels = new AssemblyLabels();

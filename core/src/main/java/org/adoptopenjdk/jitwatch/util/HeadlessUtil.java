@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -35,8 +35,8 @@ public class HeadlessUtil
 		builder.append("Is Compiled").append(HEADLESS_SEPARATOR);
 		builder.append("Compiler").append(HEADLESS_SEPARATOR);
 		builder.append("Queued Time").append(HEADLESS_SEPARATOR);
-		builder.append("Compiled Time").append(HEADLESS_SEPARATOR);
-		builder.append("Compilation Time").append(HEADLESS_SEPARATOR);
+		builder.append("Compilation Start").append(HEADLESS_SEPARATOR);
+		builder.append("Compilation Duration").append(HEADLESS_SEPARATOR);
 		builder.append("Bytecode Size").append(HEADLESS_SEPARATOR);
 		builder.append("Native Size").append(HEADLESS_SEPARATOR);
 		builder.append("Decompiles");
@@ -86,9 +86,7 @@ public class HeadlessUtil
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_STAMP, S_HYPEN)).append(HEADLESS_SEPARATOR);
 
-					long lastCompilationTime = getLastCompilationTime(member);
-
-					builder.append(lastCompilationTime).append(HEADLESS_SEPARATOR);
+					builder.append(getLastCompilationTime(member)).append(HEADLESS_SEPARATOR);
 
 					builder.append(getCompiledAttributeOrNA(member, ATTR_BYTES, S_HYPEN)).append(HEADLESS_SEPARATOR);
 
@@ -110,7 +108,7 @@ public class HeadlessUtil
 		
 		if (lastCompilation != null)
 		{
-			compileTime = lastCompilation.getCompileTime();
+			compileTime = lastCompilation.getCompilationDuration();
 		}
 		
 		return compileTime;

@@ -3,9 +3,10 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.codecache;
+package org.adoptopenjdk.jitwatch.ui.nmethod.codecache;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -16,10 +17,8 @@ import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
-import org.adoptopenjdk.jitwatch.ui.resize.IRedrawable;
-import org.adoptopenjdk.jitwatch.ui.resize.RateLimitedResizeListener;
+import org.adoptopenjdk.jitwatch.ui.nmethod.AbstractNMethodStage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
 
 import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
@@ -30,23 +29,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
-public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompilationChangeListener
+public class CodeCacheLayoutStage extends AbstractNMethodStage
 {
 	private CodeCacheWalkerResult codeCacheData;
 
@@ -57,25 +48,13 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 	private double width;
 	private double height;
 
-	private BorderPane borderPane;
-
-	private Pane pane;
-	private ScrollPane scrollPane;
-
-	private NMethodInfo nMethodInfo;
-
-	private double zoom;
-
 	private Label lblNMethodCount;
 	private Label lblLowAddress;
 	private Label lblHighAddress;
 	private Label lblAddressRange;
 
-	private Button btnZoomIn;
-	private Button btnZoomOut;
-	private Button btnZoomReset;
 	private Button btnAnimate;
-	
+
 	private CheckBox checkC1;
 	private CheckBox checkC2;
 
@@ -86,65 +65,15 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 	private static final Color NOT_LATEST_COMPILATION = Color.rgb(96, 0, 0);
 
-	private static final Color LATEST_COMPILATION = Color.rgb(0, 96, 0);
-
-	private static final Color SELECTED_COMPILATION = Color.rgb(0, 255, 255);
-
-	private static final Color OTHER_MEMBER_COMPILATIONS = Color.rgb(0, 0, 128);
-
-	private JITWatchUI parent;
+	private static final Color LATEST_COMPILATION = COLOR_UNSELECTED_COMPILATION;
 
 	public CodeCacheLayoutStage(final JITWatchUI parent)
 	{
-		this.parent = parent;
-
-		this.zoom = 1;
-
-		initStyle(StageStyle.DECORATED);
-
-		borderPane = new BorderPane();
-
-		scrollPane = new ScrollPane();
-
-		pane = new Pane();
-		pane.setStyle("-fx-background-color: #000000");
-
-		scrollPane.setContent(pane);
-
-		nMethodInfo = new NMethodInfo(this);
-
-		borderPane.setTop(scrollPane);
-
-		Scene scene = UserInterfaceUtil.getScene(borderPane, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-
-		VBox vBoxControls = buildControls(scene);
-
-		borderPane.setCenter(vBoxControls);
-
-		borderPane.setBottom(nMethodInfo);
-		
-		scrollPane.prefWidthProperty().bind(scene.widthProperty());
-		scrollPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.5));
-
-		scrollPane.setFitToHeight(true);
-
-		pane.prefHeightProperty().bind(scrollPane.heightProperty());
-
-		nMethodInfo.prefHeightProperty().bind(scrollPane.heightProperty());
-
-		vBoxControls.prefWidthProperty().bind(scene.widthProperty());
-
-		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
-
-		scene.widthProperty().addListener(resizeListener);
-		scene.heightProperty().addListener(resizeListener);
-
-		setTitle("Code Cache Layout");
-
-		setScene(scene);
+		super(parent, "Code Cache Layout");
 	}
 
-	private VBox buildControls(Scene scene)
+	@Override
+	protected VBox buildControls(Scene scene)
 	{
 		VBox vBoxControls = new VBox();
 
@@ -251,7 +180,8 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "CodeCache");
 
-		hboxControls.getChildren().addAll(checkC1, checkC2, btnZoomIn, btnZoomOut, btnZoomReset, btnAnimate, txtAnimationSeconds, spacerStatus, buttonSnapShot);
+		hboxControls.getChildren().addAll(checkC1, checkC2, btnZoomIn, btnZoomOut, btnZoomReset, btnAnimate, txtAnimationSeconds,
+				spacerStatus, buttonSnapShot);
 
 		return hboxControls;
 	}
@@ -290,16 +220,14 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 	private boolean preDraw()
 	{
+		clear();
+		
 		boolean ok = false;
-
-		pane.getChildren().clear();
 
 		lblNMethodCount.setText(S_EMPTY);
 		lblLowAddress.setText(S_EMPTY);
 		lblHighAddress.setText(S_EMPTY);
 		lblAddressRange.setText(S_EMPTY);
-
-		nMethodInfo.clear();
 
 		codeCacheData = parent.getCodeCacheWalkerResult();
 
@@ -309,7 +237,7 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 			highAddress = codeCacheData.getHighestAddress();
 
 			addressRange = highAddress - lowAddress;
-			addressRange *= 1.005;
+			addressRange *= 1.01;
 
 			width = scrollPane.getWidth() * zoom;
 			height = pane.getHeight();
@@ -320,9 +248,9 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 			lblNMethodCount.setText(Integer.toString(eventCount));
 
-			lblLowAddress.setText(Long.toHexString(lowAddress));
-			lblHighAddress.setText(Long.toHexString(highAddress));
-			lblAddressRange.setText(NumberFormat.getNumberInstance().format(addressRange));
+			lblLowAddress.setText(S_HEX_PREFIX + Long.toHexString(lowAddress));
+			lblHighAddress.setText(S_HEX_PREFIX + Long.toHexString(highAddress));
+			lblAddressRange.setText(NumberFormat.getNumberInstance().format(highAddress - lowAddress));
 
 			ok = true;
 		}
@@ -330,6 +258,7 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 		return ok;
 	}
 
+	@Override
 	public void redraw()
 	{
 		if (!preDraw())
@@ -337,7 +266,7 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 			return;
 		}
 
-		// long start = System.currentTimeMillis();
+		//TimerUtil.timerStart(getClass().getName() + ".redraw()");
 
 		IMetaMember selectedMember = parent.getSelectedMember();
 
@@ -351,6 +280,8 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 		List<CodeCacheEvent> eventsOfSelectedMember = new ArrayList<>();
 
 		Color fillColour;
+		
+		double paneHeight = pane.getHeight();
 
 		for (CodeCacheEvent event : codeCacheData.getEvents())
 		{
@@ -391,9 +322,8 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 					double x = scaledAddress * width;
 					double y = 0;
 					double w = scaledSize * width;
-					double h = height;
 
-					plotCompilation(x, y, w, h, fillColour, compilationMember, eventCompilation.getIndex(), true);
+					plotCompilation(x, y, w, paneHeight, fillColour, eventCompilation, true);
 				}
 			}
 		}
@@ -409,29 +339,24 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 			double x = scaledAddress * width;
 			double y = 0;
 			double w = scaledSize * width;
-			double h = height;
 
 			final Compilation eventCompilation = event.getCompilation();
 
 			if (event.getCompilation().equals(selectedCompilation))
 			{
-				fillColour = SELECTED_COMPILATION;
-
-				nMethodInfo.setInfo(event, eventCompilation);
+				fillColour = COLOR_SELECTED_COMPILATION;
 			}
 			else
 			{
-				fillColour = OTHER_MEMBER_COMPILATIONS;
+				fillColour = COLOR_OTHER_MEMBER_COMPILATIONS;
 			}
 
-			plotCompilation(x, y, w, h, fillColour, selectedMember, eventCompilation.getIndex(), true);
+			plotCompilation(x, y, w, paneHeight, fillColour, eventCompilation, true);
 
-			plotMarker(x, h, w, selectedMember, eventCompilation.getIndex());
+			plotMarker(x, paneHeight, eventCompilation);
 		}
 
-		// long stop = System.currentTimeMillis();
-
-		// System.out.println("redraw " + (stop - start));
+		//TimerUtil.timerEnd(getClass().getName() + ".redraw()");
 	}
 
 	private boolean showEvent(CodeCacheEvent event)
@@ -453,29 +378,8 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 		return result;
 	}
 
-	private void plotMarker(double x, double h, double w, IMetaMember compilationMember, int compilationIndex)
-	{
-		double side = h * 0.04;
-		double centre = x + w / 2;
-
-		double top = h - side;
-		double left = centre - side / 2;
-		double right = centre + side / 2;
-		double bottom = h;
-
-		Polygon triangle = new Polygon();
-		triangle.getPoints().addAll(new Double[] { left, bottom, centre, top, right, bottom });
-
-		triangle.setFill(Color.WHITE);
-		triangle.setStroke(Color.BLACK);
-
-		attachListener(triangle, compilationMember, compilationIndex);
-
-		pane.getChildren().add(triangle);
-	}
-
-	private void plotCompilation(double x, double y, double w, double h, Color fillColour, IMetaMember compilationMember,
-			int compilationIndex, boolean clickHandler)
+	private void plotCompilation(double x, double y, double w, double h, Color fillColour, Compilation compilation,
+			boolean clickHandler)
 	{
 		Rectangle rect = new Rectangle(x, y, w, h);
 
@@ -483,22 +387,10 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 		if (clickHandler)
 		{
-			attachListener(rect, compilationMember, compilationIndex);
+			attachListener(rect, compilation);
 		}
 
 		pane.getChildren().add(rect);
-	}
-
-	private void attachListener(Shape shape, final IMetaMember compilationMember, final int compilationIndex)
-	{
-		shape.setOnMouseClicked(new EventHandler<MouseEvent>()
-		{
-			@Override
-			public void handle(MouseEvent arg0)
-			{
-				parent.selectCompilation(compilationMember, compilationIndex);
-			}
-		});
 	}
 
 	private void animate(double targetSeconds)
@@ -516,9 +408,9 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 
 		double frameCount = targetSeconds * framesPerSecond;
 
-		final double eventsPerFrame = (double) eventCount / frameCount;
+		final double eventsPerFrame = eventCount / frameCount;
 
-		final double secondsPerEvent = targetSeconds / (double) eventCount;
+		final double secondsPerEvent = targetSeconds / eventCount;
 
 		final double nanoSecondsPerEvent = 1_000_000_000 * secondsPerEvent;
 
@@ -590,7 +482,7 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 						double w = scaledSize * width;
 						double h = height;
 
-						plotCompilation(x, y, w, h, fillColour, compilationMember, eventCompilation.getIndex(), false);
+						plotCompilation(x, y, w, h, fillColour, eventCompilation, false);
 					}
 				}
 			}
@@ -614,35 +506,5 @@ public class CodeCacheLayoutStage extends Stage implements IRedrawable, ICompila
 		btnAnimate.setDisable(true);
 
 		timer.start();
-	}
-
-	void selectPrevCompilation()
-	{
-		IMetaMember selectedMember = parent.getSelectedMember();
-
-		if (selectedMember != null && selectedMember.getSelectedCompilation() != null)
-		{
-			int prevIndex = selectedMember.getSelectedCompilation().getIndex() - 1;
-
-			parent.selectCompilation(selectedMember, prevIndex);
-		}
-	}
-
-	void selectNextCompilation()
-	{
-		IMetaMember selectedMember = parent.getSelectedMember();
-
-		if (selectedMember != null && selectedMember.getSelectedCompilation() != null)
-		{
-			int nextIndex = selectedMember.getSelectedCompilation().getIndex() + 1;
-
-			parent.selectCompilation(selectedMember, nextIndex);
-		}
-	}
-
-	@Override
-	public void compilationChanged(IMetaMember member)
-	{
-		redraw();
 	}
 }

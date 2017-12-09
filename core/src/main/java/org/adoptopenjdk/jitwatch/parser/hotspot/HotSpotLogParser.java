@@ -5,10 +5,13 @@
  */
 package org.adoptopenjdk.jitwatch.parser.hotspot;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_THREAD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_AT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.LOADED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_BODY_TAGS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.SKIP_HEADER_TAGS;
@@ -33,8 +36,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_ARGUMENTS;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VM_VERSION;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_WRITER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_XML;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -317,6 +320,11 @@ public class HotSpotLogParser extends AbstractLogParser
 
 		switch (tagName)
 		{
+
+		case TAG_WRITER:
+			handleWriterThread(tag);
+			break;
+
 		case TAG_VM_VERSION:
 			handleVmVersion(tag);
 			break;
@@ -380,9 +388,28 @@ public class HotSpotLogParser extends AbstractLogParser
 		}
 	}
 
+	private void handleWriterThread(Tag tag)
+	{
+		String threadId = tag.getAttributes().get(ATTR_THREAD);
+
+		if (threadId != null)
+		{
+//			currentCompilerThread = model.getCompilerThread(threadId);
+		}
+	}
+
 	private void handleStartCompileThread(Tag tag)
 	{
-		model.getJITStats().incCompilerThreads();
+		// <start_compile_thread name='C2 CompilerThread1' thread='17667'
+		// process='82237' stamp='0.079'/>
+
+		String threadId = tag.getAttributes().get(ATTR_THREAD);
+		String threadName = tag.getAttributes().get(ATTR_NAME);
+
+		if (threadId != null)
+		{
+			currentCompilerThread = model.createCompilerThread(threadId, threadName);
+		}
 	}
 
 	private void buildParsedClasspath()

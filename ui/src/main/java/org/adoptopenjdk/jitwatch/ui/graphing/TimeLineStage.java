@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -152,7 +152,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 				if (tagTaskQueued != null)
 				{
-					long tagTime = compilation.getQueuedStamp();
+					long tagTime = compilation.getStampTaskQueued();
 
 					if (tagTime == stamp)
 					{
@@ -166,7 +166,7 @@ public class TimeLineStage extends AbstractGraphStage
 
 			if (tagNMethod != null)
 			{
-				long tagTime = compilation.getCompiledStamp();
+				long tagTime = compilation.getStampTaskCompilationStart();
 
 				if (tagTime == stamp)
 				{
@@ -302,7 +302,12 @@ public class TimeLineStage extends AbstractGraphStage
 
 			if (!compilation.isC2N())
 			{
-				selectedItemBuilder.append(" in ").append(compilation.getCompileTime()).append("ms");
+				long duration = compilation.getCompilationDuration();
+				
+				if (duration != 0)
+				{
+					selectedItemBuilder.append(" in ").append(duration).append("ms");
+				}
 			}
 		}
 

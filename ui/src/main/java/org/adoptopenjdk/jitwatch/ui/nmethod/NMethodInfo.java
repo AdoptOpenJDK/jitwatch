@@ -3,18 +3,23 @@
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
-package org.adoptopenjdk.jitwatch.ui.codecache;
+package org.adoptopenjdk.jitwatch.ui.nmethod;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
-import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
+import org.adoptopenjdk.jitwatch.ui.main.IPrevNextCompilationListener;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -28,20 +33,26 @@ public class NMethodInfo extends HBox
 	private Label lblMember;
 	private Label lblCompilationNumber;
 	private Label lblCompiler;
-
-	private Label lblNativeSize;
+	
 	private Label lblAddress;
+		
+	private Label lblBytecodeSize;
+	private Label lblNativeSize;
+	
 	private Label lblQueuedTime;
-	private Label lblCompiledTime;
-	private Label lblElapsed;
+	private Label lblCompilationStartTime;
+	private Label lblNMethodEmittedTime;
+	private Label lblCompileDuration;
+	
+	private List<Label> clearable = new ArrayList<>();
 
-	private CodeCacheLayoutStage parent;
+	private IPrevNextCompilationListener listener;
 
 	private static final int DESCRIPTION_WIDTH = 128;
 
-	public NMethodInfo(CodeCacheLayoutStage parent)
+	public NMethodInfo(IPrevNextCompilationListener listener)
 	{
-		this.parent = parent;
+		this.listener = listener;
 
 		setPadding(new Insets(24, 4, 0, 4));
 		setSpacing(16);
@@ -75,16 +86,18 @@ public class NMethodInfo extends HBox
 		column.setSpacing(8);
 
 		lblAddress = new Label();
+		lblBytecodeSize = new Label();
 		lblNativeSize = new Label();
 		lblQueuedTime = new Label();
-		lblCompiledTime = new Label();
-		lblElapsed = new Label();
+		lblCompilationStartTime = new Label();
+		lblNMethodEmittedTime = new Label();
+		lblCompileDuration = new Label();
 
 		column.getChildren().add(makeLabel("NMethod Address", lblAddress));
-		column.getChildren().add(makeLabel("Native Size", lblNativeSize));
+		column.getChildren().add(makeSizeInfo());
 		column.getChildren().add(makeLabel("Queued at", lblQueuedTime));
-		column.getChildren().add(makeLabel("Compiled at", lblCompiledTime));
-		column.getChildren().add(makeLabel("Elapsed Time", lblElapsed));
+		column.getChildren().add(makeTimingInfo());
+		column.getChildren().add(makeLabel("Compile Duration", lblCompileDuration));
 
 		return column;
 	}
@@ -105,7 +118,7 @@ public class NMethodInfo extends HBox
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.selectPrevCompilation();
+				listener.selectPrevCompilation();
 			}
 		});
 
@@ -114,7 +127,7 @@ public class NMethodInfo extends HBox
 			@Override
 			public void handle(ActionEvent e)
 			{
-				parent.selectNextCompilation();
+				listener.selectNextCompilation();
 			}
 		});
 
@@ -127,23 +140,73 @@ public class NMethodInfo extends HBox
 
 		return hbox;
 	}
+	
+	private HBox makeSizeInfo()
+	{
+		
+		HBox hbox = new HBox();
+		hbox.setSpacing(8);
 
+		HBox hboxBytecode = makeLabel("Bytecode Size", lblBytecodeSize);
+
+		lblBytecodeSize.prefWidthProperty().unbind();
+		lblBytecodeSize.prefWidthProperty().bind(widthProperty().multiply(0.25).subtract(DESCRIPTION_WIDTH));
+		
+		HBox hboxNative = makeLabel("Native Size", lblNativeSize, Pos.BASELINE_RIGHT);
+		
+		lblNativeSize.prefWidthProperty().unbind();
+		lblNativeSize.prefWidthProperty().bind(widthProperty().multiply(0.25).subtract(DESCRIPTION_WIDTH));
+	
+		hbox.getChildren().addAll(hboxBytecode, hboxNative);
+
+		return hbox;
+	}
+	
+	private HBox makeTimingInfo()
+	{		
+		HBox hbox = new HBox();
+		hbox.setSpacing(8);
+
+		HBox hboxTiming1 = makeLabel("Compile Start", lblCompilationStartTime);
+		
+		lblCompilationStartTime.prefWidthProperty().unbind();
+		lblCompilationStartTime.prefWidthProperty().bind(widthProperty().multiply(0.25).subtract(DESCRIPTION_WIDTH));
+		
+		HBox hboxTiming2 = makeLabel("NMethod Emitted", lblNMethodEmittedTime, Pos.BASELINE_RIGHT);
+
+		lblNMethodEmittedTime.prefWidthProperty().unbind();
+		lblNMethodEmittedTime.prefWidthProperty().bind(widthProperty().multiply(0.25).subtract(DESCRIPTION_WIDTH));
+
+		hbox.getChildren().addAll(hboxTiming1, hboxTiming2);
+
+		return hbox;
+	}
+		
 	private HBox makeLabel(String labelText, Label labelValue)
 	{
+		return makeLabel(labelText, labelValue, Pos.BASELINE_LEFT);
+	}
+
+	private HBox makeLabel(String labelText, Label labelValue, Pos labelAlignment)
+	{
 		HBox hbox = new HBox();
+		hbox.setSpacing(16);
 
 		Label descriptionLabel = new Label(labelText);
 		descriptionLabel.setMinWidth(DESCRIPTION_WIDTH);
+		descriptionLabel.setAlignment(labelAlignment);
 
 		labelValue.getStyleClass().add("readonly-label");
 		labelValue.prefWidthProperty().bind(widthProperty().multiply(0.5).subtract(DESCRIPTION_WIDTH));
 
 		hbox.getChildren().addAll(descriptionLabel, labelValue);
+		
+		clearable.add(labelValue);
 
 		return hbox;
 	}
 
-	public void setInfo(CodeCacheEvent event, Compilation compilation)
+	public void setInfo(Compilation compilation)
 	{
 		IMetaMember compilationMember = compilation.getMember();
 
@@ -166,27 +229,32 @@ public class NMethodInfo extends HBox
 		lblCompiler.setText(compilerString);
 		lblCompilationNumber.setText(Integer.toString(1 + compilation.getIndex()) + " of " + compilationCount);
 
-		lblAddress.setText(Long.toHexString(event.getNativeAddress()));
-		lblNativeSize.setText(Long.toString(event.getNativeCodeSize()) + " bytes");
-		lblQueuedTime.setText(StringUtil.formatTimestamp(compilation.getQueuedStamp(), true));
-		lblCompiledTime.setText(StringUtil.formatTimestamp(compilation.getCompiledStamp(), true));
-		lblElapsed.setText(Long.toString(compilation.getCompileTime()) + "ms");
+		lblBytecodeSize.setText(Long.toString(compilation.getBytecodeSize()) + " bytes");
+		
+		lblQueuedTime.setText(StringUtil.formatTimestamp(compilation.getStampTaskQueued(), true));
+		lblCompilationStartTime.setText(StringUtil.formatTimestamp(compilation.getStampTaskCompilationStart(), true));
+			
+		if (compilation.isFailed())
+		{
+			lblAddress.setText("Compilation failed, no nmethod emitted");
+			lblNativeSize.setText("NA");
+			lblCompileDuration.setText("NA");
+			lblNMethodEmittedTime.setText("NA");
+		}
+		else
+		{
+			lblAddress.setText(compilation.getNativeAddress());
+			lblNativeSize.setText(Long.toString(compilation.getNativeSize()) + " bytes");
+			lblCompileDuration.setText(Long.toString(compilation.getCompilationDuration()) + "ms");
+			lblNMethodEmittedTime.setText(StringUtil.formatTimestamp(compilation.getStampNMethodEmitted(), true));
+		}
 	}
 
 	public void clear()
 	{
-		lblCompileID.setText(S_EMPTY);
-		lblClass.setText(S_EMPTY);
-		lblMember.setText(S_EMPTY);
-		lblMember.setTooltip(null);
-		lblCompiler.setText(S_EMPTY);
-		lblCompilationNumber.setText(S_EMPTY);
-
-		lblAddress.setText(S_EMPTY);
-		lblNativeSize.setText(S_EMPTY);
-		lblQueuedTime.setText(S_EMPTY);
-		lblCompiledTime.setText(S_EMPTY);
-		lblElapsed.setText(S_EMPTY);
-
+		for (Label label : clearable)
+		{
+			label.setText(S_EMPTY);
+		}
 	}
 }

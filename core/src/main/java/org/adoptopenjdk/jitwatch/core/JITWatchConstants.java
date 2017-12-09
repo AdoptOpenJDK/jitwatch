@@ -131,6 +131,7 @@ public final class JITWatchConstants
 
 	public static final String ATTR_METHOD = METHOD;
 	public static final String ATTR_KLASS = "klass";
+	public static final String ATTR_THREAD = "thread";
 	public static final String ATTR_COMPILE_ID = "compile_id";
 	public static final String ATTR_COMPILE_KIND = "compile_kind";
 	public static final String ATTR_STAMP = "stamp";

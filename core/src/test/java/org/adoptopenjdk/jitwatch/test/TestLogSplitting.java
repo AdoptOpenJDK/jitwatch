@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,6 +26,7 @@ public class TestLogSplitting
 		String nmethodTag = "<nmethod compile_id='999' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x0000aaaaaaaaa' relocation_offset='288' method='java/lang/String hashCode ()I' />";
 
 		String[] lines = new String[] {
+				"<writer thread='1234'/>",
 				"<task_queued compile_id='1' method='java/lang/String length ()I' bytes='55' count='520' backedge_count='5000' iicount='520' stamp='0.083' comment='count' hot_count='520'/>",
 				"<nmethod compile_id='1' compiler='C1' level='3' entry='0x00007fb5ad0fe420' size='2504' address='0x00007fb5ad0fe290' relocation_offset='288' method='java/lang/String length ()I' />",
 				"<task compile_id='1' method='java/lang/String length ()I' bytes='55' count='521' backedge_count='5000' iicount='521' stamp='0.083'>",
@@ -57,7 +58,7 @@ public class TestLogSplitting
 		SplitLog log = parser.getSplitLog();
 
 		assertEquals(15, log.getAssemblyLines().size());
-		assertEquals(6, log.getCompilationLines().size());
+		assertEquals(7, log.getCompilationLines().size());
 	}
 
 	private Path writeLinesToTempFileAndReturnPath(String[] lines) throws IOException
@@ -205,6 +206,8 @@ public class TestLogSplitting
 				"</vm_arguments>",
 				"<tty>",
 				"<writer thread='3'/>",
+				"<task_queued compile_id='236' method='java/lang/String &lt;init&gt; ()V' bytes='55' count='520' backedge_count='5000' iicount='520' stamp='0.083' comment='count' hot_count='520'/>",
+
 				"<nmethod compile_id='236' compiler='C2' entry='0x0000000105a44ce0' size='736' address='0x0000000105a44b90' relocation_offset='296' insts_offset='336' stub_offset='464' scopes_data_offset='504' scopes_pcs_offset='552' dependencies_offset='712' nul_chk_table_offset='720' method='java/lang/String &lt;init&gt; ()V' bytes='26' count='5047' backedge_count='1' iicount='10047' stamp='3.560'/>",
 				"<writer thread='1'/>",
 				"Decoding compiled method 0x0000000105a44850:",
@@ -232,6 +235,6 @@ public class TestLogSplitting
 		assertEquals(45, log.getHeaderLines().size());
 		assertEquals(1, log.getClassLoaderLines().size());
 		assertEquals(10, log.getAssemblyLines().size());
-		assertEquals(5, log.getCompilationLines().size());
+		assertEquals(6, log.getCompilationLines().size());
 	}
 }

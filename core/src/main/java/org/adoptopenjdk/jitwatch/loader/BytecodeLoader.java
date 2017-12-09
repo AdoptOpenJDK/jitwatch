@@ -11,6 +11,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_BYTECODE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CLASSFILE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CODE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CONSTANT_POOL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_EXCEPTION_TABLE;
@@ -36,7 +37,6 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_CLASSFILE;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -130,7 +130,9 @@ public final class BytecodeLoader
 			
 			if (ReflectionJavap.canUseReflectionJavap())
 			{
+				//TimerUtil.timerStart("javap");
 				byteCodeString = ReflectionJavap.getBytecode(classLocations, fqClassName);
+				//TimerUtil.timerEnd("javap");
 			}
 			else
 			{
@@ -148,7 +150,6 @@ public final class BytecodeLoader
 				javapProcess.execute(classLocations, fqClassName);
 	
 				byteCodeString = javapProcess.getOutputStream();
-	
 			}
 			
 			classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);			
@@ -196,7 +197,7 @@ public final class BytecodeLoader
 		MemberSignatureParts msp = null;
 
 		MemberBytecode memberBytecode = null;
-
+		
 		while (pos < bytecodeLines.length)
 		{
 			String line = bytecodeLines[pos].trim();
@@ -361,7 +362,7 @@ public final class BytecodeLoader
 
 			pos++;
 		}
-
+		
 		return classBytecode;
 	}
 

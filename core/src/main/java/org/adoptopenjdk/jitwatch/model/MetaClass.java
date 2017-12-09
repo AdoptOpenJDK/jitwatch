@@ -96,6 +96,11 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		this.missingDef = missingDef;
 	}
+	
+	public boolean hasClassBytecode()
+	{
+		return classBytecode != null;
+	}
 
 	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations)
 	{

@@ -24,6 +24,9 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +47,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// written during parse, make copy for graphing as needs sort
 	private List<CodeCacheEvent> codeCacheTagList = new ArrayList<>();
-	
+
+	private Map<String, CompilerThread> compilerThreads = new HashMap<>();
+
 	private Tag endOfLog;
 
 	private String vmVersionRelease;
@@ -59,11 +64,12 @@ public class JITDataModel implements IReadOnlyJITDataModel
 	{
 		this.vmVersionRelease = release;
 	}
-	
+
+	@Override
 	public int getJDKMajorVersion()
 	{
 		int result = 8; // fallback
-		
+
 		if (this.vmVersionRelease != null)
 		{
 			if (this.vmVersionRelease.contains("1.7"))
@@ -79,7 +85,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 				result = 9;
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -91,14 +97,65 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 
 		packageManager.clear();
-		
+
 		SourceMapper.clear();
 
 		stats.reset();
 
 		jitEvents.clear();
 
+		for (CompilerThread thread : compilerThreads.values())
+		{
+			thread.clear();
+		}
+
+		compilerThreads.clear();
+
 		codeCacheTagList.clear();
+	}
+
+	@Override
+	public List<CompilerThread> getCompilerThreads()
+	{
+		List<CompilerThread> result = new ArrayList<>();
+
+		for (Map.Entry<String, CompilerThread> entry : compilerThreads.entrySet())
+		{
+			if (!entry.getValue().getCompilations().isEmpty())
+			{
+				result.add(entry.getValue());
+			}
+		}
+		
+		Collections.sort(result, new Comparator<CompilerThread>()
+		{
+			@Override
+			public int compare(CompilerThread o1, CompilerThread o2)
+			{
+				return o1.getThreadName().compareTo(o2.getThreadName());
+			}
+		});
+		
+		return Collections.unmodifiableList(result);
+	}
+
+	@Override
+	public CompilerThread createCompilerThread(String threadId, String threadName)
+	{
+		CompilerThread compilerThread = new CompilerThread(threadId, threadName);
+
+
+		compilerThreads.put(threadId, compilerThread);
+
+		getJITStats().incCompilerThreads();
+
+		return compilerThread;
+	}
+
+	@Override
+	public CompilerThread getCompilerThread(String threadId)
+	{
+		return compilerThreads.get(threadId);
 	}
 
 	@Override
@@ -115,7 +172,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	// ugly but better than using COWAL with so many writes
 	public void addEvent(JITEvent event)
-	{		
+	{
 		synchronized (jitEvents)
 		{
 			jitEvents.add(event);
@@ -176,7 +233,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		}
 
 		String compileKind = attrs.get(ATTR_COMPILE_KIND);
-		
+
 		boolean isC2N = false;
 
 		if (compileKind != null)
@@ -200,7 +257,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		{
 			if (!isC2N)
 			{
-				stats.recordDelay(compilation.getCompileTime());
+				stats.recordDelay(compilation.getCompilationDuration());
 			}
 		}
 		else
@@ -215,17 +272,17 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		IMetaMember result = null;
 
 		MetaClass metaClass = packageManager.getMetaClass(msp.getFullyQualifiedClassName());
-		
-		if (metaClass == null)  // possible if no TraceClassLoading logs
+
+		if (metaClass == null) // possible if no TraceClassLoading logs
 		{
 			if (DEBUG_LOGGING)
 			{
 				logger.debug("No metaClass found, trying late load {}", msp.getFullyQualifiedClassName());
 			}
-			
+
 			metaClass = ParseUtil.lateLoadMetaClass(this, msp.getFullyQualifiedClassName());
 		}
-		
+
 		if (metaClass != null)
 		{
 			List<IMetaMember> metaList = metaClass.getMetaMembers();
@@ -234,7 +291,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			{
 				logger.debug("Comparing msp against {} members of metaClass {}", metaList.size(), metaClass.toString());
 			}
-			
+
 			for (IMetaMember member : metaList)
 			{
 				if (member.matchesSignature(msp, true))
@@ -257,7 +314,7 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
 	@Override
 	public MetaClass buildAndGetMetaClass(Class<?> clazz)
-	{	
+	{
 		MetaClass resultMetaClass = null;
 
 		String fqClassName = clazz.getName();
@@ -277,12 +334,12 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			packageName = S_EMPTY;
 			className = fqClassName;
 		}
-		
+
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("buildAndGetMetaClass {} {}", packageName, fqClassName);
 		}
-		
+
 		MetaPackage metaPackage = packageManager.getMetaPackage(packageName);
 
 		if (metaPackage == null)
@@ -344,12 +401,12 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			codeCacheTagList.add(event);
 		}
 	}
-	
+
 	public void setEndOfLog(Tag tag)
 	{
 		this.endOfLog = tag;
 	}
-	
+
 	@Override
 	public Tag getEndOfLogTag()
 	{

@@ -108,7 +108,7 @@ public class CompilationInfo extends HBox
 			}
 			else
 			{
-				lblCompileTimeVal.setText(compilation.getCompileTime() + "ms");
+				lblCompileTimeVal.setText(compilation.getCompilationDuration() + "ms");
 			}
 
 			setBytecodeSize(getAttrOrNA(compilation.getQueuedAttributes(), ATTR_BYTES));

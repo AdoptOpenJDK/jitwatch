@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.model;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ADDRESS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
@@ -36,18 +37,18 @@ public class Compilation
 
 	private AssemblyMethod assembly;
 
-	private long compileTime;
-
 	private String compileID;
 
-	private long queuedStamp;
+	private long stampTaskQueued;
 
-	private long compiledStamp;
+	private long stampTaskCompilationStart;
+
+	private long stampNMethodEmitted;
 
 	private boolean isC2N;
-	
+
 	private boolean isOSR;
-	
+
 	private int osrBCI;
 
 	private String nativeAddress;
@@ -59,6 +60,8 @@ public class Compilation
 	private IMetaMember member;
 
 	private boolean failedTask = false;
+
+	private CompilerThread compilerThread = null;
 
 	public Compilation(IMetaMember member, int index)
 	{
@@ -143,26 +146,27 @@ public class Compilation
 		this.tagTaskQueued = tagTaskQueued;
 
 		Map<String, String> attrs = tagTaskQueued.getAttributes();
-		
+
 		this.compileID = attrs.get(ATTR_COMPILE_ID);
 
-		queuedStamp = ParseUtil.getStamp(attrs);
-		
+		stampTaskQueued = ParseUtil.getStamp(attrs);
+
 		String compileKind = attrs.get(ATTR_COMPILE_KIND);
 		String osrBCIString = attrs.get(ATTR_OSR_BCI);
 
 		if (OSR.equalsIgnoreCase(compileKind))
 		{
-			isOSR =true;
+			isOSR = true;
 			osrBCI = -1;
-			
+
 			try
 			{
 				osrBCI = Integer.parseInt(osrBCIString);
 			}
 			catch (NumberFormatException nfe)
 			{
-				//logger.error("Could not parse {} '{}'", ATTR_OSR_BCI, osrBCIString);
+				// logger.error("Could not parse {} '{}'", ATTR_OSR_BCI,
+				// osrBCIString);
 			}
 		}
 	}
@@ -179,22 +183,22 @@ public class Compilation
 
 		String compileKind = attrs.get(ATTR_COMPILE_KIND);
 
-		compiledStamp = ParseUtil.getStamp(attrs);
+		stampNMethodEmitted = ParseUtil.getStamp(attrs);
 
 		if (C2N.equalsIgnoreCase(compileKind))
 		{
 			isC2N = true;
 			this.compileID = tagNMethod.getAttributes().get(ATTR_COMPILE_ID);
 		}
-		else
-		{
-			compileTime = compiledStamp - queuedStamp;
-		}
 	}
 
 	public void setTagTask(Task tagTask)
 	{
 		this.tagTask = tagTask;
+
+		Map<String, String> attrs = tagTask.getAttributes();
+
+		stampTaskCompilationStart = ParseUtil.getStamp(attrs);
 
 		if (tagTask.getFirstNamedChild(TAG_FAILURE) != null)
 		{
@@ -227,11 +231,6 @@ public class Compilation
 		this.tagTaskDone = tagTaskDone;
 	}
 
-	public long getCompileTime()
-	{
-		return compileTime;
-	}
-
 	public int getIndex()
 	{
 		return index;
@@ -249,19 +248,48 @@ public class Compilation
 		return result;
 	}
 
+	public int getBytecodeSize()
+	{
+		int result = 0;
+
+		if (tagTask != null)
+		{
+			result = Integer.parseInt(tagTask.getAttributes().get(ATTR_BYTES));
+		}
+
+		return result;
+	}
+
 	public boolean isC2N()
 	{
 		return isC2N;
 	}
 
-	public long getQueuedStamp()
+	public long getStampTaskQueued()
 	{
-		return queuedStamp;
+		return stampTaskQueued;
 	}
 
-	public long getCompiledStamp()
+	public long getStampTaskCompilationStart()
 	{
-		return compiledStamp;
+		return stampTaskCompilationStart;
+	}
+
+	public long getStampNMethodEmitted()
+	{
+		return stampNMethodEmitted;
+	}
+
+	public long getCompilationDuration()
+	{
+		long duration = 0;
+
+		if (stampTaskCompilationStart != 0 && stampNMethodEmitted != 0)
+		{
+			duration = stampNMethodEmitted - stampTaskCompilationStart;
+		}
+
+		return duration;
 	}
 
 	public String getSignature()
@@ -415,7 +443,7 @@ public class Compilation
 		return builder.toString();
 	}
 
-	public boolean isFailedTask()
+	public boolean isFailed()
 	{
 		return failedTask;
 	}
@@ -429,6 +457,46 @@ public class Compilation
 	{
 		return osrBCI;
 	}
-	
-	
+
+	public CompilerThread getCompilerThread()
+	{
+		return compilerThread;
+	}
+
+	public void setCompilerThread(CompilerThread compilerThread)
+	{
+		this.compilerThread = compilerThread;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + index;
+		result = prime * result + ((member == null) ? 0 : member.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Compilation other = (Compilation) obj;
+		if (index != other.index)
+			return false;
+		if (member == null)
+		{
+			if (other.member != null)
+				return false;
+		}
+		else if (!member.equals(other.member))
+			return false;
+		return true;
+	}
 }

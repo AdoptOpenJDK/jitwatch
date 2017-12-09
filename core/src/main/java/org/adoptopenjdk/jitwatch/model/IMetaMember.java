@@ -37,11 +37,8 @@ public interface IMetaMember
 	
 	String getQueuedAttribute(String key);
 	Map<String, String> getQueuedAttributes();
-	
-	void setTagTaskQueued(Tag tagTaskQueued);
-	void setTagNMethod(Tag tagNMethod);
-	void setTagTask(Task tagTask);
-	void setTagTaskDone(String compileID, Tag tagTaskDone);
+
+	void storeCompilation(Compilation compilation);
 	
 	String getCompiledAttribute(String key);
 	Map<String, String> getCompiledAttributes();
@@ -49,6 +46,7 @@ public interface IMetaMember
 	Compilation getCompilationByCompileID(String compileID);
 	Compilation getCompilationByAddress(AssemblyMethod asmMethod);
 	
+	void setCompiled(boolean compiled);
 	boolean isCompiled();
 	
 	void addAssembly(AssemblyMethod asmMethod);

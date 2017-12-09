@@ -24,28 +24,23 @@ public class CompilationTableRow
 		return compilation.getIndex();
 	}
 
-	public String getQueuedStamp()
+	public String getStampQueued()
 	{
-		long stamp = compilation.getQueuedStamp();
-
-		String result;
-
-		if (stamp == 0)
-		{
-			result = "NA";
-		}
-		else
-		{
-			result = StringUtil.formatTimestamp(stamp, true);
-		}
-
-		return result;
+		return getTimestampOrNA(compilation.getStampTaskQueued());
 	}
 
-	public String getCompiledStamp()
+	public String getStampCompilationStart()
 	{
-		long stamp = compilation.getCompiledStamp();
-
+		return getTimestampOrNA(compilation.getStampTaskCompilationStart());
+	}
+	
+	public String getStampNMethodEmitted()
+	{
+		return getTimestampOrNA(compilation.getStampNMethodEmitted());
+	}
+	
+	private String getTimestampOrNA(long stamp)
+	{
 		String result;
 
 		if (stamp == 0)

@@ -135,6 +135,7 @@ public class UnitTestUtil
 		return helper;
 	}
 
+	
 	public static IMetaMember setUpTestMember(JITDataModel model, String fqClassName, String memberName, Class<?> returnType,
 			Class<?>[] params, String nmethodAddress) throws ClassNotFoundException
 	{
@@ -155,12 +156,15 @@ public class UnitTestUtil
 		MemberSignatureParts msp = MemberSignatureParts.fromParts(fqClassName, memberName, returnType.getName(), paramList);
 
 		IMetaMember createdMember = metaClass.getMemberForSignature(msp);
+		
+		UnitTestLogParser parser = new UnitTestLogParser(getNoOpJITListener());
 
 		Tag tagTaskQueued = new Tag(TAG_TASK_QUEUED, ATTR_COMPILE_ID + "='1'", true);
-		createdMember.setTagTaskQueued(tagTaskQueued);
+		
+		parser.setTagTaskQueued(tagTaskQueued, createdMember);
 
 		Tag tagNMethod = new Tag(TAG_NMETHOD, ATTR_COMPILE_ID + "='1' " + ATTR_ADDRESS + "='" + nmethodAddress + "'", true);
-		createdMember.setTagNMethod(tagNMethod);
+		parser.setTagNMethod(tagNMethod, createdMember);
 
 		return createdMember;
 	}
@@ -247,11 +251,13 @@ public class UnitTestUtil
 		};
 	}
 
-	public static void processLogLines(IMetaMember member, String[] logLines)
+	public static void processLogLines(IMetaMember metaMember, String[] logLines)
 	{
 		TagProcessor tp = new TagProcessor();
 
 		Tag tag = null;
+		
+		UnitTestLogParser parser = new UnitTestLogParser(getNoOpJITListener());
 
 		for (String line : logLines)
 		{
@@ -267,19 +273,19 @@ public class UnitTestUtil
 				{
 
 				case TAG_TASK_QUEUED:
-					member.setTagTaskQueued(tag);
+					parser.setTagTaskQueued(tag, metaMember);
 					break;
 
 				case TAG_NMETHOD:
-					member.setTagNMethod(tag);
+					parser.setTagNMethod(tag, metaMember);
 					break;
 
 				case TAG_TASK:
-					member.setTagTask((Task) tag);
+					parser.setTagTask((Task)tag, metaMember);
 					break;
 
 				case TAG_TASK_DONE:
-					member.setTagNMethod(tag);
+					parser.setTagTaskDone(tag, metaMember);
 					break;
 				}
 			}

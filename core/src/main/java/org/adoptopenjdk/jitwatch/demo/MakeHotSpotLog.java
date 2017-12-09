@@ -372,7 +372,7 @@ public class MakeHotSpotLog
 
 	private boolean test(int count, int iterations)
 	{
-		return count < (0.9 * (double) iterations);
+		return count < (0.9 * iterations);
 	}
 
 	private void testCallChain3()

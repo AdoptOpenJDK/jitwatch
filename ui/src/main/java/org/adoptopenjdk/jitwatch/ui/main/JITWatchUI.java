@@ -44,11 +44,12 @@ import org.adoptopenjdk.jitwatch.report.locks.OptimisedLocksWalker;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
 import org.adoptopenjdk.jitwatch.ui.Dialogs;
 import org.adoptopenjdk.jitwatch.ui.browser.BrowserStage;
-import org.adoptopenjdk.jitwatch.ui.codecache.CodeCacheLayoutStage;
 import org.adoptopenjdk.jitwatch.ui.compilechain.CompileChainStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCacheStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
+import org.adoptopenjdk.jitwatch.ui.nmethod.codecache.CodeCacheLayoutStage;
+import org.adoptopenjdk.jitwatch.ui.nmethod.compilerthread.CompilerThreadStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
@@ -99,8 +100,8 @@ public class JITWatchUI extends Application
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
-	public static final int WINDOW_WIDTH = 1024;
-	public static final int WINDOW_HEIGHT = 550;
+	public static final int WINDOW_WIDTH = 1920;
+	public static final int WINDOW_HEIGHT = 1080;
 
 	private static final String JAVA_VERSION_7 = "1.7";
 	public static final boolean IS_JAVA_FX2;
@@ -160,6 +161,7 @@ public class JITWatchUI extends Application
 	private Button btnErrorLog;
 	private Button btnCodeCacheTimeline;
 	private Button btnNMethods;
+	private Button btnCompilerThreads;
 	private Button btnTriView;
 	private Button btnReportSuggestions;
 	private Button btnReportEliminatedAllocations;
@@ -175,6 +177,7 @@ public class JITWatchUI extends Application
 	private TopListStage topListStage;
 	private CodeCacheStage codeCacheTimelineStage;
 	private CodeCacheLayoutStage codeCacheBlocksStage;
+	private CompilerThreadStage compilerThreadStage;
 	private TriView triViewStage;
 	private BrowserStage browserStage;
 
@@ -362,7 +365,7 @@ public class JITWatchUI extends Application
 	}
 
 	private CodeCacheWalkerResult buildCodeCacheResult()
-	{		
+	{
 		CodeCacheEventWalker compilationWalker = new CodeCacheEventWalker(logParser.getModel());
 
 		compilationWalker.walkCompilations();
@@ -371,7 +374,7 @@ public class JITWatchUI extends Application
 	}
 
 	public CodeCacheWalkerResult getCodeCacheWalkerResult()
-	{		
+	{
 		if (codeCacheWalkerResult == null || codeCacheWalkerResult.getEvents().isEmpty())
 		{
 			codeCacheWalkerResult = buildCodeCacheResult();
@@ -573,6 +576,23 @@ public class JITWatchUI extends Application
 			}
 		});
 
+		btnCompilerThreads = new Button("Threads");
+		btnCompilerThreads.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				compilerThreadStage = new CompilerThreadStage(JITWatchUI.this);
+
+				StageManager.addAndShow(JITWatchUI.this.stage, compilerThreadStage);
+
+				btnCompilerThreads.setDisable(true);
+
+				compilerThreadStage.redraw();
+
+			}
+		});
+
 		btnTriView = new Button("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -715,6 +735,7 @@ public class JITWatchUI extends Application
 		hboxTop.getChildren().add(btnTopList);
 		hboxTop.getChildren().add(btnCodeCacheTimeline);
 		hboxTop.getChildren().add(btnNMethods);
+		hboxTop.getChildren().add(btnCompilerThreads);
 		hboxTop.getChildren().add(btnTriView);
 		hboxTop.getChildren().add(btnReportSuggestions);
 		hboxTop.getChildren().add(btnReportEliminatedAllocations);
@@ -806,9 +827,9 @@ public class JITWatchUI extends Application
 
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
-		
+
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "JITWatch");
-		
+
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
@@ -874,6 +895,8 @@ public class JITWatchUI extends Application
 	{
 		openTriView();
 
+		triViewStage.setNextHighlightBCI(highlightBCI);
+		
 		selectMember(member, true, false);
 
 		if (member != null)
@@ -1042,7 +1065,7 @@ public class JITWatchUI extends Application
 			else
 			{
 				log("Could not focus tree on " + member.toStringUnqualifiedMethodName(false, true));
-				
+
 				if (classTree.isHidingClassesWithNoCompiledMethods())
 				{
 					log("Perhaps this class doesn't contain any compiled methods and 'Hide uncompiled classes' is selected");
@@ -1074,7 +1097,7 @@ public class JITWatchUI extends Application
 	{
 		if (member != null && member.isCompiled())
 		{
-			CompileChainStage compileChainStage = new CompileChainStage((IMemberSelectedListener) this, (IStageAccessProxy) this,
+			CompileChainStage compileChainStage = new CompileChainStage(this, this,
 					logParser.getModel());
 
 			compileChainStage.compilationChanged(member);
@@ -1204,6 +1227,8 @@ public class JITWatchUI extends Application
 	@Override
 	public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
 	{
+		//TimerUtil.timerStart(getClass().getName() + ".selectMember()");
+
 		selectedProgrammatically = true;
 
 		selectedMember = member;
@@ -1212,6 +1237,8 @@ public class JITWatchUI extends Application
 
 		if (selectedMember != null)
 		{
+			StageManager.notifyCompilationChanged(selectedMember);
+
 			if (updateTree)
 			{
 				focusTreeInternal(selectedMember);
@@ -1237,11 +1264,11 @@ public class JITWatchUI extends Application
 			{
 				compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
 			}
-
-			StageManager.notifyCompilationChanged(selectedMember);
 		}
 
 		selectedProgrammatically = false;
+
+		//TimerUtil.timerEnd(getClass().getName() + ".selectMember()");
 	}
 
 	@Override
@@ -1405,6 +1432,11 @@ public class JITWatchUI extends Application
 		{
 			btnNMethods.setDisable(false);
 			codeCacheBlocksStage = null;
+		}
+		else if (stage instanceof CompilerThreadStage)
+		{
+			btnCompilerThreads.setDisable(false);
+			compilerThreadStage = null;
 		}
 		else if (stage instanceof TriView)
 		{

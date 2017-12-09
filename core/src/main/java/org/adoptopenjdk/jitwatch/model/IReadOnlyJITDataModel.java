@@ -17,6 +17,12 @@ public interface IReadOnlyJITDataModel
 
     List<CodeCacheEvent> getCodeCacheEvents();
     
+	List<CompilerThread> getCompilerThreads();
+    
+	CompilerThread getCompilerThread(String threadId);
+	
+	CompilerThread createCompilerThread(String threadId, String threadName);
+
     Tag getEndOfLogTag();
     
     int getJDKMajorVersion();

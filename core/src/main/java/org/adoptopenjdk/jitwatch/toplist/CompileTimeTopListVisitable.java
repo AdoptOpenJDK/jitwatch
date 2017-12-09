@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,7 +23,7 @@ public class CompileTimeTopListVisitable extends AbstractTopListVisitable
 		{
 			if (!compilation.isC2N())
 			{
-				topList.add(new MemberScore(mm, compilation.getCompileTime()));
+				topList.add(new MemberScore(mm, compilation.getCompilationDuration()));
 			}
 		}	
 	}

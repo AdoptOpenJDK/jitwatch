@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -36,7 +36,7 @@ import org.junit.Test;
 /*
  javap -v * | egrep "Classfile|line|public"
 
- Classfile /home/chris/.pp/jitwatch/sandbox/classes/TestInner.class
+ Classfile /home/chris/jitwatch/sandbox/classes/TestInner.class
  public TestInner();
  line 4: 0
  line 5: 4
@@ -50,7 +50,7 @@ import org.junit.Test;
  line 52: 0
  line 53: 8
 
- Classfile /home/chris/.pp/jitwatch/sandbox/classes/TestInner$Inner1.class
+ Classfile /home/chris/jitwatch/sandbox/classes/TestInner$Inner1.class
  public TestInner$Inner1(TestInner);
  line 20: 0
  line 21: 9
@@ -61,7 +61,7 @@ import org.junit.Test;
  line 30: 0
  line 31: 8
 
- Classfile /home/chris/.pp/jitwatch/sandbox/classes/TestInner$Inner1$Inner2.class
+ Classfile /home/chris/jitwatch/sandbox/classes/TestInner$Inner1$Inner2.class
  public TestInner$Inner1$Inner2(TestInner$Inner1);
  line 36: 0
  line 37: 9

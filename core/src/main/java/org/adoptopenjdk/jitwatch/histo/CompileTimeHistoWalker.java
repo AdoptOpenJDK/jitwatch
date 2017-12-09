@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2017 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,7 +23,7 @@ public class CompileTimeHistoWalker extends AbstractHistoVisitable
 		{
 			if (!compilation.isC2N())
 			{
-				histo.addValue(compilation.getCompileTime());
+				histo.addValue(compilation.getCompilationDuration());
 			}
 		}
 	}
