@@ -52,7 +52,7 @@ public final class UserInterfaceUtil
 		IMAGE_CAMERA = loadResource("/images/camera.png");
 
 		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", Font.font(java.awt.Font.MONOSPACED, 12).getName());
-		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "16");
+		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "162");
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 

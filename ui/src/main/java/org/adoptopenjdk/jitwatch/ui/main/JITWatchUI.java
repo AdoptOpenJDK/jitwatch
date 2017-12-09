@@ -100,8 +100,8 @@ public class JITWatchUI extends Application
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
-	public static final int WINDOW_WIDTH = 1920;
-	public static final int WINDOW_HEIGHT = 1080;
+	public static final int WINDOW_WIDTH = 1024;
+	public static final int WINDOW_HEIGHT = 550;
 
 	private static final String JAVA_VERSION_7 = "1.7";
 	public static final boolean IS_JAVA_FX2;
