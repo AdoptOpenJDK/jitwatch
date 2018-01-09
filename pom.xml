@@ -25,10 +25,6 @@
 	<url>https://github.com/AdoptOpenJDK/jitwatch</url>
 	<inceptionYear>2013</inceptionYear>
 
-	<prerequisites>
-		<maven>3.2.1</maven>
-	</prerequisites>
-
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
@@ -137,7 +133,6 @@
 			<properties>
 				<jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
 				<jdk.version>1.7</jdk.version>
-				<!-- Actually 2.2.x depending on what Java 7 you have -->
 				<javafx.version>2.2</javafx.version>
 			</properties>
 		</profile>
@@ -151,7 +146,6 @@
 			<properties>
 				<jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
 				<jdk.version>1.8</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
 				<javafx.version>8</javafx.version>
 			</properties>
 		</profile>
@@ -160,11 +154,10 @@
 		<profile>
 			<id>jdk9</id>
 			<activation>
-				<jdk>[1.9,9]</jdk>
+				<jdk>9</jdk>
 			</activation>
 			<properties>
 				<jdk.version>1.9</jdk.version>
-				<!-- Generic version number as Oracle doesn't release separate jars -->
 				<javafx.version>9</javafx.version>
 			</properties>
 		</profile>
@@ -202,63 +195,7 @@
 				</plugins>
 			</build>
 		</profile>
-
 	</profiles>
-
-	<!-- ======== Dependencies ======== -->
-	<dependencyManagement>
-		<dependencies>
-
-			<!-- ======== SLF4J Logging Framework ======== -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.25</version>
-			</dependency>
-
-			<!-- ======== Logback bindings for SLF4J ======== -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.2.3</version>
-			</dependency>
-
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>1.2.3</version>
-			</dependency>
-
-			<!-- ======== JUnit 4 ======== -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.12</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-	</dependencies>
-
-	<!-- ======== First Deploy to OSSRH Staging repository ======== -->
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -398,8 +335,6 @@
 					<version>1.12</version>
 				</plugin>
 
-				<!-- This plugin's configuration is used to store Eclipse m2e settings
-					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -467,62 +402,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.5</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.7</version>
-				<configuration>
-					<targetJdk>${jdk.version}</targetJdk>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.9</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.4</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jdepend-maven-plugin</artifactId>
-				<version>2.0</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>1.12</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.3</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>dependency-updates-report</report>
-							<report>plugin-updates-report</report>
-							<report>property-updates-report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-		</plugins>
-	</reporting>
-
 </project>

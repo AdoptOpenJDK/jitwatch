@@ -29,7 +29,7 @@
 		</filelist>
 	</path>
 
-	<target name="compile">
+	<target name="compile" depends="clean">
 		<mkdir dir="${main_classes}" />
 		<javac srcdir="${main_src}" destdir="${main_classes}" includeantruntime="false">
 			<classpath>
