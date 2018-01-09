@@ -6,7 +6,10 @@
 package org.adoptopenjdk.jitwatch.sandbox;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOLLAR;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVASCRIPT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA;
 
 import java.io.File;
@@ -47,7 +50,7 @@ public class Sandbox
 	public static final Path SANDBOX_DIR;
 	public static final Path SANDBOX_SOURCE_DIR;
 	public static final Path SANDBOX_CLASS_DIR;
-	
+
 	public static final Path PATH_STD_ERR;
 	public static final Path PATH_STD_OUT;
 
@@ -58,7 +61,7 @@ public class Sandbox
 	private ILogParser logParser;
 
 	private LanguageManager languageManager;
-	
+
 	private IExternalProcess lastProcess;
 
 	static
@@ -68,7 +71,7 @@ public class Sandbox
 		SANDBOX_DIR = Paths.get(userDir, "sandbox");
 		SANDBOX_SOURCE_DIR = Paths.get(SANDBOX_DIR.toString(), "sources");
 		SANDBOX_CLASS_DIR = Paths.get(SANDBOX_DIR.toString(), "classes");
-		
+
 		PATH_STD_ERR = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.err").toPath();
 		PATH_STD_OUT = new File(Sandbox.SANDBOX_DIR.toFile(), "sandbox.out").toPath();
 
@@ -132,9 +135,16 @@ public class Sandbox
 
 		String languagePath = logParser.getConfig().getVMLanguagePath(language);
 
+		if (S_EMPTY.equals(languagePath) && (VM_LANGUAGE_JAVA.equals(language) || VM_LANGUAGE_JAVASCRIPT.equals(language)))
+		{
+			languagePath = System.getProperty("java.home");
+
+			logListener.handleLogEntry("Using runtime JVM for " + language);
+		}
+
 		logListener.handleLogEntry(language + " home dir: " + languagePath);
 
-		ICompiler compiler = languageManager.getCompiler(language);
+		ICompiler compiler = languageManager.getCompiler(language, languagePath);
 
 		if (compiler == null)
 		{
@@ -142,7 +152,7 @@ public class Sandbox
 			return;
 		}
 
-		IRuntime runtime = languageManager.getRuntime(language);
+		IRuntime runtime = languageManager.getRuntime(language, languagePath);
 
 		if (runtime == null)
 		{
@@ -153,7 +163,7 @@ public class Sandbox
 		logListener.handleLogEntry("Compiling: " + StringUtil.listToString(compileList));
 
 		lastProcess = compiler;
-		
+
 		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
 				logListener);
 
@@ -164,7 +174,7 @@ public class Sandbox
 			String fqClassNameToRun = runtime.getClassToExecute(fileToRun);
 
 			lastProcess = runtime;
-			
+
 			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
 
 			logListener.handleLogEntry("Execution success: " + executionSuccess);
@@ -190,7 +200,7 @@ public class Sandbox
 			sandboxStage.showError(compiler.getErrorStream());
 		}
 	}
-	
+
 	public IExternalProcess getLastProcess()
 	{
 		return lastProcess;
@@ -239,7 +249,7 @@ public class Sandbox
 		{
 			options.add("-XX:-Inline");
 		}
-		
+
 		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
 
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
@@ -272,7 +282,7 @@ public class Sandbox
 		{
 			options.add("-XX:-BackgroundCompilation");
 		}
-		
+
 		OnStackReplacement onStackReplacementMode = logParser.getConfig().getOnStackReplacementMode();
 
 		if (onStackReplacementMode == OnStackReplacement.FORCE_ON_STACK_REPLACEMENT)
@@ -283,7 +293,7 @@ public class Sandbox
 		{
 			options.add("-XX:-UseOnStackReplacement");
 		}
-		
+
 		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
 			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());

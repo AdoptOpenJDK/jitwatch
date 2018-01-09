@@ -6,7 +6,6 @@
 package org.adoptopenjdk.jitwatch.jvmlang;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_CLOJURE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_GROOVY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_JAVA;
@@ -48,11 +47,9 @@ public class LanguageManager
 		this.logListener = logListener;
 	}
 
-	public ICompiler getCompiler(String vmLanguage)
+	public ICompiler getCompiler(String vmLanguage, String languageHomeDir)
 	{
 		ICompiler result = null;
-
-		String languageHomeDir = config.getVMLanguagePath(vmLanguage);
 
 		if (languageHomeDir != null)
 		{
@@ -91,13 +88,11 @@ public class LanguageManager
 		return result;
 	}
 
-	public IRuntime getRuntime(String vmLanguage)
+	public IRuntime getRuntime(String vmLanguage, String languageHomeDir)
 	{
 		IRuntime result = null;
 
-		String languageHomeDir = config.getVMLanguagePath(vmLanguage);
-
-		if (languageHomeDir != null && !S_EMPTY.equals(languageHomeDir))
+		if (languageHomeDir != null)
 		{
 			try
 			{
