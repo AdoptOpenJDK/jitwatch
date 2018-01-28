@@ -20,3 +20,4 @@ build/
 hotspot_pid*
 *.iml
 *pom.xml.versionsBackup
+junit*.properties

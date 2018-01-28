@@ -354,7 +354,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<skip>false</skip>
+							<!-- skip defined via user property exec.skip -->
 							<mainClass>${main.class}</mainClass>
 							<cleanupDaemonThreads>false</cleanupDaemonThreads>
 							<classpathScope>compile</classpathScope>
