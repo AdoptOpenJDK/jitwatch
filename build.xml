@@ -11,8 +11,8 @@
 	</target>
 
 	<target name="test">
-		<ant inheritAll="false" dir="core" target="doTest" />
-		<ant inheritAll="false" dir="ui" target="doTest" />
+		<ant inheritAll="false" dir="core" target="test" />
+		<ant inheritAll="false" dir="ui" target="test" />
 	</target>
 
 	<target name="jar">
@@ -26,4 +26,5 @@
 	</target>
 
 	<target name="all" depends="jar" />
+
 </project>
