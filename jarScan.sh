@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # Static analysis of bytecode
-# JarScan --mode=<mode> [options] [params] <jars>
+# JarScan [flags] --mode=<mode> [options] [params] <jars and class folders>
+#---------------------------------------------------------------------------------------------------
+# Flags:
+#     --verbose            Log progress information to stderr
 #---------------------------------------------------------------------------------------------------
 # Options:
 #     --packages=a,b,c     Only include methods from named packages. E.g. --packages=java.util.*

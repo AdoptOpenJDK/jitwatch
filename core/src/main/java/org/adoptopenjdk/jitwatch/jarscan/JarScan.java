@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.jarscan;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASTERISK;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT_CLASS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ASTERISK;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,12 +38,25 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public class JarScan
 {
+	private long processableClassCount = 0;
+	private long processingClass = 0;
+
+	private boolean counting = false;
+
+	private boolean verbose = false;
 	private IJarScanOperation operation;
 	private List<String> allowedPackagePrefixes = new ArrayList<>();
 
 	public JarScan(IJarScanOperation operation)
 	{
+		this(operation, false);
+	}
+
+	public JarScan(IJarScanOperation operation, boolean isVerbose)
+	{
 		this.operation = operation;
+
+		this.verbose = isVerbose;
 	}
 
 	public void writeReport()
@@ -155,6 +168,19 @@ public class JarScan
 			return;
 		}
 
+		if (verbose)
+		{
+			if (counting)
+			{
+				processableClassCount++;
+				return;
+			}
+			else
+			{
+				System.err.println("Parsing class " + (1 + processingClass++ + "/" + processableClassCount) + " " + fqClassName);
+			}
+		}
+
 		boolean cacheBytecode = false;
 
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, fqClassName, cacheBytecode);
@@ -165,6 +191,12 @@ public class JarScan
 			{
 				try
 				{
+					if (verbose)
+					{
+						System.err
+								.println("    Processing member: " + memberBytecode.getMemberSignatureParts().toStringSingleLine());
+					}
+
 					operation.processInstructions(fqClassName, memberBytecode);
 				}
 				catch (Exception e)
@@ -175,7 +207,6 @@ public class JarScan
 					e.printStackTrace();
 					System.exit(-1);
 				}
-
 			}
 		}
 		else
@@ -190,8 +221,12 @@ public class JarScan
 
 		String SEPARATOR = "---------------------------------------------------------------------------------------------------";
 
-		builder.append("JarScan --mode=<mode> [options] [params] <jars and class folders>").append(S_NEWLINE);
+		builder.append("JarScan [flags] --mode=<mode> [options] [params] <jars and class folders>").append(S_NEWLINE);
 		builder.append(SEPARATOR).append(S_NEWLINE);
+		builder.append("Flags:").append(S_NEWLINE);
+		builder.append("     --verbose            Log progress information to stderr").append(S_NEWLINE);
+		builder.append(SEPARATOR).append(S_NEWLINE);
+
 		builder.append("Options:").append(S_NEWLINE);
 		builder.append("     --packages=a,b,c     Only include methods from named packages. E.g. --packages=java.util.*")
 				.append(S_NEWLINE);
@@ -234,6 +269,7 @@ public class JarScan
 	private static final String ARG_LIMIT = "--limit=";
 	private static final String ARG_LENGTH = "--length=";
 	private static final String ARG_SEQUENCE = "--sequence=";
+	private static final String ARG_VERBOSE = "--verbose";
 
 	private static int getParam(String[] args, String paramName, boolean mandatory)
 	{
@@ -388,6 +424,37 @@ public class JarScan
 		return operation;
 	}
 
+	public void processJarsAndFolders(String[] args, boolean counting) throws IOException
+	{
+		this.counting = counting;
+		
+		for (String arg : args)
+		{
+			if (arg.startsWith("--"))
+			{
+				continue;
+			}
+
+			File fileArg = new File(arg);
+
+			if (fileArg.exists())
+			{
+				if (fileArg.isFile())
+				{
+					iterateJar(fileArg);
+				}
+				else if (fileArg.isDirectory())
+				{
+					iterateFolder(fileArg, fileArg);
+				}
+			}
+			else
+			{
+				System.err.println("Could not scan " + fileArg.toString());
+			}
+		}
+	}
+
 	public static void main(String[] args) throws IOException
 	{
 		IJarScanOperation operation = getJarScanOperation(args);
@@ -398,7 +465,9 @@ public class JarScan
 			System.exit(-1);
 		}
 
-		JarScan scanner = new JarScan(operation);
+		boolean isVerbose = getParamString(args, ARG_VERBOSE) != null;
+
+		JarScan scanner = new JarScan(operation, isVerbose);
 
 		String packages = getParamString(args, ARG_PACKAGES);
 
@@ -413,31 +482,12 @@ public class JarScan
 			}
 		}
 
-		for (String arg : args)
+		if (isVerbose)
 		{
-			if (arg.startsWith("--"))
-			{
-				continue;
-			}
-
-			File fileArg = new File(arg);
-
-			if (fileArg.exists())
-			{
-				if (fileArg.isFile())
-				{
-					scanner.iterateJar(fileArg);
-				}
-				else if (fileArg.isDirectory())
-				{
-					scanner.iterateFolder(fileArg, fileArg);
-				}
-			}
-			else
-			{
-				System.err.println("Could not scan " + fileArg.toString());
-			}
+			scanner.processJarsAndFolders(args, true);
 		}
+
+		scanner.processJarsAndFolders(args, false);
 
 		scanner.writeReport();
 	}
