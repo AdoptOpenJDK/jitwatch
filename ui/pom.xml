@@ -39,23 +39,6 @@
 			</dependencies>
 		</profile>
 
-		<!-- ======== JDK 8 Profile ======== -->
-		<profile>
-			<id>jdk8</id>
-			<activation>
-				<jdk>1.8</jdk>
-			</activation>
-		</profile>
-
-		<!-- ======== JDK 9 Profile ======== -->
-		<profile>
-			<id>jdk9</id>
-			<activation>
-				<jdk>[1.9,9]</jdk>
-			</activation>
-			<!-- properties inherited from parent -->
-		</profile>
-
 		<!-- ======== Profile for deploying to Sonatype staging repository ======== -->
 		<profile>
 			<id>deploy-to-sonatype-oss</id>

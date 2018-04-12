@@ -162,6 +162,18 @@
 			</properties>
 		</profile>
 
+		<!-- ======== JDK 10 Profile ======== -->
+		<profile>
+			<id>jdk10</id>
+			<activation>
+				<jdk>10</jdk>
+			</activation>
+			<properties>
+				<jdk.version>1.10</jdk.version>
+				<javafx.version>10</javafx.version>
+			</properties>
+		</profile>
+
 		<!-- ======== Profile for deploying to Sonatype staging repository ======== -->
 		<profile>
 			<id>deploy-to-sonatype-oss</id>
