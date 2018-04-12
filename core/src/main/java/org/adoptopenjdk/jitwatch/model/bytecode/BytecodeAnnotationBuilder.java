@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -182,7 +182,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 
 	private void buildEliminationTagAnnotations(int jdkMajorVersion, Compilation compilation) throws LogParseException
 	{
-		if (jdkMajorVersion == 9)
+		if (jdkMajorVersion >= 9)
 		{
 			CompilationUtil.visitEliminationTagsOfCompilation(compilation, this);
 		}

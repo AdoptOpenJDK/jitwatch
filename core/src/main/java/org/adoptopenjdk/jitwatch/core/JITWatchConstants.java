@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -169,6 +169,7 @@ public final class JITWatchConstants
 	public static final String ATTR_ENTRY = "entry";
 	public static final String ATTR_PREALLOCATED = "preallocated";
 	public static final String ATTR_KIND = "kind";
+	public static final String ATTR_TIME_MS = "time_ms";
 
 	public static final String BRANCH_TAKEN_ALWAYS = "always";
 	public static final String BRANCH_TAKEN_NEVER = "never";

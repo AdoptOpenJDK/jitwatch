@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -31,4 +31,5 @@ public interface IReadOnlyJITDataModel
     
 	MetaClass buildAndGetMetaClass(Class<?> clazz);
 	
+	long getBaseTimestamp();
 }
