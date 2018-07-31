@@ -31,6 +31,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_ASSERT_NULL;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
 
 
 import java.util.HashSet;
@@ -72,6 +73,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 		ignoreTags.add(TAG_INTRINSIC);
 		ignoreTags.add(TAG_CAST_UP);
 		ignoreTags.add(TAG_ASSERT_NULL);
+		ignoreTags.add(TAG_PHASE_DONE);
 	}
 
 	@Override

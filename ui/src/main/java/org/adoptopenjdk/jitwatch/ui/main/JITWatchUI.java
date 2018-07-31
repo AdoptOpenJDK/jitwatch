@@ -36,6 +36,8 @@ import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
 import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
+import org.adoptopenjdk.jitwatch.parser.j9.J9LogParser;
+import org.adoptopenjdk.jitwatch.parser.zing.ZingLogParser;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
@@ -802,9 +804,13 @@ public class JITWatchUI extends Application
 			{
 				log("HotSpot mode. Choose a JIT log file or open the Sandbox");
 			}
-			else
+			else if (logParser instanceof J9LogParser)
 			{
 				log("J9 Mode. Choose a JIT log file (Sandbox only available for HotSpot)");
+			}
+			else if (logParser instanceof ZingLogParser)
+			{
+				log("Zing Mode. Choose a JIT log file (Sandbox only available for HotSpot)");
 			}
 		}
 		else

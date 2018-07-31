@@ -127,6 +127,8 @@ public final class JITWatchConstants
 	public static final String C1 = "C1";
 	public static final String C2 = "C2";
 	public static final String J9 = "J9";
+	public static final String ZING = "Zing";
+	public static final String FALCON = "Falcon";
 	public static final String JVMCI = "JVMCI";
 
 	public static final String ATTR_METHOD = METHOD;

@@ -52,6 +52,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_LONG;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_SHORT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_VARARGS_DOTS;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -89,7 +90,9 @@ public final class ParseUtil
 	public static String RETURN_REGEX_GROUP = "(.*)";
 
 	private static final Pattern PATTERN_LOG_SIGNATURE = Pattern
-			.compile("^" + CLASS_NAME_REGEX_GROUP + S_SPACE + METHOD_NAME_REGEX_GROUP + S_SPACE + PARAM_REGEX_GROUP + RETURN_REGEX_GROUP);
+																.compile("^" + CLASS_NAME_REGEX_GROUP + S_SPACE
+																		+ METHOD_NAME_REGEX_GROUP + S_SPACE + PARAM_REGEX_GROUP
+																		+ RETURN_REGEX_GROUP);
 
 	public static final char TYPE_SHORT = 'S';
 	public static final char TYPE_CHARACTER = 'C';
@@ -105,6 +108,17 @@ public final class ParseUtil
 	{
 	}
 
+	public static long parseHexAddress(String str)
+	{
+		if (str.startsWith(S_HEX_PREFIX))
+		{
+			str = str.substring(S_HEX_PREFIX.length());
+		}
+		
+		return Long.parseLong(str, 16);
+	}
+	
+	
 	public static long parseStamp(String stamp)
 	{
 		long result = 0;
@@ -253,7 +267,7 @@ public final class ParseUtil
 		int arrayDepth = getArrayDepth(name);
 
 		int nameLengthWithoutArrayDepth = name.length() - arrayDepth;
-		
+
 		int nameStart = arrayDepth;
 
 		if (nameLengthWithoutArrayDepth == 1)
@@ -335,7 +349,7 @@ public final class ParseUtil
 		if (logSignature != null)
 		{
 			MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(logSignature);
-			
+
 			metaMember = model.findMetaMember(msp);
 
 			if (metaMember == null)
@@ -462,8 +476,9 @@ public final class ParseUtil
 
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
-			logger.debug("MemberParamCount:{} SignatureParamCount:{} varArgs:{}", memberParamCount, signatureParamCount,
-					memberHasVarArgs);
+			logger
+					.debug("MemberParamCount:{} SignatureParamCount:{} varArgs:{}", memberParamCount, signatureParamCount,
+							memberHasVarArgs);
 		}
 
 		if (memberParamCount == 0 && signatureParamCount == 0)
@@ -846,7 +861,8 @@ public final class ParseUtil
 					}
 
 					MemberSignatureParts msp = MemberSignatureParts
-							.fromBytecodeSignature(member.getMetaClass().getFullyQualifiedName(), line);
+																	.fromBytecodeSignature(
+																			member.getMetaClass().getFullyQualifiedName(), line);
 
 					if (!memberName.equals(msp.getMemberName()))
 					{
@@ -1053,8 +1069,9 @@ public final class ParseUtil
 
 				List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
 
-				MemberSignatureParts msp = MemberSignatureParts.fromParts(metaClass.getFullyQualifiedName(), methodName, returnType,
-						argumentTypes);
+				MemberSignatureParts msp = MemberSignatureParts
+																.fromParts(metaClass.getFullyQualifiedName(), methodName,
+																		returnType, argumentTypes);
 
 				result = metaClass.getMemberForSignature(msp);
 			}
@@ -1096,6 +1113,13 @@ public final class ParseUtil
 		{
 			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
 		}
+		catch (IllegalAccessError iae)
+		{
+			if (!isVMInternalClass(metaClassName))
+			{
+				logger.error("IllegalAccessError: '" + metaClassName + C_SPACE + iae.getMessage() + C_QUOTE);
+			}
+		}
 
 		return metaClass;
 	}
@@ -1118,6 +1142,11 @@ public final class ParseUtil
 
 			return false;
 		}
+	}
+
+	public static boolean isVMInternalClass(String fqClassName)
+	{
+		return fqClassName.startsWith("org.graalvm");
 	}
 
 	public static String lookupType(String typeOrKlassID, IParseDictionary parseDictionary)
@@ -1288,8 +1317,11 @@ public final class ParseUtil
 
 	public static String bytecodeCommentSignatureToLogCompilationSignature(String bytcodeCommentSignature)
 	{
-		return bytcodeCommentSignature.replace(C_DOT, C_SPACE).replace(C_COLON, C_SPACE).replace(C_SLASH, C_DOT)
-				.replace(S_DOUBLE_QUOTE, S_EMPTY);
+		return bytcodeCommentSignature
+										.replace(C_DOT, C_SPACE)
+										.replace(C_COLON, C_SPACE)
+										.replace(C_SLASH, C_DOT)
+										.replace(S_DOUBLE_QUOTE, S_EMPTY);
 	}
 
 	public static IMetaMember getMemberFromBytecodeComment(IReadOnlyJITDataModel model, IMetaMember currentMember,

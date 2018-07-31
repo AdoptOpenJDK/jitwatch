@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Chris Newland.
+ * Copyright (c) 2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -20,6 +20,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.J9;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ZING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.FALCON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.JVMCI;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
@@ -392,6 +394,14 @@ public abstract class AbstractLogParser implements ILogParser
 			{
 				handleMethodLine(tag, EventType.NMETHOD_J9);
 			}
+			else if (ZING.equalsIgnoreCase(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_ZING);
+			}
+			else if (FALCON.equalsIgnoreCase(attrCompiler))
+			{
+				handleMethodLine(tag, EventType.NMETHOD_FALCON);
+			}
 			else if (JVMCI.equalsIgnoreCase(attrCompiler))
 			{
 				handleMethodLine(tag, EventType.NMETHOD_JVMCI);
@@ -583,6 +593,9 @@ public abstract class AbstractLogParser implements ILogParser
 			case NMETHOD_C2:
 			case NMETHOD_C2N:
 			case NMETHOD_J9:
+			case NMETHOD_ZING:
+			case NMETHOD_FALCON:
+			case NMETHOD_JVMCI:
 			{
 				setTagNMethod(tag, metaMember);
 				metaMember.getMetaClass().incCompiledMethodCount();

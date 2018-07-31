@@ -10,6 +10,9 @@ import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ZING;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.FALCON;
+
 public class CompilationTableRow
 {
 	private final Compilation compilation;

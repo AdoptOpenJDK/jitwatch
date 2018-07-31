@@ -391,11 +391,18 @@ public class JITDataModel implements IReadOnlyJITDataModel
             logger.warn("NoClassDefFoundError: '{}' while building class {}", ncdfe.getMessage(), fqClassName);
             throw ncdfe;
         }
+        catch (IllegalAccessError iae)
+        {
+        	if (!ParseUtil.isVMInternalClass(fqClassName))
+        	{
+                logger.error("Something unexpected happened building meta class {}", fqClassName, iae);
+        	}
+        }
         catch (Throwable t)
         {
             logger.error("Something unexpected happened building meta class {}", fqClassName, t);
         }
-
+        
         return resultMetaClass;
     }
 
