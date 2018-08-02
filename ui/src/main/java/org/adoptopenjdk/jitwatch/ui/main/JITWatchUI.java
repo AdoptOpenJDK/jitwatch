@@ -35,6 +35,7 @@ import org.adoptopenjdk.jitwatch.model.PackageManager;
 import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
+import org.adoptopenjdk.jitwatch.parser.ParserType;
 import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
 import org.adoptopenjdk.jitwatch.parser.j9.J9LogParser;
 import org.adoptopenjdk.jitwatch.parser.zing.ZingLogParser;
@@ -52,6 +53,8 @@ import org.adoptopenjdk.jitwatch.ui.graphing.HistoStage;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLineStage;
 import org.adoptopenjdk.jitwatch.ui.nmethod.codecache.CodeCacheLayoutStage;
 import org.adoptopenjdk.jitwatch.ui.nmethod.compilerthread.CompilerThreadStage;
+import org.adoptopenjdk.jitwatch.ui.parserchooser.IParserSelectedListener;
+import org.adoptopenjdk.jitwatch.ui.parserchooser.ParserChooser;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.ui.report.ReportStageType;
 import org.adoptopenjdk.jitwatch.ui.sandbox.SandboxStage;
@@ -82,6 +85,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
@@ -97,8 +101,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application
-		implements IJITListener, ILogParseErrorListener, IStageClosedListener, IStageAccessProxy, IMemberSelectedListener
+public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageClosedListener,
+		IStageAccessProxy, IMemberSelectedListener, IParserSelectedListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
@@ -211,10 +215,11 @@ public class JITWatchUI extends Application
 	private boolean repaintTree = false;
 	private boolean startDelayedByConfig = false;
 
+	private ParserChooser parserChooser;
+
 	// Called by JFX
 	public JITWatchUI()
 	{
-		logParser = ParserFactory.getParser(this);
 	}
 
 	public JITWatchUI(String[] args)
@@ -442,6 +447,14 @@ public class JITWatchUI extends Application
 		BorderPane borderPane = new BorderPane();
 
 		Scene scene = UserInterfaceUtil.getScene(borderPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+		parserChooser = new ParserChooser(this);
+
+		ComboBox<ParserType> comboParser = parserChooser.getCombo();
+
+		String parserProperty = System.getProperty("jitwatch.parser", ParserType.HOTSPOT.toString());
+
+		comboParser.getSelectionModel().select(ParserType.fromString(parserProperty));
 
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
@@ -800,18 +813,7 @@ public class JITWatchUI extends Application
 
 		if (jitLogFile == null)
 		{
-			if (logParser instanceof HotSpotLogParser)
-			{
-				log("HotSpot mode. Choose a JIT log file or open the Sandbox");
-			}
-			else if (logParser instanceof J9LogParser)
-			{
-				log("J9 Mode. Choose a JIT log file (Sandbox only available for HotSpot)");
-			}
-			else if (logParser instanceof ZingLogParser)
-			{
-				log("Zing Mode. Choose a JIT log file (Sandbox only available for HotSpot)");
-			}
+			log("Choose a JIT log file or open the Sandbox");
 		}
 		else
 		{
@@ -833,17 +835,25 @@ public class JITWatchUI extends Application
 
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
+		
+		Label labelParser = new Label("Select Parser");
+		labelParser.setStyle(labelStyle);
 
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "JITWatch");
 
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
-		hboxBottom.getChildren().add(lblHeap);
+
+		hboxBottom.getChildren().add(labelParser);
+		hboxBottom.getChildren().add(comboParser);
+
 		hboxBottom.getChildren().add(btnErrorLog);
 		hboxBottom.getChildren().add(btnStats);
 		hboxBottom.getChildren().add(btnReset);
+		hboxBottom.getChildren().add(lblHeap);
 		hboxBottom.getChildren().add(springLeft);
+
 		hboxBottom.getChildren().add(lblTweakLog);
 		hboxBottom.getChildren().add(springRight);
 		hboxBottom.getChildren().add(lblVmVersion);
@@ -902,7 +912,7 @@ public class JITWatchUI extends Application
 		openTriView();
 
 		triViewStage.setNextHighlightBCI(highlightBCI);
-		
+
 		selectMember(member, true, false);
 
 		if (member != null)
@@ -1103,8 +1113,7 @@ public class JITWatchUI extends Application
 	{
 		if (member != null && member.isCompiled())
 		{
-			CompileChainStage compileChainStage = new CompileChainStage(this, this,
-					logParser.getModel());
+			CompileChainStage compileChainStage = new CompileChainStage(this, this, logParser.getModel());
 
 			compileChainStage.compilationChanged(member);
 
@@ -1152,8 +1161,9 @@ public class JITWatchUI extends Application
 		// don't use ExtensionFilter on OSX due to JavaFX2 missing combo bug
 		if (osNameProperty != null && !osNameProperty.toLowerCase().contains("mac"))
 		{
-			fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"),
-					new FileChooser.ExtensionFilter("All Files", "*.*"));
+			fc
+				.getExtensionFilters()
+				.addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"), new FileChooser.ExtensionFilter("All Files", "*.*"));
 		}
 
 		String searchDir = getConfig().getLastLogDir();
@@ -1233,7 +1243,7 @@ public class JITWatchUI extends Application
 	@Override
 	public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
 	{
-		//TimerUtil.timerStart(getClass().getName() + ".selectMember()");
+		// TimerUtil.timerStart(getClass().getName() + ".selectMember()");
 
 		selectedProgrammatically = true;
 
@@ -1274,7 +1284,7 @@ public class JITWatchUI extends Application
 
 		selectedProgrammatically = false;
 
-		//TimerUtil.timerEnd(getClass().getName() + ".selectMember()");
+		// TimerUtil.timerEnd(getClass().getName() + ".selectMember()");
 	}
 
 	@Override
@@ -1525,5 +1535,18 @@ public class JITWatchUI extends Application
 	public Stage getStageForDialog()
 	{
 		return stage;
+	}
+
+	@Override
+	public void parserSelected(ParserType parserType)
+	{
+		log("Selected Parser: " + parserType);
+
+		if (logParser != null)
+		{
+			logParser.reset();
+		}
+
+		logParser = ParserFactory.getParser(parserType, this);
 	}
 }

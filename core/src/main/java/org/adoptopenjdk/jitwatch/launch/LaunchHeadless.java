@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -24,6 +24,7 @@ import org.adoptopenjdk.jitwatch.model.JITEvent;
 import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
+import org.adoptopenjdk.jitwatch.parser.ParserType;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.suggestion.SuggestionWalker;
@@ -60,7 +61,12 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 		config = new JITWatchConfig();
 
-		parser = ParserFactory.getParser(this);
+		String parserProperty = System.getProperty("jitwatch.parser", ParserType.HOTSPOT.toString());
+		
+		ParserType parserType = ParserType.fromString(parserProperty);
+		
+		parser = ParserFactory.getParser(parserType, this);
+		
 		parser.setConfig(config);
 
 		parser.processLogFile(new File(logFile), this);
