@@ -35,15 +35,14 @@ public class J9Line
 	public static final String TEMPERATURE_COLD = "cold";
 	public static final String TEMPERATURE_WARM = "warm";
 	public static final String TEMPERATURE_PROFILED_VERY_HOT = "profiled very-hot";
+    private final J9LineAttributes attributes = new J9LineAttributes();
 
-	private String temperature;
+    private String temperature;
 	private String signature;
 	private String rangeStart;
 	private String rangeEnd;
 
-	private Map<String, String> attributes = new HashMap<>();
-
-	private Set<String> features = new HashSet<>();
+    private Set<String> features = new HashSet<>();
 
 	public String getTemperature()
 	{
@@ -91,13 +90,13 @@ public class J9Line
 
 	public Map<String, String> getAttributes()
 	{
-		return attributes;
-	}
+        return attributes.getAttributes();
+    }
 
 	public void addAttribute(String key, String value)
 	{
-		this.attributes.put(key, value);
-	}
+        attributes.addAttribute(key, value);
+    }
 
 	public Set<String> getFeatures()
 	{
@@ -123,24 +122,9 @@ public class J9Line
 
 	public int getBytecodeSize()
 	{
-		int result = 0;
 
-		String bcszAttr = attributes.get("bcsz");
-
-		if (bcszAttr != null)
-		{
-			try
-			{
-				result = Integer.parseInt(bcszAttr);
-			}
-			catch (NumberFormatException nfe)
-			{
-				nfe.printStackTrace(); // TODO log
-			}
-		}
-
-		return result;
-	}
+        return attributes.getBytecodeSize();
+    }
 
 	public int getNativeSize()
 	{
@@ -175,7 +159,7 @@ public class J9Line
 		builder.append(", getRangeEnd()=");
 		builder.append(getRangeEnd());
 		builder.append(", getAttributes()=");
-		builder.append(getAttributes());
+		builder.append(attributes.getAttributes());
 		builder.append(", getFeatures()=");
 		builder.append(getFeatures());
 		builder.append(", getMemberSignatureParts()=");
@@ -188,7 +172,7 @@ public class J9Line
 			e.printStackTrace();
 		}
 		builder.append(", getBytecodeSize()=");
-		builder.append(getBytecodeSize());
+		builder.append(attributes.getBytecodeSize());
 		builder.append("]");
 		return builder.toString();
 	}
@@ -201,7 +185,7 @@ public class J9Line
 		map.put(ATTR_COMPILE_ID, Integer.toString(compiledID));
 		map.put(ATTR_STAMP, Long.toString(timestampMillis));
 		map.put(ATTR_METHOD, J9Util.convertJ9SigToLogCompilationSignature(signature));
-		map.put(ATTR_BYTES, Integer.toString(getBytecodeSize()));
+		map.put(ATTR_BYTES, Integer.toString(attributes.getBytecodeSize()));
 		
 		Tag tag = new Tag(TAG_TASK_QUEUED, StringUtil.attributeMapToString(map, C_QUOTE), true);
 
@@ -217,7 +201,7 @@ public class J9Line
 		map.put(ATTR_COMPILER, J9);
 		map.put(ATTR_ADDRESS, rangeStart);
 		map.put(ATTR_SIZE, Integer.toString(getNativeSize()));
-		map.put(ATTR_BYTES, Integer.toString(getBytecodeSize()));
+		map.put(ATTR_BYTES, Integer.toString(attributes.getBytecodeSize()));
 
 		Tag tag = new Tag(TAG_NMETHOD, StringUtil.attributeMapToString(map, C_QUOTE), true);
 
