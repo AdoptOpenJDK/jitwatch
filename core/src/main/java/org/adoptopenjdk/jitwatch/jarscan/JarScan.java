@@ -38,7 +38,7 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public class JarScan
 {
-    private final ExtractedJarScan extractedJarScan = new ExtractedJarScan();
+    private final PackageVerifier packageVerifier = new PackageVerifier();
     private long processableClassCount = 0;
 	private long processingClass = 0;
 
@@ -135,12 +135,12 @@ public class JarScan
 
 	public void addAllowedPackagePrefix(String prefix)
 	{
-        extractedJarScan.addAllowedPackagePrefix(prefix);
+        packageVerifier.addAllowedPackagePrefix(prefix);
     }
 
     private void process(List<String> classLocations, String fqClassName)
 	{
-		if (!extractedJarScan.isAllowedPackage(fqClassName))
+		if (!packageVerifier.isAllowedPackage(fqClassName))
 		{
 			return;
 		}
