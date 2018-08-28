@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class JITDataModel implements IReadOnlyJITDataModel
 {
     private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
-    private final ExtractedJITDataModel extractedJITDataModel = new ExtractedJITDataModel();
+    private final VmVersion vmVersion = new VmVersion();
 
     private PackageManager packageManager;
     private JITStats stats;
@@ -63,14 +63,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
     public void setVmVersionRelease(String release)
     {
-        extractedJITDataModel.setVmVersionRelease(release);
+        vmVersion.setVmVersionRelease(release);
     }
 
     @Override
     public int getJDKMajorVersion()
     {
 
-        return extractedJITDataModel.getJDKMajorVersion();
+        return vmVersion.getJDKMajorVersion();
     }
 
     public void reset()

@@ -1,16 +1,15 @@
 package org.adoptopenjdk.jitwatch.model;
 
-class ExtractedJITDataModel {
+class VmVersion {
     private String vmVersionRelease;
 
-    ExtractedJITDataModel() {
+    VmVersion() {
     }
 
     void setVmVersionRelease(String release) {
         this.vmVersionRelease = release;
     }
 
-    @Override
     int getJDKMajorVersion() {
         int result = 8; // fallback
 
