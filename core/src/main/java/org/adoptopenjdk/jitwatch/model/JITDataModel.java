@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 public class JITDataModel implements IReadOnlyJITDataModel
 {
     private static final Logger logger = LoggerFactory.getLogger(JITDataModel.class);
+    private final VmVersion vmVersion = new VmVersion();
 
     private PackageManager packageManager;
     private JITStats stats;
@@ -52,8 +53,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
     private Tag endOfLog;
 
-    private String vmVersionRelease;
-
     private long baseTimestamp = 0;
 
     public JITDataModel()
@@ -64,35 +63,14 @@ public class JITDataModel implements IReadOnlyJITDataModel
 
     public void setVmVersionRelease(String release)
     {
-        this.vmVersionRelease = release;
+        vmVersion.setVmVersionRelease(release);
     }
 
     @Override
     public int getJDKMajorVersion()
     {
-        int result = 8; // fallback
 
-        if (this.vmVersionRelease != null)
-        {
-            if (this.vmVersionRelease.contains("1.7"))
-            {
-                result = 7;
-            }
-            else if (this.vmVersionRelease.contains("1.8"))
-            {
-                result = 8;
-            }
-            else if (this.vmVersionRelease.startsWith("9"))
-            {
-                result = 9;
-            }
-            else if (this.vmVersionRelease.startsWith("10"))
-            {
-                result = 10;
-            }
-        }
-
-        return result;
+        return vmVersion.getJDKMajorVersion();
     }
 
     public void reset()
