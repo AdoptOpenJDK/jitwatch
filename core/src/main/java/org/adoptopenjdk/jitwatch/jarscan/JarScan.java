@@ -38,16 +38,16 @@ import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 
 public class JarScan
 {
-	private long processableClassCount = 0;
+    private final ExtractedJarScan extractedJarScan = new ExtractedJarScan();
+    private long processableClassCount = 0;
 	private long processingClass = 0;
 
 	private boolean counting = false;
 
 	private boolean verbose = false;
 	private IJarScanOperation operation;
-	private List<String> allowedPackagePrefixes = new ArrayList<>();
 
-	public JarScan(IJarScanOperation operation)
+    public JarScan(IJarScanOperation operation)
 	{
 		this(operation, false);
 	}
@@ -135,35 +135,12 @@ public class JarScan
 
 	public void addAllowedPackagePrefix(String prefix)
 	{
-		allowedPackagePrefixes.add(prefix);
-	}
+        extractedJarScan.addAllowedPackagePrefix(prefix);
+    }
 
-	private boolean isAllowedPackage(String fqClassName)
+    private void process(List<String> classLocations, String fqClassName)
 	{
-		boolean allowed = false;
-
-		if (allowedPackagePrefixes.size() == 0)
-		{
-			allowed = true;
-		}
-		else
-		{
-			for (String allowedPrefix : allowedPackagePrefixes)
-			{
-				if (fqClassName.startsWith(allowedPrefix))
-				{
-					allowed = true;
-					break;
-				}
-			}
-		}
-
-		return allowed;
-	}
-
-	private void process(List<String> classLocations, String fqClassName)
-	{
-		if (!isAllowedPackage(fqClassName))
+		if (!extractedJarScan.isAllowedPackage(fqClassName))
 		{
 			return;
 		}
