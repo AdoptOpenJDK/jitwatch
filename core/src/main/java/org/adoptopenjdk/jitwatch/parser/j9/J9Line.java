@@ -35,7 +35,7 @@ public class J9Line
 	public static final String TEMPERATURE_COLD = "cold";
 	public static final String TEMPERATURE_WARM = "warm";
 	public static final String TEMPERATURE_PROFILED_VERY_HOT = "profiled very-hot";
-    private final ExtractedJ9Line extractedJ9Line = new ExtractedJ9Line();
+    private final J9LineAttributes attributes = new J9LineAttributes();
 
     private String temperature;
 	private String signature;
@@ -90,12 +90,12 @@ public class J9Line
 
 	public Map<String, String> getAttributes()
 	{
-        return extractedJ9Line.getAttributes();
+        return attributes.getAttributes();
     }
 
 	public void addAttribute(String key, String value)
 	{
-        extractedJ9Line.addAttribute(key, value);
+        attributes.addAttribute(key, value);
     }
 
 	public Set<String> getFeatures()
@@ -123,7 +123,7 @@ public class J9Line
 	public int getBytecodeSize()
 	{
 
-        return extractedJ9Line.getBytecodeSize();
+        return attributes.getBytecodeSize();
     }
 
 	public int getNativeSize()
@@ -159,7 +159,7 @@ public class J9Line
 		builder.append(", getRangeEnd()=");
 		builder.append(getRangeEnd());
 		builder.append(", getAttributes()=");
-		builder.append(extractedJ9Line.getAttributes());
+		builder.append(attributes.getAttributes());
 		builder.append(", getFeatures()=");
 		builder.append(getFeatures());
 		builder.append(", getMemberSignatureParts()=");
@@ -172,7 +172,7 @@ public class J9Line
 			e.printStackTrace();
 		}
 		builder.append(", getBytecodeSize()=");
-		builder.append(extractedJ9Line.getBytecodeSize());
+		builder.append(attributes.getBytecodeSize());
 		builder.append("]");
 		return builder.toString();
 	}
@@ -185,7 +185,7 @@ public class J9Line
 		map.put(ATTR_COMPILE_ID, Integer.toString(compiledID));
 		map.put(ATTR_STAMP, Long.toString(timestampMillis));
 		map.put(ATTR_METHOD, J9Util.convertJ9SigToLogCompilationSignature(signature));
-		map.put(ATTR_BYTES, Integer.toString(extractedJ9Line.getBytecodeSize()));
+		map.put(ATTR_BYTES, Integer.toString(attributes.getBytecodeSize()));
 		
 		Tag tag = new Tag(TAG_TASK_QUEUED, StringUtil.attributeMapToString(map, C_QUOTE), true);
 
@@ -201,7 +201,7 @@ public class J9Line
 		map.put(ATTR_COMPILER, J9);
 		map.put(ATTR_ADDRESS, rangeStart);
 		map.put(ATTR_SIZE, Integer.toString(getNativeSize()));
-		map.put(ATTR_BYTES, Integer.toString(extractedJ9Line.getBytecodeSize()));
+		map.put(ATTR_BYTES, Integer.toString(attributes.getBytecodeSize()));
 
 		Tag tag = new Tag(TAG_NMETHOD, StringUtil.attributeMapToString(map, C_QUOTE), true);
 

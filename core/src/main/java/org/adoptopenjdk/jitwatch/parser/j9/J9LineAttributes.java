@@ -3,10 +3,10 @@ package org.adoptopenjdk.jitwatch.parser.j9;
 import java.util.HashMap;
 import java.util.Map;
 
-class ExtractedJ9Line {
+class J9LineAttributes {
     private Map<String, String> attributes = new HashMap<String, String>();
 
-    ExtractedJ9Line() {
+    J9LineAttributes() {
     }
 
     public Map<String, String> getAttributes() {
