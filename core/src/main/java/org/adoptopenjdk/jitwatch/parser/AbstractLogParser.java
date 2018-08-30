@@ -599,7 +599,6 @@ public abstract class AbstractLogParser implements ILogParser
 			{
 				setTagNMethod(tag, metaMember);
 				metaMember.getMetaClass().incCompiledMethodCount();
-				model.updateStats(metaMember, attrs);
 
 				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember);
 				model.addEvent(compiledEvent);
@@ -610,6 +609,7 @@ public abstract class AbstractLogParser implements ILogParser
 			{
 				setTagTask((Task) tag, metaMember);
 				currentMember = metaMember;
+				model.updateStats(metaMember, attrs);
 			}
 				break;
 			default:
