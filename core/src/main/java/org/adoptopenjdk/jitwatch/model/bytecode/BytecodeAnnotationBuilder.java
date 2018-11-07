@@ -181,7 +181,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 	}
 
 	private void buildEliminationTagAnnotations(int jdkMajorVersion, Compilation compilation) throws LogParseException
-	{
+	{	
 		if (jdkMajorVersion >= 9)
 		{
 			CompilationUtil.visitEliminationTagsOfCompilation(compilation, this);
