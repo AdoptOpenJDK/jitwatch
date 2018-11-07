@@ -20,15 +20,6 @@ The JITWatch user interface is built using JavaFX. This is included in the Oracl
 <h2>gradle</h2>
 <pre>gradlew clean build run</pre>
 
-<h2>Jenkins CI</h2>
-<h3>http://chriswhocodes.com:8080/</h3>
-
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code first with ant / maven / IDE
 ./makeDemoLogFile.sh</pre>
-
-Java 8 Compatibility
---------------------
-<b>[Find out how you can also use this logo with your F/OSS projects](https://java.net/projects/adoptopenjdk/pages/TestingJava8)</b>
-
-![Compatibility Badge](https://java.net/downloads/adoptopenjdk/compat.svg)
