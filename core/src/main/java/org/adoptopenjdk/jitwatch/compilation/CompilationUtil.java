@@ -61,7 +61,11 @@ public final class CompilationUtil
 			{
 				if (!compilation.isC2N())
 				{
-					logger.warn("No Task found in Compilation {}", compilation.getCompileID());
+
+					String compilationID = compilation.getCompileID();
+
+					logger.warn("No Task found in Compilation {}", compilationID);
+					logger.warn("Compilation tags for {}\n{}", compilationID, compilation.toStringVerbose());
 				}
 			}
 			else
