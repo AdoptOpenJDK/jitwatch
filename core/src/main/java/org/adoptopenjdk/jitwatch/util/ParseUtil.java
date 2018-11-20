@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -114,11 +114,10 @@ public final class ParseUtil
 		{
 			str = str.substring(S_HEX_PREFIX.length());
 		}
-		
+
 		return Long.parseLong(str, 16);
 	}
-	
-	
+
 	public static long parseStamp(String stamp)
 	{
 		long result = 0;
@@ -789,6 +788,11 @@ public final class ParseUtil
 		return result;
 	}
 
+	public static boolean looksLikeSyntheticBridgeConstructorParam(String className)
+	{
+		return className != null && className.endsWith("$1");
+	}
+
 	/*
 	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
 	 */
@@ -808,6 +812,12 @@ public final class ParseUtil
 			}
 			else
 			{
+				if (looksLikeSyntheticBridgeConstructorParam(typeName))
+				{
+					logger.debug("Not attempting to classload synthetic bridge constructor arg: {}", typeName);
+					continue;
+				}
+
 				clazz = ClassUtil.loadClassWithoutInitialising(typeName);
 			}
 
@@ -981,7 +991,14 @@ public final class ParseUtil
 
 			for (String typeID : typeIDs)
 			{
-				result.add(lookupType(typeID, parseDictionary));
+				String typeName = lookupType(typeID, parseDictionary);
+
+				if (ParseUtil.looksLikeSyntheticBridgeConstructorParam(typeName))
+				{
+					logger.debug("Ignoring synthetic bridge constructor arg from comparison: {}", typeName);
+					continue;
+				}
+				result.add(typeName);
 			}
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,6 +26,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_REASON_STALE_TA
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_METHOD_ID_MATCH;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

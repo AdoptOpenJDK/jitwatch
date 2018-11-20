@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,6 +23,11 @@ public final class ClassUtil
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+	public static void main(String[] args) throws ClassNotFoundException
+	{
+		ClassUtil.loadClassWithoutInitialising(args[0]);
+	}
+	
 	private ClassUtil()
 	{
 	}

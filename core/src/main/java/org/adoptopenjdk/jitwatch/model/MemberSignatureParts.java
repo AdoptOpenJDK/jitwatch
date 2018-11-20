@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2018 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -32,6 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_BRACE;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +113,19 @@ public class MemberSignatureParts
 				logger.debug("MemberSignatureParts.memberName was null for signature: '{}'\n{}", origSig, msp);
 			}
 		}
+
+		Iterator<String> paramIter = msp.paramTypeList.iterator();
+
+		while (paramIter.hasNext())
+		{
+			String paramType = paramIter.next();
+
+			if (ParseUtil.looksLikeSyntheticBridgeConstructorParam(paramType))
+			{
+				logger.debug("Synthetic bridge constructor arg: {}", paramType);
+				paramIter.remove();
+			}
+		}
 	}
 
 	public static MemberSignatureParts fromParts(String fullyQualifiedClassName, String memberName, String returnType,
@@ -170,21 +184,21 @@ public class MemberSignatureParts
 
 		return fromLogCompilationSignature(logCompilationSignature);
 	}
-	
+
 	public static String isolateGenericsTag(String input)
-	{	
+	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		int openAngleBrackets = 0;
-		
+
 		boolean replaced = false;
-		
+
 		int length = input.length();
-		
+
 		for (int i = 0; i < length; i++)
 		{
 			char c = input.charAt(i);
-			
+
 			if (c == C_OPEN_ANGLE)
 			{
 				if (openAngleBrackets == 0 && !replaced)
@@ -201,7 +215,7 @@ public class MemberSignatureParts
 			else if (c == C_CLOSE_ANGLE)
 			{
 				openAngleBrackets--;
-				
+
 				if (openAngleBrackets == 0 && !replaced)
 				{
 					builder.append(C_CLOSE_BRACE);
@@ -217,22 +231,22 @@ public class MemberSignatureParts
 				builder.append(c);
 			}
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	public static boolean signatureHasGenerics(String input)
 	{
 		return input.contains(" extends ") || input.contains(" super ");
 	}
-	
+
 	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
 	{
 		if (signatureHasGenerics(toParse))
-		{		
+		{
 			toParse = isolateGenericsTag(toParse);
 		}
-				
+
 		MemberSignatureParts msp = new MemberSignatureParts();
 
 		msp.fullyQualifiedClassName = fqClassName;
@@ -527,16 +541,16 @@ public class MemberSignatureParts
 	public String applyGenericSubstitutionsForClassLoading(final String typeName)
 	{
 		String result = typeName;
-				
+
 		if (typeName != null)
 		{
 			int arrayBracketPos = typeName.indexOf(C_OPEN_SQUARE_BRACKET);
-			
+
 			if (arrayBracketPos != -1)
 			{
-				result = typeName.substring(0,  arrayBracketPos);
+				result = typeName.substring(0, arrayBracketPos);
 			}
-			
+
 			if (genericsMap.containsKey(result))
 			{
 				result = genericsMap.get(result);
@@ -545,13 +559,13 @@ public class MemberSignatureParts
 			{
 				result = classBytecode.getGenericsMap().get(result);
 			}
-			
+
 			if (arrayBracketPos != -1)
 			{
 				result = result + typeName.substring(arrayBracketPos);
-			}			
+			}
 		}
-		
+
 		return result;
 	}
 
