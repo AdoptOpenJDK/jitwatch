@@ -68,6 +68,60 @@
 				</dependency>
 			</dependencies>
 		</profile>
+
+		<!-- ======== JDK 12 Profile ======== -->
+		<profile>
+			<id>jdk12</id>
+			<activation>
+				<jdk>12</jdk>
+			</activation>
+			<properties>
+				<jdk.version>12</jdk.version>
+				<javafx.version>11</javafx.version>
+			</properties>
+			<dependencies>
+				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>11.0.1-ea+1</version>
+					<type>pom</type>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>11.0.1-ea+1</version>
+					<type>pom</type>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<!-- ======== JDK 13 Profile ======== -->
+		<profile>
+			<id>jdk13</id>
+			<activation>
+				<jdk>13</jdk>
+			</activation>
+			<properties>
+				<jdk.version>13</jdk.version>
+				<javafx.version>11</javafx.version>
+			</properties>
+			<dependencies>
+				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>11.0.1-ea+1</version>
+					<type>pom</type>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>11.0.1-ea+1</version>
+					<type>pom</type>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 	<!-- ======== Dependencies ======== -->
 	<dependencyManagement>

@@ -187,6 +187,12 @@ public class ClassBC
 
         switch (majorVersion)
         {
+        case 57:
+            result = "Java 13";
+            break;
+        case 56:
+            result = "Java 12";
+            break;
         case 55:
             result = "Java 11";
             break;        

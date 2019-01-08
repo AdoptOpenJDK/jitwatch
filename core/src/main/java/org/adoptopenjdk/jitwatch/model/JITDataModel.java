@@ -84,22 +84,25 @@ public class JITDataModel implements IReadOnlyJITDataModel
 			}
 			else
 			{
-				String intPart;
+				StringBuilder builder = new StringBuilder();
 
-				int dotPos = vmVersionRelease.indexOf('.');
+				for (int i = 0; i < vmVersionRelease.length(); i++)
+				{
+					char c = vmVersionRelease.charAt(i);
 
-				if (dotPos != -1)
-				{
-					intPart = vmVersionRelease.substring(0, dotPos);
-				}
-				else
-				{
-					intPart = vmVersionRelease;
+					if (Character.isDigit(c))
+					{
+						builder.append(c);
+					}
+					else
+					{
+						break;
+					}
 				}
 
 				try
 				{
-					result = Integer.parseInt(intPart);
+					result = Integer.parseInt(builder.toString());
 				}
 				catch (NumberFormatException nfe)
 				{

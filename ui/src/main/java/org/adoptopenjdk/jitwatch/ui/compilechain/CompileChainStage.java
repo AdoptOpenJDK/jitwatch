@@ -224,9 +224,18 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 
 	private String getLabelText(CompileNode node)
 	{
-		IMetaMember member = node.getMember();
-
 		String result = null;
+
+		IMetaMember member = null;
+
+		if (node == null)
+		{
+			result = "Unknown";
+		}
+		else
+		{
+			member = node.getMember();
+		}
 
 		if (member == null)
 		{

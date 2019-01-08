@@ -187,6 +187,30 @@
 				<javafx.version>11</javafx.version>
 			</properties>
 		</profile>
+
+		<!-- ======== JDK 12 Profile ======== -->
+		<profile>
+			<id>jdk12</id>
+			<activation>
+				<jdk>12</jdk>
+			</activation>
+			<properties>
+				<jdk.version>12</jdk.version>
+				<javafx.version>12</javafx.version>
+			</properties>
+		</profile>
+
+		<!-- ======== JDK 13 Profile ======== -->
+		<profile>
+			<id>jdk13</id>
+			<activation>
+				<jdk>13</jdk>
+			</activation>
+			<properties>
+				<jdk.version>13</jdk.version>
+				<javafx.version>13</javafx.version>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>

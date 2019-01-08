@@ -197,11 +197,11 @@ public final class ParseUtil
 
 		try
 		{
-			result = nf.parse(str).doubleValue();
+			result = nf.parse(str.trim()).doubleValue();
 		}
 		catch (ParseException pe)
 		{
-			logger.warn("Could not parse {} as a Double", pe);
+			logger.warn("Could not parse {} as a Double", str, pe);
 		}
 
 		return result;
