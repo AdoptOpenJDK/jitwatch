@@ -1137,6 +1137,14 @@ public final class ParseUtil
 				logger.error("IllegalAccessError: '" + metaClassName + C_SPACE + iae.getMessage() + C_QUOTE);
 			}
 		}
+		catch (SecurityException se)
+		{
+			logger.error("SecurityException: Classload attempt failed for {}. " + se.getMessage(), metaClassName);
+		}
+		catch (Exception e)
+		{
+			logger.error("Exception: Classload attempt failed for {}. " + e.getMessage(), metaClassName);
+		}
 
 		return metaClass;
 	}
