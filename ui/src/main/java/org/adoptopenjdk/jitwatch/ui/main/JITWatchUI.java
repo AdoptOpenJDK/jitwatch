@@ -17,6 +17,7 @@ import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SI
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +27,7 @@ import org.adoptopenjdk.jitwatch.core.ErrorLog;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.model.Compilation;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.JITEvent;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.PackageManager;
+import org.adoptopenjdk.jitwatch.model.*;
 import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
@@ -101,8 +97,9 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class JITWatchUI extends Application implements IJITListener, ILogParseErrorListener, IStageClosedListener,
-		IStageAccessProxy, IMemberSelectedListener, IParserSelectedListener
+public class JITWatchUI extends Application
+		implements IJITListener, ILogParseErrorListener, IStageClosedListener, IStageAccessProxy, IMemberSelectedListener,
+		IParserSelectedListener
 {
 	private static final Logger logger = LoggerFactory.getLogger(JITWatchUI.class);
 
@@ -150,6 +147,11 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	private String lastVmCommand = null;
 	private IMetaMember lastSelectedMember = null;
 	private MetaClass lastSelectedClass = null;
+
+	private String focusMemberFromProperty = null;
+
+	private static final String PROPERTY_LOGFILE = "jitwatch.logfile";
+	private static final String PROPERTY_FOCUS_MEMBER = "jitwatch.focus.member";
 
 	private boolean isReadingLogFile = false;
 
@@ -231,8 +233,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 	{
 		Thread jwThread = new Thread(new Runnable()
 		{
-			@Override
-			public void run()
+			@Override public void run()
 			{
 				try
 				{
@@ -248,8 +249,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		jwThread.start();
 	}
 
-	@Override
-	public void handleReadStart()
+	@Override public void handleReadStart()
 	{
 		startDelayedByConfig = false;
 
@@ -259,8 +259,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Platform.runLater(new Runnable()
 		{
-			@Override
-			public void run()
+			@Override public void run()
 			{
 				updateButtons();
 			}
@@ -285,8 +284,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Platform.runLater(new Runnable()
 		{
-			@Override
-			public void run()
+			@Override public void run()
 			{
 				classMemberList.clear();
 
@@ -311,8 +309,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		});
 	}
 
-	@Override
-	public void handleReadComplete()
+	@Override public void handleReadComplete()
 	{
 		log("Finished reading log file.");
 
@@ -326,8 +323,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		Platform.runLater(new Runnable()
 		{
-			@Override
-			public void run()
+			@Override public void run()
 			{
 				updateButtons();
 
@@ -336,6 +332,33 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		});
 
 		logParser.discardParsedLogs();
+
+		if (focusMemberFromProperty != null)
+		{
+			try
+			{
+				MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(focusMemberFromProperty);
+
+				IMetaMember member = getJITDataModel().findMetaMember(msp);
+
+				if (member != null)
+				{
+
+					Platform.runLater(new Runnable()
+					{
+						@Override public void run()
+						{
+							focusTreeOnMember(member);
+						}
+					});
+				}
+			}
+			catch (LogParseException lpe)
+			{
+				log("Could not parse member signature from property " + PROPERTY_FOCUS_MEMBER + ": " + focusMemberFromProperty);
+				log("Property must be in LogCompilation signature format: java/lang/String indexOf (II)I");
+			}
+		}
 	}
 
 	private void buildSuggestions()
@@ -390,15 +413,13 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return codeCacheWalkerResult;
 	}
 
-	@Override
-	public void handleError(final String title, final String body)
+	@Override public void handleError(final String title, final String body)
 	{
 		logger.error(title);
 
 		Platform.runLater(new Runnable()
 		{
-			@Override
-			public void run()
+			@Override public void run()
 			{
 				Dialogs.showOKDialog(JITWatchUI.this.stage, title, body);
 			}
@@ -420,14 +441,12 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public JITWatchConfig getConfig()
+	@Override public JITWatchConfig getConfig()
 	{
 		return logParser.getConfig();
 	}
 
-	@Override
-	public void start(final Stage stage)
+	@Override public void start(final Stage stage)
 	{
 		StageManager.registerStageClosedListener(this);
 
@@ -435,8 +454,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
-			@Override
-			public void handle(WindowEvent arg0)
+			@Override public void handle(WindowEvent arg0)
 			{
 				StageManager.closeStage(stage);
 
@@ -459,8 +477,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		Button btnChooseWatchFile = new Button("Open Log");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				stopParsing();
 				chooseJITLog();
@@ -470,8 +487,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStart = new Button("Start");
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				if (nothingMountedStage == null)
 				{
@@ -501,8 +517,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStop = new Button("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				stopParsing();
 			}
@@ -511,8 +526,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnConfigure = new Button("Config");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				openConfigStage();
 			}
@@ -521,8 +535,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnTimeLine = new Button("Timeline");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 
@@ -535,8 +548,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnHisto = new Button("Histo");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
 
@@ -549,8 +561,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnTopList = new Button("TopList");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				topListStage = new TopListStage(JITWatchUI.this, getJITDataModel());
 
@@ -563,8 +574,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnCodeCacheTimeline = new Button("Cache");
 		btnCodeCacheTimeline.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				codeCacheTimelineStage = new CodeCacheStage(JITWatchUI.this);
 
@@ -577,8 +587,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnNMethods = new Button("NMethods");
 		btnNMethods.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				codeCacheBlocksStage = new CodeCacheLayoutStage(JITWatchUI.this);
 
@@ -594,8 +603,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnCompilerThreads = new Button("Threads");
 		btnCompilerThreads.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				compilerThreadStage = new CompilerThreadStage(JITWatchUI.this);
 
@@ -611,8 +619,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnTriView = new Button("TriView");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				if (selectedMember == null && selectedMetaClass != null)
 				{
@@ -626,8 +633,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnReportSuggestions = new Button("Suggest");
 		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				reportStageSuggestions = new ReportStage(JITWatchUI.this, "JITWatch Code Suggestions", ReportStageType.SUGGESTION,
 						reportListSuggestions);
@@ -641,8 +647,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnReportEliminatedAllocations = new Button("-Allocs");
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				reportStageElminatedAllocations = new ReportStage(JITWatchUI.this, "JITWatch Eliminated Allocation Report",
 						ReportStageType.ELIMINATED_ALLOCATION, reportListEliminatedAllocations);
@@ -656,8 +661,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnReportOptimisedLocks = new Button("-Locks");
 		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				reportStageOptimisedLocks = new ReportStage(JITWatchUI.this, "JITWatch Optimised Lock Report",
 						ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
@@ -671,8 +675,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnSandbox = new Button("Sandbox");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				openSandbox();
 			}
@@ -682,8 +685,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnErrorLog.setStyle("-fx-padding: 2 6;");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
@@ -693,8 +695,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnStats.setStyle("-fx-padding: 2 6;");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
 
@@ -708,8 +709,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		btnReset.setStyle("-fx-padding: 2 6;");
 		btnReset.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				logParser.reset();
 				clear();
@@ -762,8 +762,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		compilationTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<CompilationTableRow>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
+			@Override public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
 					CompilationTableRow newVal)
 			{
 				if (!selectedProgrammatically)
@@ -811,6 +810,35 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
 
+		String logFileFromProperty = System.getProperty(PROPERTY_LOGFILE);
+
+		if (logFileFromProperty != null)
+		{
+			File tempLogFile = new File(logFileFromProperty);
+
+			if (tempLogFile.exists() && tempLogFile.isFile())
+			{
+				jitLogFile = tempLogFile;
+
+				log("Setting JIT log file from property " + PROPERTY_LOGFILE + ": " + logFileFromProperty);
+
+				Platform.runLater(new Runnable()
+				{
+					@Override public void run()
+					{
+						readLogFile();
+
+						focusMemberFromProperty = System.getProperty(PROPERTY_FOCUS_MEMBER);
+
+						if (focusMemberFromProperty != null)
+						{
+							log("Focusing on member from property " + PROPERTY_FOCUS_MEMBER + ": " + focusMemberFromProperty);
+						}
+					}
+				});
+			}
+		}
+
 		if (jitLogFile == null)
 		{
 			log("Choose a JIT log file or open the Sandbox");
@@ -819,6 +847,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		{
 			log("Using JIT log file: " + jitLogFile.getAbsolutePath());
 		}
+
 		spMain.getItems().add(spCentre);
 		spMain.getItems().add(textAreaLog);
 		spMain.setDividerPositions(0.68, 0.32);
@@ -835,7 +864,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		lblHeap.setStyle(labelStyle);
 		lblVmVersion.setStyle(labelStyle);
-		
+
 		Label labelParser = new Label("Select Parser");
 		labelParser.setStyle(labelStyle);
 
@@ -873,8 +902,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 
 		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent arg0)
+			@Override public void handle(ActionEvent arg0)
 			{
 				refresh();
 			}
@@ -900,14 +928,12 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public void openTriView(IMetaMember member)
+	@Override public void openTriView(IMetaMember member)
 	{
 		openTriView(member, 0);
 	}
 
-	@Override
-	public void openTriView(IMetaMember member, int highlightBCI)
+	@Override public void openTriView(IMetaMember member, int highlightBCI)
 	{
 		openTriView();
 
@@ -945,8 +971,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public void openBrowser(String title, String html, String stylesheet)
+	@Override public void openBrowser(String title, String html, String stylesheet)
 	{
 		if (browserStage == null)
 		{
@@ -1096,8 +1121,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
+	@Override public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		StageManager.addAndShow(this.stage, tvs);
@@ -1108,8 +1132,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		openTextViewer(title, content, false, false);
 	}
 
-	@Override
-	public void openCompileChain(IMetaMember member)
+	@Override public void openCompileChain(IMetaMember member)
 	{
 		if (member != null && member.isCompiled())
 		{
@@ -1121,8 +1144,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public void openInlinedIntoReport(IMetaMember member)
+	@Override public void openInlinedIntoReport(IMetaMember member)
 	{
 		if (member != null)
 		{
@@ -1161,9 +1183,8 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		// don't use ExtensionFilter on OSX due to JavaFX2 missing combo bug
 		if (osNameProperty != null && !osNameProperty.toLowerCase().contains("mac"))
 		{
-			fc
-				.getExtensionFilters()
-				.addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"), new FileChooser.ExtensionFilter("All Files", "*.*"));
+			fc.getExtensionFilters()
+			  .addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"), new FileChooser.ExtensionFilter("All Files", "*.*"));
 		}
 
 		String searchDir = getConfig().getLastLogDir();
@@ -1240,8 +1261,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		StageManager.notifyCompilationChanged(selectedMember);
 	}
 
-	@Override
-	public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
+	@Override public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
 	{
 		// TimerUtil.timerStart(getClass().getName() + ".selectMember()");
 
@@ -1287,8 +1307,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		// TimerUtil.timerEnd(getClass().getName() + ".selectMember()");
 	}
 
-	@Override
-	public synchronized void selectCompilation(IMetaMember member, int compilationIndex)
+	@Override public synchronized void selectCompilation(IMetaMember member, int compilationIndex)
 	{
 		selectedProgrammatically = true;
 
@@ -1397,8 +1416,7 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		classTree.showTree(sameVmCommand());
 	}
 
-	@Override
-	public void handleStageClosed(Stage stage)
+	@Override public void handleStageClosed(Stage stage)
 	{
 		if (stage instanceof TimeLineStage)
 		{
@@ -1490,21 +1508,18 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		}
 	}
 
-	@Override
-	public void handleJITEvent(JITEvent event)
+	@Override public void handleJITEvent(JITEvent event)
 	{
 		log(event.toString());
 		repaintTree = true;
 	}
 
-	@Override
-	public void handleLogEntry(String entry)
+	@Override public void handleLogEntry(String entry)
 	{
 		log(entry);
 	}
 
-	@Override
-	public void handleErrorEntry(String entry)
+	@Override public void handleErrorEntry(String entry)
 	{
 		errorLog.addEntry(entry);
 		errorCount++;
@@ -1531,14 +1546,12 @@ public class JITWatchUI extends Application implements IJITListener, ILogParseEr
 		return logParser.getModel().getPackageManager();
 	}
 
-	@Override
-	public Stage getStageForDialog()
+	@Override public Stage getStageForDialog()
 	{
 		return stage;
 	}
 
-	@Override
-	public void parserSelected(ParserType parserType)
+	@Override public void parserSelected(ParserType parserType)
 	{
 		log("Selected Parser: " + parserType);
 
