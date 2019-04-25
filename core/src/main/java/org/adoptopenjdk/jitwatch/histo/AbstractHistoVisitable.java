@@ -1,15 +1,12 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.histo;
 
 import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
-import org.adoptopenjdk.jitwatch.model.IParseDictionary;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.LogParseException;
-import org.adoptopenjdk.jitwatch.model.Tag;
+import org.adoptopenjdk.jitwatch.model.*;
 import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 
 public abstract class AbstractHistoVisitable extends AbstractCompilationVisitable implements IHistoVisitable
@@ -40,7 +37,7 @@ public abstract class AbstractHistoVisitable extends AbstractCompilationVisitabl
 	}
 
 	@Override
-	public void visitTag(Tag toVisit, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag toVisit, IParseDictionary parseDictionary) throws LogParseException
 	{
 	}	
 }

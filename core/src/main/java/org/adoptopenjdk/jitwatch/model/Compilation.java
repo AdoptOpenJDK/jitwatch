@@ -22,6 +22,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_FAILURE;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
@@ -63,10 +64,22 @@ public class Compilation
 
 	private CompilerThread compilerThread = null;
 
+	private CompileNode compileNode;
+
 	public Compilation(IMetaMember member, int index)
 	{
 		this.member = member;
 		this.index = index;
+	}
+
+	public CompileNode getCompileNode()
+	{
+		return compileNode;
+	}
+
+	public void setCompileNode(CompileNode compileNode)
+	{
+		this.compileNode = compileNode;
 	}
 
 	public IMetaMember getMember()

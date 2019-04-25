@@ -25,6 +25,8 @@ public interface IMetaMember
 	String getMemberName();
 	String getFullyQualifiedMemberName();
 	String getAbbreviatedFullyQualifiedMemberName();
+	String getFullyQualifiedMemberNameWithParamTypes();
+	String getMemberNameWithParamTypes();
 
 	int getModifier();
 	String getModifierString();

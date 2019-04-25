@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -20,17 +20,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
 
-
-import org.adoptopenjdk.jitwatch.model.Compilation;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.*;
 
 public class NativeMethodSizeTopListVisitable extends AbstractTopListVisitable
 {
 	public NativeMethodSizeTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
 	{
 		super(model, sortHighToLow);
-		
+
 		ignoreTags.add(TAG_BC);
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
@@ -44,16 +41,27 @@ public class NativeMethodSizeTopListVisitable extends AbstractTopListVisitable
 		ignoreTags.add(TAG_INLINE_SUCCESS);
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_PREDICTED_CALL);
-		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_DEPENDENCY);
 	}
 
-	@Override
-	public void visit(IMetaMember metaMember)
-	{		
+	@Override public void reset()
+	{
+	}
+
+	@Override public void postProcess()
+	{
+	}
+
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+	}
+
+	@Override public void visit(IMetaMember metaMember)
+	{
 		for (Compilation compilation : metaMember.getCompilations())
 		{
 			long nativeSize = compilation.getNativeSize();
-	
+
 			if (nativeSize != 0)
 			{
 				topList.add(new MemberScore(metaMember, nativeSize));

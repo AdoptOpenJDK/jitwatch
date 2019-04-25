@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.toplist;
 
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.*;
 
 public class CompiledAttributeTopListVisitable extends AbstractTopListVisitable
 {
@@ -18,8 +17,19 @@ public class CompiledAttributeTopListVisitable extends AbstractTopListVisitable
 		this.attr = attr;
 	}
 
-	@Override
-	public void visit(IMetaMember mm)
+	@Override public void reset()
+	{
+	}
+
+	@Override public void postProcess()
+	{
+	}
+
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+	}
+
+	@Override public void visit(IMetaMember mm)
 	{
 		if (mm.getCompiledAttribute(attr) != null)
 		{

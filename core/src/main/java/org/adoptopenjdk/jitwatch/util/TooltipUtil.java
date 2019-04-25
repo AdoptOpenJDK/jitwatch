@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -45,7 +45,7 @@ public final class TooltipUtil
 			builder.append("No, ");
 		}
 
-		builder.append(reason);
+		builder.append(StringUtil.replaceXMLEntities(reason));
 
 		if (callAttrs.containsKey(ATTR_COUNT))
 		{

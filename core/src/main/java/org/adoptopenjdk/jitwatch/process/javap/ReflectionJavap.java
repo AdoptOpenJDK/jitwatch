@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Chris Newland.
+ * Copyright (c) 2017-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -95,9 +95,9 @@ public class ReflectionJavap
 			{
 				try
 				{
-					classJavapTask.getMethod("setLog", new Class[] { OutputStream.class });
-					classJavapTask.getMethod("handleOptions", new Class[] { String[].class });
-					classJavapTask.getMethod("call", new Class[] {});
+					classJavapTask.getMethod("setLog", new Class<?>[] { OutputStream.class });
+					classJavapTask.getMethod("handleOptions", new Class<?>[] { String[].class });
+					classJavapTask.getMethod("call", new Class<?>[] {});
 		
 					available = true;
 				}
@@ -132,9 +132,9 @@ public class ReflectionJavap
 			{
 				Object javapObject = classJavapTask.newInstance();
 	
-				Method methodSetLog = classJavapTask.getMethod("setLog", new Class[] { OutputStream.class });
-				Method methodHandleOptions = classJavapTask.getMethod("handleOptions", new Class[] { String[].class });
-				Method methodCall = classJavapTask.getMethod("call", new Class[] {});
+				Method methodSetLog = classJavapTask.getMethod("setLog", new Class<?>[] { OutputStream.class });
+				Method methodHandleOptions = classJavapTask.getMethod("handleOptions", new Class<?>[] { String[].class });
+				Method methodCall = classJavapTask.getMethod("call", new Class<?>[] {});
 	
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream(BUFFER_SIZE))
 				{

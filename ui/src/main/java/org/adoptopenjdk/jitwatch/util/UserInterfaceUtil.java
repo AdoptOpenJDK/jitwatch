@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -113,10 +113,10 @@ public final class UserInterfaceUtil
 			Class<?> classSwingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
 
 			Method methodWrite = classImageIO.getMethod("write",
-					new Class[] { java.awt.image.RenderedImage.class, String.class, File.class });
+					new Class<?>[] { java.awt.image.RenderedImage.class, String.class, File.class });
 
 			Method methodFromFXImage = classSwingFXUtils.getMethod("fromFXImage",
-					new Class[] { javafx.scene.image.Image.class, java.awt.image.BufferedImage.class });
+					new Class<?>[] { javafx.scene.image.Image.class, java.awt.image.BufferedImage.class });
 
 			methodWrite.invoke(null,
 					new Object[] {

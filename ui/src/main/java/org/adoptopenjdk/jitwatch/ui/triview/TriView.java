@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -15,8 +15,14 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import javafx.scene.text.Text;
+import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
+import org.adoptopenjdk.jitwatch.chain.RootFinder;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
 import org.adoptopenjdk.jitwatch.model.Compilation;
@@ -36,6 +42,7 @@ import org.adoptopenjdk.jitwatch.ui.compilationchooser.CompilationChooser;
 import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
 import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.stage.IClearableStage;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.AssemblyLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.assembly.ViewerAssembly;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
@@ -45,12 +52,10 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -73,9 +78,12 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-public class TriView extends Stage implements ILineListener, ICompilationChangeListener
+public class TriView extends Stage implements ILineListener, ICompilationChangeListener, IClearableStage
 {
 	private IMetaMember currentMember;
+
+	//private CompileNode currentCompileNode;
+
 	private JITWatchConfig config;
 
 	private ViewerSource viewerSource;
@@ -99,8 +107,13 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	private Button btnLineTable;
 	private Button btnInlinedInto;
 
+	private CompileChainWalker compileChainWalker;
+
 	private ObservableList<IMetaMember> comboMemberList = FXCollections.observableArrayList();
 	private ComboBox<IMetaMember> comboMember;
+
+	private ObservableList<CompileNode> comboRootNodesList = FXCollections.observableArrayList();
+	private ComboBox<CompileNode> comboRootNodes;
 
 	private CompilationChooser compilationChooser;
 
@@ -134,6 +147,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		this.model = parent.getJITDataModel();
 
+		compileChainWalker = new CompileChainWalker(model);
+
 		memberSelectionListener = parent;
 
 		setTitle("TriView - Source, Bytecode, Assembly Viewer - JITWatch");
@@ -148,17 +163,24 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		hBoxToolBarButtons.setSpacing(10);
 		hBoxToolBarButtons.setPadding(new Insets(0, 10, 10, 10));
 
+		HBox hBoxContext = new HBox();
+		hBoxContext.setSpacing(10);
+		hBoxContext.setPadding(new Insets(0, 10, 10, 10));
+
 		setupCheckBoxes();
 
 		btnCompileChain = new Button("Chain");
 		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
+				System.out.println("Opening compile chain currentMember: " + currentMember);
+			//	System.out.println("Opening compile chain currentCompileNode: " + currentCompileNode);
+				System.out.println("Opening compile chain parent: " + parent);
+
 				if (currentMember != null)
 				{
-					parent.openCompileChain(currentMember);
+				//	parent.openCompileChain(currentMember, currentCompileNode.getRoot());
 				}
 			}
 		});
@@ -167,8 +189,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		btnJITJournal = new Button("Journal");
 		btnJITJournal.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				if (currentMember != null)
 				{
@@ -190,8 +211,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		btnLineTable = new Button("LNT");
 		btnLineTable.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				if (currentMember != null)
 				{
@@ -206,9 +226,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		btnInlinedInto = new Button("Inlined into");
 		btnInlinedInto.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
+				System.out.println("inlined into pressed for " + currentMember);
 				if (currentMember != null)
 				{
 					parent.openInlinedIntoReport(currentMember);
@@ -242,45 +262,11 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		Label lblMember = new Label("Member:");
 
-		// ================ Set up Member combo box ====================
+		setupComboMember();
 
-		comboMember = new ComboBox<>(comboMemberList);
-		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
-
-		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldMember, IMetaMember newMember)
-			{
-				if (!ignoreComboChanged)
-				{
-					if (newMember != null)
-					{
-						if (!selectedProgrammatically)
-						{
-							memberSelectionListener.selectMember(newMember, true, true);
-						}
-					}
-				}
-			}
-		});
-
-		comboMember.setCellFactory(getCallbackForMemberListCellFactory());
-
-		comboMember.setConverter(new StringConverter<IMetaMember>()
-		{
-			@Override
-			public String toString(IMetaMember metaMember)
-			{
-				return metaMember != null ? metaMember.toStringUnqualifiedMethodName(false, false) : "null";
-			}
-
-			@Override
-			public IMetaMember fromString(String arg0)
-			{
-				return null;
-			}
-		});
+		setupComboCompileRoot();
+		hBoxContext.getChildren().add(new Label("Compile root"));
+		hBoxContext.getChildren().add(comboRootNodes);
 
 		hBoxToolBarClass.getChildren().add(lblClass);
 		hBoxToolBarClass.getChildren().add(classSearch);
@@ -321,6 +307,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		vBox.getChildren().add(hBoxToolBarClass);
 		vBox.getChildren().add(hBoxToolBarButtons);
+		vBox.getChildren().add(hBoxContext);
 		vBox.getChildren().add(splitViewer);
 		vBox.getChildren().add(hBoxStatusBar);
 
@@ -329,6 +316,86 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		checkColumns();
 
 		updateButtons();
+	}
+
+	private void setupComboMember()
+	{
+		comboMember = new ComboBox<>(comboMemberList);
+		comboMember.prefWidthProperty().bind(widthProperty().multiply(0.4));
+
+		comboMember.valueProperty().addListener(new ChangeListener<IMetaMember>()
+		{
+			@Override public void changed(ObservableValue<? extends IMetaMember> ov, IMetaMember oldMember, IMetaMember newMember)
+			{
+				if (!ignoreComboChanged)
+				{
+					if (newMember != null)
+					{
+						if (!selectedProgrammatically)
+						{
+							memberSelectionListener.selectMember(newMember, true, true);
+						}
+					}
+				}
+			}
+		});
+
+		comboMember.setCellFactory(getCallbackForMemberListCellFactory());
+
+		comboMember.setConverter(new StringConverter<IMetaMember>()
+		{
+			@Override public String toString(IMetaMember metaMember)
+			{
+				return metaMember != null ? metaMember.toStringUnqualifiedMethodName(false, false) : "null";
+			}
+
+			@Override public IMetaMember fromString(String arg0)
+			{
+				return null;
+			}
+		});
+	}
+
+	private void setupComboCompileRoot()
+	{
+		comboRootNodes = new ComboBox<>(comboRootNodesList);
+		comboRootNodes.prefWidthProperty().bind(widthProperty().multiply(0.4));
+
+		comboRootNodes.valueProperty().addListener(new ChangeListener<CompileNode>()
+		{
+			@Override public void changed(ObservableValue<? extends CompileNode> ov, CompileNode oldRoot, CompileNode newRoot)
+			{
+				if (newRoot != null && !ignoreComboChanged)
+				{
+					System.out.println("new compilation root: " + newRoot.getMemberName());
+
+					setCompileNode(newRoot);
+				}
+			}
+		});
+
+		comboRootNodes.setCellFactory(getCallbackForCompileNodeCellFactory());
+
+		comboRootNodes.setConverter(new StringConverter<CompileNode>()
+		{
+			@Override public String toString(CompileNode compileNode)
+			{
+				if (compileNode.isCompileRoot())
+				{
+					return "root compile " + compileNode.getMemberName();
+				}
+				else
+				{
+					return compileNode.getMemberName() + " called by " + compileNode.getCallerMember() + " root "
+							+ compileNode.getRoot().getMemberName();
+				}
+			}
+
+			@Override public CompileNode fromString(String arg0)
+			{
+				return null;
+			}
+		});
 	}
 
 	private void setupCheckBoxes()
@@ -345,8 +412,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, new EventHandler<javafx.scene.input.KeyEvent>()
 		{
-			@Override
-			public void handle(javafx.scene.input.KeyEvent event)
+			@Override public void handle(javafx.scene.input.KeyEvent event)
 			{
 				if (event.isAltDown())
 				{
@@ -376,8 +442,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		ChangeListener<Boolean> checkListener = new ChangeListener<Boolean>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			@Override public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
 			{
 				checkColumns();
 			}
@@ -400,8 +465,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		checkLocalLabels.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			@Override public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
 			{
 				config.setLocalAsmLabels(newVal);
 				config.saveConfig();
@@ -430,8 +494,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		checkMouseover.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
+			@Override public void changed(ObservableValue<? extends Boolean> ov, Boolean oldVal, Boolean newVal)
 			{
 				config.setTriViewMouseFollow(newVal);
 				config.saveConfig();
@@ -443,13 +506,11 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 	{
 		return new Callback<ListView<IMetaMember>, ListCell<IMetaMember>>()
 		{
-			@Override
-			public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
+			@Override public ListCell<IMetaMember> call(ListView<IMetaMember> arg0)
 			{
 				return new ListCell<IMetaMember>()
 				{
-					@Override
-					protected void updateItem(IMetaMember item, boolean empty)
+					@Override protected void updateItem(IMetaMember item, boolean empty)
 					{
 						super.updateItem(item, empty);
 
@@ -476,6 +537,38 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 						{
 							listCell.setGraphic(null);
 						}
+					}
+				};
+			}
+		};
+	}
+
+	private Callback<ListView<CompileNode>, ListCell<CompileNode>> getCallbackForCompileNodeCellFactory()
+	{
+		return new Callback<ListView<CompileNode>, ListCell<CompileNode>>()
+		{
+			@Override public ListCell<CompileNode> call(ListView<CompileNode> arg0)
+			{
+				return new ListCell<CompileNode>()
+				{
+					@Override protected void updateItem(CompileNode item, boolean empty)
+					{
+						super.updateItem(item, empty);
+
+						if (item == null || empty)
+						{
+							setText(S_EMPTY);
+							setGraphic(null);
+						}
+						else
+						{
+							performUpdateOfItem(this, item);
+						}
+					}
+
+					private void performUpdateOfItem(ListCell<CompileNode> listCell, CompileNode item)
+					{
+						listCell.setText(item.getMemberName());
 					}
 				};
 			}
@@ -547,6 +640,55 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 	}
 
+	public void setCompileNode(CompileNode compileNode)
+	{
+		//		compilation root: show assembly for member
+
+		//		non-root (inlined): source = parent at callsite, bytecode=parent at callsite BCI, asm=show inlining message naming parent
+
+		//		non-root (non inlined, non compiled): source = parent at callsite, bytecode=parent at callsite BCI, asm=show inlining failure message naming parent
+
+		//		non-root (non inlined, YES compiled): source = parent at callsite, bytecode=parent at callsite BCI, asm=show assembly of compiled method
+/*
+		System.out.println("TriView.setCompileNode() " + compileNode);
+
+		comboRootNodes.getSelectionModel().select(compileNode);
+
+		if (compileNode == null)
+		{
+			return;
+		}
+
+		this.currentCompileNode = compileNode;
+
+		IMetaMember nodeMember = compileNode.getMember();
+
+		System.out.println("TriView.setCompileNode member:" + nodeMember);
+
+		CompileNode parent = currentCompileNode.getParent();
+
+		//System.out.println("TriView.setCompileNode parent:" + parent + " at BCI: " + currentCompileNode.getCallerBCI());
+		//System.out.println("TriView.setCompileNode parent:" + parent);
+
+		System.out.println("isCompileRoot(): " + currentCompileNode.isCompileRoot());
+		System.out.println("isInlined()    : " + currentCompileNode.isInlined());
+		System.out.println("isCompiled()   : " + currentCompileNode.isCompiled());
+
+		if (parent != null)
+		{
+			IMetaMember parentMember = parent.getMember();
+
+			//			setMember(parentMember, true, currentCompileNode.getCallerBCI());
+			doSetMember(parentMember, true, true, currentCompileNode.getCallerBCI());
+
+		}
+		else if (nodeMember != null)
+		{
+			setMember(nodeMember, true, 0);
+		}
+		*/
+	}
+
 	public IMetaMember getMetaMember()
 	{
 		return currentMember;
@@ -561,6 +703,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	public void setMember(IMetaMember member, boolean force, int highlightBCI)
 	{
+		System.out.println("setMember " + highlightBCI);
+
 		boolean jumpToSource = true;
 
 		asyncSetMember(member, force, jumpToSource, highlightBCI);
@@ -573,6 +717,10 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	private void asyncSetMember(final IMetaMember member, final boolean force, final boolean jumpToSource, final int highlightBCI)
 	{
+		System.out.println("asyncSetMember " + highlightBCI);
+
+		//currentCompileNode = null;
+
 		if (member.getMetaClass().hasClassBytecode())
 		{
 			doSetMember(member, force, jumpToSource, highlightBCI);
@@ -581,38 +729,56 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		{
 			viewerSource.setContent("Loading source code", false, false);
 
-			viewerBytecode.setContent("Loading bytecode", false, false);	
-			
-			viewerAssembly.setContent("Looking for assembly", false, false);		
+			viewerBytecode.setContent("Loading bytecode", false, false);
+
+			viewerAssembly.setContent("Looking for assembly", false, false);
 
 			doAsyncSetMember(member, force, jumpToSource, highlightBCI);
 		}
+
 	}
 
 	private void doAsyncSetMember(final IMetaMember member, final boolean force, final boolean jumpToSource, final int highlightBCI)
 	{
-		Task<Void> task = new Task<Void>()
+		//		Task<Void> task = new Task<Void>()
+		//		{
+		//			@Override
+		//			protected Void call() throws Exception
+		//			{
+		List<String> allClassLocations = config.getAllClassLocations();
+
+		member.getMetaClass().getClassBytecode(model, allClassLocations);
+
+		//				Platform.runLater(new Runnable()
+		//				{
+		//					@Override
+		//					public void run()
+		//					{
+		doSetMember(member, force, jumpToSource, highlightBCI);
+		//					}
+		//				});
+
+		//				return null;
+		//			}
+		//		};
+
+		//new Thread(task).start();
+	}
+
+	private Set<CompileNode> findRootsContainingMember(IMetaMember member)
+	{
+		RootFinder rootFinder = new RootFinder(model, member);
+
+		Set<CompileNode> rootNodes = rootFinder.getResult();
+
+		System.out.println("findRootsContainingMember found " + rootNodes.size());
+
+		for (CompileNode root : rootNodes)
 		{
-			@Override
-			protected Void call() throws Exception
-			{
-				List<String> allClassLocations = config.getAllClassLocations();
+			System.out.println(member.getFullyQualifiedMemberNameWithParamTypes() + " has root " + root.getMemberName());
+		}
 
-				member.getMetaClass().getClassBytecode(model, allClassLocations);
-
-				Platform.runLater(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						doSetMember(member, force, jumpToSource, highlightBCI);
-					}
-				});
-				return null;
-			}
-		};
-
-		new Thread(task).start();
+		return rootNodes;
 	}
 
 	private void doSetMember(final IMetaMember member, boolean force, final boolean jumpToSource, final int highlightBCI)
@@ -631,6 +797,28 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		MetaClass previousClass = currentMember == null ? null : currentMember.getMetaClass();
 
 		currentMember = member;
+
+		System.out.println("doSetMember " + currentMember.toStringUnqualifiedMethodName(true, true));
+
+		System.out.println("doSetMember compilations as root node: " + currentMember.getCompilations().size());
+
+		//		//TODO here
+		//		// find all the root nodes including this member
+		//
+
+		Set<CompileNode> rootNodesContainingMember = findRootsContainingMember(currentMember);
+
+		if (!rootNodesContainingMember.isEmpty())
+		{
+
+			comboRootNodesList.clear();
+			comboRootNodesList.addAll(rootNodesContainingMember);
+
+			System.out.println("Setting currentCompileNode to element 0 of " + comboRootNodesList.size());
+			//currentCompileNode = comboRootNodesList.get(0);
+
+			//System.out.println("currentCompileNode: " + currentCompileNode);
+		}
 
 		final MetaClass memberClass = currentMember.getMetaClass();
 
@@ -703,7 +891,20 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		compilationChooser.setVisible(isCompiled);
 
-		btnCompileChain.setDisable(!isCompiled);
+		System.out.println("updateButtons()");
+
+	//	if (currentCompileNode != null)
+		{
+			System.out.println("updateButtons() enable");
+
+			btnCompileChain.setDisable(false);
+		}
+//		else
+//		{
+//			System.out.println("updateButtons() disable");
+//
+//			btnCompileChain.setDisable(true);
+//		}
 
 		btnJITJournal.setDisable(!isCompiled);
 
@@ -722,23 +923,24 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 			{
 				classBytecodeMismatch = true;
 
-				Platform.runLater(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						Dialogs.showOKDialog(TriView.this, "Wrong classes mounted for log file?",
-								"Warning! The bytecode for this class does not match the bytecode offsets in your JIT log."
-										+ S_NEWLINE
-										+ "Are the mounted classes the same ones used at runtime when the log was created?");
-					}
-				});
+				//Platform.runLater(new Runnable()
+				//{
+				//	@Override
+				//	public void run()
+				//	{
+				Dialogs.showOKDialog(TriView.this, "Wrong classes mounted for log file?",
+						"Warning! The bytecode for this class does not match the bytecode offsets in your JIT log." + S_NEWLINE
+								+ "Are the mounted classes the same ones used at runtime when the log was created?");
+				//	}
+				//});
 			}
 		}
 	}
 
 	private void updateBytecodeAndAssembly(boolean focusSource, int highlightBCI)
 	{
+		//Thread.dumpStack();
+
 		Compilation compilation = currentMember.getSelectedCompilation();
 
 		compilationInfo.setCompilation(compilation);
@@ -761,8 +963,12 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 			}
 		}
 
+		System.out.println("curMem:" + currentMember);
+
 		if (currentMember.isCompiled())
 		{
+			System.out.println("isCompiled");
+
 			AssemblyMethod asmMethod = null;
 
 			if (compilation != null)
@@ -783,7 +989,38 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 		else
 		{
-			String msg = "Not JIT-compiled";
+			System.out.println("!isCompiled");
+
+			String msg = null;
+/*
+			if (currentCompileNode != null)
+			{
+				IMetaMember nodeMember = currentCompileNode.getMember();
+
+				CompileNode parent = currentCompileNode.getParent();
+
+				if (parent != null)
+				{
+					if (currentCompileNode.isInlined())
+					{
+						msg = currentCompileNode.getCalleeMember() + " was inlined into " + currentCompileNode.getCallerMember();
+					}
+					else
+					{
+						msg = currentCompileNode.getCalleeMember() + " was not inlined into "
+								+ currentCompileNode.getCallerMember();
+					}
+				}
+				else if (nodeMember != null)
+				{
+					setMember(nodeMember, true, 0);
+				}
+			}
+			else
+			{
+				msg = "Not JIT-compiled";
+			}
+*/
 			viewerAssembly.setContent(msg, false, false);
 
 			if (compilation == null && memberBytecode != null)
@@ -840,12 +1077,17 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 	}
 
-	public void clear()
+	@Override public void clear()
 	{
 		comboMember.getSelectionModel().clearSelection();
 		comboMemberList.clear();
 
 		compilationChooser.clear();
+
+		compileChainWalker.clear();
+
+		System.out.println("clearing currentCompileNode");
+		//currentCompileNode = null;
 
 		paneSource.clear();
 		paneBytecode.clear();
@@ -877,8 +1119,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		return result;
 	}
 
-	@Override
-	public void lineHighlighted(int index, LineType lineType)
+	@Override public void lineHighlighted(int index, LineType lineType)
 	{
 		if (DEBUG_LOGGING_TRIVIEW)
 		{
@@ -906,8 +1147,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 	}
 
-	@Override
-	public void setRange(LineType lineType, int rangeStart, int rangeEnd)
+	@Override public void setRange(LineType lineType, int rangeStart, int rangeEnd)
 	{
 		switch (lineType)
 		{
@@ -931,6 +1171,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	private void highlightFromSource(int index)
 	{
+		System.out.println("highlightFromSource:" + index);
+
 		int sourceLine = index + 1;
 		int bytecodeHighlight = -1;
 
@@ -1013,8 +1255,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				}
 			}
 
-			int assemblyHighlight = -1;
-			assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
+			int assemblyHighlight = viewerAssembly.getIndexForSourceLine(metaClass.getFullyQualifiedName(), sourceLine);
+
 			viewerAssembly.highlightLine(assemblyHighlight, true);
 
 		}
@@ -1153,8 +1395,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		return result;
 	}
 
-	@Override
-	public void handleFocusNext()
+	@Override public void handleFocusNext()
 	{
 		switch (focussedViewer)
 		{
@@ -1181,8 +1422,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 	}
 
-	@Override
-	public void handleFocusPrev()
+	@Override public void handleFocusPrev()
 	{
 		switch (focussedViewer)
 		{
@@ -1209,8 +1449,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		}
 	}
 
-	@Override
-	public void handleFocusSelf(LineType lineType)
+	@Override public void handleFocusSelf(LineType lineType)
 	{
 		switch (lineType)
 		{
@@ -1260,11 +1499,11 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	public void setNextHighlightBCI(int bci)
 	{
+		System.out.println("setNextHighlightBCI " + bci);
 		this.nextHightlightBCI = bci;
 	}
 
-	@Override
-	public void compilationChanged(IMetaMember member)
+	@Override public void compilationChanged(IMetaMember member)
 	{
 		currentMember = member;
 
@@ -1272,14 +1511,14 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		if (currentMember != null)
 		{
-			Platform.runLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					updateBytecodeAndAssembly(false, nextHightlightBCI);
-				}
-			});
+			//Platform.runLater(new Runnable()
+			//{
+			//	@Override
+			//	public void run()
+			//	{
+			updateBytecodeAndAssembly(false, nextHightlightBCI);
+			//	}
+			//	});
 		}
 	}
 }

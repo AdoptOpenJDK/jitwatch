@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -104,7 +104,7 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 	}
 
 	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String currentMethod = null;
 		String holder = null;
@@ -212,7 +212,7 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 
 				if (S_PARSE_HIR.equals(phaseName))
 				{
-					visitTag(child, parseDictionary);
+					visitTag(compilation, child, parseDictionary);
 				}
 				else
 				{
@@ -224,7 +224,7 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 
 			case TAG_PARSE: // nested parse from inlining
 			{
-				visitTag(child, parseDictionary);
+				visitTag(compilation, child, parseDictionary);
 				break;
 			}
 

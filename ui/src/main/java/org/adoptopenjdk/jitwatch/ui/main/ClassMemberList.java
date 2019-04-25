@@ -250,7 +250,7 @@ public class ClassMemberList extends VBox
 			@Override
 			public void handle(ActionEvent e)
 			{
-				proxy.openCompileChain(memberList.getSelectionModel().getSelectedItem());
+				proxy.openCompileChain(memberList.getSelectionModel().getSelectedItem(), null);
 			}
 		};
 	}

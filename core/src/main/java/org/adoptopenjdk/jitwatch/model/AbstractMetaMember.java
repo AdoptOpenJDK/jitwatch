@@ -76,32 +76,54 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 	}
 
-	@Override
-	public String getMemberName()
+	@Override public int hashCode()
+	{
+		return getFullyQualifiedMemberNameWithParamTypes().hashCode();
+	}
+
+	@Override public boolean equals(Object obj)
+	{
+		return obj != null && obj instanceof AbstractMetaMember && obj.hashCode() == hashCode();
+	}
+
+	@Override public String getMemberName()
 	{
 		return memberName;
 	}
 
-	@Override
-	public String getFullyQualifiedMemberName()
+	@Override public String getFullyQualifiedMemberName()
 	{
 		return metaClass.getFullyQualifiedName() + C_DOT + memberName;
 	}
 
-	@Override
-	public String getAbbreviatedFullyQualifiedMemberName()
+	@Override public String getFullyQualifiedMemberNameWithParamTypes()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append(metaClass.getFullyQualifiedName()).append(C_DOT).append(getMemberNameWithParamTypes());
+		return builder.toString();
+	}
+
+	@Override public String getMemberNameWithParamTypes()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append(memberName);
+		builder.append(C_OPEN_PARENTHESES);
+		builder.append(StringUtil.arrayToString(getParamTypeNames(), C_COMMA));
+		builder.append(C_CLOSE_PARENTHESES);
+		return builder.toString();
+	}
+
+	@Override public String getAbbreviatedFullyQualifiedMemberName()
 	{
 		return metaClass.getAbbreviatedFullyQualifiedName() + C_DOT + memberName;
 	}
 
-	@Override
-	public int getModifier()
+	@Override public int getModifier()
 	{
 		return modifier;
 	}
 
-	@Override
-	public String getModifierString()
+	@Override public String getModifierString()
 	{
 		return Modifier.toString(modifier);
 	}
@@ -153,8 +175,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return matched;
 	}
 
-	@Override
-	public boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly)
+	@Override public boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly)
 	{
 		boolean result = false;
 
@@ -221,8 +242,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public String getReturnTypeName()
+	@Override public String getReturnTypeName()
 	{
 		String result = null;
 
@@ -238,8 +258,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public String[] getParamTypeNames()
+	@Override public String[] getParamTypeNames()
 	{
 		List<String> typeNames = new ArrayList<>();
 
@@ -251,8 +270,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return typeNames.toArray(new String[typeNames.size()]);
 	}
 
-	@Override
-	public MemberBytecode getMemberBytecode()
+	@Override public MemberBytecode getMemberBytecode()
 	{
 		MemberBytecode result = null;
 
@@ -269,8 +287,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public List<BytecodeInstruction> getInstructions()
+	@Override public List<BytecodeInstruction> getInstructions()
 	{
 		List<BytecodeInstruction> result = null;
 
@@ -288,26 +305,22 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public MetaClass getMetaClass()
+	@Override public MetaClass getMetaClass()
 	{
 		return metaClass;
 	}
 
-	@Override
-	public String getQueuedAttribute(String key)
+	@Override public String getQueuedAttribute(String key)
 	{
 		return getLastCompilation() == null ? null : getLastCompilation().getQueuedAttribute(key);
 	}
 
-	@Override
-	public String getCompiledAttribute(String key)
+	@Override public String getCompiledAttribute(String key)
 	{
 		return getLastCompilation() == null ? null : getLastCompilation().getCompiledAttribute(key);
 	}
 
-	@Override
-	public Compilation getCompilationByCompileID(String compileID)
+	@Override public Compilation getCompilationByCompileID(String compileID)
 	{
 		Compilation result = null;
 
@@ -323,8 +336,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public Compilation getCompilationByAddress(AssemblyMethod asmMethod)
+	@Override public Compilation getCompilationByAddress(AssemblyMethod asmMethod)
 	{
 		Compilation result = null;
 
@@ -349,41 +361,34 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-
-	@Override
-	public void storeCompilation(Compilation compilation)
+	@Override public void storeCompilation(Compilation compilation)
 	{
 		compilations.add(compilation);
 
 		selectedCompilationIndex = compilations.size() - 1;
 	}
 
-	@Override
-	public boolean isCompiled()
+	@Override public boolean isCompiled()
 	{
 		return isCompiled;
 	}
-	
-	@Override
-	public void setCompiled(boolean compiled)
+
+	@Override public void setCompiled(boolean compiled)
 	{
 		isCompiled = compiled;
 	}
 
-	@Override
-	public Map<String, String> getQueuedAttributes()
+	@Override public Map<String, String> getQueuedAttributes()
 	{
 		return getLastCompilation() == null ? null : getLastCompilation().getQueuedAttributes();
 	}
 
-	@Override
-	public Map<String, String> getCompiledAttributes()
+	@Override public Map<String, String> getCompiledAttributes()
 	{
 		return getLastCompilation() == null ? null : getLastCompilation().getCompiledAttributes();
 	}
 
-	@Override
-	public String toStringUnqualifiedMethodName(boolean visibilityAndReturnType, boolean fqParamTypes)
+	@Override public String toStringUnqualifiedMethodName(boolean visibilityAndReturnType, boolean fqParamTypes)
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -418,8 +423,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return builder.toString();
 	}
 
-	@Override
-	public void addAssembly(AssemblyMethod asmMethod)
+	@Override public void addAssembly(AssemblyMethod asmMethod)
 	{
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
@@ -434,25 +438,22 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 		else
 		{
-			logger.warn("{} Didn't find compilation to attach assembly for nativeAddress:{} or entryAddress:{}", getFullyQualifiedMemberName(),
-					asmMethod.getNativeAddress(), asmMethod.getEntryAddress());
+			logger.warn("{} Didn't find compilation to attach assembly for nativeAddress:{} or entryAddress:{}",
+					getFullyQualifiedMemberName(), asmMethod.getNativeAddress(), asmMethod.getEntryAddress());
 		}
 	}
 
-	@Override
-	public List<Compilation> getCompilations()
+	@Override public List<Compilation> getCompilations()
 	{
 		return compilations;
 	}
 
-	@Override
-	public boolean isConstructor()
+	@Override public boolean isConstructor()
 	{
 		return (this instanceof MetaConstructor);
 	}
 
-	@Override
-	public String getSourceMethodSignatureRegEx()
+	@Override public String getSourceMethodSignatureRegEx()
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -489,19 +490,19 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 		/*
 		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
-		 * 
+		 *
 		 * builder.append(S_ESCAPED_OPEN_PARENTHESES);
-		 * 
+		 *
 		 * if (paramTypes.size() > 0) { for (Class<?> paramClass : paramTypes) {
 		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
-		 * 
+		 *
 		 * String paramType = expandParamRegEx(paramClass.getName());
-		 * 
+		 *
 		 * builder.append(paramType); builder.append(REGEX_ONE_OR_MORE_SPACES);
 		 * builder.append(REGEX_UNICODE_PARAM_NAME); builder.append(S_COMMA); }
-		 * 
+		 *
 		 * builder.deleteCharAt(builder.length() - 1); }
-		 * 
+		 *
 		 * builder.append(REGEX_ZERO_OR_MORE_SPACES);
 		 * builder.append(S_ESCAPED_CLOSE_PARENTHESES);
 		 * builder.append(REGEX_GROUP_ANY); builder.append(C_DOLLAR);
@@ -534,8 +535,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		{
 			paramType = ParseUtil.expandParameterType(paramType);
 
-			paramType = paramType.replace(S_OPEN_SQUARE_BRACKET, S_ESCAPED_OPEN_SQUARE).replace(S_CLOSE_SQUARE_BRACKET,
-					S_ESCAPED_CLOSE_SQUARE);
+			paramType = paramType.replace(S_OPEN_SQUARE_BRACKET, S_ESCAPED_OPEN_SQUARE)
+								 .replace(S_CLOSE_SQUARE_BRACKET, S_ESCAPED_CLOSE_SQUARE);
 		}
 
 		if (paramType.contains(S_DOT))
@@ -546,8 +547,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return paramType;
 	}
 
-	@Override
-	public Compilation getLastCompilation()
+	@Override public Compilation getLastCompilation()
 	{
 		int compilationCount = compilations.size();
 
@@ -566,8 +566,7 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return Math.max(0, Math.min(index, compilations.size() - 1));
 	}
 
-	@Override
-	public Compilation getCompilation(int index)
+	@Override public Compilation getCompilation(int index)
 	{
 		Compilation result = null;
 
@@ -579,20 +578,17 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	@Override
-	public void setSelectedCompilation(int index)
+	@Override public void setSelectedCompilation(int index)
 	{
 		this.selectedCompilationIndex = makeSafeIndex(index);
 	}
 
-	@Override
-	public Compilation getSelectedCompilation()
+	@Override public Compilation getSelectedCompilation()
 	{
 		return getCompilation(selectedCompilationIndex);
 	}
 
-	@Override
-	public int compareTo(IMetaMember other)
+	@Override public int compareTo(IMetaMember other)
 	{
 		if (other == null)
 		{

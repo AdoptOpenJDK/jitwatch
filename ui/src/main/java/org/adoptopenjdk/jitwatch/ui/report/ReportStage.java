@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -24,6 +24,7 @@ import org.adoptopenjdk.jitwatch.ui.report.locks.OptimisedLockRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.locks.OptimisedLockRowBuilder;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.suggestion.SuggestionRowBuilder;
+import org.adoptopenjdk.jitwatch.ui.stage.IClearableStage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.collections.FXCollections;
@@ -36,7 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class ReportStage extends Stage
+public class ReportStage extends Stage implements IClearableStage
 {
 	private VBox vbox;
 	private TableView<IReportRowBean> tableView;
@@ -101,11 +102,11 @@ public class ReportStage extends Stage
 		display();
 	}
 
-	public void clear()
+	@Override public void clear()
 	{
 		observableList.clear();
 	}
-	
+
 	public ReportStageType getType()
 	{
 		return type;
@@ -134,8 +135,9 @@ public class ReportStage extends Stage
 				{
 					for (String allowedPackage : filterPackageSet)
 					{
-						if (report.getCaller() != null
-								&& report.getCaller().getFullyQualifiedMemberName().startsWith(allowedPackage.trim()))
+						if (report.getCaller() != null && report.getCaller()
+																.getFullyQualifiedMemberName()
+																.startsWith(allowedPackage.trim()))
 						{
 							show = true;
 						}

@@ -27,18 +27,7 @@ public final class InliningRowBuilder
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
-		TableColumn<IReportRowBean, String> metaClass = new TableColumn<IReportRowBean, String>("Caller Class");
-		metaClass.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("metaClass"));
-		metaClass.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
-		{
-			@Override
-			public TableCell<IReportRowBean, String> call(TableColumn<IReportRowBean, String> col)
-			{
-				return new TextTableCell();
-			}
-		});
-
-		TableColumn<IReportRowBean, String> member = new TableColumn<IReportRowBean, String>("Caller method");
+		TableColumn<IReportRowBean, String> member = new TableColumn<IReportRowBean, String>("Caller");
 		member.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("member"));
 		member.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
@@ -93,14 +82,12 @@ public final class InliningRowBuilder
 			}
 		});
 
-		metaClass.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
-		member.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
+		member.prefWidthProperty().bind(tv.widthProperty().multiply(0.4));
 		compilation.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 		viewBCI.prefWidthProperty().bind(tv.widthProperty().multiply(0.10));
 		success.prefWidthProperty().bind(tv.widthProperty().multiply(0.08));
 		reason.prefWidthProperty().bind(tv.widthProperty().multiply(0.22));
 
-		tv.getColumns().add(metaClass);
 		tv.getColumns().add(member);
 		tv.getColumns().add(compilation);
 		tv.getColumns().add(viewBCI);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Jean Phillipe BEMPEL
+ * Copyright (c) 2015-2019 Jean Phillipe BEMPEL, Chris Newland
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -112,7 +112,7 @@ public class HeadlessInlineVisitor implements ITreeVisitable
         }
 
         @Override
-        public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+        public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
         {
             processParseTag(parseTag, parseDictionary);
         }

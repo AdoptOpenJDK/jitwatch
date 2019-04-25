@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.intrinsic.IntrinsicFinder;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.*;
 
 public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 {
@@ -22,8 +21,16 @@ public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 		intrinsicCountMap = new HashMap<>();
 	}
 
-	@Override
-	public void visit(IMetaMember metaMember)
+	@Override public void reset()
+	{
+		intrinsicCountMap.clear();
+	}
+
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+	}
+
+	@Override public void visit(IMetaMember metaMember)
 	{
 		if (metaMember.isCompiled())
 		{
@@ -47,8 +54,7 @@ public class MostUsedIntrinsicsTopListVisitable extends AbstractTopListVisitable
 		}
 	}
 
-	@Override
-	public void postProcess()
+	@Override public void postProcess()
 	{
 		for (Map.Entry<String, Integer> entry : intrinsicCountMap.entrySet())
 		{

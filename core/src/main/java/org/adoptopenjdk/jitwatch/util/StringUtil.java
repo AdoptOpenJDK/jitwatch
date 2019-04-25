@@ -426,8 +426,14 @@ public final class StringUtil
 
 	public static String arrayToString(Object[] array)
 	{
-		return listToString(Arrays.asList(array), C_SPACE);
+		return arrayToString(array, C_SPACE);
 	}
+
+	public static String arrayToString(Object[] array, char separator)
+	{
+		return listToString(Arrays.asList(array), separator);
+	}
+
 
 	public static String listToString(List<?> list)
 	{

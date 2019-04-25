@@ -1,15 +1,12 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.ui.toplist;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BYTES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_DECOMPILES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,31 +29,36 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.toplist.AbstractTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.CompileTimeTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.CompiledAttributeTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.HotThrowTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.ITopListScore;
-import org.adoptopenjdk.jitwatch.toplist.InliningFailReasonTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.MemberScore;
-import org.adoptopenjdk.jitwatch.toplist.MostUsedIntrinsicsTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.NativeMethodSizeTopListVisitable;
-import org.adoptopenjdk.jitwatch.toplist.StaleTaskToplistVisitable;
+import org.adoptopenjdk.jitwatch.toplist.*;
 import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
+import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
+import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
+import org.adoptopenjdk.jitwatch.ui.stage.IClearableStage;
+import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
+import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
-public class TopListStage extends Stage
+public class TopListStage extends Stage implements IStageClosedListener, IClearableStage
 {
 	private static final String MEMBER = "Member";
+
 	private ObservableList<ITopListScore> topList = FXCollections.observableArrayList();
 
 	private TableView<ITopListScore> tableView;
 
 	private TopListWrapper topListWrapper;
 
-	public TopListStage(final IMemberSelectedListener selectionListener, IReadOnlyJITDataModel model)
+	private CompileNodeStage compilationListStage;
+
+	public TopListStage(JITWatchUI parent, IReadOnlyJITDataModel model)
 	{
+		StageManager.registerStageClosedListener(this);
+
 		initStyle(StageStyle.DECORATED);
+
+		IMemberSelectedListener selectionListener = parent;
+
+		IStageAccessProxy triViewAccessor = parent;
 
 		int width = 800;
 		int height = 480;
@@ -82,36 +84,11 @@ public class TopListStage extends Stage
 		TopListWrapper tlMostDecompiled = new TopListWrapper("Most Decompiled Methods",
 				new CompiledAttributeTopListVisitable(model, ATTR_DECOMPILES, true), new String[] { "Decompiles", MEMBER });
 
-		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order", new AbstractTopListVisitable(model, false)
-		{
-			@Override
-			public void visit(IMetaMember mm)
-			{
-				String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
-				String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
-				if (compileID != null && (compileKind == null || !OSR.equals(compileKind)))
-				{
-					long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
-					topList.add(new MemberScore(mm, value));
-				}
-			}
-		}, new String[] { "Order", MEMBER });
+		TopListWrapper tlCompilationOrder = new TopListWrapper("Compilation Order",
+				new CompilationOrderTopListVisitable(model, false), new String[] { "Order", MEMBER });
 
 		TopListWrapper tlCompilationOrderOSR = new TopListWrapper("Compilation Order (OSR)",
-				new AbstractTopListVisitable(model, false)
-				{
-					@Override
-					public void visit(IMetaMember mm)
-					{
-						String compileID = mm.getCompiledAttribute(ATTR_COMPILE_ID);
-						String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
-						if (compileID != null && compileKind != null && OSR.equals(compileKind))
-						{
-							long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
-							topList.add(new MemberScore(mm, value));
-						}
-					}
-				}, new String[] { "Order", MEMBER });
+				new CompilationOrderOSRTopListVisitable(model, false), new String[] { "Order", MEMBER });
 
 		TopListWrapper tlStaleTasks = new TopListWrapper("Most Stale Tasks", new StaleTaskToplistVisitable(model, true),
 				new String[] { "Count", "Member" });
@@ -144,8 +121,7 @@ public class TopListStage extends Stage
 
 		comboBox.valueProperty().addListener(new ChangeListener<String>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+			@Override public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
 			{
 				topListWrapper = attrMap.get(newVal);
 				buildTableView(topListWrapper);
@@ -171,12 +147,30 @@ public class TopListStage extends Stage
 
 		tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ITopListScore>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends ITopListScore> arg0, ITopListScore oldVal, ITopListScore newVal)
+			@Override public void changed(ObservableValue<? extends ITopListScore> arg0, ITopListScore oldVal, ITopListScore newVal)
 			{
-				if (itIsNull(newVal) && isInstanceOfMemberScore(newVal))
+				if (newVal != null)
 				{
-					selectionListener.selectMember((IMetaMember) newVal.getKey(), true, true);
+					if (newVal instanceof MemberScore)
+					{
+						selectionListener.selectMember((IMetaMember) newVal.getKey(), true, true);
+					}
+					else if (newVal instanceof CompilationListScore)
+					{
+						CompilationListScore score = (CompilationListScore) newVal;
+
+						if (compilationListStage == null)
+						{
+							compilationListStage = new CompileNodeStage(selectionListener, triViewAccessor);
+							StageManager.addAndShow(TopListStage.this, compilationListStage);
+						}
+
+						String title = "Compilations for TopList '" + topListWrapper.getTitle() + " : " + score.getKey() + "'";
+
+						compilationListStage.setCompilations(title, score);
+
+						compilationListStage.requestFocus();
+					}
 				}
 			}
 		});
@@ -192,19 +186,10 @@ public class TopListStage extends Stage
 		show();
 	}
 
-	private boolean itIsNull(ITopListScore newVal)
-	{
-		return newVal != null;
-	}
-
-	private boolean isInstanceOfMemberScore(ITopListScore newVal)
-	{
-		return newVal instanceof MemberScore;
-	}
-
 	private void buildTableView(TopListWrapper topListWrapper)
 	{
 		topList.clear();
+
 		topList.addAll(topListWrapper.getVisitable().buildTopList());
 
 		int pos = 0;
@@ -217,7 +202,16 @@ public class TopListStage extends Stage
 		tableView.setItems(topList);
 	}
 
-	public final void redraw()
+	@Override public void handleStageClosed(Stage stage)
 	{
+		if (stage instanceof CompileNodeStage)
+		{
+			compilationListStage = null;
+		}
+	}
+
+	@Override public void clear()
+	{
+		topList.clear();
 	}
 }

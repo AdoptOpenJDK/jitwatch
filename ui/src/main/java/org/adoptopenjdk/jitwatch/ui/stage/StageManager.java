@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
-import org.adoptopenjdk.jitwatch.ui.report.ReportStage;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 import javafx.event.ActionEvent;
@@ -71,7 +70,7 @@ public class StageManager
 		}
 	}
 
-	public static void clearReportStages()
+	public static void clear()
 	{
 		for (Stage rootStage : openStages.keySet())
 		{
@@ -89,9 +88,9 @@ public class StageManager
 			}
 		}
 
-		if (stage instanceof ReportStage)
+		if (stage instanceof IClearableStage)
 		{
-			((ReportStage) stage).clear();
+			((IClearableStage) stage).clear();
 		}
 	}
 

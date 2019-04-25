@@ -1,36 +1,17 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.toplist;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
-
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
+import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IParseDictionary;
@@ -39,15 +20,20 @@ import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 {
-	private final Map<String, Integer> reasonCountMap;
+	private Map<String, List<CompileNode>> reasonToCompileNodesMap;
+
+	private CompileChainWalker walker;
 
 	public InliningFailReasonTopListVisitable(IReadOnlyJITDataModel model, boolean sortHighToLow)
 	{
 		super(model, sortHighToLow);
-		reasonCountMap = new HashMap<>();
-		
+
+		reasonToCompileNodesMap = new HashMap<>();
+
 		ignoreTags.add(TAG_BC);
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
@@ -61,96 +47,74 @@ public class InliningFailReasonTopListVisitable extends AbstractTopListVisitable
 		ignoreTags.add(TAG_INLINE_SUCCESS);
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_PREDICTED_CALL);
-		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_DEPENDENCY);
+
+		walker = new CompileChainWalker(model);
 	}
 
-	@Override
-	public void visit(IMetaMember metaMember)
-	{		
+	@Override public void visit(IMetaMember metaMember)
+	{
 		if (metaMember != null && metaMember.isCompiled())
 		{
-			try
+			for (Compilation compilation : metaMember.getCompilations())
 			{
-				for (Compilation compilation : metaMember.getCompilations())
+				CompileNode rootCompileNodeForMember = walker.buildCallTree(compilation);
+
+				System.out.println(metaMember.getAbbreviatedFullyQualifiedMemberName());
+				System.out.println(rootCompileNodeForMember);
+
+				if (rootCompileNodeForMember != null)
 				{
-					CompilationUtil.visitParseTagsOfCompilation(compilation, this);
-				}   
-			}
-			catch (LogParseException e)
-			{
-				logger.error("Error building inlining stats", e);
+					process(rootCompileNodeForMember);
+				}
 			}
 		}
 	}
 
-	private void processParseTag(Tag parseTag)
+	private void process(CompileNode node)
 	{
-		for (Tag child : parseTag.getChildren())
+		for (CompileNode child : node.getChildren())
 		{
-			String tagName = child.getName();
-			Map<String, String> attrs = child.getAttributes();
-			
-			switch (tagName)
+			if (!child.isInlined())
 			{
-			case TAG_INLINE_FAIL:
-			{
-				String reason = attrs.get(ATTR_REASON);
-				
-				reason = StringUtil.replaceXMLEntities(reason);						
+				String inliningFailureReason = StringUtil.replaceXMLEntities(child.getReason());
 
-				if (reasonCountMap.containsKey(reason))
+				List<CompileNode> nodesForReason = reasonToCompileNodesMap.get(inliningFailureReason);
+
+				if (nodesForReason == null)
 				{
-					int count = reasonCountMap.get(reason);
-					reasonCountMap.put(reason, count + 1);
+					nodesForReason = new ArrayList<>();
+					reasonToCompileNodesMap.put(inliningFailureReason, nodesForReason);
 				}
-				else
-				{
-					reasonCountMap.put(reason, 1);
-				}
-				
-				break;
+
+				nodesForReason.add(child);
 			}
-			case TAG_PARSE:
-			{
-				processParseTag(child);
-				break;
-			}
-			
-  			case TAG_PHASE:
-			{
-				String phaseName = attrs.get(ATTR_NAME);
-				
-				if (S_PARSE_HIR.equals(phaseName))
-				{
-					processParseTag(child);
-				}
-				else
-				{
-					logger.warn("Don't know how to handle phase {}", phaseName);
-				}
-				
-				break;
-			}
-			
-			default:
-				handleOther(child);
-				break;
-			}
+
+			process(child);
 		}
 	}
 
-	@Override
-	public void postProcess()
+	@Override public void reset()
 	{
-		for (Map.Entry<String, Integer> entry : reasonCountMap.entrySet())
+		reasonToCompileNodesMap.clear();
+		walker.clear();
+	}
+
+	@Override public void postProcess()
+	{
+		for (Map.Entry<String, List<CompileNode>> entry : reasonToCompileNodesMap.entrySet())
 		{
-			topList.add(new StringTopListScore(entry.getKey(), entry.getValue().longValue()));
+			String reason = entry.getKey();
+
+			List<CompileNode> compilations = entry.getValue();
+
+			CompilationListScore score = new CompilationListScore(reason, compilations);
+
+			topList.add(score);
 		}
 	}
 
-	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
-		processParseTag(parseTag);
 	}
 }

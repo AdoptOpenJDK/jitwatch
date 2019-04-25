@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,8 +11,7 @@ import java.util.Set;
 
 import org.adoptopenjdk.jitwatch.hotthrow.HotThrowFinder;
 import org.adoptopenjdk.jitwatch.hotthrow.HotThrowResult;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.*;
 
 public class HotThrowTopListVisitable extends AbstractTopListVisitable
 {
@@ -24,8 +23,16 @@ public class HotThrowTopListVisitable extends AbstractTopListVisitable
 		hotThrowMap = new HashMap<>();
 	}
 
-	@Override
-	public void visit(IMetaMember metaMember)
+	@Override public void reset()
+	{
+		hotThrowMap.clear();
+	}
+
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+	}
+
+	@Override public void visit(IMetaMember metaMember)
 	{
 		if (metaMember.isCompiled())
 		{
@@ -35,8 +42,9 @@ public class HotThrowTopListVisitable extends AbstractTopListVisitable
 
 			for (HotThrowResult result : results)
 			{
-				String iMapping = result.getMember().toString() + " BCI:" + result.getBci() + " preallocated:"
-						+ result.isPreallocated() + " => " + result.getExceptionType();
+				String iMapping =
+						result.getMember().toString() + " BCI:" + result.getBci() + " preallocated:" + result.isPreallocated()
+								+ " => " + result.getExceptionType();
 
 				int count = 0;
 
@@ -50,8 +58,7 @@ public class HotThrowTopListVisitable extends AbstractTopListVisitable
 		}
 	}
 
-	@Override
-	public void postProcess()
+	@Override public void postProcess()
 	{
 		for (Map.Entry<String, Integer> entry : hotThrowMap.entrySet())
 		{

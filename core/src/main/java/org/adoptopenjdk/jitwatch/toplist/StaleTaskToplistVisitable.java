@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -9,10 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
-import org.adoptopenjdk.jitwatch.model.Compilation;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.adoptopenjdk.jitwatch.model.Task;
+import org.adoptopenjdk.jitwatch.model.*;
 
 public class StaleTaskToplistVisitable extends AbstractTopListVisitable
 {
@@ -24,8 +21,16 @@ public class StaleTaskToplistVisitable extends AbstractTopListVisitable
 		staleCompilationCountMap = new HashMap<>();
 	}
 
-	@Override
-	public void visit(IMetaMember metaMember)
+	@Override public void reset()
+	{
+		staleCompilationCountMap.clear();
+	}
+
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	{
+	}
+
+	@Override public void visit(IMetaMember metaMember)
 	{
 		if (metaMember != null && metaMember.isCompiled())
 		{
@@ -50,8 +55,7 @@ public class StaleTaskToplistVisitable extends AbstractTopListVisitable
 		}
 	}
 
-	@Override
-	public void postProcess()
+	@Override public void postProcess()
 	{
 		for (Map.Entry<IMetaMember, Integer> entry : staleCompilationCountMap.entrySet())
 		{

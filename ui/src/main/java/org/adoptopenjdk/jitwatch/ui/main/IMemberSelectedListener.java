@@ -5,6 +5,7 @@
  */
 package org.adoptopenjdk.jitwatch.ui.main;
 
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface IMemberSelectedListener
@@ -12,4 +13,6 @@ public interface IMemberSelectedListener
 	void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView);
 	
 	void selectCompilation(IMetaMember member, int compilationIndex);
+
+	void selectCompileNode(CompileNode compileNode);
 }

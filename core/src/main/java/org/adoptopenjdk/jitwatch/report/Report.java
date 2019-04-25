@@ -5,26 +5,41 @@
  */
 package org.adoptopenjdk.jitwatch.report;
 
+import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public class Report
 {
-	private final IMetaMember caller;
-	private final int compilationIndex;
-	private final int bci;
-	private final String text;
-	private final ReportType type;
-	private final int score;
+	private IMetaMember caller;
+	private int compilationIndex;
+	private int bci;
+	private String text;
+	private ReportType type;
+	private int score;
 	private Object metaData;
-	
+	private CompileNode compileNode;
+
+	public Report(CompileNode compileNode, ReportType type, String text)
+	{
+		this.compileNode = compileNode;
+		this.type = type;
+		this.text = text;
+		this.bci = compileNode.getCallerBCI();
+
+		if (compileNode.getParent() != null)
+		{
+			this.caller = compileNode.getParent().getMember();
+		}
+
+		System.out.println("Caller BCI: " + bci);
+	}
 
 	public Report(IMetaMember caller, int compilationIndex, int bci, String text, ReportType type, int score)
 	{
 		this(caller, compilationIndex, bci, text, type, score, null);
 	}
 
-	public Report(IMetaMember caller, int compilationIndex, int bci, String text, ReportType type, int score,
-			Object metaData)
+	public Report(IMetaMember caller, int compilationIndex, int bci, String text, ReportType type, int score, Object metaData)
 	{
 		this.caller = caller;
 		this.compilationIndex = compilationIndex;
@@ -33,6 +48,11 @@ public class Report
 		this.score = score;
 		this.type = type;
 		this.metaData = metaData;
+	}
+
+	public CompileNode getCompileNode()
+	{
+		return compileNode;
 	}
 
 	public IMetaMember getCaller()
@@ -70,8 +90,7 @@ public class Report
 		return score;
 	}
 
-	@Override
-	public int hashCode()
+	@Override public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
@@ -85,8 +104,7 @@ public class Report
 		return result;
 	}
 
-	@Override
-	public boolean equals(Object obj)
+	@Override public boolean equals(Object obj)
 	{
 		if (this == obj)
 			return true;
@@ -127,10 +145,9 @@ public class Report
 		return true;
 	}
 
-	@Override
-	public String toString()
+	@Override public String toString()
 	{
-		return "Report [caller=" + caller + ", compilationIndex=" + compilationIndex + ", bytecodeOffset=" + bci
-				+ ", text=" + text + ", type=" + type + ", score=" + score + ", metaData=" + metaData + "]";
+		return "Report [caller=" + caller + ", compilationIndex=" + compilationIndex + ", bytecodeOffset=" + bci + ", text=" + text
+				+ ", type=" + type + ", score=" + score + ", metaData=" + metaData + "]";
 	}
 }

@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.compilechain;
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.fix;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+
 import org.adoptopenjdk.jitwatch.chain.CompileChainWalker;
 import org.adoptopenjdk.jitwatch.chain.CompileNode;
 import org.adoptopenjdk.jitwatch.model.Compilation;
@@ -48,7 +49,7 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 	private ScrollPane scrollPane;
 	private Pane pane;
 	private IStageAccessProxy stageAccess;
-	
+
 	private Label labelRootNodeMember;
 
 	private CompilationChooser compilationChooser;
@@ -90,28 +91,28 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		scrollPane.setContent(pane);
 
 		compilationChooser = new CompilationChooser(selectionListener);
-		
+
 		VBox verticalLayout = new VBox();
-		
+
 		Scene scene = UserInterfaceUtil.getScene(verticalLayout, JITWatchUI.WINDOW_WIDTH, JITWatchUI.WINDOW_HEIGHT);
-		
+
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
-				
+
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "CompileChain");
-		
+
 		HBox hBox = new HBox();
-		
+
 		labelRootNodeMember = new Label();
-		
+
 		hBox.getChildren().add(labelRootNodeMember);
 		hBox.getChildren().add(compilationChooser.getCombo());
 		hBox.getChildren().add(spacer);
 		hBox.getChildren().add(buttonSnapShot);
-		
+
 		hBox.setSpacing(16.0);
 		hBox.setPadding(new Insets(4, 4, 4, 4));
-		
+
 		verticalLayout.getChildren().addAll(hBox, scrollPane);
 
 		RateLimitedResizeListener resizeListener = new RateLimitedResizeListener(this, 200);
@@ -122,9 +123,11 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		setScene(scene);
 	}
 
-	@Override
-	public void compilationChanged(IMetaMember member)
+	@Override public void compilationChanged(IMetaMember member)
 	{
+
+		System.out.println("CompileChainStage compilationChanged: " + member);
+
 		compilationChooser.compilationChanged(member);
 
 		if (member != null)
@@ -147,13 +150,12 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		showKey();
 	}
 
-	@Override
-	public void redraw()
+	@Override public void redraw()
 	{
 		if (rootNode != null)
 		{
-			clear();			
-			
+			clear();
+
 			show(rootNode, X_OFFSET, Y_OFFSET, 0);
 
 			if (rootNode.getChildren().isEmpty())
@@ -173,7 +175,7 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		double keyX = scrollPane.getWidth() - 220;
 		double keyY = 10;
 
-		Rectangle roundedRect = new Rectangle(keyX - 20, keyY, 210, 180);
+		Rectangle roundedRect = new Rectangle(keyX - 20, keyY, 210, 5*35+35);
 
 		roundedRect.setArcHeight(30);
 		roundedRect.setArcWidth(30);
@@ -193,16 +195,19 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 
 		keyY += 15;
 
-		buildNode("Inlined", keyX, keyY, true, false, false);
+		buildNode("Compilation Root", keyX, keyY, true, false, false, false);
 		keyY += 35;
 
-		buildNode("Compiled", keyX, keyY, false, true, false);
+		buildNode("Inlined", keyX, keyY, false, true, false, false);
 		keyY += 35;
 
-		buildNode("Virtual Call", keyX, keyY, false, false, true);
+		buildNode("Compiled", keyX, keyY, false, false, true, false);
 		keyY += 35;
 
-		buildNode("Not Compiled", keyX, keyY, false, false, false);
+		buildNode("Virtual Call", keyX, keyY, false, false, false, true);
+		keyY += 35;
+
+		buildNode("Not Compiled", keyX, keyY, false, false, false, false);
 		keyY += 35;
 	}
 
@@ -257,7 +262,8 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 	{
 		String labelText = getLabelText(node);
 
-		PlotNode plotNode = buildNode(labelText, x, y, node.isInlined(), node.isCompiled(), node.isVirtualCall());
+		PlotNode plotNode = buildNode(labelText, x, y, node.isCompileRoot(), node.isInlined(), node.isCompiled(),
+				node.isVirtualCall());
 
 		if (depth > 0)
 		{
@@ -288,7 +294,8 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		return nextX;
 	}
 
-	private PlotNode buildNode(String labelText, double x, double y, boolean inlined, boolean compiled, boolean virtualCall)
+	private PlotNode buildNode(String labelText, double x, double y, boolean compilationRoot, boolean inlined, boolean compiled,
+			boolean virtualCall)
 	{
 		Text text = new Text(labelText);
 
@@ -312,7 +319,7 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 
 		rect.setStroke(Color.BLACK);
 		rect.setStrokeWidth(STROKE_WIDTH);
-		rect.setFill(getColourForCompilation(compiled, inlined, virtualCall));
+		rect.setFill(getColourForCompilation(compilationRoot, compiled, inlined, virtualCall));
 
 		pane.getChildren().add(rect);
 		pane.getChildren().add(text);
@@ -324,9 +331,13 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		return result;
 	}
 
-	private Color getColourForCompilation(boolean isCompiled, boolean isInlined, boolean isVirtual)
+	private Color getColourForCompilation(boolean isCompileRoot, boolean isCompiled, boolean isInlined, boolean isVirtual)
 	{
-		if (isInlined)
+		if (isCompileRoot)
+		{
+			return Color.NAVY;
+		}
+		else if (isInlined)
 		{
 			return Color.GREEN;
 		}
@@ -344,14 +355,15 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		}
 	}
 
-	private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode node, Shape shape)
+	private void initialiseRectWithOnMouseClickedEventHandler(final CompileNode clickedNode, Shape shape)
 	{
 		shape.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
-			@Override
-			public void handle(MouseEvent arg0)
+			@Override public void handle(MouseEvent arg0)
 			{
-				stageAccess.openTriView(node.getMember());
+				//				stageAccess.openTriView(clickedNode.getMember());
+				stageAccess.openTriView(clickedNode);
+
 			}
 		});
 	}
@@ -359,7 +371,7 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 	private void buildTree(IMetaMember member)
 	{
 		Compilation selectedCompilation = member.getSelectedCompilation();
-		
+
 		String title = "Compile Chain: ";
 
 		if (selectedCompilation != null)
@@ -371,21 +383,21 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 			this.rootNode = root;
 
 			String rootMemberName = getLabelText(root);
-			
+
 			title += rootMemberName + " " + root.getCompilation().getSignature();
 
 			setTitle(title);
-			
+
 			labelRootNodeMember.setText(rootMemberName);
 		}
 		else
 		{
 			rootNode = null;
-			
+
 			labelRootNodeMember.setText(S_EMPTY);
-			
+
 			clear();
-			
+
 			Text text = new Text(member.toString() + " was not JIT compiled");
 			text.setX(fix(X_OFFSET));
 			text.setY(fix(y));

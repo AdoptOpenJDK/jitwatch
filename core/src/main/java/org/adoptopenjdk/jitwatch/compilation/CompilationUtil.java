@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -86,7 +86,7 @@ public final class CompilationUtil
 
 					for (Tag parseTag : parseTags)
 					{
-						visitable.visitTag(parseTag, parseDictionary);
+						visitable.visitTag(compilation, parseTag, parseDictionary);
 					}
 				}
 			}
@@ -121,7 +121,7 @@ public final class CompilationUtil
 				{
 					for (Tag child : optimizerPhase.getChildren())
 					{
-						visitable.visitTag(child, parseDictionary);
+						visitable.visitTag(compilation, child, parseDictionary);
 					}
 				}
 			}
@@ -152,7 +152,7 @@ public final class CompilationUtil
 
 				for (Tag child : tagTask.getNamedChildren(TAG_ELIMINATE_ALLOCATION))
 				{
-					visitable.visitTag(child, parseDictionary);
+					visitable.visitTag(compilation, child, parseDictionary);
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -186,7 +186,7 @@ public class InlineSizeHistoVisitable extends AbstractHistoVisitable
 	}
 
 	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		processParseTag(parseTag, parseDictionary);
 	}

@@ -193,7 +193,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 	}
 
 	@Override
-	public void visitTag(Tag tag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag tag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		switch (tag.getName())
 		{

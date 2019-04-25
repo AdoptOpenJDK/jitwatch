@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Chris Newland.
+ * Copyright (c) 2017-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -142,7 +142,7 @@ public abstract class AbstractEscapeAnalysisWalker extends AbstractReportBuilder
 	}
 
 	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 	}
 }

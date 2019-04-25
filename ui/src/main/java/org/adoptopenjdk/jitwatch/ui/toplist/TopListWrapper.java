@@ -19,7 +19,6 @@ public class TopListWrapper
 	{
 		this.title = title;
 		this.visitable = visitable;
-        // Fixed after SonarQube critical warning: Security - Array is stored directly
 		this.columns = Arrays.copyOf(columns, columns.length);
 	}
 

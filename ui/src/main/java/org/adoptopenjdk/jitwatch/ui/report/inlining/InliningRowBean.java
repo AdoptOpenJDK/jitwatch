@@ -21,42 +21,21 @@ public class InliningRowBean extends AbstractReportRowBean
 
 	public String getCompilation()
 	{
-		Compilation compilation = report.getCaller().getCompilation(report.getCompilationIndex());
+		return report.getCompileNode().getRootCompilationSignature();
+	}
 
-		return compilation != null ? compilation.getSignature() : S_EMPTY;
-	}
-	
-	public String getMetaClass()
-	{
-		return report.getCaller().getMetaClass().getFullyQualifiedName();
-	}
-	
 	public String getMember()
 	{
-		return report.getCaller().toStringUnqualifiedMethodName(false, false);
+		return report.getCompileNode().getParent().getMember().getFullyQualifiedMemberNameWithParamTypes();
 	}
-	
+
 	public String getSuccess()
 	{
 		return (report.getType() == ReportType.INLINE_SUCCESS) ? "Yes" : "No";
 	}
-	
+
 	public String getReason()
 	{
-		String[] lines = report.getText().split("\n");
-		
-		String result = "Unknown";
-		
-		String search = "Inlined: ";
-		
-		for (String line : lines)
-		{
-			if (line.startsWith(search))
-			{
-				result = line.substring(search.length()).trim();
-			}
-		}
-		
-		return result;
+		return report.getText();
 	}
 }

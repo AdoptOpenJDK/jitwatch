@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Chris Newland.
+ * Copyright (c) 2016-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -171,7 +171,7 @@ public class HistoPlotter extends Application
 
 				Class<?> swingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
 
-				Method methodFromFXImage = swingFXUtils.getMethod("fromFXImage", new Class[] {
+				Method methodFromFXImage = swingFXUtils.getMethod("fromFXImage", new Class<?>[] {
 						javafx.scene.image.Image.class,
 						java.awt.image.BufferedImage.class });
 

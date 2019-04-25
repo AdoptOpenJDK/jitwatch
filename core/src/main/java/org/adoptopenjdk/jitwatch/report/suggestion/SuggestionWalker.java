@@ -540,7 +540,7 @@ public class SuggestionWalker extends AbstractReportBuilder
 	}
 
 	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		processParseTag(parseTag, compilationRootMember, parseDictionary);
 	}

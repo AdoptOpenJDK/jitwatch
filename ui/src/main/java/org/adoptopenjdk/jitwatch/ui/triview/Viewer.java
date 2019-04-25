@@ -545,6 +545,8 @@ public class Viewer extends VBox
 		{
 			Label label = (Label) vBoxRows.getChildren().get(lastScrollIndex);
 
+		//	System.out.println("viewer " + getClass().getName() + " unhighlight  " + lastScrollIndex);
+
 			unhighlightLabel(label);
 		}
 	}
@@ -556,6 +558,8 @@ public class Viewer extends VBox
 
 	public void highlightLine(int index, boolean setScrollbar)
 	{
+		//System.out.println("viewer " + getClass().getName() + " highlightLine " + index);
+
 		unhighlightPrevious();
 
 		if (index >= vBoxRows.getChildren().size())
@@ -568,6 +572,8 @@ public class Viewer extends VBox
 			// leave source position unchanged if not a known source line
 			Label label = (Label) vBoxRows.getChildren().get(index);
 			label.setStyle(STYLE_HIGHLIGHTED);
+
+			//System.out.println("viewer " + getClass().getName() + " highlightLine " + index + " done");
 
 			lastScrollIndex = index;
 

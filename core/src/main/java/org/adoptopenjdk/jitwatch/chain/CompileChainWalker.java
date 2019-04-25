@@ -1,36 +1,9 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.chain;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NAME;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_REASON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_PARSE_HIR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BC;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_BRANCH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DEPENDENCY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_DIRECT_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_FAIL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INLINE_SUCCESS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_KLASS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PARSE_DONE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PHASE_DONE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_PREDICTED_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TYPE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_INTRINSIC;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_OBSERVE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_VIRTUAL_CALL;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CAST_UP;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +19,8 @@ import org.adoptopenjdk.jitwatch.util.TooltipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 public class CompileChainWalker extends AbstractCompilationVisitable
 {
 	private static final Logger logger = LoggerFactory.getLogger(CompileChainWalker.class);
@@ -53,17 +28,15 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 	private IReadOnlyJITDataModel model;
 
 	private CompileNode root = null;
-	
-	private Compilation compilation;
 
 	public CompileChainWalker(IReadOnlyJITDataModel model)
 	{
 		this.model = model;
-		
+
 		ignoreTags.add(TAG_DIRECT_CALL);
 		ignoreTags.add(TAG_KLASS);
 		ignoreTags.add(TAG_TYPE);
-		ignoreTags.add(TAG_DEPENDENCY);	
+		ignoreTags.add(TAG_DEPENDENCY);
 		ignoreTags.add(TAG_PREDICTED_CALL);
 		ignoreTags.add(TAG_PARSE_DONE);
 		ignoreTags.add(TAG_PHASE_DONE);
@@ -71,24 +44,29 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		ignoreTags.add(TAG_UNCOMMON_TRAP);
 		ignoreTags.add(TAG_INTRINSIC);
 		ignoreTags.add(TAG_OBSERVE);
-		ignoreTags.add(TAG_HOT_THROW);
 		ignoreTags.add(TAG_CAST_UP);
 		ignoreTags.add(TAG_HOT_THROW);
+	}
+
+	public void clear()
+	{
+		root = null;
 	}
 
 	public CompileNode buildCallTree(Compilation compilation)
 	{
 		this.root = null;
-		
-		this.compilation = compilation;
 
-		try
+		if (compilation != null)
 		{
-			CompilationUtil.visitParseTagsOfCompilation(compilation, this);
-		}
-		catch (LogParseException lpe)
-		{
-			logger.error("Could not build compile tree", lpe);
+			try
+			{
+				CompilationUtil.visitParseTagsOfCompilation(compilation, this);
+			}
+			catch (LogParseException lpe)
+			{
+				logger.error("Could not build compile tree", lpe);
+			}
 		}
 
 		return root;
@@ -98,6 +76,8 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 	{
 		String methodID = null;
 		CompileNode lastNode = null;
+
+		String callerBCI = null;
 
 		Map<String, String> methodAttrs = new HashMap<>();
 		Map<String, String> callAttrs = new HashMap<>();
@@ -112,6 +92,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 			case TAG_BC:
 			{
 				callAttrs.clear();
+				callerBCI = tagAttrs.get(ATTR_BCI);
 				break;
 			}
 
@@ -133,7 +114,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 
 			case TAG_INLINE_FAIL:
 			{
-				createChildNode(parentNode, methodID, parseDictionary, false, false, methodAttrs, callAttrs, tagAttrs);
+				createChildNode(parentNode, callerBCI, methodID, parseDictionary, false, false, methodAttrs, callAttrs, tagAttrs);
 				methodID = null;
 				lastNode = null;
 				break;
@@ -141,7 +122,8 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 
 			case TAG_INLINE_SUCCESS:
 			{
-				lastNode = createChildNode(parentNode, methodID, parseDictionary, true, false, methodAttrs, callAttrs, tagAttrs);
+				lastNode = createChildNode(parentNode, callerBCI, methodID, parseDictionary, true, false, methodAttrs, callAttrs,
+						tagAttrs);
 				break;
 			}
 
@@ -155,7 +137,7 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 				{
 					nextParent = lastNode;
 				}
-				else if (child.getNamedChildren(TAG_PARSE).size() > 0)
+				else if (!child.getNamedChildren(TAG_PARSE).isEmpty())
 				{
 					CompileNode childNode = new CompileNode(childMethodID);
 
@@ -165,14 +147,14 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 				}
 
 				processParseTag(child, nextParent, parseDictionary);
-				
+
 				break;
 			}
-				
+
 			case TAG_PHASE:
 			{
 				String phaseName = tagAttrs.get(ATTR_NAME);
-				
+
 				if (S_PARSE_HIR.equals(phaseName))
 				{
 					processParseTag(child, parentNode, parseDictionary);
@@ -183,9 +165,10 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 				}
 				break;
 			}
-			
+
 			case TAG_VIRTUAL_CALL:
-				lastNode = createChildNode(parentNode, methodID, parseDictionary, false, true, methodAttrs, callAttrs, tagAttrs);
+				lastNode = createChildNode(parentNode, callerBCI, methodID, parseDictionary, false, true, methodAttrs, callAttrs,
+						tagAttrs);
 				break;
 
 			default:
@@ -195,24 +178,27 @@ public class CompileChainWalker extends AbstractCompilationVisitable
 		}
 	}
 
-	private CompileNode createChildNode(CompileNode parentNode, String methodID, IParseDictionary parseDictionary, boolean inlined, boolean virtualCall,
-			Map<String, String> methodAttrs, Map<String, String> callAttrs, Map<String, String> tagAttrs)
+	private CompileNode createChildNode(CompileNode parentNode, String callerBCI, String methodID, IParseDictionary parseDictionary,
+			boolean inlined, boolean virtualCall, Map<String, String> methodAttrs, Map<String, String> callAttrs,
+			Map<String, String> tagAttrs)
 	{
 		CompileNode childNode = new CompileNode(methodID);
 		parentNode.addChild(childNode);
 
 		String reason = tagAttrs.get(ATTR_REASON);
+		childNode.setReason(reason);
+		childNode.setCallerBCI(Integer.parseInt(callerBCI));
+
 		String tooltip = TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);
-		
+
 		childNode.setInlined(inlined);
 		childNode.setVirtualCall(virtualCall);
 		childNode.setTooltipText(tooltip);
-		
+
 		return childNode;
 	}
 
-	@Override
-	public void visitTag(Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
+	@Override public void visitTag(Compilation compilation, Tag parseTag, IParseDictionary parseDictionary) throws LogParseException
 	{
 		String methodID = parseTag.getAttributes().get(ATTR_METHOD);
 
