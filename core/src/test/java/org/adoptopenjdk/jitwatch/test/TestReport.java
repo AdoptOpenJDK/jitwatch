@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Chris Newland.
+ * Copyright (c) 2016-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -325,7 +325,7 @@ public class TestReport
 //				"54: lreturn         " };
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		IMetaMember memberInner = UnitTestUtil.createTestMetaMember(model, "InlineElimAlloc", "inner",
 				new Class[] { int.class, int.class }, long.class);
@@ -540,7 +540,7 @@ public class TestReport
 		};
 		
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		IMetaMember memberLockEliminate = UnitTestUtil.createTestMetaMember(model, "LockEliminate", "LockEliminate", new Class[] {  },
 				void.class);

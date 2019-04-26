@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -299,7 +299,7 @@ public class TestBytecodeAnnotationBuilder
 				new Class[] { long.class }, void.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -537,7 +537,7 @@ public class TestBytecodeAnnotationBuilder
 				new Class[] { long.class }, void.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -773,7 +773,7 @@ public class TestBytecodeAnnotationBuilder
 				new Class[0], void.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -988,7 +988,7 @@ public class TestBytecodeAnnotationBuilder
 				new Class[] { long.class }, void.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -1475,7 +1475,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -1724,7 +1724,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("EscapeTest", "run", new Class[0], java.lang.String.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("9");
+		model.setJDKMajorVersion(9);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -1829,7 +1829,7 @@ public class TestBytecodeAnnotationBuilder
 		IMetaMember member = UnitTestUtil.createTestMetaMember("java.io.BufferedInputStream", "read", new Class[0], int.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.9.0");
+		model.setJDKMajorVersion(9);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 
@@ -2402,7 +2402,7 @@ public class TestBytecodeAnnotationBuilder
 				java.lang.String.class);
 
 		JITDataModel model = new JITDataModel();
-		model.setVmVersionRelease("1.8.0");
+		model.setJDKMajorVersion(8);
 
 		BytecodeAnnotations result = UnitTestUtil.buildAnnotations(true, false, model, member, logLines, bytecodeLines);
 

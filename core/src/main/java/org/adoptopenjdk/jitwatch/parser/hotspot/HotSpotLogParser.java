@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -60,6 +60,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
 import org.adoptopenjdk.jitwatch.parser.AbstractLogParser;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
+import org.adoptopenjdk.jitwatch.util.VmVersionDetector;
 
 public class HotSpotLogParser extends AbstractLogParser
 {
@@ -391,9 +392,7 @@ public class HotSpotLogParser extends AbstractLogParser
 
     private void handleVmVersion(Tag tag)
     {
-        String release = tag.getNamedChildren(TAG_RELEASE).get(0).getTextContent();
-
-        model.setVmVersionRelease(release);
+        model.setJDKMajorVersion(VmVersionDetector.getMajorVersionFromHotSpotTag(tag));
     }
 
     private void handleTagVmArguments(Tag tag)

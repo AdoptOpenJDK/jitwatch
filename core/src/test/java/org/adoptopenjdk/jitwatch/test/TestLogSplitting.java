@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2019 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -170,7 +170,7 @@ public class TestLogSplitting
 				"1.9.0-ea-b32",
 				"</release>",
 				"<info>",
-				"Java HotSpot(TM) 64-Bit Server VM (1.9.0-ea-b32) for linux-amd64 JRE(1.9.0-ea-b32), built on Sep 25 2014 00:27:31 by &quot;java_re&quot; with ",
+				"Java HotSpot(TM) 64-Bit Server VM (1.9.0-ea-b32) for linux-amd64 JRE (1.9.0-ea-b32), built on Sep 25 2014 00:27:31 by &quot;java_re&quot; with ",
 				"gcc 4.8.2",
 				"</info>",
 				"</vm_version>",
