@@ -1,61 +1,42 @@
 plugins {
     id 'java'
     id 'application'  	// similar to mvn exec:java
-    id 'com.github.johnrengelman.shadow' version '2.0.1'  // fat jar
     id 'maven-publish'
+    id 'org.openjfx.javafxplugin' version '0.0.8' apply(false)
 }
 
-// detect jfxrt.jar
-ext {
+def javaVersion = JavaVersion.current()
 
-    //fx path on 1.7
-    jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/jfxrt.jar").absolutePath
-
-    switch (JavaVersion.current()){
-        case JavaVersion.VERSION_1_6 :
-            throw new GradleException("Java FX is not supported by Java 1.6 upgrade to 1.7.")
-            break
-        case JavaVersion.VERSION_1_7 :
-            break
-        case JavaVersion.VERSION_1_8 :
-            jfxrtLocation = new File("${System.properties['java.home']}/jre/lib/ext/jfxrt.jar").absolutePath
-            break
-        case JavaVersion.VERSION_1_9 :
-            break
-        default:
-            throw new GradleException("Can't get java version!")
-            break
-    }
-}
-
-for (location in ['lib/jfxrt.jar', 'jre/lib/jfxrt.jar', 'jre/lib/ext/jfxrt.jar']) {
-    File javaHome = new File(System.properties['java.home'])
-    javaHome = javaHome.name == 'jre' ? javaHome.parentFile : javaHome
-    File file = new File(javaHome, location)
-    if (file.exists()) {
-        jfxrtLocation = file.absolutePath
-        break
-    }
+if (javaVersion >= JavaVersion.VERSION_1_7 && javaVersion < JavaVersion.VERSION_1_9) {
+    apply from: "build-jdk7.gradle"
+} else if (javaVersion >= JavaVersion.VERSION_11) {
+    apply from: "build-jdk11.gradle"
+} else {
+    throw new GradleException("JITWatch is unsupported on Java $javaVersion")
 }
 
 dependencies {
     compile project(':core')
 
-    compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.1.3', 'ch.qos.logback:logback-core:1.1.3'
+    compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.2.3', 'ch.qos.logback:logback-core:1.2.3'
     testCompile 'junit:junit:4.12'
-    system files(jfxrtLocation)
-}
-
-run {
-    //add required JavaFX libs to runtime classpath
-    classpath += configurations.system
-    workingDir = new File("..")
 }
 
 mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
 
-shadowJar {
-    baseName = 'jitwatch'
+run {
+    workingDir = rootDir
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+
+    group = 'build'
+    baseName = 'ui-shadow'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 publishing {
