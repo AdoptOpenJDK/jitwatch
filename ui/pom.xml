@@ -41,8 +41,115 @@
 			</dependencies>
 		</profile>
 
-
-		<!-- ======== JDK 11 Profile ======== -->
+		<profile>
+			<id>openjfx</id>
+			<activation>
+				<jdk>[11,)</jdk>
+			</activation>
+			<dependencies>
+				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>${openjfx.version}</version>
+					<type>pom</type>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-swing</artifactId>
+					<version>${openjfx.version}</version>
+					<type>pom</type>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>${openjfx.version}</version>
+					<type>pom</type>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>win</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>linux</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>mac</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>win</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>linux</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-web</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>mac</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-swing</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>win</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-swing</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>linux</classifier>
+				</dependency>
+				<dependency>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-swing</artifactId>
+					<version>${openjfx.version}</version>
+					<classifier>mac</classifier>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+								<configuration>
+									<shadedArtifactAttached>true</shadedArtifactAttached>
+									<shadedClassifierName>project-classifier</shadedClassifierName>
+									<outputFile>target/ui-shaded.jar</outputFile>
+									<transformers>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+											<mainClass>${main.class}</mainClass>
+										</transformer>
+									</transformers>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+    <!-- ======== JDK 11 Profile ======== -->
 		<profile>
 			<id>jdk11</id>
 			<activation>
@@ -51,22 +158,8 @@
 			<properties>
 				<jdk.version>11</jdk.version>
 				<javafx.version>11</javafx.version>
+				<openjfx.version>11.0.2</openjfx.version>
 			</properties>
-			<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 12 Profile ======== -->
@@ -77,50 +170,22 @@
 			</activation>
 			<properties>
 				<jdk.version>12</jdk.version>
-				<javafx.version>11</javafx.version>
+				<javafx.version>12</javafx.version>
+				<openjfx.version>12.0.1</openjfx.version>
 			</properties>
-			<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-			</dependencies>
 		</profile>
 
 		<!-- ======== JDK 13 Profile ======== -->
 		<profile>
-			<id>jdk13</id>
+			<id>jdk13-later</id>
 			<activation>
-				<jdk>13</jdk>
+				<jdk>[13,)</jdk>
 			</activation>
 			<properties>
 				<jdk.version>13</jdk.version>
-				<javafx.version>11</javafx.version>
+				<javafx.version>12</javafx.version>
+				<openjfx.version>12.0.1</openjfx.version>
 			</properties>
-			<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>11.0.1-ea+1</version>
-					<type>pom</type>
-				</dependency>
-			</dependencies>
 		</profile>
 	</profiles>
 	<!-- ======== Dependencies ======== -->

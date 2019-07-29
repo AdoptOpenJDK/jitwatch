@@ -64,39 +64,6 @@ jacocoTestReport {
 }
 //Code quality plugins configuration end
 
-// we expect jdk to be any of ['jdk7', 'jdk8', 'jdk9']
-// this property can specified at the command line as follows
-//
-//   gradle -Pjdk=jdk8 <command>
-//
-if (!hasProperty('jdk')) {
-    ext.jdk = 'jdk7' // lowest
-}
-
-
-allprojects {
-    configurations {
-        // gradle does not have a 'system' nor 'provided' scope
-        system
-
-        // fix classpaths due to missing 'system' scope
-        sourceSets {
-            main {
-                compileClasspath += configurations.system
-            }
-        }
-    }
-
-    compileJava {
-        //add required JavaFX libs to compile classpath
-        sourceSets.main.compileClasspath += configurations.system
-    }
-
-    test {
-        classpath += configurations.system
-    }
-}
-
 apply from: "gradle/eclipse.gradle"
 
 license {
@@ -116,16 +83,6 @@ license {
 // do not format test resources
 licenseTest {
     source -= sourceSets.test.resources
-}
-
-javadoc {
-    classpath += configurations.system
-}
-
-idea {
-    module {
-        scopes.PROVIDED.plus += configurations.system
-    }
 }
 
 subprojects {

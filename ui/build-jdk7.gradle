@@ -1,0 +1,61 @@
+def findJavafxRuntime(String path) {
+    if (path == null) {
+        return null
+    }
+
+    def tree = fileTree(dir: path, include: ['**/jfxrt.jar'])
+
+    if (!tree.files.isEmpty()) {
+        return tree.singleFile
+    }
+
+    return null
+}
+
+def potentialJavafxLocations = [
+    System.properties['java.home'],
+    "$rootDir/lib" // Support dropping a JavaFX installation into lib/
+]
+
+def javafxHome = System.properties['javafx.home']
+if (javafxHome != null) {
+    potentialJavafxLocations += javafxHome
+}
+
+def jfxrt = potentialJavafxLocations.collect(this.&findJavafxRuntime).find { it != null}
+
+if (jfxrt == null) {
+    throw new GradleException(
+        """
+Unable to locate a JavaFX runtime in the any of the following locations:
+    
+${potentialJavafxLocations.collect { path -> "\t${path}" }.join("\n")}
+
+Please set the property "javafx.home" to a location containing a JavaFX installation,
+or place the JavaFX runtime into "$rootDir/lib".
+        """
+    )
+}
+
+configurations {
+    // gradle does not have a 'system' nor 'provided' scope
+    system
+}
+
+compileJava {
+     sourceSets.main.compileClasspath += configurations.system
+}
+
+javadoc {
+    classpath += configurations.system
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += configurations.system
+    }
+}
+
+dependencies {
+    system(files(jfxrt))
+}
