@@ -371,34 +371,6 @@ public class TestParseUtil
 	}
 
 	@Test
-	public void testMethodWithInnerClassDollarSign()
-	{
-		String awtWindowClass = "java.awt.Window";
-
-		JITDataModel model = new JITDataModel();
-
-		MetaClass metaClass = null;
-
-		try
-		{
-			metaClass = model.buildAndGetMetaClass(ClassUtil.loadClassWithoutInitialising(awtWindowClass));
-		}
-		catch (ClassNotFoundException cnfe)
-		{
-			cnfe.printStackTrace();
-			fail();
-		}
-
-		String bytecodeSig = "static int access$600(java.awt.Window)";
-
-		MemberSignatureParts msp = MemberSignatureParts.fromBytecodeSignature(awtWindowClass, bytecodeSig);
-
-		IMetaMember foundVarArgsMethod = metaClass.getMemberForSignature(msp);
-
-		assertNotNull(foundVarArgsMethod);
-	}
-
-	@Test
 	public void testBadParseThrowsException()
 	{
 		try
