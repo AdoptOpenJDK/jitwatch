@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -187,6 +187,12 @@ public class ClassBC
 
         switch (majorVersion)
         {
+        case 59:
+            result = "Java 15";
+            break;
+        case 58:
+            result = "Java 14";
+            break;
         case 57:
             result = "Java 13";
             break;
@@ -195,7 +201,7 @@ public class ClassBC
             break;
         case 55:
             result = "Java 11";
-            break;        
+            break;
         case 54:
             result = "Java 10";
             break;
