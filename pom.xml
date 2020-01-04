@@ -214,6 +214,30 @@
 				<javafx.version>13</javafx.version>
 			</properties>
 		</profile>
+
+		<!-- ======== JDK 14 Profile ======== -->
+		<profile>
+			<id>jdk14</id>
+			<activation>
+				<jdk>14</jdk>
+			</activation>
+			<properties>
+				<jdk.version>14</jdk.version>
+				<javafx.version>14</javafx.version>
+			</properties>
+		</profile>
+
+		<!-- ======== JDK 15 Profile ======== -->
+		<profile>
+			<id>jdk15</id>
+			<activation>
+				<jdk>15</jdk>
+			</activation>
+			<properties>
+				<jdk.version>15</jdk.version>
+				<javafx.version>15</javafx.version>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>
