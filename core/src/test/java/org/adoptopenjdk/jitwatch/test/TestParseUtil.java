@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -38,8 +38,7 @@ import org.junit.Test;
 
 public class TestParseUtil
 {
-	@Test
-	public void testSourceSignatureRegExMatcher()
+	@Test public void testSourceSignatureRegExMatcher()
 	{
 		// single primitive param, void return
 		Method m = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "ensureCapacity", new Class<?>[] { int.class });
@@ -50,7 +49,8 @@ public class TestParseUtil
 		assertTrue(match);
 
 		// 2 primitive params,void return
-		Method m2 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "setCharAt", new Class<?>[] { int.class, char.class });
+		Method m2 = UnitTestUtil.getMethod("java.lang.AbstractStringBuilder", "setCharAt",
+				new Class<?>[] { int.class, char.class });
 		MetaMethod method2 = new MetaMethod(m2, null);
 		String sourceSig2 = "public void setCharAt(int foo, char bar)";
 		Matcher matcher2 = Pattern.compile(method2.getSourceMethodSignatureRegEx()).matcher(sourceSig2);
@@ -90,12 +90,16 @@ public class TestParseUtil
 		assertTrue(match5);
 	}
 
-	@Test
-	public void testRegressionJavaUtilPropertiesLoadConvert() // space before
-																// parentheses
+	private String loadConvert(char[] in, int off, int len, char[] convtBuf)
 	{
-		Method m = UnitTestUtil.getMethod("java.util.Properties", "loadConvert", new Class<?>[] { char[].class, int.class, int.class,
-				char[].class });
+		return "foo";
+	}
+
+	@Test public void testRegressionLoadConvert() // space before
+	// parentheses
+	{
+		Method m = UnitTestUtil.getMethod(getClass().getName(), "loadConvert",
+				new Class<?>[] { char[].class, int.class, int.class, char[].class });
 		MetaMethod method = new MetaMethod(m, null);
 
 		String sourceSig = "private String loadConvert (char[] in, int off, int len, char[] convtBuf) {";
@@ -104,8 +108,7 @@ public class TestParseUtil
 		assertTrue(match);
 	}
 
-	@Test
-	public void testSignatureMatchFailWithGenerics()
+	@Test public void testSignatureMatchFailWithGenerics()
 	{
 		// java.util.Arrays
 		// public static <U,T> T[] copyOf(U[] original, int newLength, Class<?
@@ -122,8 +125,7 @@ public class TestParseUtil
 		assertFalse(match);
 	}
 
-	@Test
-	public void testFindBestLineMatchForMemberSignature()
+	@Test public void testFindBestLineMatchForMemberSignature()
 	{
 		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
 
@@ -160,8 +162,7 @@ public class TestParseUtil
 		assertEquals(8, bestMatchPos);
 	}
 
-	@Test
-	public void testFindBestLineMatchForMemberSignatureBytecode()
+	@Test public void testFindBestLineMatchForMemberSignatureBytecode()
 	{
 		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class, Class.class });
 
@@ -171,19 +172,18 @@ public class TestParseUtil
 		List<String> srcLinesList = new ArrayList<>();
 
 		srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);");
-		srcLinesList
-				.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
+		srcLinesList.add(
+				"public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
 		srcLinesList.add("public static byte[] copyOf(byte[], int);");
-		srcLinesList
-				.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
+		srcLinesList.add(
+				"public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
 
 		int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
 
 		assertEquals(1, bestMatchPos);
 	}
 
-	@Test
-	public void testFindBestLineMatchForMemberSignatureBytecodeRegression()
+	@Test public void testFindBestLineMatchForMemberSignatureBytecodeRegression()
 	{
 		Method m = UnitTestUtil.getMethod("java.util.Arrays", "copyOf", new Class<?>[] { Object[].class, int.class });
 
@@ -192,12 +192,12 @@ public class TestParseUtil
 
 		List<String> srcLinesList = new ArrayList<>();
 
-		srcLinesList
-				.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
+		srcLinesList.add(
+				"public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOf(U[], int, java.lang.Class<? extends T[]>);");
 		srcLinesList.add("public static byte[] copyOf(byte[], int);");
 		srcLinesList.add("public static byte[] copyOf(float[], int);");
-		srcLinesList
-				.add("public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
+		srcLinesList.add(
+				"public static <T extends java/lang/Object, U extends java/lang/Object> T[] copyOfRange(U[], int, int, java.lang.Class<? extends T[]>);");
 		srcLinesList.add("public static <T extends java/lang/Object> T[] copyOf(T[], int);");
 
 		int bestMatchPos = ParseUtil.findBestLineMatchForMemberSignature(member, srcLinesList);
@@ -205,8 +205,7 @@ public class TestParseUtil
 		assertEquals(4, bestMatchPos);
 	}
 
-	@Test
-	public void testMemberSignaturePartsPrimitiveParamPrimitiveReturn() throws LogParseException
+	@Test public void testMemberSignaturePartsPrimitiveParamPrimitiveReturn() throws LogParseException
 	{
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("java.lang.String charAt (I)C");
 
@@ -217,8 +216,7 @@ public class TestParseUtil
 		assertEquals("int", msp.getParamTypes().get(0));
 	}
 
-	@Test
-	public void testMemberSignaturePartsConstructor() throws LogParseException
+	@Test public void testMemberSignaturePartsConstructor() throws LogParseException
 	{
 		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature("java.lang.Object <init> ()V");
 
@@ -228,11 +226,10 @@ public class TestParseUtil
 		assertEquals(0, msp.getParamTypes().size());
 	}
 
-	@Test
-	public void testMemberSignaturePartsPrimitiveParamVoidReturn() throws LogParseException
+	@Test public void testMemberSignaturePartsPrimitiveParamVoidReturn() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("java.lang.AbstractStringBuilder ensureCapacityInternal (I)V");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"java.lang.AbstractStringBuilder ensureCapacityInternal (I)V");
 
 		assertEquals("java.lang.AbstractStringBuilder", msp.getFullyQualifiedClassName());
 		assertEquals("ensureCapacityInternal", msp.getMemberName());
@@ -241,11 +238,10 @@ public class TestParseUtil
 		assertEquals("int", msp.getParamTypes().get(0));
 	}
 
-	@Test
-	public void testMemberSignaturePartsPrimitiveParamObjectReturn() throws LogParseException
+	@Test public void testMemberSignaturePartsPrimitiveParamObjectReturn() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("java.lang.AbstractStringBuilder append (Z)Ljava.lang.AbstractStringBuilder;");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"java.lang.AbstractStringBuilder append (Z)Ljava.lang.AbstractStringBuilder;");
 
 		assertEquals("java.lang.AbstractStringBuilder", msp.getFullyQualifiedClassName());
 		assertEquals("append", msp.getMemberName());
@@ -254,11 +250,10 @@ public class TestParseUtil
 		assertEquals("boolean", msp.getParamTypes().get(0));
 	}
 
-	@Test
-	public void testMemberSignaturePartsMultiDimensionalArrayParamPrimitiveReturn() throws LogParseException
+	@Test public void testMemberSignaturePartsMultiDimensionalArrayParamPrimitiveReturn() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl setChunkIndex ([[IIII)I");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl setChunkIndex ([[IIII)I");
 
 		assertEquals("com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl", msp.getFullyQualifiedClassName());
 		assertEquals("setChunkIndex", msp.getMemberName());
@@ -270,30 +265,28 @@ public class TestParseUtil
 		assertEquals("int", msp.getParamTypes().get(3));
 	}
 
-	@Test
-	public void testMemberSignaturePartsClassIsArrayClone() throws LogParseException
+	@Test public void testMemberSignaturePartsClassIsArrayClone() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("[Ljava.lang.String; clone ()Ljava.lang.Object;");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"[Ljava.lang.String; clone ()Ljava.lang.Object;");
 
 		assertEquals("[Ljava.lang.String;", msp.getFullyQualifiedClassName());
 		assertEquals("clone", msp.getMemberName());
 		assertEquals("java.lang.Object", msp.getReturnType());
 		assertEquals(0, msp.getParamTypes().size());
 	}
-	
-	@Test
-	public void testMemberSignaturePartsClassHasUnderscores() throws LogParseException
+
+	@Test public void testMemberSignaturePartsClassHasUnderscores() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("org.omg.CORBA_2_3.portable.ObjectImpl <init> ()V");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"org.omg.CORBA_2_3.portable.ObjectImpl <init> ()V");
 
 		assertEquals("org.omg.CORBA_2_3.portable.ObjectImpl", msp.getFullyQualifiedClassName());
 		assertEquals("ObjectImpl", msp.getMemberName());
 		assertEquals(S_TYPE_NAME_VOID, msp.getReturnType());
 		assertEquals(0, msp.getParamTypes().size());
-	}	
-	
+	}
+
 	// test varargs method
 	public void doSomethingWithVarArgs(String... args)
 	{
@@ -312,8 +305,7 @@ public class TestParseUtil
 		// DO NOT REMOVE, NEEDED BY UNIT TEST
 	}
 
-	@Test
-	public void testVarArgsInBytecodeSignatureMatches()
+	@Test public void testVarArgsInBytecodeSignatureMatches()
 	{
 		String coreClassWithVarArgs = getClass().getName();
 
@@ -341,8 +333,7 @@ public class TestParseUtil
 		assertNotNull(foundVarArgsMethod);
 	}
 
-	@Test
-	public void testMethodWithUnderscores()
+	@Test public void testMethodWithUnderscores()
 	{
 		String thisClass = getClass().getName();
 
@@ -370,8 +361,7 @@ public class TestParseUtil
 		assertNotNull(foundVarArgsMethod);
 	}
 
-	@Test
-	public void testBadParseThrowsException()
+	@Test public void testBadParseThrowsException()
 	{
 		try
 		{
@@ -386,8 +376,7 @@ public class TestParseUtil
 
 	}
 
-	@Test
-	public void testExpandParameterType()
+	@Test public void testExpandParameterType()
 	{
 		Map<String, String> expected = new HashMap<>();
 
@@ -419,8 +408,7 @@ public class TestParseUtil
 		}
 	}
 
-	@Test
-	public void testModifierRegression()
+	@Test public void testModifierRegression()
 	{
 		// bad use of modifier was making volatile appear in method signatures
 
@@ -439,8 +427,7 @@ public class TestParseUtil
 	{
 	}
 
-	@Test
-	public void testNonASCIIMethod() throws NoSuchMethodException, SecurityException
+	@Test public void testNonASCIIMethod() throws NoSuchMethodException, SecurityException
 	{
 		String thisClassName = getClass().getName();
 
@@ -467,8 +454,7 @@ public class TestParseUtil
 	// e.g.
 	// java.util.ArrayList elementData (I)Ljava.lang.Object;
 
-	@Test
-	public void testASCIILogSignatures() throws Exception
+	@Test public void testASCIILogSignatures() throws Exception
 	{
 		String sig = "java.util.ArrayList elementData (I)Ljava.lang.Object;";
 		String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
@@ -480,8 +466,7 @@ public class TestParseUtil
 		assertEquals("Ljava.lang.Object;", parts[3]);
 	}
 
-	@Test
-	public void testNonASCIILogSignatures() throws Exception
+	@Test public void testNonASCIILogSignatures() throws Exception
 	{
 		String sig = "org.adoptopenjdk.jitwatch.test.TestParser unicodeMethodNameµµµµµ (V)V";
 		String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
@@ -493,8 +478,7 @@ public class TestParseUtil
 		assertEquals("V", parts[3]);
 	}
 
-	@Test
-	public void testNonASCIILogSignaturesRegression() throws Exception
+	@Test public void testNonASCIILogSignaturesRegression() throws Exception
 	{
 		String sig = "frege.compiler.gen.Util layoutXS (Lfrege.lib.PP$TDoc;)Lfrege.prelude.PreludeBase$TList;";
 		String[] parts = ParseUtil.splitLogSignatureWithRegex(sig);
@@ -506,8 +490,7 @@ public class TestParseUtil
 		assertEquals("Lfrege.prelude.PreludeBase$TList;", parts[3]);
 	}
 
-	@Test
-	public void testASCIILogSignaturesArrayWithArrayParam() throws Exception
+	@Test public void testASCIILogSignaturesArrayWithArrayParam() throws Exception
 	{
 		String sig = "java.util.ComparableTimSort gallopLeft (Ljava.lang.Comparable;[Ljava.lang.Object;III)I";
 
@@ -520,8 +503,7 @@ public class TestParseUtil
 		assertEquals("I", parts[3]);
 	}
 
-	@Test
-	public void testEclipseLogParseRegression() throws Exception
+	@Test public void testEclipseLogParseRegression() throws Exception
 	{
 		String sig = "org.eclipse.e4.ui.css.swt.engine.AbstractCSSSWTEngineImpl getElement (Ljava.lang.Object;)Lorg.w3c.dom.Element;";
 
@@ -534,8 +516,7 @@ public class TestParseUtil
 		assertEquals("Lorg.w3c.dom.Element;", parts[3]);
 	}
 
-	@Test
-	public void testParseMemberFromBytecodeInvokeCommentConstructor() throws Exception
+	@Test public void testParseMemberFromBytecodeInvokeCommentConstructor() throws Exception
 	{
 		String comment1 = "java/lang/Object.\"<init>\":()V";
 
@@ -551,8 +532,7 @@ public class TestParseUtil
 		assertEquals("public java.lang.Object()", member1.toString());
 	}
 
-	@Test
-	public void testParseMemberFromBytecodeInvokeCommentObjectReturn() throws Exception
+	@Test public void testParseMemberFromBytecodeInvokeCommentObjectReturn() throws Exception
 	{
 		String comment2 = "java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;";
 
@@ -568,8 +548,7 @@ public class TestParseUtil
 		assertEquals("public java.lang.StringBuilder java.lang.StringBuilder.append(int)", member2.toString());
 	}
 
-	@Test
-	public void testParseMemberFromBytecodeInvokeCommentPrimitive() throws Exception
+	@Test public void testParseMemberFromBytecodeInvokeCommentPrimitive() throws Exception
 	{
 		String comment3 = "org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog.chainA1:(J)J";
 
@@ -585,8 +564,7 @@ public class TestParseUtil
 		assertEquals("private long org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog.chainA1(long)", member3.toString());
 	}
 
-	@Test
-	public void testLambdaSignatureRegression() throws Exception
+	@Test public void testLambdaSignatureRegression() throws Exception
 	{
 		String sig = "uk.co.foo.bar.Anonymised$$Lambda$40 applyAsInt (Ljava.lang.Object;)I";
 
@@ -610,8 +588,7 @@ public class TestParseUtil
 		}
 	}
 
-	@Test
-	public void testFindClassForLogCompilationParameter() throws Exception
+	@Test public void testFindClassForLogCompilationParameter() throws Exception
 	{
 		assertEquals(Class.forName("java.lang.String"), ParseUtil.findClassForLogCompilationParameter("java.lang.String"));
 
@@ -628,15 +605,13 @@ public class TestParseUtil
 		assertEquals(Class.forName("[[I"), ParseUtil.findClassForLogCompilationParameter("int[][]"));
 	}
 
-	@Test
-	public void testFindClassForLogCompilationParameterRegressionForGenerics() throws Exception
+	@Test public void testFindClassForLogCompilationParameterRegressionForGenerics() throws Exception
 	{
 		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<?>"));
 		assertEquals(Class.forName("java.util.List"), ParseUtil.findClassForLogCompilationParameter("java.util.List<T>"));
 	}
 
-	@Test
-	public void testStripGenerics()
+	@Test public void testStripGenerics()
 	{
 		assertEquals("int", ParseUtil.stripGenerics("int"));
 		assertEquals("java.util.List", ParseUtil.stripGenerics("java.util.List"));
@@ -647,8 +622,7 @@ public class TestParseUtil
 		assertEquals("java.util.List[]", ParseUtil.stripGenerics("java.util.List<?>[]"));
 	}
 
-	@Test
-	public void paramClassesMatchPrimitiveNone()
+	@Test public void paramClassesMatchPrimitiveNone()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -656,8 +630,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchPrimitiveSingle()
+	@Test public void paramClassesMatchPrimitiveSingle()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -668,8 +641,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchPrimitiveMultiple()
+	@Test public void paramClassesMatchPrimitiveMultiple()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -687,8 +659,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchObjectSingle()
+	@Test public void paramClassesMatchObjectSingle()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -699,8 +670,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchObjectMultiple()
+	@Test public void paramClassesMatchObjectMultiple()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -716,8 +686,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchObjectAssignableFromExactMatch()
+	@Test public void paramClassesMatchObjectAssignableFromExactMatch()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -729,8 +698,7 @@ public class TestParseUtil
 		assertFalse(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchObjectAssignableFrom()
+	@Test public void paramClassesMatchObjectAssignableFrom()
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -742,8 +710,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(false, memberClassList, sigclassList, false));
 	}
 
-	@Test
-	public void paramClassesMatchObjectVarArgs() throws Exception
+	@Test public void paramClassesMatchObjectVarArgs() throws Exception
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -757,8 +724,7 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(true, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void paramClassesMatchObjectVarArgsAssignable() throws Exception
+	@Test public void paramClassesMatchObjectVarArgsAssignable() throws Exception
 	{
 		List<Class<?>> memberClassList = new ArrayList<>();
 		List<Class<?>> sigclassList = new ArrayList<>();
@@ -772,22 +738,20 @@ public class TestParseUtil
 		assertTrue(ParseUtil.paramClassesMatch(true, memberClassList, sigclassList, true));
 	}
 
-	@Test
-	public void testMethodWithPolymorphicSignature() throws Exception
+	@Test public void testMethodWithPolymorphicSignature() throws Exception
 	{
 		JITDataModel model = new JITDataModel();
 		model.buildAndGetMetaClass(java.lang.invoke.MethodHandle.class);
 
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("java.lang.invoke.MethodHandle linkToStatic (Ljava.lang.Object;Ljava.lang.invoke.MemberName;)V");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"java.lang.invoke.MethodHandle linkToStatic (Ljava.lang.Object;Ljava.lang.invoke.MemberName;)V");
 
 		IMetaMember member = model.findMetaMember(msp);
 
 		assertNotNull(member);
 	}
 
-	@Test
-	public void testRegressionStringIndexOf() throws Exception
+	@Test public void testRegressionStringIndexOf() throws Exception
 	{
 		JITDataModel model = new JITDataModel();
 		model.buildAndGetMetaClass(java.lang.String.class);
@@ -799,8 +763,7 @@ public class TestParseUtil
 		assertNotNull(member);
 	}
 
-	@Test
-	public void testRegressionStringToUpper() throws Exception
+	@Test public void testRegressionStringToUpper() throws Exception
 	{
 		JITDataModel model = new JITDataModel();
 		model.buildAndGetMetaClass(java.lang.String.class);
@@ -815,8 +778,7 @@ public class TestParseUtil
 		assertEquals(0, memberToUpperCase.getParamTypeNames().length);
 	}
 
-	@Test
-	public void testRegressionStringToUpperLocale() throws Exception
+	@Test public void testRegressionStringToUpperLocale() throws Exception
 	{
 		JITDataModel model = new JITDataModel();
 		model.buildAndGetMetaClass(java.lang.String.class);
@@ -832,8 +794,7 @@ public class TestParseUtil
 		assertEquals("java.util.Locale", memberToUpperCaseLocale.getParamTypeNames()[0]);
 	}
 
-	@Test
-	public void testValhallaRegressionBytecodeNameContainsCharacterNotValidAsJavaName() throws Exception
+	@Test public void testValhallaRegressionBytecodeNameContainsCharacterNotValidAsJavaName() throws Exception
 	{
 		String sig = "ArrayList${0=I} ensureCapacity (I)V";
 
@@ -845,72 +806,64 @@ public class TestParseUtil
 		assertEquals("I", parts[2]);
 		assertEquals("V", parts[3]);
 	}
-	
-	@Test
-	public void testGetClassTypesPrimitive() throws LogParseException
+
+	@Test public void testGetClassTypesPrimitive() throws LogParseException
 	{
 		Class<?>[] result = ParseUtil.getClassTypes("I");
-		
+
 		assertEquals(1, result.length);
 		assertEquals(int.class, result[0]);
 	}
-	
-	@Test
-	public void testGetClassTypesClass() throws LogParseException
+
+	@Test public void testGetClassTypesClass() throws LogParseException
 	{
 		Class<?>[] result = ParseUtil.getClassTypes("Ljava.lang.String;");
-		
+
 		assertEquals(1, result.length);
 		assertEquals(java.lang.String.class, result[0]);
 	}
-	
-	@Test
-	public void testGetClassTypesPrimitiveArray() throws LogParseException
+
+	@Test public void testGetClassTypesPrimitiveArray() throws LogParseException
 	{
 		Class<?>[] result = ParseUtil.getClassTypes("[C");
-		
+
 		assertEquals(1, result.length);
 		assertEquals(char[].class, result[0]);
 	}
-	
-	@Test
-	public void testGetClassTypesClassArray() throws LogParseException
+
+	@Test public void testGetClassTypesClassArray() throws LogParseException
 	{
 		Class<?>[] result = ParseUtil.getClassTypes("[Ljava.math.BigInteger;");
-		
+
 		assertEquals(1, result.length);
 		assertEquals(java.math.BigInteger[].class, result[0]);
 	}
-	
-	@Test
-	public void testExpandParseDictionaryTypeNameClass() throws LogParseException
+
+	@Test public void testExpandParseDictionaryTypeNameClass() throws LogParseException
 	{
 		String result = ParseUtil.expandParseDictionaryTypeName("java/math/BigInteger");
-		
+
 		assertEquals("java.math.BigInteger", result);
 	}
-	
-	@Test
-	public void testExpandParseDictionaryTypeNamePrimitive() throws LogParseException
+
+	@Test public void testExpandParseDictionaryTypeNamePrimitive() throws LogParseException
 	{
 		String result = ParseUtil.expandParseDictionaryTypeName("int");
-		
+
 		assertEquals("int", result);
 	}
-	
-	@Test
-	public void testExpandParseDictionaryTypeNamePrimitiveArray() throws LogParseException
+
+	@Test public void testExpandParseDictionaryTypeNamePrimitiveArray() throws LogParseException
 	{
 		String result = ParseUtil.expandParseDictionaryTypeName("[C");
-		
+
 		assertEquals("char[]", result);
 	}
-	
-	@Test
-	public void testMemberSignaturePartsNativeSignature() throws LogParseException
+
+	@Test public void testMemberSignaturePartsNativeSignature() throws LogParseException
 	{
-		MemberSignatureParts msp = MemberSignatureParts
-				.fromLogCompilationSignature("java.lang.System arraycopy (Ljava/lang/Object;ILjava/lang/Object;II)V");
+		MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(
+				"java.lang.System arraycopy (Ljava/lang/Object;ILjava/lang/Object;II)V");
 
 		assertEquals("java.lang.System", msp.getFullyQualifiedClassName());
 		assertEquals("arraycopy", msp.getMemberName());
