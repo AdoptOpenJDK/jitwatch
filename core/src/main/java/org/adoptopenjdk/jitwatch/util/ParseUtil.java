@@ -559,7 +559,7 @@ public final class ParseUtil
 						// check assignable
 						Class<?> componentType = memParamClass.getComponentType();
 
-						if (componentType.isAssignableFrom(sigParamClass))
+						if (componentType != null && componentType.isAssignableFrom(sigParamClass))
 						{
 							if (DEBUG_LOGGING_SIG_MATCH)
 							{
