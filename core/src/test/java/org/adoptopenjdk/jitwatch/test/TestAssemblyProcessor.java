@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -998,5 +998,52 @@ public class TestAssemblyProcessor
 		assertEquals("# {method} {0x00007fab6194cf00} 'intValue' '()I' in 'java/lang/Integer'", method0.getAssemblyMethodSignature());
 
 		assertEquals("0x00007fab74150300", method0.getEntryAddress());		
+	}
+
+	@Test
+	public void testJDK13AssemblyWithoutMachIdentifier()
+	{
+		String[] lines = new String[]{
+				"<print_nmethod compile_id='1' compiler='c1' level='3' stamp='0.071'>",
+				"============================= C1-compiled nmethod ==============================",
+				"----------------------------------- Assembly -----------------------------------",
+				"Compiled method (c1)      72    1       3       java.lang.Object::&lt;init&gt; (1 bytes)",
+				" total in heap  [0x00007fce68d35010,0x00007fce68d35380] = 880",
+				" relocation     [0x00007fce68d35170,0x00007fce68d35198] = 40",
+				" main code      [0x00007fce68d351a0,0x00007fce68d35280] = 224", // get from here
+				" stub code      [0x00007fce68d35280,0x00007fce68d35310] = 144",
+				" metadata       [0x00007fce68d35310,0x00007fce68d35320] = 16",
+				" scopes data    [0x00007fce68d35320,0x00007fce68d35338] = 24",
+				" scopes pcs     [0x00007fce68d35338,0x00007fce68d35378] = 64",
+				" dependencies   [0x00007fce68d35378,0x00007fce68d35380] = 8",
+				"--------------------------------------------------------------------------------",
+				"[Constant Pool (empty)]",
+				"--------------------------------------------------------------------------------",
+				"[Entry Point]",
+				"  # {method} {0x00000008003e1dc0} &apos;&lt;init&gt;&apos; &apos;()V&apos; in &apos;java/lang/Object&apos;",
+				"  #           [sp+0x40]  (sp of caller)",
+				"  0x00007fce68d351a0:   mov    0x8(%rsi),%r10d",
+				"  0x00007fce68d351a4:   shl    $0x3,%r10",
+				"  0x00007fce68d351a8:   movabs $0x800000000,%r12",
+				"  0x00007fce68d351b2:   add    %r12,%r10",
+				"  0x00007fce68d351b5:   xor    %r12,%r12",
+				"  0x00007fce68d351b8:   cmp    %rax,%r10",
+				"  0x00007fce68d351bb:   jne    0x00007fce687eed00           ;   {runtime_call ic_miss_stub}",
+				"  0x00007fce68d351c1:   data16 data16 nopw 0x0(%rax,%rax,1)",
+				"  0x00007fce68d351cc:   data16 data16 xchg %ax,%ax",
+				"  0x00007fce68d351d0:   data16 data16 nopw 0x0(%rax,%rax,1)",
+				"  0x00007fce68d351db:   data16 data16 xchg %ax,%ax",
+				"  0x00007fce68d351df:   nop"
+		};
+
+		AssemblyProcessor asmProcessor = performAssemblyParsingOn(lines);
+
+		assertEquals(1, asmProcessor.getAssemblyMethods().size());
+
+		AssemblyMethod method0 = asmProcessor.getAssemblyMethods().get(0);
+
+		assertEquals("# {method} {0x00000008003e1dc0} '<init>' '()V' in 'java/lang/Object'", method0.getAssemblyMethodSignature());
+
+		assertEquals("0x00007fce68d351a0", method0.getEntryAddress());
 	}
 }

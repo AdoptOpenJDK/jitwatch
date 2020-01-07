@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -667,7 +667,9 @@ public class SandboxConfigStage extends Stage
 
 		boolean checked = false;
 
-		if (DisassemblyUtil.isDisassemblerAvailable())
+		boolean disassemblerAvailable = DisassemblyUtil.getDisassemblerFilePath() != null;
+
+		if (disassemblerAvailable)
 		{
 			if (config.isPrintAssembly())
 			{

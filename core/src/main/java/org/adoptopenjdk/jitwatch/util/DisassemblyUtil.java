@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,6 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.sun.javafx.scene.control.behavior.SliderBehavior;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.util.OSUtil.OperatingSystem;
 import org.slf4j.Logger;
@@ -48,38 +49,8 @@ public final class DisassemblyUtil
 		return found;
 	}
 
-	public static Path getDisassemblerFilePath()
+	private static String getDisassemblerFilename()
 	{
-		String javaHome = System.getProperty("java.home");
-
-		if (DEBUG_LOGGING_ASSEMBLY)
-		{
-			logger.debug("java.home is {}", javaHome);
-		}
-
-		Path hsdisPath = Paths.get(javaHome);
-
-		Path hsdisPathJRE = Paths.get(hsdisPath.toString(), "jre", "lib");
-
-		if (hsdisPathJRE.toFile().exists())
-		{
-			hsdisPath = hsdisPathJRE;
-
-			if (DEBUG_LOGGING_ASSEMBLY)
-			{
-				logger.debug("jre lib folder found {}", hsdisPathJRE);
-			}
-		}
-		else
-		{
-			hsdisPath = Paths.get(hsdisPath.toString(), "lib");
-		}
-
-		if (DEBUG_LOGGING_ASSEMBLY)
-		{
-			logger.debug("looking in {}", hsdisPath);
-		}
-
 		OperatingSystem os = OSUtil.getOperatingSystem();
 		Architecture arch = OSUtil.getArchitecture();
 
@@ -93,45 +64,21 @@ public final class DisassemblyUtil
 		switch (arch)
 		{
 		case X86_32:
-		{
 			binaryName = "hsdis-i386";
-			hsdisPath = Paths.get(hsdisPath.toString(), "i386", "server");
 			break;
-		}
+
 		case X86_64:
-		{
 			binaryName = "hsdis-amd64";
-
-			Path hsdisPathAMD64 = Paths.get(hsdisPath.toString(), "amd64");
-
-			if (hsdisPathAMD64.toFile().exists())
-			{
-				hsdisPath = hsdisPathAMD64;
-			}
-
-			Path hsdisPathServer = Paths.get(hsdisPath.toString(), "server");
-
-			if (hsdisPathServer.toFile().exists())
-			{
-				hsdisPath = hsdisPathServer;
-			}
-
 			break;
-		}
+
 		case ARM_32:
-		{
 			binaryName = "hsdis-arm";
-			hsdisPath = Paths.get(hsdisPath.toString(), "arm", "server");
 			break;
 
-		}
 		case ARM_64:
-		{
 			binaryName = "hsdis-arm";
-			hsdisPath = Paths.get(hsdisPath.toString(), "arm64", "server"); // TODO
-																			// untested
 			break;
-		}
+
 		default:
 			break;
 		}
@@ -141,17 +88,75 @@ public final class DisassemblyUtil
 			switch (os)
 			{
 			case WIN:
-				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".dll");
+				binaryName += ".dll";
 				break;
 			case MAC:
-				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".dylib");
+				binaryName += ".dylib";
 				break;
 			case LINUX:
-				hsdisPath = Paths.get(hsdisPath.toString(), binaryName + ".so");
+				binaryName += ".so";
 				break;
 			}
 		}
 
-		return hsdisPath;
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("binaryName: {}", binaryName);
+		}
+
+		return binaryName;
+	}
+
+	public static Path getDisassemblerFilePath()
+	{
+		String binaryName = getDisassemblerFilename();
+
+		String javaHome = System.getProperty("java.home", "");
+
+		if (DEBUG_LOGGING_ASSEMBLY)
+		{
+			logger.debug("java.home is {}", javaHome);
+		}
+
+		if (javaHome.endsWith("jre"))
+		{
+			javaHome = javaHome.substring(0, javaHome.length() - 3);
+		}
+
+		String[] jrePath = new String[] { "jre", "" };
+
+		String[] libPath = new String[] { "lib", "" };
+
+		String[] serverPath = new String[] { "server", "" };
+
+		String[] archPath = new String[] { "i386", "amd64", "" };
+
+		for (String jre : jrePath)
+		{
+			for (String lib : libPath)
+			{
+				for (String server : serverPath)
+				{
+					for (String arch : archPath)
+					{
+						Path path = Paths.get(javaHome, jre, lib, server, arch, binaryName);
+
+						if (DEBUG_LOGGING_ASSEMBLY)
+						{
+							logger.debug("looking in {}", path);
+						}
+
+						File file = path.toFile();
+
+						if (file.exists() && file.isFile())
+						{
+							return path;
+						}
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 }
