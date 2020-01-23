@@ -38,24 +38,9 @@ or place the JavaFX runtime into "$rootDir/lib".
 }
 
 configurations {
-    // gradle does not have a 'system' nor 'provided' scope
-    system
-}
-
-compileJava {
-     sourceSets.main.compileClasspath += configurations.system
-}
-
-javadoc {
-    classpath += configurations.system
-}
-
-idea {
-    module {
-        scopes.PROVIDED.plus += configurations.system
-    }
+    compileOnly
 }
 
 dependencies {
-    system(files(jfxrt))
+    compileOnly(files(jfxrt))
 }
