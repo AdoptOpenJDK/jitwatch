@@ -11,7 +11,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.sun.javafx.scene.control.behavior.SliderBehavior;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.util.OSUtil.OperatingSystem;
 import org.slf4j.Logger;
