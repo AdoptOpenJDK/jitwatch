@@ -624,7 +624,7 @@ public final class BytecodeLoader
 
 		if (line != null)
 		{
-			if (line.length() == 0)
+			if (line.isEmpty() || "}".equals(line.trim()))
 			{
 				nextSection = BytecodeSection.NONE;
 			}

@@ -566,6 +566,80 @@ public class TestBytecodeLoader
 	}
 
 	@Test
+	public void testMethodWithNoSectionsAfterBytecodeGitHubIssue319() throws ClassNotFoundException
+	{
+		String[] lines = new String[] {
+
+				"Classfile TestBytecodeLoader.class",
+				"  Last modified 18-May-2014; size 426 bytes",
+				"  MD5 checksum d8d0af7620175f82d2c5c753b493196f",
+				"  Compiled from \"TestBytecodeLoader.java\"",
+				"public class org.adoptopenjdk.jitwatch.test.TestBytecodeLoader",
+				"  SourceFile: \"TestBytecodeLoader.java\"",
+				"  minor version: 0",
+				"  major version: 51",
+				"  flags: ACC_PUBLIC, ACC_SUPER",
+				"Constant pool:",
+				"   #1 = Methodref          #3.#18         //  java/lang/Object.\"<init>\":()V",
+				"   #2 = Class              #19            //  org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"   #3 = Class              #20            //  java/lang/Object",
+				"   #4 = Utf8               <init>",
+				"   #5 = Utf8               ()V",
+				"   #6 = Utf8               Code",
+				"   #7 = Utf8               LineNumberTable",
+				"   #8 = Utf8               LocalVariableTable",
+				"   #9 = Utf8               this",
+				"  #10 = Utf8               Lorg/adoptopenjdk/jitwatch/test/TestBytecodeLoader;",
+				"  #11 = Utf8               add",
+				"  #12 = Utf8               (II)I",
+				"  #13 = Utf8               a",
+				"  #14 = Utf8               I",
+				"  #15 = Utf8               b",
+				"  #16 = Utf8               SourceFile",
+				"  #17 = Utf8               TestBytecodeLoader.java",
+				"  #18 = NameAndType        #4:#5          //  \"<init>\":()V",
+				"  #19 = Utf8               org/adoptopenjdk/jitwatch/test/TestBytecodeLoader",
+				"  #20 = Utf8               java/lang/Object",
+				"{",
+				"  public char getChar(char[], int);",
+				"descriptor: ([CI)C",
+				"flags: ACC_PUBLIC",
+				"Code:",
+				"  stack=2, locals=4, args_size=3",
+				"     0: aload_1",
+				"     1: iload_2",
+				"     2: caload",
+				"     3: ireturn",
+				"     4: astore_3",
+				"     5: bipush        42",
+				"     7: ireturn",
+				"}",
+				"InnerClasses:"
+		};
+
+		IMetaMember member = UnitTestUtil.createTestMetaMember(getClass().getName(), "getChar",
+				new Class<?>[] { char[].class, int.class }, char.class);
+
+		ClassBC classBytecode = BytecodeLoader.parse(getClass().getName(), lines, false);
+
+		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
+
+		assertNotNull(memberBytecode);
+
+		List<BytecodeInstruction> instructions = memberBytecode.getInstructions();
+
+		assertEquals(7, instructions.size());
+
+		LineTable lineTable = memberBytecode.getLineTable();
+
+		assertEquals(0, lineTable.size());
+
+		ExceptionTable exceptionTable = memberBytecode.getExceptionTable();
+
+		assertEquals(0, exceptionTable.size());
+	}
+
+	@Test
 	public void testClassFileVersion()
 	{
 		String[] lines = new String[] {
