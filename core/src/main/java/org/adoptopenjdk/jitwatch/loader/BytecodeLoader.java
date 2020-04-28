@@ -783,6 +783,7 @@ public final class BytecodeLoader
 					else
 					{
 						logger.error("could not parse bytecode: '" + line + "'");
+						System.exit(-1);
 					}
 				}
 				catch (Exception e)
