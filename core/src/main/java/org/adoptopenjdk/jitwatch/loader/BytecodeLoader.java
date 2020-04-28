@@ -624,7 +624,7 @@ public final class BytecodeLoader
 
 		if (line != null)
 		{
-			if (line.length() == 0)
+			if (line.isEmpty() || "}".equals(line.trim()))
 			{
 				nextSection = BytecodeSection.NONE;
 			}
@@ -783,6 +783,7 @@ public final class BytecodeLoader
 					else
 					{
 						logger.error("could not parse bytecode: '" + line + "'");
+						System.exit(-1);
 					}
 				}
 				catch (Exception e)
