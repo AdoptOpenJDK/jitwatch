@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -107,7 +108,7 @@ public class ReflectionJavap
 				}
 			}
 			
-			canUseReflectionJavap = new Boolean(available);
+			canUseReflectionJavap = Boolean.valueOf(available);
 		}
 
 		return canUseReflectionJavap.booleanValue();
@@ -130,7 +131,8 @@ public class ReflectionJavap
 		{
 			try
 			{
-				Object javapObject = classJavapTask.newInstance();
+				Constructor<?> constructor = classJavapTask.getDeclaredConstructor();
+				Object javapObject = constructor.newInstance();
 	
 				Method methodSetLog = classJavapTask.getMethod("setLog", new Class[] { OutputStream.class });
 				Method methodHandleOptions = classJavapTask.getMethod("handleOptions", new Class[] { String[].class });
