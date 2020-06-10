@@ -32,7 +32,7 @@ public class ReflectionJavap
 	
 	private static boolean hasCheckedForToolsJar = false;
 	
-	private static Boolean canUseReflectionJavap = null;
+	private static boolean canUseReflectionJavap = false;
 	
 	private static Class<?> classJavapTask;
 	
@@ -61,7 +61,7 @@ public class ReflectionJavap
 
 	public static boolean canUseReflectionJavap()
 	{
-		if (canUseReflectionJavap == null)
+		if (!canUseReflectionJavap)
 		{
 			boolean available = false;
 						
@@ -108,10 +108,10 @@ public class ReflectionJavap
 				}
 			}
 			
-			canUseReflectionJavap = Boolean.valueOf(available);
+			canUseReflectionJavap = available;
 		}
 
-		return canUseReflectionJavap.booleanValue();
+		return canUseReflectionJavap;
 	}
 
 	public static String getBytecode(List<String> classLocations, String fqClassName)
