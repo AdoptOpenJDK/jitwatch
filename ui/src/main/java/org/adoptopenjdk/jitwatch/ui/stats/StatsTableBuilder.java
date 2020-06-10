@@ -20,12 +20,12 @@ public final class StatsTableBuilder
 	{
 		TableView<StatsTableRow> tv = new TableView<>();
 
-		TableColumn<StatsTableRow, String> colName = new TableColumn<StatsTableRow, String>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<StatsTableRow, String>("name"));
+		TableColumn<StatsTableRow, String> colName = new TableColumn<>("Name");
+		colName.setCellValueFactory(new PropertyValueFactory<>("name"));
 		colName.prefWidthProperty().bind(tv.widthProperty().multiply(0.33));
 
-		TableColumn<StatsTableRow, Long> colValue = new TableColumn<StatsTableRow, Long>("Value");
-		colValue.setCellValueFactory(new PropertyValueFactory<StatsTableRow, Long>("value"));
+		TableColumn<StatsTableRow, Long> colValue = new TableColumn<>("Value");
+		colValue.setCellValueFactory(new PropertyValueFactory<>("value"));
 		colValue.prefWidthProperty().bind(tv.widthProperty().multiply(0.66));
 
 		tv.getColumns().add(colName);

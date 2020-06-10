@@ -158,12 +158,12 @@ public class TopListStage extends Stage
 
 		tableView = new TableView<>();
 
-		TableColumn<ITopListScore, Long> colScore = new TableColumn<ITopListScore, Long>("");
-		colScore.setCellValueFactory(new PropertyValueFactory<ITopListScore, Long>("score"));
+		TableColumn<ITopListScore, Long> colScore = new TableColumn<>("");
+		colScore.setCellValueFactory(new PropertyValueFactory<>("score"));
 		colScore.prefWidthProperty().bind(tableView.widthProperty().divide(8));
 
-		TableColumn<ITopListScore, Object> colKey = new TableColumn<ITopListScore, Object>("");
-		colKey.setCellValueFactory(new PropertyValueFactory<ITopListScore, Object>("key"));
+		TableColumn<ITopListScore, Object> colKey = new TableColumn<>("");
+		colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
 		colKey.prefWidthProperty().bind(tableView.widthProperty().divide(8).multiply(7));
 
 		tableView.getColumns().add(colScore);

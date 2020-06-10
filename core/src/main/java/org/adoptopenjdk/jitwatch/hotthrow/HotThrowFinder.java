@@ -174,7 +174,7 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 
 							if (memberBytecode == null)
 							{
-								member.getMetaClass().getClassBytecode(model, new ArrayList<String>());
+								member.getMetaClass().getClassBytecode(model, new ArrayList<>());
 
 								memberBytecode = member.getMemberBytecode();
 							}

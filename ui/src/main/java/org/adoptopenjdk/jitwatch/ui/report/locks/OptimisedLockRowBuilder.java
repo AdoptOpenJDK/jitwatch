@@ -27,8 +27,8 @@ public final class OptimisedLockRowBuilder
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
-		TableColumn<IReportRowBean, String> metaClass = new TableColumn<IReportRowBean, String>("Class");
-		metaClass.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("metaClass"));
+		TableColumn<IReportRowBean, String> metaClass = new TableColumn<>("Class");
+		metaClass.setCellValueFactory(new PropertyValueFactory<>("metaClass"));
 		metaClass.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -38,8 +38,8 @@ public final class OptimisedLockRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> member = new TableColumn<IReportRowBean, String>("Member");
-		member.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("member"));
+		TableColumn<IReportRowBean, String> member = new TableColumn<>("Member");
+		member.setCellValueFactory(new PropertyValueFactory<>("member"));
 		member.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -49,8 +49,8 @@ public final class OptimisedLockRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> compilation = new TableColumn<IReportRowBean, String>("Compilation");
-		compilation.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("compilation"));
+		TableColumn<IReportRowBean, String> compilation = new TableColumn<>("Compilation");
+		compilation.setCellValueFactory(new PropertyValueFactory<>("compilation"));
 		compilation.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -60,8 +60,8 @@ public final class OptimisedLockRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, Report> viewBCI = new TableColumn<IReportRowBean, Report>("BCI");
-		viewBCI.setCellValueFactory(new PropertyValueFactory<IReportRowBean, Report>("report"));
+		TableColumn<IReportRowBean, Report> viewBCI = new TableColumn<>("BCI");
+		viewBCI.setCellValueFactory(new PropertyValueFactory<>("report"));
 		viewBCI.setCellFactory(new Callback<TableColumn<IReportRowBean, Report>, TableCell<IReportRowBean, Report>>()
 		{
 			@Override
@@ -71,8 +71,8 @@ public final class OptimisedLockRowBuilder
 			}
 		});
 		
-		TableColumn<IReportRowBean, String> directOrInline = new TableColumn<IReportRowBean, String>("How");
-		directOrInline.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("kind"));
+		TableColumn<IReportRowBean, String> directOrInline = new TableColumn<>("How");
+		directOrInline.setCellValueFactory(new PropertyValueFactory<>("kind"));
 		directOrInline.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -82,8 +82,8 @@ public final class OptimisedLockRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> optimisationKind = new TableColumn<IReportRowBean, String>("Optimisation Kind");
-		optimisationKind.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("optimisationKind"));
+		TableColumn<IReportRowBean, String> optimisationKind = new TableColumn<>("Optimisation Kind");
+		optimisationKind.setCellValueFactory(new PropertyValueFactory<>("optimisationKind"));
 		optimisationKind.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override

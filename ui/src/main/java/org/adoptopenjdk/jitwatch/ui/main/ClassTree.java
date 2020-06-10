@@ -87,11 +87,11 @@ public class ClassTree extends VBox
 		cbHideUncompiled.setStyle(cbStyle);
 		cbHideUncompiled.prefWidthProperty().bind(widthProperty());
 
-		rootItem = new TreeItem<Object>(TREE_PACKAGE_ROOT);
+		rootItem = new TreeItem<>(TREE_PACKAGE_ROOT);
 
 		rootItem.setExpanded(true);
 
-		treeView = new TreeView<Object>(rootItem);
+		treeView = new TreeView<>(rootItem);
 
 		treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
@@ -180,7 +180,7 @@ public class ClassTree extends VBox
 
 		if (found == null)
 		{
-			found = new TreeItem<Object>(value);
+			found = new TreeItem<>(value);
 			children.add(placeToInsert, found);
 
 			if (value instanceof MetaPackage)

@@ -29,8 +29,8 @@ public final class SuggestionRowBuilder
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
-		TableColumn<IReportRowBean, Integer> score = new TableColumn<IReportRowBean, Integer>("Score");
-		score.setCellValueFactory(new PropertyValueFactory<IReportRowBean, Integer>("score"));
+		TableColumn<IReportRowBean, Integer> score = new TableColumn<>("Score");
+		score.setCellValueFactory(new PropertyValueFactory<>("score"));
 		score.setCellFactory(new Callback<TableColumn<IReportRowBean, Integer>, TableCell<IReportRowBean, Integer>>()
 		{
 			@Override
@@ -40,8 +40,8 @@ public final class SuggestionRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> type = new TableColumn<IReportRowBean, String>("Type");
-		type.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("type"));
+		TableColumn<IReportRowBean, String> type = new TableColumn<>("Type");
+		type.setCellValueFactory(new PropertyValueFactory<>("type"));
 		type.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -51,8 +51,8 @@ public final class SuggestionRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, Report> caller = new TableColumn<IReportRowBean, Report>("Caller");
-		caller.setCellValueFactory(new PropertyValueFactory<IReportRowBean, Report>("report"));
+		TableColumn<IReportRowBean, Report> caller = new TableColumn<>("Caller");
+		caller.setCellValueFactory(new PropertyValueFactory<>("report"));
 		caller.setCellFactory(new Callback<TableColumn<IReportRowBean, Report>, TableCell<IReportRowBean, Report>>()
 		{
 			@Override
@@ -62,8 +62,8 @@ public final class SuggestionRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> suggestion = new TableColumn<IReportRowBean, String>("Suggestion");
-		suggestion.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("text"));
+		TableColumn<IReportRowBean, String> suggestion = new TableColumn<>("Suggestion");
+		suggestion.setCellValueFactory(new PropertyValueFactory<>("text"));
 		suggestion.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override

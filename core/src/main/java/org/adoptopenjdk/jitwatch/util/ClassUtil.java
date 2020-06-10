@@ -19,7 +19,7 @@ import java.util.List;
 
 public final class ClassUtil
 {
-	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new ArrayList<URL>());
+	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new ArrayList<>());
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 

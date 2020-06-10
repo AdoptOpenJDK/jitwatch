@@ -184,7 +184,7 @@ public final class UserInterfaceUtil
 
 			if (psNameToPathMap.get(null) == null)
 			{
-				psNameToPathMap.set(null, new HashMap<String, String>());
+				psNameToPathMap.set(null, new HashMap<>());
 			}
 
 			final Field allAvailableFontFamilies = macFontFinderClass.getDeclaredField("allAvailableFontFamilies");

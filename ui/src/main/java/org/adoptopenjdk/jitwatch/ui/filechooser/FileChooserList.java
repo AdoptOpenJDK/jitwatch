@@ -43,7 +43,7 @@ public class FileChooserList extends VBox
 
 		HBox hbox = new HBox();
 
-		fileList = new ListView<Label>();
+		fileList = new ListView<>();
 
 		setItems(items);
 

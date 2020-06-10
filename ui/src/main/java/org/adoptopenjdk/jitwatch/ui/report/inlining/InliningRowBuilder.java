@@ -27,8 +27,8 @@ public final class InliningRowBuilder
 	{
 		TableView<IReportRowBean> tv = new TableView<>();
 
-		TableColumn<IReportRowBean, String> metaClass = new TableColumn<IReportRowBean, String>("Caller Class");
-		metaClass.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("metaClass"));
+		TableColumn<IReportRowBean, String> metaClass = new TableColumn<>("Caller Class");
+		metaClass.setCellValueFactory(new PropertyValueFactory<>("metaClass"));
 		metaClass.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -38,8 +38,8 @@ public final class InliningRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> member = new TableColumn<IReportRowBean, String>("Caller method");
-		member.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("member"));
+		TableColumn<IReportRowBean, String> member = new TableColumn<>("Caller method");
+		member.setCellValueFactory(new PropertyValueFactory<>("member"));
 		member.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -49,8 +49,8 @@ public final class InliningRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> compilation = new TableColumn<IReportRowBean, String>("Compilation");
-		compilation.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("compilation"));
+		TableColumn<IReportRowBean, String> compilation = new TableColumn<>("Compilation");
+		compilation.setCellValueFactory(new PropertyValueFactory<>("compilation"));
 		compilation.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -60,8 +60,8 @@ public final class InliningRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, Report> viewBCI = new TableColumn<IReportRowBean, Report>("BCI");
-		viewBCI.setCellValueFactory(new PropertyValueFactory<IReportRowBean, Report>("report"));
+		TableColumn<IReportRowBean, Report> viewBCI = new TableColumn<>("BCI");
+		viewBCI.setCellValueFactory(new PropertyValueFactory<>("report"));
 		viewBCI.setCellFactory(new Callback<TableColumn<IReportRowBean, Report>, TableCell<IReportRowBean, Report>>()
 		{
 			@Override
@@ -71,8 +71,8 @@ public final class InliningRowBuilder
 			}
 		});
 		
-		TableColumn<IReportRowBean, String> success = new TableColumn<IReportRowBean, String>("Inlined?");
-		success.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("success"));
+		TableColumn<IReportRowBean, String> success = new TableColumn<>("Inlined?");
+		success.setCellValueFactory(new PropertyValueFactory<>("success"));
 		success.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override
@@ -82,8 +82,8 @@ public final class InliningRowBuilder
 			}
 		});
 
-		TableColumn<IReportRowBean, String> reason = new TableColumn<IReportRowBean, String>("Reason");
-		reason.setCellValueFactory(new PropertyValueFactory<IReportRowBean, String>("reason"));
+		TableColumn<IReportRowBean, String> reason = new TableColumn<>("Reason");
+		reason.setCellValueFactory(new PropertyValueFactory<>("reason"));
 		reason.setCellFactory(new Callback<TableColumn<IReportRowBean, String>, TableCell<IReportRowBean, String>>()
 		{
 			@Override

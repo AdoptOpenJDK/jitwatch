@@ -76,7 +76,7 @@ public class TestAssemblyLabels
 	@Test
 	public void testFormatAddressJumpLocal2()
 	{
-		labels.newInstruction(new AssemblyInstruction("", 99, Collections.<String>emptyList(), "blah", Collections.<String>emptyList(), "", labels));
+		labels.newInstruction(new AssemblyInstruction("", 99, Collections.emptyList(), "blah", Collections.emptyList(), "", labels));
 		labels.newInstruction(
 			new AssemblyInstruction("anno", 65534, asList("mod"), "jne", asList("0x0000000000000100"), "", labels));
 		labels.newInstruction(
@@ -157,7 +157,7 @@ public class TestAssemblyLabels
 	public void testFormatNoOperands()
 	{
 		final AssemblyInstruction noOps =
-			new AssemblyInstruction(null, 65535, null, "jne", Collections.<String>emptyList(), null, labels);
+			new AssemblyInstruction(null, 65535, null, "jne", Collections.emptyList(), null, labels);
 		
 		sb.setLength(0);
 		labels.formatAddress(65535, sb);

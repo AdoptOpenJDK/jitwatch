@@ -113,7 +113,7 @@ public class HistoPlotter extends Application
 
 				maxSize = Math.max(maxSize, xValue.intValue());
 
-				XYChart.Data<Number, Number> point = new XYChart.Data<Number, Number>(xValue, yValue);
+				XYChart.Data<Number, Number> point = new XYChart.Data<>(xValue, yValue);
 
 				values.add(point);
 			}
