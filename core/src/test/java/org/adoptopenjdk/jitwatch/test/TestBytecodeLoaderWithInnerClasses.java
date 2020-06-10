@@ -101,7 +101,7 @@ public class TestBytecodeLoaderWithInnerClasses
 			List<File> sources = new ArrayList<>();
 			sources.add(pathToSourceFile.toFile());
 
-			classpathLocations = new ArrayList<String>();
+			classpathLocations = new ArrayList<>();
 			classpathLocations.add(pathToTempClassDir.toString());
 
 			CompilerJava compiler = new CompilerJava(System.getProperty("java.home"));

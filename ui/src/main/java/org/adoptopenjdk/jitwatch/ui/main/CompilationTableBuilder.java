@@ -22,28 +22,28 @@ public final class CompilationTableBuilder
 	{
 		TableView<CompilationTableRow> tv = new TableView<>();
 
-		TableColumn<CompilationTableRow, String> columnQueued = new TableColumn<CompilationTableRow, String>("Queued");
-		columnQueued.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("stampQueued"));
+		TableColumn<CompilationTableRow, String> columnQueued = new TableColumn<>("Queued");
+		columnQueued.setCellValueFactory(new PropertyValueFactory<>("stampQueued"));
 		columnQueued.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
 
-		TableColumn<CompilationTableRow, String> columnCompileStart = new TableColumn<CompilationTableRow, String>("Compile Start");
-		columnCompileStart.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("stampCompilationStart"));
+		TableColumn<CompilationTableRow, String> columnCompileStart = new TableColumn<>("Compile Start");
+		columnCompileStart.setCellValueFactory(new PropertyValueFactory<>("stampCompilationStart"));
 		columnCompileStart.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
 		
-		TableColumn<CompilationTableRow, String> columnEmitted = new TableColumn<CompilationTableRow, String>("NMethod Emit");
-		columnEmitted.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("stampNMethodEmitted"));
+		TableColumn<CompilationTableRow, String> columnEmitted = new TableColumn<>("NMethod Emit");
+		columnEmitted.setCellValueFactory(new PropertyValueFactory<>("stampNMethodEmitted"));
 		columnEmitted.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
 
-		TableColumn<CompilationTableRow, String> columnSize = new TableColumn<CompilationTableRow, String>("Native Size");
-		columnSize.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("native"));
+		TableColumn<CompilationTableRow, String> columnSize = new TableColumn<>("Native Size");
+		columnSize.setCellValueFactory(new PropertyValueFactory<>("native"));
 		columnSize.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 
-		TableColumn<CompilationTableRow, String> columnCompiler = new TableColumn<CompilationTableRow, String>("Compiler");
-		columnCompiler.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("compiler"));
+		TableColumn<CompilationTableRow, String> columnCompiler = new TableColumn<>("Compiler");
+		columnCompiler.setCellValueFactory(new PropertyValueFactory<>("compiler"));
 		columnCompiler.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 
-		TableColumn<CompilationTableRow, String> columnLevel = new TableColumn<CompilationTableRow, String>("Level");
-		columnLevel.setCellValueFactory(new PropertyValueFactory<CompilationTableRow, String>("level"));
+		TableColumn<CompilationTableRow, String> columnLevel = new TableColumn<>("Level");
+		columnLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
 		columnLevel.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
 		
 		tv.getColumns().add(columnQueued);

@@ -135,7 +135,7 @@ public abstract class AbstractLogParser implements ILogParser
 		int configuredClasspathCount = configuredClassLocations.size();
 		int parsedClasspathCount = parsedClassLocations.size();
 
-		List<URL> classpathURLList = new ArrayList<URL>(configuredClasspathCount + parsedClasspathCount);
+		List<URL> classpathURLList = new ArrayList<>(configuredClasspathCount + parsedClasspathCount);
 
 		for (String filename : configuredClassLocations)
 		{

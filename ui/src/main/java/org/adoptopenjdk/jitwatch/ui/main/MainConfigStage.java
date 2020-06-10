@@ -220,7 +220,7 @@ public class MainConfigStage extends Stage
 
 		profileList.clear();
 
-		List<String> configNameList = new ArrayList<String>(config.getProfileNames());
+		List<String> configNameList = new ArrayList<>(config.getProfileNames());
 
 		Collections.sort(configNameList);
 

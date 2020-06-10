@@ -45,7 +45,7 @@ public class TestBytecodeLoader
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(fqClassName, methodName, params, char.class);
 
-		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<String>(), fqClassName, false);
+		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(new ArrayList<>(), fqClassName, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
 
@@ -868,7 +868,7 @@ public class TestBytecodeLoader
 		
 		final File currentClassFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 
-		List<String> classPath = new ArrayList<String>();
+		List<String> classPath = new ArrayList<>();
 
 		classPath.add(currentClassFile.toURI().toString());
 		

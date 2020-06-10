@@ -27,7 +27,7 @@ public class ParsedClasspath
 	
 	public List<String> getClassLocations()
 	{
-		List<String> asList = new ArrayList<String>(classLocationSet);
+		List<String> asList = new ArrayList<>(classLocationSet);
 		
 		Collections.sort(asList);
 		

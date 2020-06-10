@@ -61,7 +61,7 @@ public class MemberSignatureParts
 	private static final Logger logger = LoggerFactory.getLogger(MemberSignatureParts.class);
 
 	// LinkedHashMap to ensure entry set iteration matches insertion order
-	private static final Map<String, Integer> modifierMap = new LinkedHashMap<String, Integer>();
+	private static final Map<String, Integer> modifierMap = new LinkedHashMap<>();
 
 	static
 	{

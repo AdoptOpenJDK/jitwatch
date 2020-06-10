@@ -693,7 +693,7 @@ public class TestAssemblyProcessor
 		assertEquals(Long.parseLong("00007f25cd19c8b8", 16), instr9.getAddress());
 		assertEquals("fstpl", instr9.getMnemonic());
 
-		List<String> operands = new ArrayList<String>();
+		List<String> operands = new ArrayList<>();
 		operands.add("(%rsp)");
 
 		assertEquals(operands, instr9.getOperands());

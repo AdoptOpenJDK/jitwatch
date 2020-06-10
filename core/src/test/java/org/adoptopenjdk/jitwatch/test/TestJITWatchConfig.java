@@ -68,7 +68,7 @@ public class TestJITWatchConfig
 
 		String foo = "foo";
 
-		List<String> sourcesList = new ArrayList<String>();
+		List<String> sourcesList = new ArrayList<>();
 		sourcesList.add(foo);
 
 		config.setSourceLocations(sourcesList);
@@ -108,7 +108,7 @@ public class TestJITWatchConfig
 
 		String foo = "foo";
 
-		List<String> sourcesListFoo = new ArrayList<String>();
+		List<String> sourcesListFoo = new ArrayList<>();
 		sourcesListFoo.add(foo);
 
 		config.setSourceLocations(sourcesListFoo);
@@ -142,7 +142,7 @@ public class TestJITWatchConfig
 
 		String bar = "bar";
 
-		List<String> sourcesListBar = new ArrayList<String>();
+		List<String> sourcesListBar = new ArrayList<>();
 		sourcesListBar.add(bar);
 		
 		config.setSourceLocations(sourcesListBar);
@@ -187,7 +187,7 @@ public class TestJITWatchConfig
 
 		String foo = "foo";
 
-		List<String> sourcesListFoo = new ArrayList<String>();
+		List<String> sourcesListFoo = new ArrayList<>();
 		sourcesListFoo.add(foo);
 
 		config.setSourceLocations(sourcesListFoo);
@@ -221,7 +221,7 @@ public class TestJITWatchConfig
 
 		String bar = "bar";
 
-		List<String> sourcesListBar = new ArrayList<String>();
+		List<String> sourcesListBar = new ArrayList<>();
 		sourcesListBar.add(bar);
 		
 		config.setSourceLocations(sourcesListBar);

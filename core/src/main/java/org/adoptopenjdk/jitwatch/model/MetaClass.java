@@ -36,8 +36,8 @@ public class MetaClass implements Comparable<MetaClass>
 	private boolean isInterface = false;
 	private boolean missingDef = false;
 
-	private List<IMetaMember> classMethods = new CopyOnWriteArrayList<IMetaMember>();
-	private List<IMetaMember> classConstructors = new CopyOnWriteArrayList<IMetaMember>();
+	private List<IMetaMember> classMethods = new CopyOnWriteArrayList<>();
+	private List<IMetaMember> classConstructors = new CopyOnWriteArrayList<>();
 
 	private int compiledMethodCount = 0;
 

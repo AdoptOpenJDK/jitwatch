@@ -91,7 +91,7 @@ public class ClassMemberList extends VBox
 		cbOnlyCompiled.setStyle("-fx-background-color:#dddddd; -fx-padding:4px");
 		cbOnlyCompiled.prefWidthProperty().bind(widthProperty());
 
-		memberList = new ListView<IMetaMember>();
+		memberList = new ListView<>();
 		memberList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<IMetaMember>()
 		{
 			@Override

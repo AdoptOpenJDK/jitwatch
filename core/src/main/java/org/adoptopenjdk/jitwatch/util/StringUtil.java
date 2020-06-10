@@ -491,7 +491,7 @@ public final class StringUtil
 
 	public static List<String> getSortedKeys(Map<String, ?> map)
 	{
-		List<String> attrList = new ArrayList<String>(map.keySet());
+		List<String> attrList = new ArrayList<>(map.keySet());
 		Collections.sort(attrList);
 
 		return attrList;
