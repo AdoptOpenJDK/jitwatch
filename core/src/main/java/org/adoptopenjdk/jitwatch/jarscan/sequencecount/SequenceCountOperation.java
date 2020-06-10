@@ -101,6 +101,10 @@ public class SequenceCountOperation implements IJarScanOperation
 				
 		while (chain.size() < maxLength)
 		{
+			if(index >=instructions.size())
+			{
+				break;
+			}
 			BytecodeInstruction instruction = instructions.get(index);
 					
 			int instrBCI = instruction.getOffset();
