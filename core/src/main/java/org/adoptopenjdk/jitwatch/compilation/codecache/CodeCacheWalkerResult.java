@@ -37,7 +37,7 @@ public class CodeCacheWalkerResult
 		long nativeCodeStart = event.getNativeAddress();
 		long nativeCodeEnd = nativeCodeStart + event.getNativeCodeSize();
 
-		if (events.size() == 0)
+		if (events.isEmpty())
 		{
 			lowestAddress = nativeCodeStart;
 			highestAddress = nativeCodeEnd;

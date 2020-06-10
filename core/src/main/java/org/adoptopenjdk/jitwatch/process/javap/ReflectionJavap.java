@@ -159,7 +159,7 @@ public class ReflectionJavap
 	{
 		String[] args;
 
-		if (classLocations == null || classLocations.size() == 0)
+		if (classLocations == null || classLocations.isEmpty())
 		{
 			args = new String[] { "-c", "-p", "-v", fqClassName };
 		}

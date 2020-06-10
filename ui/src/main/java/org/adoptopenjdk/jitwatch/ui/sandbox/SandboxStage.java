@@ -410,7 +410,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 	{
 		List<String> panes = config.getLastEditorPaneList();
 
-		if (panes.size() == 0)
+		if (panes.isEmpty())
 		{
 			loadDefaultEditors();
 		}

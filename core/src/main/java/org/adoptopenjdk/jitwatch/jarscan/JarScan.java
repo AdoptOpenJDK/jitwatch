@@ -142,7 +142,7 @@ public class JarScan
 	{
 		boolean allowed = false;
 
-		if (allowedPackagePrefixes.size() == 0)
+		if (allowedPackagePrefixes.isEmpty())
 		{
 			allowed = true;
 		}

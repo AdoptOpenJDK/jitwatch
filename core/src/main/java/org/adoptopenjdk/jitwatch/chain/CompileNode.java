@@ -198,7 +198,7 @@ public class CompileNode
 			show(child, builder, depth + 1);
 		}
 
-		if (node.getChildren().size() == 0)
+		if (node.getChildren().isEmpty())
 		{
 			builder.append(C_NEWLINE);
 		}

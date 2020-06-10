@@ -115,7 +115,7 @@ public class ReportStage extends Stage
 	{
 		clear();
 
-		if (reportList.size() == 0)
+		if (reportList.isEmpty())
 		{
 			vbox.getChildren().clear();
 			vbox.getChildren().add(new Label("No results"));
@@ -126,7 +126,7 @@ public class ReportStage extends Stage
 			{
 				boolean show = false;
 
-				if (filterPackageSet.size() == 0)
+				if (filterPackageSet.isEmpty())
 				{
 					show = true;
 				}
