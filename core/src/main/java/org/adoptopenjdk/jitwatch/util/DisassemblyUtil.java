@@ -124,7 +124,7 @@ public final class DisassemblyUtil
 
 		String[] jrePath = new String[] { "jre", "" };
 
-		String[] libPath = new String[] { "lib", "" };
+		String[] libPath = new String[] { "lib", "bin", "" };
 
 		String[] serverPath = new String[] { "server", "" };
 
