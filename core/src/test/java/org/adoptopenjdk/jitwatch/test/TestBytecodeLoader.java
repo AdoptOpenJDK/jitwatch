@@ -865,13 +865,13 @@ public class TestBytecodeLoader
 		String methodName = "exampleOverloadedMethod";
 
 		IMetaMember member = UnitTestUtil.createTestMetaMember(className, methodName, new Class<?>[] { paramClass }, int.class);
-		
-		final File currentClassFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+
+		final File classpathForThisClass = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 
 		List<String> classPath = new ArrayList<>();
 
-		classPath.add(currentClassFile.toURI().toString());
-		
+		classPath.add(classpathForThisClass.toString());
+
 		ClassBC classBytecode = BytecodeLoader.fetchBytecodeForClass(classPath, className, false);
 
 		MemberBytecode memberBytecode = classBytecode.getMemberBytecode(member);
