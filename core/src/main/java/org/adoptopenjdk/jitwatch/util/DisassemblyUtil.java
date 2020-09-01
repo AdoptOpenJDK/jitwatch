@@ -156,6 +156,33 @@ public final class DisassemblyUtil
 			}
 		}
 
+		if (OSUtil.OperatingSystem.LINUX == OSUtil.getOperatingSystem())
+		{
+			String dynLibPath = System.getenv("LD_LIBRARY_PATH");
+
+			if (dynLibPath != null)
+			{
+				String[] dirs = dynLibPath.split(":");
+
+				for (String dir : dirs)
+				{
+					Path path = Paths.get(dir, binaryName);
+
+					if (DEBUG_LOGGING_ASSEMBLY)
+					{
+						logger.debug("looking in {}", path);
+					}
+
+					File file = path.toFile();
+
+					if (file.exists() && file.isFile())
+					{
+						return path;
+					}
+				}
+			}
+		}
+
 		return null;
 	}
 }
