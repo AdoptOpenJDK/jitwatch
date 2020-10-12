@@ -19,7 +19,7 @@ dependencies {
     compile project(':core')
 
     compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.2.3', 'ch.qos.logback:logback-core:1.2.3'
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13.1'
 }
 
 mainClassName = 'org.adoptopenjdk.jitwatch.launch.LaunchUI'
