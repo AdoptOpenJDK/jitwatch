@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -87,6 +87,8 @@ public class SuggestionWalker extends AbstractReportBuilder
 	private static final String REASON_UNCERTAIN_BRANCH = "Uncertain branch";
 	private static final String REASON_NATIVE_METHOD = "native method";
 
+	private static final String REASON_TOO_MUCH_STACK = "callee uses too much stack";
+
 	private static final String REASON_CALLEE_IS_TOO_LARGE = "callee is too large";
 	private static final String REASON_NO_STATIC_BINDING = "no static binding";
 	private static final String REASON_NOT_INLINEABLE = "not inlineable";
@@ -122,6 +124,8 @@ public class SuggestionWalker extends AbstractReportBuilder
 		scoreMap.put(REASON_UNCERTAIN_BRANCH, 0.5);
 		scoreMap.put(REASON_TOO_BIG, 0.5);
 
+		scoreMap.put(REASON_TOO_MUCH_STACK, 0.5);
+
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_BIG_METHOD, 0.4);
 		scoreMap.put(REASON_ALREADY_COMPILED_INTO_A_MEDIUM_METHOD, 0.4);
 		scoreMap.put(REASON_NOT_INLINEABLE, 0.4);
@@ -146,6 +150,8 @@ public class SuggestionWalker extends AbstractReportBuilder
 		scoreMap.put(REASON_NATIVE_METHOD, 0.0);
 		scoreMap.put(REASON_CALL_SITE_NOT_REACHED, 0.0);
 		scoreMap.put(REASON_DONT_THROW_INLINEABLE_CONSTRUCTORS, 0.0);
+
+		explanationMap.put(REASON_TOO_MUCH_STACK, "non-recursive AND callee->max_stack() + callee->max_locals() - callee->size_of_parameters() > C1InlineStackLimit");
 
 		explanationMap.put(REASON_HOT_METHOD_TOO_BIG,
 				"The callee method is 'hot' but is too big to be inlined into the caller.\nYou may want to consider refactoring the callee into smaller methods.");

@@ -238,6 +238,18 @@
 				<javafx.version>15</javafx.version>
 			</properties>
 		</profile>
+
+		<!-- ======== JDK 16 Profile ======== -->
+		<profile>
+			<id>jdk16</id>
+			<activation>
+				<jdk>16</jdk>
+			</activation>
+			<properties>
+				<jdk.version>16</jdk.version>
+				<javafx.version>16</javafx.version>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>
