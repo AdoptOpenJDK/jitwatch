@@ -1,15 +1,7 @@
 apply plugin: "org.openjfx.javafxplugin"
 
 def javaVersion = JavaVersion.current()
-def openjfxVersion
-
-if (javaVersion == JavaVersion.VERSION_11) {
-    openjfxVersion = "11.0.2"
-} else if (javaVersion >= JavaVersion.VERSION_12) {
-    openjfxVersion = "12.0.1"
-} else {
-    throw GradleException("Building JITWatch is unsupported on this version of java")
-}
+def openjfxVersion = "15.0.1"
 
 def javafxModules = [
         'javafx.controls',

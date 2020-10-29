@@ -18,7 +18,7 @@ if (javaVersion >= JavaVersion.VERSION_1_7 && javaVersion < JavaVersion.VERSION_
 dependencies {
     compile project(':core')
 
-    compile 'org.slf4j:slf4j-api:1.7.12', 'ch.qos.logback:logback-classic:1.2.3', 'ch.qos.logback:logback-core:1.2.3'
+    compile 'org.slf4j:slf4j-api:1.7.30', 'ch.qos.logback:logback-classic:1.2.3', 'ch.qos.logback:logback-core:1.2.3'
     testCompile 'junit:junit:4.13.1'
 }
 

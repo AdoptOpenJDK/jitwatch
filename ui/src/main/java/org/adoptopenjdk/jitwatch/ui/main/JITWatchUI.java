@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -339,7 +339,7 @@ public class JITWatchUI extends Application
 			{
 				MemberSignatureParts msp = MemberSignatureParts.fromLogCompilationSignature(focusMemberFromProperty);
 
-				IMetaMember member = getJITDataModel().findMetaMember(msp);
+				final IMetaMember member = getJITDataModel().findMetaMember(msp);
 
 				if (member != null)
 				{

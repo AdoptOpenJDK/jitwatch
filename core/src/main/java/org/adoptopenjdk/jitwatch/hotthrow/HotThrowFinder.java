@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Newland.
+ * Copyright (c) 2016-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -174,7 +174,7 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 
 							if (memberBytecode == null)
 							{
-								member.getMetaClass().getClassBytecode(model, new ArrayList<>());
+								member.getMetaClass().getClassBytecode(model, new ArrayList<String>());
 
 								memberBytecode = member.getMemberBytecode();
 							}

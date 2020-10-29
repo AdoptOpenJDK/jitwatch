@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -19,7 +19,7 @@ import java.util.List;
 
 public final class ClassUtil
 {
-	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new ArrayList<>());
+	private static DisposableURLClassLoader disposableClassLoader = new DisposableURLClassLoader(new ArrayList<URL>());
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
