@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2020 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -14,6 +14,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.VM_LANGUAGE_SCALA
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class Sandbox
 
 		if (!sandboxSources.exists())
 		{
-			logger.debug("Creating Sandbox source directory {}", sandboxSources);
+			logger.info("Creating Sandbox source directory {}", sandboxSources);
 
 			sandboxSources.mkdirs();
 
@@ -104,19 +105,31 @@ public class Sandbox
 
 	public void reset()
 	{
-		logger.debug("Resetting Sandbox to default settings");
+		logger.info("Resetting Sandbox to default settings");
 		FileUtil.emptyDir(SANDBOX_DIR.toFile());
 		initialise();
 	}
 
 	private static void copyExamples()
 	{
-		File srcDir = new File("core/src/main/resources/examples");
+		boolean runningFromJar = FileUtil.isRunningFromJar();
+
+		logger.info("isRunningFromJar:{}", runningFromJar);
+
 		File dstDir = SANDBOX_SOURCE_DIR.toFile();
 
-		logger.debug("Copying Sandbox examples from {} to {}", srcDir, dstDir);
+		logger.info("Copying Sandbox examples to {}", dstDir);
 
-		FileUtil.copyFilesToDir(srcDir, dstDir);
+		if (runningFromJar)
+		{
+			FileUtil.copyFilesFromJarToDir("examples", dstDir);
+		}
+		else
+		{
+			File srcDir = new File("core/src/main/resources/examples");
+
+			FileUtil.copyFilesToDir(srcDir, dstDir);
+		}
 	}
 
 	public Sandbox(ILogParser parser, ILogListener logger, ISandboxStage sandboxStage)
@@ -133,7 +146,8 @@ public class Sandbox
 		logListener.handleLogEntry("Running Sandbox");
 		logListener.handleLogEntry("Language is " + language);
 
-		String languagePath = logParser.getConfig().getVMLanguagePath(language);
+		String languagePath = logParser.getConfig()
+									   .getVMLanguagePath(language);
 
 		if (S_EMPTY.equals(languagePath) && (VM_LANGUAGE_JAVA.equals(language) || VM_LANGUAGE_JAVASCRIPT.equals(language)))
 		{
@@ -175,7 +189,8 @@ public class Sandbox
 
 			lastProcess = runtime;
 
-			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
+			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig()
+																						.isSandboxIntelMode());
 
 			logListener.handleLogEntry("Execution success: " + executionSuccess);
 
@@ -233,7 +248,8 @@ public class Sandbox
 		options.add("-XX:+LogCompilation");
 		options.add("-XX:LogFile=" + sandboxLogFile.getCanonicalPath());
 
-		if (logParser.getConfig().isPrintAssembly())
+		if (logParser.getConfig()
+					 .isPrintAssembly())
 		{
 			options.add("-XX:+PrintAssembly");
 
@@ -243,14 +259,16 @@ public class Sandbox
 			}
 		}
 
-		boolean isDisableInlining = logParser.getConfig().isDisableInlining();
+		boolean isDisableInlining = logParser.getConfig()
+											 .isDisableInlining();
 
 		if (isDisableInlining)
 		{
 			options.add("-XX:-Inline");
 		}
 
-		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
+		TieredCompilation tieredMode = logParser.getConfig()
+												.getTieredCompilationMode();
 
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
 		{
@@ -261,7 +279,8 @@ public class Sandbox
 			options.add("-XX:-TieredCompilation");
 		}
 
-		CompressedOops oopsMode = logParser.getConfig().getCompressedOopsMode();
+		CompressedOops oopsMode = logParser.getConfig()
+										   .getCompressedOopsMode();
 
 		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
 		{
@@ -272,7 +291,8 @@ public class Sandbox
 			options.add("-XX:-UseCompressedOops");
 		}
 
-		BackgroundCompilation backgroundCompilationMode = logParser.getConfig().getBackgroundCompilationMode();
+		BackgroundCompilation backgroundCompilationMode = logParser.getConfig()
+																   .getBackgroundCompilationMode();
 
 		if (backgroundCompilationMode == BackgroundCompilation.FORCE_BACKGROUND_COMPILATION)
 		{
@@ -283,7 +303,8 @@ public class Sandbox
 			options.add("-XX:-BackgroundCompilation");
 		}
 
-		OnStackReplacement onStackReplacementMode = logParser.getConfig().getOnStackReplacementMode();
+		OnStackReplacement onStackReplacementMode = logParser.getConfig()
+															 .getOnStackReplacementMode();
 
 		if (onStackReplacementMode == OnStackReplacement.FORCE_ON_STACK_REPLACEMENT)
 		{
@@ -294,24 +315,33 @@ public class Sandbox
 			options.add("-XX:-UseOnStackReplacement");
 		}
 
-		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig()
+										   .getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
-			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());
+			options.add("-XX:FreqInlineSize=" + logParser.getConfig()
+														 .getFreqInlineSize());
 		}
 
-		if (!isDisableInlining && logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig()
+										   .getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
 		{
-			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
+			options.add("-XX:MaxInlineSize=" + logParser.getConfig()
+														.getMaxInlineSize());
 		}
 
-		if (logParser.getConfig().getCompileThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
+		if (logParser.getConfig()
+					 .getCompileThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
 		{
-			options.add("-XX:CompileThreshold=" + logParser.getConfig().getCompileThreshold());
+			options.add("-XX:CompileThreshold=" + logParser.getConfig()
+														   .getCompileThreshold());
 		}
 
-		if (logParser.getConfig().getExtraVMSwitches().length() > 0)
+		if (logParser.getConfig()
+					 .getExtraVMSwitches()
+					 .length() > 0)
 		{
-			String extraSwitchString = logParser.getConfig().getExtraVMSwitches();
+			String extraSwitchString = logParser.getConfig()
+												.getExtraVMSwitches();
 			String[] switches = extraSwitchString.split(S_SPACE);
 
 			for (String sw : switches)
@@ -355,7 +385,8 @@ public class Sandbox
 
 		if (jdkSrcZip != null)
 		{
-			String jdkSourceZipString = jdkSrcZip.toPath().toString();
+			String jdkSourceZipString = jdkSrcZip.toPath()
+												 .toString();
 
 			if (!sourceLocations.contains(jdkSourceZipString))
 			{
@@ -400,7 +431,8 @@ public class Sandbox
 
 		logListener.handleLogEntry("Looking up class: " + openClassInTriView);
 
-		MetaClass metaClass = model.getPackageManager().getMetaClass(openClassInTriView);
+		MetaClass metaClass = model.getPackageManager()
+								   .getMetaClass(openClassInTriView);
 
 		if (metaClass != null)
 		{
