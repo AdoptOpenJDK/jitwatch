@@ -18,27 +18,42 @@
 	</properties>
 
 	<profiles>
-		<!-- ======== JDK 7 Profile ======== -->
 		<profile>
-			<id>jdk7</id>
+			<id>with_built_in_javafx</id>
 			<activation>
-				<jdk>1.7</jdk>
+				<jdk>[1.8,10]</jdk>
 			</activation>
-			<!-- properties inherited from parent -->
-			<dependencies>
-				<!-- System dependencies -->
-				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>javafx</artifactId>
-					<version>${javafx.version}</version>
-					<systemPath>${jfxrt.jar}</systemPath>
-					<scope>system</scope>
-				</dependency>
-			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+								<configuration>
+									<shadedArtifactAttached>true</shadedArtifactAttached>
+									<shadedClassifierName>project-classifier</shadedClassifierName>
+									<outputFile>target/ui-shaded.jar</outputFile>
+									<transformers>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+											<mainClass>${main.class}</mainClass>
+										</transformer>
+									</transformers>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 
 		<profile>
-			<id>openjfx</id>
+			<id>with_openjfx_from_maven_central</id>
 			<activation>
 				<jdk>[11,)</jdk>
 			</activation>

@@ -116,33 +116,11 @@
 		<url>https://github.com/AdoptOpenJDK/jitwatch/issues</url>
 	</issueManagement>
 
-	<mailingLists>
-		<mailingList>
-			<name>General</name>
-			<post>jitwatch@googlegroups.com</post>
-			<unsubscribe>jitwatch+unsubscribe@googlegroups.com</unsubscribe>
-		</mailingList>
-	</mailingLists>
-
 	<scm>
 		<connection>scm:git:https://github.com/AdoptOpenJDK/jitwatch.git</connection>
 		<developerConnection>scm:git:git@github.com:AdoptOpenJDK/jitwatch.git</developerConnection>
 		<url>${project.url}</url>
 	</scm>
-
-	<profiles>
-		<!-- ======== JDK 7 Profile ======== -->
-		<profile>
-			<id>jdk7</id>
-			<activation>
-				<jdk>1.7</jdk>
-			</activation>
-			<properties>
-				<jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
-				<javafx.version>2.2</javafx.version>
-			</properties>
-		</profile>
-	</profiles>
 
 	<build>
 		<pluginManagement>
