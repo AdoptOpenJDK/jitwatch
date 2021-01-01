@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -24,253 +24,255 @@ import org.slf4j.LoggerFactory;
 
 public class ClassBC
 {
-    private ConstantPool constantPool;
+	private ConstantPool constantPool;
 
-    private String sourceFile;
+	private String sourceFile;
 
-    private String moduleName;
+	private String moduleName;
 
-    private int majorVersion;
-    private int minorVersion;
+	private int majorVersion;
+	private int minorVersion;
 
-    private String fqClassName;
+	private String fqClassName;
 
-    private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
+	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
-    private List<String> innerClassNames = new ArrayList<>();
+	private List<String> innerClassNames = new ArrayList<>();
 
-    private Map<String, String> classGenericsMap = new LinkedHashMap<>();
+	private Map<String, String> classGenericsMap = new LinkedHashMap<>();
 
-    private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
+	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
 
-    public ClassBC(String fqClassName)
-    {
-        this.fqClassName = fqClassName;
-    }
+	public ClassBC(String fqClassName)
+	{
+		this.fqClassName = fqClassName;
+	}
 
-    public String getFullyQualifiedClassName()
-    {
-        return fqClassName;
-    }
+	public String getFullyQualifiedClassName()
+	{
+		return fqClassName;
+	}
 
-    public String getPackageName()
-    {
-        return StringUtil.getPackageName(fqClassName);
-    }
+	public String getPackageName()
+	{
+		return StringUtil.getPackageName(fqClassName);
+	}
 
-    public void addMemberBytecode(MemberBytecode memberBytecode)
-    {
-        memberBytecodeList.add(memberBytecode);
-    }
+	public void addMemberBytecode(MemberBytecode memberBytecode)
+	{
+		memberBytecodeList.add(memberBytecode);
+	}
 
-    public List<MemberBytecode> getMemberBytecodeList()
-    {
-        return Collections.unmodifiableList(memberBytecodeList);
-    }
+	public List<MemberBytecode> getMemberBytecodeList()
+	{
+		return Collections.unmodifiableList(memberBytecodeList);
+	}
 
-    public void addGenericsMapping(String key, String value)
-    {
-        classGenericsMap.put(key, value);
-    }
+	public void addGenericsMapping(String key, String value)
+	{
+		classGenericsMap.put(key, value);
+	}
 
-    public Map<String, String> getGenericsMap()
-    {
-        return Collections.unmodifiableMap(classGenericsMap);
-    }
+	public Map<String, String> getGenericsMap()
+	{
+		return Collections.unmodifiableMap(classGenericsMap);
+	}
 
-    public void addInnerClassName(String name)
-    {
-        innerClassNames.add(name);
-    }
+	public void addInnerClassName(String name)
+	{
+		innerClassNames.add(name);
+	}
 
-    public List<String> getInnerClassNames()
-    {
-        return Collections.unmodifiableList(innerClassNames);
-    }
+	public List<String> getInnerClassNames()
+	{
+		return Collections.unmodifiableList(innerClassNames);
+	}
 
-    public MemberBytecode getMemberBytecode(IMetaMember member)
-    {
-        if (DEBUG_LOGGING_BYTECODE)
-        {
-            logger.debug("getMemberBytecode: {}", member);
-        }
+	public MemberBytecode getMemberBytecode(IMetaMember member)
+	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getMemberBytecode: {}", member);
+		}
 
-        MemberBytecode result = null;
+		MemberBytecode result = null;
 
-        if (member != null)
-        {
-            for (MemberBytecode item : memberBytecodeList)
-            {
-                if (member.matchesSignature(item.getMemberSignatureParts(), true))
-                {
-                    result = item;
-                    break;
-                }
-            }
-        }
+		if (member != null)
+		{
+			for (MemberBytecode item : memberBytecodeList)
+			{
+				if (member.matchesSignature(item.getMemberSignatureParts(), true))
+				{
+					result = item;
+					break;
+				}
+			}
+		}
 
-        if (DEBUG_LOGGING_BYTECODE)
-        {
-            logger.debug("getMemberBytecode found: {}", result);
-        }
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getMemberBytecode found: {}", result);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    public MemberBytecode getMemberBytecodeForSignature(MemberSignatureParts msp)
-    {
-        if (DEBUG_LOGGING_BYTECODE)
-        {
-            logger.debug("getMemberBytecodeForSignature: {}", msp);
-        }
+	public MemberBytecode getMemberBytecodeForSignature(MemberSignatureParts msp)
+	{
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("getMemberBytecodeForSignature: {}", msp);
+		}
 
-        MemberBytecode result = null;
+		MemberBytecode result = null;
 
-        if (msp != null)
-        {
-            for (MemberBytecode item : memberBytecodeList)
-            {
-                if (msp.equals(item.getMemberSignatureParts()))
-                {
-                    result = item;
-                    break;
-                }
-            }
-        }
+		if (msp != null)
+		{
+			for (MemberBytecode item : memberBytecodeList)
+			{
+				if (msp.equals(item.getMemberSignatureParts()))
+				{
+					result = item;
+					break;
+				}
+			}
+		}
 
-        if (DEBUG_LOGGING_BYTECODE)
-        {
-            logger.debug("Found MemberBytecode: {}", result != null);
-        }
+		if (DEBUG_LOGGING_BYTECODE)
+		{
+			logger.debug("Found MemberBytecode: {}", result != null);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    public ConstantPool getConstantPool()
-    {
-        return constantPool;
-    }
+	public ConstantPool getConstantPool()
+	{
+		return constantPool;
+	}
 
-    public void setConstantPool(ConstantPool constantPool)
-    {
-        this.constantPool = constantPool;
-    }
+	public void setConstantPool(ConstantPool constantPool)
+	{
+		this.constantPool = constantPool;
+	}
 
-    public String getSourceFile()
-    {
-        return sourceFile;
-    }
+	public String getSourceFile()
+	{
+		return sourceFile;
+	}
 
-    public void setSourceFile(String sourceFile)
-    {
-        this.sourceFile = sourceFile;
-    }
+	public void setSourceFile(String sourceFile)
+	{
+		this.sourceFile = sourceFile;
+	}
 
-    public int getMajorVersion()
-    {
-        return majorVersion;
-    }
+	public int getMajorVersion()
+	{
+		return majorVersion;
+	}
 
-    public void setMajorVersion(int majorVersion)
-    {
-        this.majorVersion = majorVersion;
-    }
+	public void setMajorVersion(int majorVersion)
+	{
+		this.majorVersion = majorVersion;
+	}
 
-    public int getMinorVersion()
-    {
-        return minorVersion;
-    }
+	public int getMinorVersion()
+	{
+		return minorVersion;
+	}
 
-    public String getJavaVersion()
-    {
-        String result;
+	public String getJavaVersion()
+	{
+		String result;
 
-        switch (majorVersion)
-        {
-	case 60:
-	result = "Java 16";
-	break;
-        case 59:
-            result = "Java 15";
-            break;
-        case 58:
-            result = "Java 14";
-            break;
-        case 57:
-            result = "Java 13";
-            break;
-        case 56:
-            result = "Java 12";
-            break;
-        case 55:
-            result = "Java 11";
-            break;
-        case 54:
-            result = "Java 10";
-            break;
-        case 53:
-            result = "Java 9";
-            break;
-        case 52:
-            result = "Java 8";
-            break;
-        case 51:
-            result = "Java 7";
-            break;
-        case 50:
-            result = "Java 6.0";
-            break;
-        case 49:
-            result = "Java 5.0";
-            break;
-        case 48:
-            result = "Java 1.4";
-            break;
-        case 47:
-            result = "Java 1.3";
-            break;
-        case 46:
-            result = "Java 1.2";
-            break;
-        case 45:
-            result = "Java 1.1";
-            break;
-        default:
-            result = "Unknown java version";
-            break;
-        }
+		switch (majorVersion)
+		{
+		case 61:
+			result = "Java 17";
+			break;
+		case 60:
+			result = "Java 16";
+			break;
+		case 59:
+			result = "Java 15";
+			break;
+		case 58:
+			result = "Java 14";
+			break;
+		case 57:
+			result = "Java 13";
+			break;
+		case 56:
+			result = "Java 12";
+			break;
+		case 55:
+			result = "Java 11";
+			break;
+		case 54:
+			result = "Java 10";
+			break;
+		case 53:
+			result = "Java 9";
+			break;
+		case 52:
+			result = "Java 8";
+			break;
+		case 51:
+			result = "Java 7";
+			break;
+		case 50:
+			result = "Java 6.0";
+			break;
+		case 49:
+			result = "Java 5.0";
+			break;
+		case 48:
+			result = "Java 1.4";
+			break;
+		case 47:
+			result = "Java 1.3";
+			break;
+		case 46:
+			result = "Java 1.2";
+			break;
+		case 45:
+			result = "Java 1.1";
+			break;
+		default:
+			result = "Unknown java version";
+			break;
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    public void setMinorVersion(int minorVersion)
-    {
-        this.minorVersion = minorVersion;
-    }
+	public void setMinorVersion(int minorVersion)
+	{
+		this.minorVersion = minorVersion;
+	}
 
-    public void setModuleName(String moduleName)
-    {
-        this.moduleName = moduleName;
-    }
+	public void setModuleName(String moduleName)
+	{
+		this.moduleName = moduleName;
+	}
 
-    public String getModuleName()
-    {
-        return moduleName;
-    }
+	public String getModuleName()
+	{
+		return moduleName;
+	}
 
-    @Override
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder();
+	@Override public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
 
-        builder.append(S_BYTECODE_MAJOR_VERSION).append(majorVersion).append(C_NEWLINE);
-        builder.append(S_BYTECODE_MINOR_VERSION).append(minorVersion).append(C_NEWLINE);
+		builder.append(S_BYTECODE_MAJOR_VERSION).append(majorVersion).append(C_NEWLINE);
+		builder.append(S_BYTECODE_MINOR_VERSION).append(minorVersion).append(C_NEWLINE);
 
-        for (MemberBytecode item : memberBytecodeList)
-        {
-            builder.append("member: ").append(item).append(C_NEWLINE);
-        }
+		for (MemberBytecode item : memberBytecodeList)
+		{
+			builder.append("member: ").append(item).append(C_NEWLINE);
+		}
 
-        return builder.toString();
-    }
+		return builder.toString();
+	}
 }
