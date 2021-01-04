@@ -38,6 +38,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,8 +72,8 @@ public final class BytecodeLoader
 {
 	private static final Logger logger = LoggerFactory.getLogger(BytecodeLoader.class);
 
-	private static final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern
-			.compile("^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
+	private static final Pattern PATTERN_BYTECODE_INSTRUCTION = Pattern.compile(
+			"^([0-9]+):\\s([0-9a-z_]+)\\s?([#0-9a-z,\\- ]+)?\\s?\\{?\\s?(//.*)?");
 
 	enum BytecodeSection
 	{
@@ -114,7 +115,7 @@ public final class BytecodeLoader
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, Path javapPath,
 			boolean cacheBytecode)
-	{		
+	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
 			logger.debug("fetchBytecodeForClass: {}", fqClassName);
@@ -123,43 +124,57 @@ public final class BytecodeLoader
 		}
 
 		ClassBC classBytecode = null;
-			
+
+		String byteCodeString = null;
+
 		try
-		{		
-			String byteCodeString = null;
-			
+		{
 			if (ReflectionJavap.canUseReflectionJavap())
 			{
-				//TimerUtil.timerStart("javap");
-				byteCodeString = ReflectionJavap.getBytecode(classLocations, fqClassName);
-				//TimerUtil.timerEnd("javap");
+				try
+				{
+					byteCodeString = ReflectionJavap.getBytecode(classLocations, fqClassName);
+				}
+				catch (Exception e)
+				{
+					logger.info("Could not fetch bytecode via reflection, trying Process");
+
+					byteCodeString = getBytecodeStringViaProcess(classLocations, fqClassName, javapPath);
+				}
 			}
 			else
 			{
-				JavapProcess javapProcess;
-	
-				if (javapPath != null)
-				{
-					javapProcess = new JavapProcess(javapPath);
-				}
-				else
-				{
-					javapProcess = new JavapProcess();
-				}
-	
-				javapProcess.execute(classLocations, fqClassName);
-	
-				byteCodeString = javapProcess.getOutputStream();
+				byteCodeString = getBytecodeStringViaProcess(classLocations, fqClassName, javapPath);
 			}
-			
-			classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);			
+
+			classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
+
 		}
 		catch (Exception e)
 		{
 			logger.error("Could not fetch bytecode for {}", fqClassName, e);
 		}
-
+		
 		return classBytecode;
+	}
+
+	private static String getBytecodeStringViaProcess(List<String> classLocations, String fqClassName, Path javapPath)
+			throws IOException
+	{
+		JavapProcess javapProcess;
+
+		if (javapPath != null)
+		{
+			javapProcess = new JavapProcess(javapPath);
+		}
+		else
+		{
+			javapProcess = new JavapProcess();
+		}
+
+		javapProcess.execute(classLocations, fqClassName);
+
+		return javapProcess.getOutputStream();
 	}
 
 	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString, boolean cacheBytecode)
@@ -197,7 +212,7 @@ public final class BytecodeLoader
 		MemberSignatureParts msp = null;
 
 		MemberBytecode memberBytecode = null;
-		
+
 		while (pos < bytecodeLines.length)
 		{
 			String line = bytecodeLines[pos].trim();
@@ -362,7 +377,7 @@ public final class BytecodeLoader
 
 			pos++;
 		}
-		
+
 		return classBytecode;
 	}
 
@@ -549,8 +564,8 @@ public final class BytecodeLoader
 
 	private static boolean couldBeMemberSignature(String line)
 	{
-		return line.endsWith(");") || line.contains(" throws ") && line.endsWith(S_SEMICOLON)
-				|| line.startsWith(S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
+		return line.endsWith(");") || line.contains(" throws ") && line.endsWith(S_SEMICOLON) || line.startsWith(
+				S_BYTECODE_STATIC_INITIALISER_SIGNATURE);
 	}
 
 	private static void sectionFinished(String fqClassName, BytecodeSection lastSection, MemberSignatureParts msp,

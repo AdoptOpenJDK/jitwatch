@@ -128,6 +128,8 @@ public abstract class AbstractProcess implements IExternalProcess
 			cmdBuilder.append(part).append(C_SPACE);
 		}
 
+		logger.info("Process: {}", cmdBuilder.toString());
+
 		if (logListener != null)
 		{
 			logListener.handleLogEntry("Running: " + cmdBuilder.toString());

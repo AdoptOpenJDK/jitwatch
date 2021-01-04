@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JavapProcess extends AbstractProcess
 {
@@ -26,6 +28,8 @@ public class JavapProcess extends AbstractProcess
 	public JavapProcess(Path executablePath)
 	{
 		this.executablePath = executablePath;
+
+		logger.info("JavapProcess({})", executablePath);
 	}
 
 	public JavapProcess() throws FileNotFoundException
@@ -47,6 +51,8 @@ public class JavapProcess extends AbstractProcess
 		}
 
 		executablePath = executablePath.normalize();
+
+		logger.info("JavapProcess() executablePath: {}", executablePath);
 	}
 	
 	private List<String> getJavapCommands(Collection<String> classLocations, String fqClassName)

@@ -244,7 +244,7 @@ public class Sandbox
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
-		options.add("-XX:+TraceClassLoading");
+		//options.add("-XX:+TraceClassLoading");
 		options.add("-XX:+LogCompilation");
 		options.add("-XX:LogFile=" + sandboxLogFile.getCanonicalPath());
 
