@@ -6,7 +6,9 @@
 package org.adoptopenjdk.jitwatch.parser;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.model.JITDataModel;
@@ -16,24 +18,28 @@ import org.adoptopenjdk.jitwatch.model.SplitLog;
 public interface ILogParser
 {
 	void setConfig(JITWatchConfig config);
-	
-	void processLogFile(File logFile, ILogParseErrorListener listener) throws IOException;
-	
+
+	default void processLogFile(File logFile, ILogParseErrorListener listener) throws IOException{
+		processLogFile(new FileReader(logFile), listener);
+	}
+
+	void processLogFile(Reader logFileReader, ILogParseErrorListener listener) throws IOException;
+
 	SplitLog getSplitLog();
-	
+
 	void stopParsing();
-	
+
 	ParsedClasspath getParsedClasspath();
-	
+
 	JITDataModel getModel();
-	
+
 	JITWatchConfig getConfig();
-	
+
 	void reset();
-		
+
 	boolean hasParseError();
-		
+
 	String getVMCommand();
-	
+
 	void discardParsedLogs();
 }

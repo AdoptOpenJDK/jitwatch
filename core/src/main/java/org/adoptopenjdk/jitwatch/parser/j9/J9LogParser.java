@@ -11,9 +11,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.model.NumberedLine;
@@ -39,47 +38,47 @@ public class J9LogParser extends AbstractLogParser
 			processLineNumber = numberedLine.getLineNumber();
 
 			J9Line j9Line = J9Util.parseLine(numberedLine.getLine());
-			
+
 			if (DEBUG_LOGGING)
 			{
 				logger.debug("J9 log line parsed\n{}", j9Line);
 			}
-			
+
 			Tag tagQueued = j9Line.toTagQueued(compileID, timestampMillis);
 			Tag tagNMethod = j9Line.toTagNMethod(compileID, timestampMillis);
 			Tag tagTask = j9Line.toTagTask(compileID, timestampMillis);
-			
+
 			compileID++;
-			
+
 			timestampMillis++;
-			
+
 			if (tagQueued != null)
 			{
 				handleTag(tagQueued);
 			}
-			
+
 			if (tagNMethod != null)
 			{
 				handleTag(tagNMethod);
 			}
-			
+
 			if (tagTask != null)
 			{
 				handleTag(tagTask);
 			}
 		}
 	}
-	
+
 	@Override
 	protected void handleTag(Tag tag)
 	{
 		String tagName = tag.getName();
-		
+
 		if (DEBUG_LOGGING)
 		{
 			logger.debug("handling {}", tagName);
 		}
-		
+
 		switch (tagName)
 		{
 		case TAG_TASK_QUEUED:
@@ -100,11 +99,11 @@ public class J9LogParser extends AbstractLogParser
 	}
 
 	@Override
-	protected void splitLogFile(File logFile)
+	protected void splitLogFile(Reader logFileReader)
 	{
 		reading = true;
 
-		try (BufferedReader reader = new BufferedReader(new FileReader(logFile), 65536))
+		try (BufferedReader reader = new BufferedReader(logFileReader, 65536))
 		{
 			String currentLine = reader.readLine();
 

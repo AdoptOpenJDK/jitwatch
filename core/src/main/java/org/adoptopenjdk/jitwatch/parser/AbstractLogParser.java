@@ -30,6 +30,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
 
 import java.io.File;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -344,7 +345,7 @@ public abstract class AbstractLogParser implements ILogParser
 	}
 
 	@Override
-	public void processLogFile(File logFile, ILogParseErrorListener errorListener)
+	public void processLogFile(Reader logFileReader, ILogParseErrorListener errorListener)
 	{
 		reset();
 
@@ -355,7 +356,7 @@ public abstract class AbstractLogParser implements ILogParser
 
 		this.errorListener = errorListener;
 
-		splitLogFile(logFile);
+		splitLogFile(logFileReader);
 
 		if (DEBUG_LOGGING)
 		{
@@ -540,7 +541,7 @@ public abstract class AbstractLogParser implements ILogParser
 		if (compilation != null)
 		{
 			compilation.setTagTask(tagTask);
-			
+
 			if (currentCompilerThread != null)
 			{
 				currentCompilerThread.addCompilation(compilation);
@@ -671,7 +672,7 @@ public abstract class AbstractLogParser implements ILogParser
 
 	protected abstract void parseLogFile();
 
-	protected abstract void splitLogFile(File logFile);
+	protected abstract void splitLogFile(Reader logFileReader);
 
 	protected abstract void handleTag(Tag tag);
 }

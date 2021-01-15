@@ -42,9 +42,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOTSPOT_LOG;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_TIME_MS;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
@@ -182,11 +181,11 @@ public class HotSpotLogParser extends AbstractLogParser
     }
 
     @Override
-    protected void splitLogFile(File hotspotLog)
+    protected void splitLogFile(Reader hotspotLogReader)
     {
         reading = true;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(hotspotLog), 65536))
+        try (BufferedReader reader = new BufferedReader(hotspotLogReader, 65536))
         {
             String currentLine = reader.readLine();
 
