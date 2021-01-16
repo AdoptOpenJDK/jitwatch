@@ -11,9 +11,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_QUEUED;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -347,11 +346,11 @@ public class ZingLogParser extends AbstractLogParser
 	}
 
 	@Override
-	protected void splitLogFile(File logFile)
+	protected void splitLogFile(Reader logFileReader)
 	{
 		reading = true;
 
-		try (BufferedReader reader = new BufferedReader(new FileReader(logFile), 65536))
+		try (BufferedReader reader = new BufferedReader(logFileReader, 65536))
 		{
 			String currentLine = reader.readLine();
 
