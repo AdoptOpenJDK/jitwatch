@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,6 +26,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TREE_PACKAGE_ROOT;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.LANG;
 
 public class ClassTree extends VBox
 {
@@ -50,9 +51,9 @@ public class ClassTree extends VBox
 
 		final String cbStyle = "-fx-background-color:#dddddd; -fx-padding:4px";
 
-		cbHideInterfaces = new CheckBox("Hide interfaces");
+		cbHideInterfaces = new CheckBox(LANG.getString("HIDE_INTERFACES"));
 		cbHideInterfaces.setMaxWidth(280);
-		cbHideInterfaces.setTooltip(new Tooltip("Hide interfaces from the class tree."));
+		cbHideInterfaces.setTooltip(new Tooltip(LANG.getString("HIDE_INTERFACES_tt")));
 		cbHideInterfaces.setSelected(config.isHideInterfaces());
 		cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
@@ -69,8 +70,8 @@ public class ClassTree extends VBox
 		cbHideInterfaces.setStyle(cbStyle);
 		cbHideInterfaces.prefWidthProperty().bind(widthProperty());
 
-		cbHideUncompiled = new CheckBox("Hide uncompiled classes");
-		cbHideUncompiled.setTooltip(new Tooltip("Hide classes with no JIT-compiled members from the class tree."));
+		cbHideUncompiled = new CheckBox(LANG.getString("HIDE_UNCOMPILED_CLASSES"));
+		cbHideUncompiled.setTooltip(new Tooltip(LANG.getString("HIDE_UNCOMPILED_CLASSES_tt")));
 		cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
 		cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{

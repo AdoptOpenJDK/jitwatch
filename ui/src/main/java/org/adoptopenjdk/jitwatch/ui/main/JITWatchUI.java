@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -694,7 +694,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnStats = new Button("Stats");
+		btnStats =  UserInterfaceUtil.createButton("STATS");
 		btnStats.setStyle("-fx-padding: 2 6;");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -708,7 +708,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReset = new Button("Reset");
+		btnReset =  UserInterfaceUtil.createButton("RESET");
 		btnReset.setStyle("-fx-padding: 2 6;");
 		btnReset.setOnAction(new EventHandler<ActionEvent>()
 		{

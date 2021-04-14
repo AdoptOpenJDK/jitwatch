@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.ui.main;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
+import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.LANG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +73,8 @@ public class ClassMemberList extends VBox
 	{
 		this.config = config;
 
-		cbOnlyCompiled = new CheckBox("Hide non JIT-compiled class members");
-		cbOnlyCompiled.setTooltip(new Tooltip("Hide class members (methods and constructors) that were not JIT-compiled."));
+		cbOnlyCompiled = new CheckBox(LANG.getString("HIDE_UNCOMPILED_MEMBERS"));
+		cbOnlyCompiled.setTooltip(new Tooltip(LANG.getString("HIDE_UNCOMPILED_MEMBERS_tt")));
 
 		cbOnlyCompiled.setSelected(config.isShowOnlyCompiledMembers());
 
