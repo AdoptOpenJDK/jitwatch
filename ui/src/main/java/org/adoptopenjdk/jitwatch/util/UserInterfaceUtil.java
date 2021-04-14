@@ -12,7 +12,10 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
+import javafx.scene.control.Tooltip;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,8 @@ public final class UserInterfaceUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
+	public static final ResourceBundle LANG = ResourceBundle.getBundle("i18n.lang", Locale.getDefault());
+
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
@@ -40,7 +45,7 @@ public final class UserInterfaceUtil
 	public static final String FONT_MONOSPACE_FAMILY;
 	public static final String FONT_MONOSPACE_SIZE;
 	public static final boolean ADD_CLOSE_DECORATION; // for fullscreen JavaFX
-														// systems
+	// systems
 
 	private UserInterfaceUtil()
 	{
@@ -54,6 +59,21 @@ public final class UserInterfaceUtil
 		FONT_MONOSPACE_FAMILY = System.getProperty("monospaceFontFamily", Font.font(java.awt.Font.MONOSPACED, 12).getName());
 		FONT_MONOSPACE_SIZE = System.getProperty("monospaceFontSize", "12");
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
+	}
+
+	public static Button createButton(String langKey)
+	{
+		Button button = new Button(LANG.getString(langKey));
+
+		String tooltipKey = langKey + "_tt";
+
+		if (LANG.containsKey(tooltipKey))
+		{
+			String toolTip = LANG.getString(tooltipKey);
+			button.setTooltip(new Tooltip(toolTip));
+		}
+
+		return button;
 	}
 
 	private static Image loadResource(String path)
@@ -86,8 +106,7 @@ public final class UserInterfaceUtil
 
 		buttonSnapShot.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				takeSnapShot(scene, filenamePrefix);
 			}
@@ -118,11 +137,8 @@ public final class UserInterfaceUtil
 			Method methodFromFXImage = classSwingFXUtils.getMethod("fromFXImage",
 					new Class[] { javafx.scene.image.Image.class, java.awt.image.BufferedImage.class });
 
-			methodWrite.invoke(null,
-					new Object[] {
-							methodFromFXImage.invoke(null, new Object[] { imageSnap, null }),
-							"png",
-							new File(snapshotFilename) });
+			methodWrite.invoke(null, new Object[] { methodFromFXImage.invoke(null, new Object[] { imageSnap, null }), "png",
+					new File(snapshotFilename) });
 		}
 		catch (Throwable t)
 		{

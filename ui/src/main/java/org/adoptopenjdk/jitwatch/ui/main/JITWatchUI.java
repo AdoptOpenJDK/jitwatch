@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheEventWalker;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
@@ -474,7 +476,7 @@ public class JITWatchUI extends Application
 
 		comboParser.getSelectionModel().select(ParserType.fromString(parserProperty));
 
-		Button btnChooseWatchFile = new Button("Open Log");
+		Button btnChooseWatchFile = UserInterfaceUtil.createButton("OPEN_LOG");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -484,7 +486,8 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnStart = new Button("Start");
+		btnStart = UserInterfaceUtil.createButton("START");
+
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -514,7 +517,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnStop = new Button("Stop");
+		btnStop = UserInterfaceUtil.createButton("STOP");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -523,7 +526,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnConfigure = new Button("Config");
+		btnConfigure = UserInterfaceUtil.createButton("CONFIG");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -532,7 +535,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnTimeLine = new Button("Timeline");
+		btnTimeLine = UserInterfaceUtil.createButton("TIMELINE");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -545,7 +548,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnHisto = new Button("Histo");
+		btnHisto = UserInterfaceUtil.createButton("HISTO");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -558,7 +561,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnTopList = new Button("TopList");
+		btnTopList = UserInterfaceUtil.createButton("TOPLIST");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -571,7 +574,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnCodeCacheTimeline = new Button("Cache");
+		btnCodeCacheTimeline = UserInterfaceUtil.createButton("CACHE");
 		btnCodeCacheTimeline.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -584,7 +587,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnNMethods = new Button("NMethods");
+		btnNMethods = UserInterfaceUtil.createButton("NMETHODS");
 		btnNMethods.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -600,7 +603,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnCompilerThreads = new Button("Threads");
+		btnCompilerThreads = UserInterfaceUtil.createButton("THREADS");
 		btnCompilerThreads.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -616,7 +619,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnTriView = new Button("TriView");
+		btnTriView = UserInterfaceUtil.createButton("TRIVIEW");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -630,7 +633,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportSuggestions = new Button("Suggest");
+		btnReportSuggestions = UserInterfaceUtil.createButton("SUGGEST");
 		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -644,7 +647,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportEliminatedAllocations = new Button("-Allocs");
+		btnReportEliminatedAllocations = UserInterfaceUtil.createButton("ELIM_ALLOCS");
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -658,7 +661,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportOptimisedLocks = new Button("-Locks");
+		btnReportOptimisedLocks = UserInterfaceUtil.createButton("ELIM_LOCKS");
 		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -672,7 +675,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnSandbox = new Button("Sandbox");
+		btnSandbox = UserInterfaceUtil.createButton("SANDBOX");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
