@@ -11,6 +11,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_PACKAGE_N
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_FAMILY;
 import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SIZE;
@@ -220,6 +221,10 @@ public class JITWatchUI extends Application
 	private boolean startDelayedByConfig = false;
 
 	private ParserChooser parserChooser;
+
+	private String SUGGEST_INITIAL_TEXT;
+	private String ELIMINATED_ALLOCATIONS_INITIAL_TEXT;
+	private String ELIMINATED_LOCKS_INITIAL_TEXT;
 
 	// Called by JFX
 	public JITWatchUI()
@@ -634,6 +639,7 @@ public class JITWatchUI extends Application
 		});
 
 		btnReportSuggestions = UserInterfaceUtil.createButton("SUGGEST");
+		SUGGEST_INITIAL_TEXT = btnReportSuggestions.getText();
 		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -648,6 +654,7 @@ public class JITWatchUI extends Application
 		});
 
 		btnReportEliminatedAllocations = UserInterfaceUtil.createButton("ELIM_ALLOCS");
+		ELIMINATED_ALLOCATIONS_INITIAL_TEXT = btnReportEliminatedAllocations.getText();
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -662,6 +669,7 @@ public class JITWatchUI extends Application
 		});
 
 		btnReportOptimisedLocks = UserInterfaceUtil.createButton("ELIM_LOCKS");
+		ELIMINATED_LOCKS_INITIAL_TEXT = btnReportOptimisedLocks.getText();
 		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -1001,9 +1009,9 @@ public class JITWatchUI extends Application
 		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
-		btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
-		btnReportEliminatedAllocations.setText("-Allocs (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
-		btnReportOptimisedLocks.setText("-Locks (" + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
+		btnReportSuggestions.setText(SUGGEST_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
+		btnReportEliminatedAllocations.setText(ELIMINATED_ALLOCATIONS_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+		btnReportOptimisedLocks.setText(ELIMINATED_LOCKS_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass, boolean unsetSelection)

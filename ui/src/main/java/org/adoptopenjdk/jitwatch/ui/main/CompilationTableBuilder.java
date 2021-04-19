@@ -33,7 +33,7 @@ public final class CompilationTableBuilder
 		columnEmitted.setCellValueFactory(new PropertyValueFactory<>("stampNMethodEmitted"));
 		columnEmitted.prefWidthProperty().bind(tv.widthProperty().multiply(0.15));
 
-		TableColumn<CompilationTableRow, String> columnSize = new TableColumn<>(LANG.getString("CT_NMETHOD_EMIT"));
+		TableColumn<CompilationTableRow, String> columnSize = new TableColumn<>(LANG.getString("CT_NATIVE_SIZE"));
 		columnSize.setCellValueFactory(new PropertyValueFactory<>("native"));
 		columnSize.prefWidthProperty().bind(tv.widthProperty().multiply(0.2));
 
