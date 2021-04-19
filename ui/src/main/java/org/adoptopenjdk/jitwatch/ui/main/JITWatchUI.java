@@ -64,6 +64,7 @@ import org.adoptopenjdk.jitwatch.ui.toplist.TopListStage;
 import org.adoptopenjdk.jitwatch.ui.triview.TriView;
 import org.adoptopenjdk.jitwatch.ui.viewer.JournalViewerStage;
 import org.adoptopenjdk.jitwatch.ui.viewer.TextViewerStage;
+import org.adoptopenjdk.jitwatch.util.LocaleCell;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
@@ -879,11 +880,29 @@ public class JITWatchUI extends Application
 		Label labelParser = new Label("Select Parser");
 		labelParser.setStyle(labelStyle);
 
+		Label labelLanguage = new Label("Language");
+		labelLanguage.setStyle(labelStyle);
+
+		ComboBox<Locale> comboLanguage = new ComboBox<>();
+		comboLanguage.getItems().addAll(Locale.ENGLISH, Locale.forLanguageTag("es"));
+		comboLanguage.setValue(Locale.ENGLISH);
+		comboLanguage.setCellFactory(lv -> new LocaleCell());
+		comboLanguage.setButtonCell(new LocaleCell());
+
+		comboLanguage.valueProperty().addListener((obs, oldValue, newValue) -> {
+			if (newValue != null) {
+				UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, newValue));
+			}
+		});
+
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "JITWatch");
 
 		hboxBottom.setPadding(new Insets(4));
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
+
+		hboxBottom.getChildren().add(labelLanguage);
+		hboxBottom.getChildren().add(comboLanguage);
 
 		hboxBottom.getChildren().add(labelParser);
 		hboxBottom.getChildren().add(comboParser);
@@ -1009,9 +1028,10 @@ public class JITWatchUI extends Application
 		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
-		btnReportSuggestions.setText(SUGGEST_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
-		btnReportEliminatedAllocations.setText(ELIMINATED_ALLOCATIONS_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
-		btnReportOptimisedLocks.setText(ELIMINATED_LOCKS_INITIAL_TEXT + S_OPEN_PARENTHESES + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
+		// Commenting update because bound properties cannot be updated.
+		// btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
+		// btnReportEliminatedAllocations.setText("-Allocs (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+		// btnReportOptimisedLocks.setText("-Locks (" + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass, boolean unsetSelection)

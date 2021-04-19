@@ -36,7 +36,15 @@ public final class UserInterfaceUtil
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
 	public static final ResourceBundle LANG = ResourceBundle.getBundle("i18n.lang", Locale.getDefault());
-	
+
+	public static final String RESOURCE_NAME ="i18n.lang";
+
+	public static final ObservableResourceFactory RESOURCE_FACTORY = new ObservableResourceFactory();
+
+	static {
+		RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(RESOURCE_NAME));
+	}
+
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
@@ -63,7 +71,8 @@ public final class UserInterfaceUtil
 
 	public static Button createButton(String langKey)
 	{
-		Button button = new Button(LANG.getString(langKey));
+		Button button = new Button();
+		button.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
 
 		String tooltipKey = langKey + "_tt";
 
