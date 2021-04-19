@@ -36,7 +36,7 @@ public final class UserInterfaceUtil
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
 	public static final ResourceBundle LANG = ResourceBundle.getBundle("i18n.lang", Locale.getDefault());
-
+	
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
