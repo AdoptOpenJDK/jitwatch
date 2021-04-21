@@ -17,6 +17,7 @@ import java.util.ResourceBundle;
 
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.Tooltip;
@@ -75,10 +76,10 @@ public final class UserInterfaceUtil
 		UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, locale));
 	}
 
-	public static Button createButton(String langKey)
+	public static Button createButton(String langKey, ObservableValue<?>... observables)
 	{
 		Button button = new Button();
-		button.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+		button.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey, observables));
 
 		String tooltipKey = langKey + "_tt";
 

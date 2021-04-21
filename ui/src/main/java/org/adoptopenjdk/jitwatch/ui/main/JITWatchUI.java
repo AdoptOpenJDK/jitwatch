@@ -18,12 +18,12 @@ import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SI
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheEventWalker;
 import org.adoptopenjdk.jitwatch.compilation.codecache.CodeCacheWalkerResult;
 import org.adoptopenjdk.jitwatch.core.ErrorLog;
@@ -36,8 +36,6 @@ import org.adoptopenjdk.jitwatch.parser.ILogParser;
 import org.adoptopenjdk.jitwatch.parser.ParserFactory;
 import org.adoptopenjdk.jitwatch.parser.ParserType;
 import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
-import org.adoptopenjdk.jitwatch.parser.j9.J9LogParser;
-import org.adoptopenjdk.jitwatch.parser.zing.ZingLogParser;
 import org.adoptopenjdk.jitwatch.report.Report;
 import org.adoptopenjdk.jitwatch.report.comparator.ScoreComparator;
 import org.adoptopenjdk.jitwatch.report.escapeanalysis.eliminatedallocation.EliminatedAllocationWalker;
@@ -223,9 +221,9 @@ public class JITWatchUI extends Application
 
 	private ParserChooser parserChooser;
 
-	private String SUGGEST_INITIAL_TEXT;
-	private String ELIMINATED_ALLOCATIONS_INITIAL_TEXT;
-	private String ELIMINATED_LOCKS_INITIAL_TEXT;
+	private StringProperty suggestionsCounterMessage = new SimpleStringProperty(null);
+	private StringProperty eliminatedAllocationsCounterMessage = new SimpleStringProperty(null);
+	private StringProperty eliminatedLocksCounterMessage = new SimpleStringProperty(null);
 
 	// Called by JFX
 	public JITWatchUI()
@@ -639,8 +637,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportSuggestions = UserInterfaceUtil.createButton("SUGGEST");
-		SUGGEST_INITIAL_TEXT = btnReportSuggestions.getText();
+		btnReportSuggestions = UserInterfaceUtil.createButton("SUGGEST", suggestionsCounterMessage);
 		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -654,8 +651,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportEliminatedAllocations = UserInterfaceUtil.createButton("ELIM_ALLOCS");
-		ELIMINATED_ALLOCATIONS_INITIAL_TEXT = btnReportEliminatedAllocations.getText();
+		btnReportEliminatedAllocations = UserInterfaceUtil.createButton("ELIM_ALLOCS", eliminatedAllocationsCounterMessage);
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -669,8 +665,7 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReportOptimisedLocks = UserInterfaceUtil.createButton("ELIM_LOCKS");
-		ELIMINATED_LOCKS_INITIAL_TEXT = btnReportOptimisedLocks.getText();
+		btnReportOptimisedLocks = UserInterfaceUtil.createButton("ELIM_LOCKS", eliminatedLocksCounterMessage);
 		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -1028,10 +1023,17 @@ public class JITWatchUI extends Application
 		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
-		// Commenting update because bound properties cannot be updated.
-		// btnReportSuggestions.setText("Suggestions (" + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
-		// btnReportEliminatedAllocations.setText("-Allocs (" + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
-		// btnReportOptimisedLocks.setText("-Locks (" + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
+		if (reportListSuggestions.size() != 0) {
+			suggestionsCounterMessage.setValue(S_OPEN_PARENTHESES + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
+		}
+
+		if (reportListEliminatedAllocations.size() != 0) {
+			eliminatedAllocationsCounterMessage.setValue(S_OPEN_PARENTHESES + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+		}
+
+		if (reportListOptimisedLocks.size() != 0) {
+			eliminatedLocksCounterMessage.setValue(S_OPEN_PARENTHESES + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
+		}
 	}
 
 	public boolean focusTreeOnClass(MetaClass metaClass, boolean unsetSelection)
