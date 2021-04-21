@@ -884,7 +884,7 @@ public class JITWatchUI extends Application
 		labelLanguage.setStyle(labelStyle);
 
 		ComboBox<Locale> comboLanguage = new ComboBox<>();
-		comboLanguage.getItems().addAll(Locale.ENGLISH, Locale.forLanguageTag("es"));
+		comboLanguage.getItems().addAll(Locale.ENGLISH, Locale.GERMAN, Locale.FRENCH, Locale.SIMPLIFIED_CHINESE, Locale.forLanguageTag("pl"), Locale.forLanguageTag("es"));
 		comboLanguage.setValue(Locale.ENGLISH);
 		comboLanguage.setCellFactory(lv -> new LocaleCell());
 		comboLanguage.setButtonCell(new LocaleCell());
