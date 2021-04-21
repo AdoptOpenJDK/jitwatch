@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.Tooltip;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
@@ -83,6 +85,30 @@ public final class UserInterfaceUtil
 		}
 
 		return button;
+	}
+
+	public static CheckBox createCheckBox(String langKey)
+	{
+		CheckBox checkBox = new CheckBox();
+		checkBox.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+
+		String tooltipKey = langKey + "_tt";
+
+		if (LANG.containsKey(tooltipKey))
+		{
+			String toolTip = LANG.getString(tooltipKey);
+			checkBox.setTooltip(new Tooltip(toolTip));
+		}
+
+		return checkBox;
+	}
+
+	public static <S, T> TableColumn<S, T> createTableColumn(String langKey)
+	{
+		TableColumn<S, T> tableColumn = new TableColumn<>();
+		tableColumn.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+
+		return tableColumn;
 	}
 
 	private static Image loadResource(String path)

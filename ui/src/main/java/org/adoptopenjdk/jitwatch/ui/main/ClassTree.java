@@ -51,9 +51,8 @@ public class ClassTree extends VBox
 
 		final String cbStyle = "-fx-background-color:#dddddd; -fx-padding:4px";
 
-		cbHideInterfaces = new CheckBox(LANG.getString("HIDE_INTERFACES"));
+		cbHideInterfaces = UserInterfaceUtil.createCheckBox("HIDE_INTERFACES");
 		cbHideInterfaces.setMaxWidth(280);
-		cbHideInterfaces.setTooltip(new Tooltip(LANG.getString("HIDE_INTERFACES_tt")));
 		cbHideInterfaces.setSelected(config.isHideInterfaces());
 		cbHideInterfaces.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
@@ -70,8 +69,7 @@ public class ClassTree extends VBox
 		cbHideInterfaces.setStyle(cbStyle);
 		cbHideInterfaces.prefWidthProperty().bind(widthProperty());
 
-		cbHideUncompiled = new CheckBox(LANG.getString("HIDE_UNCOMPILED_CLASSES"));
-		cbHideUncompiled.setTooltip(new Tooltip(LANG.getString("HIDE_UNCOMPILED_CLASSES_tt")));
+		cbHideUncompiled = UserInterfaceUtil.createCheckBox("HIDE_UNCOMPILED_CLASSES");
 		cbHideUncompiled.setSelected(config.isShowOnlyCompiledClasses());
 		cbHideUncompiled.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
