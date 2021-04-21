@@ -15,6 +15,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.Tooltip;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
@@ -35,8 +40,14 @@ public final class UserInterfaceUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
-	public static final ResourceBundle LANG = ResourceBundle.getBundle("i18n.lang", Locale.getDefault());
-	
+	private static final String RESOURCE_NAME ="i18n.lang";
+
+	private static final ObservableResourceFactory RESOURCE_FACTORY = new ObservableResourceFactory();
+
+	static {
+		RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(RESOURCE_NAME));
+	}
+
 	// https://www.iconfinder.com/icons/173960/tick_icon#size=16
 	public static final Image IMAGE_TICK;
 
@@ -61,19 +72,46 @@ public final class UserInterfaceUtil
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 
-	public static Button createButton(String langKey)
+	public static void configureLocale(Locale locale) {
+		UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, locale));
+	}
+
+	public static Button createButton(String langKey, ObservableValue<?>... observables)
 	{
-		Button button = new Button(LANG.getString(langKey));
+		Button button = new Button();
+		button.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey, observables));
 
 		String tooltipKey = langKey + "_tt";
 
-		if (LANG.containsKey(tooltipKey))
+		if (RESOURCE_FACTORY.containsKey(tooltipKey))
 		{
-			String toolTip = LANG.getString(tooltipKey);
-			button.setTooltip(new Tooltip(toolTip));
+			button.tooltipProperty().bind(new TooltipBinding(button.textProperty(), tooltipKey));
 		}
 
 		return button;
+	}
+
+	public static CheckBox createCheckBox(String langKey)
+	{
+		CheckBox checkBox = new CheckBox();
+		checkBox.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+
+		String tooltipKey = langKey + "_tt";
+
+		if (RESOURCE_FACTORY.containsKey(tooltipKey))
+		{
+			checkBox.tooltipProperty().bind(new TooltipBinding(checkBox.textProperty(), tooltipKey));
+		}
+
+		return checkBox;
+	}
+
+	public static <S, T> TableColumn<S, T> createTableColumn(String langKey)
+	{
+		TableColumn<S, T> tableColumn = new TableColumn<>();
+		tableColumn.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+
+		return tableColumn;
 	}
 
 	private static Image loadResource(String path)
@@ -215,6 +253,21 @@ public final class UserInterfaceUtil
 		catch (Exception e)
 		{
 			logger.error("Could not initialise Mac fonts", e);
+		}
+	}
+
+	private static class TooltipBinding extends ObjectBinding<Tooltip> {
+
+		private final String tooltipKey;
+
+		public TooltipBinding(StringProperty text, String tooltipKey) {
+			bind(text);
+			this.tooltipKey = tooltipKey;
+		}
+
+		@Override
+		protected Tooltip computeValue() {
+			return new Tooltip(RESOURCE_FACTORY.getString(tooltipKey));
 		}
 	}
 }
