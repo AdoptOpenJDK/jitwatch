@@ -28,6 +28,14 @@ public class ObservableResourceFactory {
         resourcesProperty().set(resources);
     }
 
+    public boolean containsKey(String key) {
+        return getResources().containsKey(key);
+    }
+
+    public String getString(String key) {
+        return getResources().getString(key);
+    }
+
     public StringBinding getStringBinding(String key) {
         return new StringBinding() {
             {

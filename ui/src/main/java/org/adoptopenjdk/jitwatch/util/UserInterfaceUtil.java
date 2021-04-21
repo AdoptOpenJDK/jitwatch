@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.Tooltip;
@@ -37,11 +39,9 @@ public final class UserInterfaceUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
-	public static final ResourceBundle LANG = ResourceBundle.getBundle("i18n.lang", Locale.getDefault());
+	private static final String RESOURCE_NAME ="i18n.lang";
 
-	public static final String RESOURCE_NAME ="i18n.lang";
-
-	public static final ObservableResourceFactory RESOURCE_FACTORY = new ObservableResourceFactory();
+	private static final ObservableResourceFactory RESOURCE_FACTORY = new ObservableResourceFactory();
 
 	static {
 		RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(RESOURCE_NAME));
@@ -71,6 +71,10 @@ public final class UserInterfaceUtil
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 
+	public static void configureLocale(Locale locale) {
+		UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, locale));
+	}
+
 	public static Button createButton(String langKey)
 	{
 		Button button = new Button();
@@ -78,10 +82,9 @@ public final class UserInterfaceUtil
 
 		String tooltipKey = langKey + "_tt";
 
-		if (LANG.containsKey(tooltipKey))
+		if (RESOURCE_FACTORY.containsKey(tooltipKey))
 		{
-			String toolTip = LANG.getString(tooltipKey);
-			button.setTooltip(new Tooltip(toolTip));
+			button.tooltipProperty().bind(new TooltipBinding(button.textProperty(), tooltipKey));
 		}
 
 		return button;
@@ -94,10 +97,9 @@ public final class UserInterfaceUtil
 
 		String tooltipKey = langKey + "_tt";
 
-		if (LANG.containsKey(tooltipKey))
+		if (RESOURCE_FACTORY.containsKey(tooltipKey))
 		{
-			String toolTip = LANG.getString(tooltipKey);
-			checkBox.setTooltip(new Tooltip(toolTip));
+			checkBox.tooltipProperty().bind(new TooltipBinding(checkBox.textProperty(), tooltipKey));
 		}
 
 		return checkBox;
@@ -250,6 +252,21 @@ public final class UserInterfaceUtil
 		catch (Exception e)
 		{
 			logger.error("Could not initialise Mac fonts", e);
+		}
+	}
+
+	private static class TooltipBinding extends ObjectBinding<Tooltip> {
+
+		private final String tooltipKey;
+
+		public TooltipBinding(StringProperty text, String tooltipKey) {
+			bind(text);
+			this.tooltipKey = tooltipKey;
+		}
+
+		@Override
+		protected Tooltip computeValue() {
+			return new Tooltip(RESOURCE_FACTORY.getString(tooltipKey));
 		}
 	}
 }

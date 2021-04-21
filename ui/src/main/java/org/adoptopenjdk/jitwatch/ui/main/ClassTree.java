@@ -19,14 +19,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TREE_PACKAGE_ROOT;
-import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.LANG;
 
 public class ClassTree extends VBox
 {

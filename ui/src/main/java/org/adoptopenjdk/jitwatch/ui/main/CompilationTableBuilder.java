@@ -11,8 +11,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
-import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.LANG;
-
 public final class CompilationTableBuilder
 {
 	private CompilationTableBuilder()

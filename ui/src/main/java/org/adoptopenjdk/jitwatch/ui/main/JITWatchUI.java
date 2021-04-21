@@ -891,7 +891,7 @@ public class JITWatchUI extends Application
 
 		comboLanguage.valueProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue != null) {
-				UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, newValue));
+				UserInterfaceUtil.configureLocale(newValue);
 			}
 		});
 
