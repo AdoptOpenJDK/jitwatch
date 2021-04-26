@@ -76,7 +76,7 @@ public class SandboxConfigStage extends Stage
 		vbox.setPadding(new Insets(2, 8, 2, 8));
 		vbox.setSpacing(12);
 
-		chooserClasses = new FileChooserList(this, "Compile and Runtime Classpath", config.getConfiguredClassLocations());
+		chooserClasses = new FileChooserList(this, "COMPILE_AND_RUNTIME_CLASSPATH", config.getConfiguredClassLocations());
 		chooserClasses.prefHeightProperty().bind(this.heightProperty().multiply(0.25));
 
 		Label lblConfigLangs = new Label("Configure VM Languages");
@@ -715,8 +715,8 @@ public class SandboxConfigStage extends Stage
 		hbox.setPadding(new Insets(0, 10, 0, 10));
 		hbox.setAlignment(Pos.CENTER);
 
-		Button btnSave = new Button("Save");
-		Button btnCancel = new Button("Cancel");
+		Button btnSave = UserInterfaceUtil.createButton("SAVE");
+		Button btnCancel = UserInterfaceUtil.createButton("CANCEL");
 
 		btnSave.setOnAction(getEventHandlerForSaveButton());
 		btnCancel.setOnAction(getEventHandlerForCancelButton());

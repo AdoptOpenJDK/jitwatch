@@ -138,7 +138,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 
 		taLog.setStyle(style);
 
-		Button btnNewEditor = new Button("New Editor");
+		Button btnNewEditor = UserInterfaceUtil.createButton("SANDBOX_NEW_EDITOR");
 		btnNewEditor.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -147,7 +147,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		Button btnOpen = new Button("Open");
+		Button btnOpen = UserInterfaceUtil.createButton("SANDBOX_OPEN_FILE");
 		btnOpen.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -186,7 +186,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		Button btnSave = new Button("Save");
+		Button btnSave = UserInterfaceUtil.createButton("SANDBOX_SAVE_FILE");
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -206,7 +206,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		btnSandboxConfig = new Button("Configure Sandbox");
+		btnSandboxConfig = UserInterfaceUtil.createButton("SANDBOX_CONFIGURE");
 		btnSandboxConfig.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -219,7 +219,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		Button btnResetSandbox = new Button("Reset Sandbox");
+		Button btnResetSandbox =  UserInterfaceUtil.createButton("SANDBOX_RESET");
 		btnResetSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -247,7 +247,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		btnRun = new Button("Run");
+		btnRun = UserInterfaceUtil.createButton("SANDBOX_RUN");
 		btnRun.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -272,7 +272,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		Button btnOutput = new Button("View Output");
+		Button btnOutput = UserInterfaceUtil.createButton("SANDBOX_VIEW_OUTPUT");
 		btnOutput.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
