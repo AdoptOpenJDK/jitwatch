@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -57,8 +58,8 @@ public class MainConfigStage extends Stage
 		vbox.setPadding(new Insets(10));
 		vbox.setSpacing(10);
 
-		chooserSource = new FileChooserListSrcZip(this, "Source locations", config.getSourceLocations());
-		chooserClasses = new FileChooserList(this, "Class locations", config.getConfiguredClassLocations());
+		chooserSource = new FileChooserListSrcZip(this, "SOURCE_LOCATIONS", config.getSourceLocations());
+		chooserClasses = new FileChooserList(this, "CLASS_LOCATIONS", config.getConfiguredClassLocations());
 
 		final ComboBox<String> comboBox = new ComboBox<>(profileList);
 
@@ -70,8 +71,7 @@ public class MainConfigStage extends Stage
 
 		comboBox.valueProperty().addListener(new ChangeListener<String>()
 		{
-			@Override
-			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
+			@Override public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal)
 			{
 				if (newVal != null)
 				{
@@ -85,12 +85,11 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnNewProfile = new Button("New");
+		Button btnNewProfile = UserInterfaceUtil.createButton("NEW_PROFILE");
 
 		btnNewProfile.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				Response resp = Dialogs.showTextInputDialog(MainConfigStage.this, "Enter Profile Name", S_EMPTY);
 
@@ -123,19 +122,18 @@ public class MainConfigStage extends Stage
 			}
 		});
 
-		Button btnDelete = new Button("Delete");
+		Button btnDelete = UserInterfaceUtil.createButton("DELETE_PROFILE");
 
 		btnDelete.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				String profileName = comboBox.getValue();
 
 				if (profileName != null && !config.isBuiltInProfile(profileName))
 				{
-					Response resp = Dialogs.showYesNoDialog(MainConfigStage.this, "Really Delete Profile?", "Delete profile '"
-							+ profileName + C_QUOTE);
+					Response resp = Dialogs.showYesNoDialog(MainConfigStage.this, "Really Delete Profile?",
+							"Delete profile '" + profileName + C_QUOTE);
 
 					if (resp == Response.YES)
 					{
@@ -156,18 +154,17 @@ public class MainConfigStage extends Stage
 				}
 				else
 				{
-					Dialogs.showOKDialog(MainConfigStage.this, "Cannot delete profile", "Cannot delete built-in profile '"
-							+ profileName + "'");
+					Dialogs.showOKDialog(MainConfigStage.this, "Cannot delete profile",
+							"Cannot delete built-in profile '" + profileName + "'");
 				}
 			}
 		});
 
-		Button btnSave = new Button("Save");
+		Button btnSave = UserInterfaceUtil.createButton("SAVE_PROFILE");
 
 		btnSave.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override
-			public void handle(ActionEvent e)
+			@Override public void handle(ActionEvent e)
 			{
 				config.setSourceLocations(chooserSource.getFiles());
 				config.setClassLocations(chooserClasses.getFiles());
@@ -175,11 +172,11 @@ public class MainConfigStage extends Stage
 				config.saveConfig();
 
 				StageManager.closeStage(MainConfigStage.this);
-				
+
 			}
 		});
 
-		Button btnCancel = new Button("Cancel");
+		Button btnCancel = UserInterfaceUtil.createButton("CANCEL");
 
 		btnCancel.setOnAction(StageManager.getCloseHandler(MainConfigStage.this));
 
@@ -188,7 +185,7 @@ public class MainConfigStage extends Stage
 		hboxButtons.setPadding(new Insets(10));
 		hboxButtons.setAlignment(Pos.BASELINE_LEFT);
 
-		hboxButtons.getChildren().add(new Label("Profile:"));
+		hboxButtons.getChildren().add(UserInterfaceUtil.createLabel("PROFILE"));
 		hboxButtons.getChildren().add(comboBox);
 		hboxButtons.getChildren().add(btnNewProfile);
 		hboxButtons.getChildren().add(btnDelete);

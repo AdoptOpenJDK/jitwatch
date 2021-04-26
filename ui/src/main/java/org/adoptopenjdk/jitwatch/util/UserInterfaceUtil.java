@@ -18,9 +18,7 @@ import java.util.ResourceBundle;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -40,11 +37,12 @@ public final class UserInterfaceUtil
 {
 	private static final Logger logger = LoggerFactory.getLogger(UserInterfaceUtil.class);
 
-	private static final String RESOURCE_NAME ="i18n.lang";
+	private static final String RESOURCE_NAME = "i18n.lang";
 
 	private static final ObservableResourceFactory RESOURCE_FACTORY = new ObservableResourceFactory();
 
-	static {
+	static
+	{
 		RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(RESOURCE_NAME));
 	}
 
@@ -72,7 +70,8 @@ public final class UserInterfaceUtil
 		ADD_CLOSE_DECORATION = Boolean.getBoolean("addCloseDecoration");
 	}
 
-	public static void configureLocale(Locale locale) {
+	public static void configureLocale(Locale locale)
+	{
 		UserInterfaceUtil.RESOURCE_FACTORY.setResources(ResourceBundle.getBundle(UserInterfaceUtil.RESOURCE_NAME, locale));
 	}
 
@@ -104,6 +103,21 @@ public final class UserInterfaceUtil
 		}
 
 		return checkBox;
+	}
+
+	public static Label createLabel(String langKey)
+	{
+		Label label = new Label();
+		label.textProperty().bind(RESOURCE_FACTORY.getStringBinding(langKey));
+
+		String tooltipKey = langKey + "_tt";
+
+		if (RESOURCE_FACTORY.containsKey(tooltipKey))
+		{
+			label.tooltipProperty().bind(new TooltipBinding(label.textProperty(), tooltipKey));
+		}
+
+		return label;
 	}
 
 	public static <S, T> TableColumn<S, T> createTableColumn(String langKey)
@@ -256,17 +270,19 @@ public final class UserInterfaceUtil
 		}
 	}
 
-	private static class TooltipBinding extends ObjectBinding<Tooltip> {
+	private static class TooltipBinding extends ObjectBinding<Tooltip>
+	{
 
 		private final String tooltipKey;
 
-		public TooltipBinding(StringProperty text, String tooltipKey) {
+		public TooltipBinding(StringProperty text, String tooltipKey)
+		{
 			bind(text);
 			this.tooltipKey = tooltipKey;
 		}
 
-		@Override
-		protected Tooltip computeValue() {
+		@Override protected Tooltip computeValue()
+		{
 			return new Tooltip(RESOURCE_FACTORY.getString(tooltipKey));
 		}
 	}

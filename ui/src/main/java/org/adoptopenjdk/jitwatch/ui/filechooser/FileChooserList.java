@@ -22,6 +22,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class FileChooserList extends VBox
 
 		setItems(items);
 
-		Button btnOpenFileDialog = new Button("Add File(s)");
+		Button btnOpenFileDialog = UserInterfaceUtil.createButton("CONFIG_ADD_FILE");
 		btnOpenFileDialog.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -57,7 +58,7 @@ public class FileChooserList extends VBox
 			}
 		});
 
-		Button btnOpenFolderDialog = new Button("Add Folder");
+		Button btnOpenFolderDialog = UserInterfaceUtil.createButton("CONFIG_ADD_FOLDER");
 		btnOpenFolderDialog.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -67,7 +68,7 @@ public class FileChooserList extends VBox
 			}
 		});
 
-		Button btnRemove = new Button("Remove");
+		Button btnRemove = UserInterfaceUtil.createButton("CONFIG_REMOVE");
 		btnRemove.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -96,7 +97,7 @@ public class FileChooserList extends VBox
 		fileList.prefWidthProperty().bind(this.widthProperty().multiply(0.8));
 		vboxButtons.prefWidthProperty().bind(this.widthProperty().multiply(0.2));
 
-		Label titleLabel = new Label(title);
+		Label titleLabel = UserInterfaceUtil.createLabel(title);
 
 		getChildren().add(titleLabel);
 		getChildren().add(hbox);

@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 import org.adoptopenjdk.jitwatch.util.FileUtil;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ public class FileChooserListSrcZip extends FileChooserList
 	{
 		super(stage, title, items);
 
-		Button btnAddSrcZip = new Button("Add JDK src");
+		Button btnAddSrcZip = UserInterfaceUtil.createButton("CONFIG_ADD_JDK_SRC");
 		
 		btnAddSrcZip.setOnAction(new EventHandler<ActionEvent>()
 		{

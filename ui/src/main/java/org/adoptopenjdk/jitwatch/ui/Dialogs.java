@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -27,10 +27,6 @@ import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public final class Dialogs
 {
-	/*
-	 * Hide Utility Class Constructor Utility classes should not have a public
-	 * or default constructor.
-	 */
 	private Dialogs()
 	{
 	}
@@ -90,7 +86,7 @@ public final class Dialogs
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
-		Button btnYes = new Button("Yes");
+		Button btnYes = UserInterfaceUtil.createButton("YES");
 
 		btnYes.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -102,7 +98,7 @@ public final class Dialogs
 			}
 		});
 
-		Button btnNo = new Button("No");
+		Button btnNo = UserInterfaceUtil.createButton("NO");
 
 		btnNo.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -161,7 +157,7 @@ public final class Dialogs
 
 		});
 
-		Button btnOK = new Button("OK");
+		Button btnOK = UserInterfaceUtil.createButton("OK");
 
 		btnOK.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -174,7 +170,7 @@ public final class Dialogs
 			}
 		});
 
-		Button btnCancel = new Button("Cancel");
+		Button btnCancel = UserInterfaceUtil.createButton("CANCEL");
 
 		btnCancel.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -234,7 +230,7 @@ public final class Dialogs
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
-		Button btnOK = new Button("OK");
+		Button btnOK = UserInterfaceUtil.createButton("OK");
 
 		btnOK.setOnAction(new EventHandler<ActionEvent>()
 		{
