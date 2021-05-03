@@ -17,6 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 
 public class CompilationInfo extends HBox
 {
@@ -50,24 +51,20 @@ public class CompilationInfo extends HBox
 		vBoxAssembly.setSpacing(2);
 		vBoxCompileTime.setSpacing(2);
 
-		lblBytecodeSize = new Label();
+		lblBytecodeSize = UserInterfaceUtil.createLabel("BYTECODE_SIZE");
 		lblBytecodeSizeVal = new Label();
 		lblBytecodeSizeVal.setStyle(STYLE_VALUE);
 		lblBytecodeSizeVal.setMinWidth(valueWidth);
 
-		lblAssemblySize = new Label();
+		lblAssemblySize = UserInterfaceUtil.createLabel("NATIVE_SIZE");
 		lblAssemblySizeVal = new Label();
 		lblAssemblySizeVal.setStyle(STYLE_VALUE);
 		lblAssemblySizeVal.setMinWidth(valueWidth);
 
-		lblCompileTime = new Label();
+		lblCompileTime = UserInterfaceUtil.createLabel("COMPILE_TIME");
 		lblCompileTimeVal = new Label();
 		lblCompileTimeVal.setStyle(STYLE_VALUE);
 		lblCompileTimeVal.setMinWidth(valueWidth);
-
-		lblBytecodeSize.setText("Bytecode size");
-		lblAssemblySize.setText("Native size");
-		lblCompileTime.setText("Compile time");
 
 		setCompilation(null);
 

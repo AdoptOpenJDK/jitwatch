@@ -150,7 +150,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 		setupCheckBoxes();
 
-		btnCompileChain = new Button("Chain");
+		btnCompileChain = UserInterfaceUtil.createButton("COMPILE_CHAIN");
 		btnCompileChain.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -162,9 +162,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				}
 			}
 		});
-		btnCompileChain.setTooltip(new Tooltip("Show chain of compiled and inlined children"));
 
-		btnJITJournal = new Button("Journal");
+		btnJITJournal =  UserInterfaceUtil.createButton("JIT_JOURNAL");
 		btnJITJournal.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -185,9 +184,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				}
 			}
 		});
-		btnJITJournal.setTooltip(new Tooltip("Show journal of JIT events for this member"));
 
-		btnLineTable = new Button("LNT");
+		btnLineTable = UserInterfaceUtil.createButton("LINE_NUMBER_TABLE");
 		btnLineTable.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -201,9 +199,8 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				}
 			}
 		});
-		btnLineTable.setTooltip(new Tooltip("Show LineNumberTable for current bytecode"));
 
-		btnInlinedInto = new Button("Inlined into");
+		btnInlinedInto = UserInterfaceUtil.createButton("INLINED_INTO");
 		btnInlinedInto.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -215,7 +212,6 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 				}
 			}
 		});
-		btnInlinedInto.setTooltip(new Tooltip("Show where this method was inlined into"));
 
 		compilationInfo = new CompilationInfo();
 
@@ -236,11 +232,11 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		hBoxToolBarButtons.getChildren().add(spacerBottom);
 		hBoxToolBarButtons.getChildren().add(compilationInfo);
 
-		Label lblClass = new Label("Class:");
+		Label lblClass = UserInterfaceUtil.createLabel("CLASS");
 		classSearch = new ClassSearch(this, parent.getPackageManager());
 		classSearch.prefWidthProperty().bind(widthProperty().multiply(0.42));
 
-		Label lblMember = new Label("Member:");
+		Label lblMember = UserInterfaceUtil.createLabel("MEMBER");
 
 		// ================ Set up Member combo box ====================
 
@@ -300,9 +296,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		viewerBytecode = new ViewerBytecode(parent, navigationStack, model, this, LineType.BYTECODE);
 		viewerAssembly = new ViewerAssembly(parent, this, LineType.ASSEMBLY);
 
-		paneSource = new TriViewPane(this, "Source", viewerSource);
-		paneBytecode = new TriViewPane(this, "Bytecode (double click for JVM spec)", viewerBytecode);
-		paneAssembly = new TriViewPane(this, "Assembly", viewerAssembly, getAssemblyTitleComponents());
+		paneSource = new TriViewPane(this, "SOURCE", viewerSource);
+		paneBytecode = new TriViewPane(this, "BYTECODE_DOUBLE_CLICK_FOR_JVM_SPEC", viewerBytecode);
+		paneAssembly = new TriViewPane(this, "ASSEMBLY", viewerAssembly, getAssemblyTitleComponents());
 
 		splitViewer.prefHeightProperty().bind(vBox.heightProperty());
 
@@ -333,9 +329,9 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	private void setupCheckBoxes()
 	{
-		checkSource = new CheckBox("_Source");
-		checkBytecode = new CheckBox("_Bytecode");
-		checkAssembly = new CheckBox("_Assembly");
+		checkSource = UserInterfaceUtil.createCheckBox("CHECKBOX_SOURCE");
+		checkBytecode = UserInterfaceUtil.createCheckBox("CHECKBOX_BYTECODE");
+		checkAssembly = UserInterfaceUtil.createCheckBox("CHECKBOX_ASSEMBLY");
 
 		createCheckBoxMouseFollow();
 
@@ -393,8 +389,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 		HBox hbox = new HBox();
 		hbox.setSpacing(16);
 
-		checkLocalLabels = new CheckBox("_Labels");
-		checkLocalLabels.setTooltip(new Tooltip("Local labels"));
+		checkLocalLabels = UserInterfaceUtil.createCheckBox("CHECKBOX_LABELS");
 
 		checkLocalLabels.setSelected(config.isLocalAsmLabels());
 
@@ -424,7 +419,7 @@ public class TriView extends Stage implements ILineListener, ICompilationChangeL
 
 	private void createCheckBoxMouseFollow()
 	{
-		checkMouseover = new CheckBox("_Mouseover");
+		checkMouseover = UserInterfaceUtil.createCheckBox("CHECKBOX_MOUSEOVER");
 
 		checkMouseover.setSelected(config.isTriViewMouseFollow());
 
