@@ -26,9 +26,6 @@
 # Unlock the HotSpot logging options
 export unlock="-XX:+UnlockDiagnosticVMOptions"
 
-# Log each time a class is loaded (how JITWatch builds the class model)
-export trace="-XX:+TraceClassLoading"
-
 # Enable XML format HotSpot log output
 export compilation="-XX:+LogCompilation"
 

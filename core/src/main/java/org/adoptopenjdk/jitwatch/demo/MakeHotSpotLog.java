@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -17,7 +17,6 @@ import java.util.Random;
 // Demo class to generate an example hotspot.log
 // run with VM arguments
 // -XX:+UnlockDiagnosticVMOptions
-// -XX:+TraceClassLoading 
 // -XX:+LogCompilation 
 // -XX:+PrintAssembly
 

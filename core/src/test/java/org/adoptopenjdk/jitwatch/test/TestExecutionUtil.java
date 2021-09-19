@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog;
 import org.adoptopenjdk.jitwatch.logger.NullLogListener;
+import org.adoptopenjdk.jitwatch.logger.StdLogListener;
 import org.adoptopenjdk.jitwatch.process.runtime.RuntimeJava;
 import org.junit.Test;
 
@@ -66,14 +67,13 @@ public class TestExecutionUtil
 
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
-		options.add("-XX:+TraceClassLoading");
 		options.add("-XX:+LogCompilation");
 
 		try
 		{
 			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-			boolean success = executor.execute(MakeHotSpotLog.class.getCanonicalName(), cp, options, new NullLogListener());
+			boolean success = executor.execute(MakeHotSpotLog.class.getCanonicalName(), cp, options, new StdLogListener());
 
 			assertTrue(success);
 		}

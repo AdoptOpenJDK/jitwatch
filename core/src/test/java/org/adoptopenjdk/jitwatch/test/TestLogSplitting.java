@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -98,7 +98,7 @@ public class TestLogSplitting
 				"</vm_version>",
 				"<vm_arguments>",
 				"<args>",
-				"-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:-TieredCompilation -XX:+PrintAssembly -XX:-UseCompressedOops ",
+				"-XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:-TieredCompilation -XX:+PrintAssembly -XX:-UseCompressedOops ",
 				"</args>",
 				"<command>",
 				"org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
@@ -176,7 +176,7 @@ public class TestLogSplitting
 				"</vm_version>",
 				"<vm_arguments>",
 				"<args>",
-				"-XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation -XX:-TieredCompilation -XX:+PrintAssembly -XX:-UseCompressedOops ",
+				"-XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:-TieredCompilation -XX:+PrintAssembly -XX:-UseCompressedOops ",
 				"</args>",
 				"<command>",
 				"org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog",
