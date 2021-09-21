@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.0</version>
+		<version>1.4.1</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -14,7 +14,7 @@
 	<name>JITWatch UI</name>
 
 	<properties>
-		<openjfx.version>15.0.1</openjfx.version>
+		<openjfx.version>17.0.0.1</openjfx.version>
 	</properties>
 
 	<profiles>
