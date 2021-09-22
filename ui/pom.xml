@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.1</version>
+		<version>1.4.2</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -15,6 +15,8 @@
 
 	<properties>
 		<openjfx.version>17.0.0.1</openjfx.version>
+
+		<!--set on command line with -Djavafx.platform={linux|win|mac} -->
 	</properties>
 
 	<profiles>
@@ -38,10 +40,13 @@
 								<configuration>
 									<shadedArtifactAttached>true</shadedArtifactAttached>
 									<shadedClassifierName>project-classifier</shadedClassifierName>
-									<outputFile>target/ui-shaded.jar</outputFile>
+									<outputFile>target/jitwatch-ui-${project.version}-shaded-${javafx.platform}.jar</outputFile>
 									<transformers>
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<mainClass>${main.class}</mainClass>
+											<manifestEntries>
+												<Add-Exports>jdk.jdeps/com.sun.tools.javap</Add-Exports>
+											</manifestEntries>
 										</transformer>
 									</transformers>
 								</configuration>
@@ -63,73 +68,16 @@
 					<groupId>org.openjfx</groupId>
 					<artifactId>javafx-controls</artifactId>
 					<version>${openjfx.version}</version>
-					<type>pom</type>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-swing</artifactId>
-					<version>${openjfx.version}</version>
-					<type>pom</type>
 				</dependency>
 				<dependency>
 					<groupId>org.openjfx</groupId>
 					<artifactId>javafx-web</artifactId>
 					<version>${openjfx.version}</version>
-					<type>pom</type>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>win</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>linux</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-controls</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>mac</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>win</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>linux</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-web</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>mac</classifier>
 				</dependency>
 				<dependency>
 					<groupId>org.openjfx</groupId>
 					<artifactId>javafx-swing</artifactId>
 					<version>${openjfx.version}</version>
-					<classifier>win</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-swing</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>linux</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.openjfx</groupId>
-					<artifactId>javafx-swing</artifactId>
-					<version>${openjfx.version}</version>
-					<classifier>mac</classifier>
 				</dependency>
 			</dependencies>
 			<build>
@@ -147,7 +95,7 @@
 								<configuration>
 									<shadedArtifactAttached>true</shadedArtifactAttached>
 									<shadedClassifierName>project-classifier</shadedClassifierName>
-									<outputFile>target/ui-shaded.jar</outputFile>
+                                                                        <outputFile>target/jitwatch-ui-${project.version}-shaded-${javafx.platform}.jar</outputFile>
 									<transformers>
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<mainClass>${main.class}</mainClass>
