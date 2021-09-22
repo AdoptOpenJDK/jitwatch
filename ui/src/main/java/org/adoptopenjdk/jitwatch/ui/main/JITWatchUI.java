@@ -729,10 +729,12 @@ public class JITWatchUI extends Application
 
 		StringBuilder vmBuilder = new StringBuilder();
 
-		vmBuilder.append("VM is ");
-		vmBuilder.append(Runtime.class.getPackage().getImplementationVendor());
-		vmBuilder.append(C_SPACE);
-		vmBuilder.append(Runtime.class.getPackage().getImplementationVersion());
+		vmBuilder.append("VM: ");
+		vmBuilder.append(System.getProperty("java.vendor"));
+		vmBuilder.append(" JDK");
+		vmBuilder.append(System.getProperty("java.version"));
+		vmBuilder.append(" build ");
+		vmBuilder.append(System.getProperty("java.runtime.version"));
 
 		lblVmVersion.setText(vmBuilder.toString());
 
