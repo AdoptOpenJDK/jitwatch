@@ -46,7 +46,12 @@ public class JavapProcess extends AbstractProcess
 
 			if (!executablePath.toFile().exists())
 			{
-				throw new FileNotFoundException("Could not find " + EXECUTABLE_NAME);
+				executablePath = Paths.get(System.getenv("JAVA_HOME"), "bin", EXECUTABLE_NAME);
+
+				if (!executablePath.toFile().exists()) 
+				{
+					throw new FileNotFoundException("Could not find " + EXECUTABLE_NAME);
+				}
 			}
 		}
 
