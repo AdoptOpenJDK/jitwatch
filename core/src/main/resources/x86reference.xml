@@ -1,53 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE x86reference SYSTEM "x86reference.dtd">
 
-<!-- Visit http://ref.x86asm.net/ -->
-
-<!--
-
-Author: Karel Lejska a.k.a. MazeGen (mazegen gmail com)
-
-Short Description:
-
-This reference is intended to be precise opcode and instruction
-set reference (including x86-64). Its principal aim is exact
-definition of instruction parameters and attributes.
-
-- Minor Issues:
-
-83/1, 83/4, 83/6:
-These short forms of OR, AND, and XOR instructions are documented
-since 80386. They were probably working since 8086, 80186
-or 80286, but I have no trustworthy information regarding this issue.
-
-D9/3 mod=11, DF/2 mod=11, DF/3 mod=11:
-These encodings are documented in Intel 80287 manual at least. They
-were probably working since 8086, 80186 or 80286, but I have no
-trustworthy information regarding this issue.
-
-0F0D:
-I am not sure since which Intel procesor was second multi-byte NOP (0F0D)
-released. The reference sets it since Pentium Pro.
-
-0FAE /0 FXSAVE, 0FAE /1 FXRSTOR
-Current Intel manuals say that these were introduced with PIII
-processor. I can't find them documented in PIII manual though.
-Because of this problem, these instructions are marked as introduced
-with latter steppings of PIII processor.
-
-- Discussion:
-
-FF /3, FF /5:
-Should I add this comment?
-"The offset from the target operand is ignored when a call gate is used."
-
-LAR, LSL:
-Should I add this comment?
-"For all loads (regardless of source or destination sizing) only bits 16-0 are used. Other bits are ignored."
-
--->
-
-<x86reference version="1.11">
+<x86reference
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="x86reference.xsd">
 
   <one-byte>
 
@@ -1387,13 +1342,13 @@ Should I add this comment?
 	  <mnem>OUTS</mnem>
 	  <dst nr="2" group="gen" type="w" depend="no">DX</dst>
 	  <!--<src><a>X</a><t>b</t></src> changed in 1.02-->
-	  <src type="b" address="X">(DS):[rSI]</src>
+	  <src type="b" address="X">(DS:)[rSI]</src>
 	</syntax>
 	<syntax>
 	  <mnem>OUTSB</mnem>
 	  <dst nr="2" group="gen" type="w" displayed="no" depend="no">DX</dst>
 	  <!--<src displayed="no"><a>X</a><t>b</t></src> changed in 1.02-->
-          <src type="b" address="X" displayed="no">(DS):[rSI]</src>
+          <src type="b" address="X" displayed="no">(DS:)[rSI]</src>
 	</syntax>
 	<grp1>gen</grp1><grp2>inout</grp2><grp2>string</grp2>
 	<test_f>d</test_f>
@@ -1556,7 +1511,7 @@ Should I add this comment?
 	<syntax><mnem>JPO</mnem><src><a>J</a><t>bs</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>p</test_f>
-	<note><brief>Jump short if not parity/parity odd</brief></note>
+	<note><brief>Jump short if not parity/parity odd (PF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -1847,7 +1802,7 @@ Should I add this comment?
     <pri_opcd value="84">
       <entry direction="0" op_size="0" r="yes">
 	<syntax><mnem>TEST</mnem><src><a>E</a><t>b</t></src><src><a>G</a><t>b</t></src></syntax>
-        <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
+        <grp1>gen</grp1><grp2>logical</grp2>
         <modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>a</undef_f><f_vals>oc</f_vals>
         <note><brief>Logical Compare</brief></note>
       </entry>
@@ -1856,7 +1811,7 @@ Should I add this comment?
     <pri_opcd value="85">
       <entry direction="0" op_size="1" r="yes">
 	<syntax><mnem>TEST</mnem><src><a>E</a><t>vqp</t></src><src><a>G</a><t>vqp</t></src></syntax>
-        <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
+        <grp1>gen</grp1><grp2>logical</grp2>
         <modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>a</undef_f><f_vals>oc</f_vals>
         <note><brief>Logical Compare</brief></note>
       </entry>
@@ -1903,7 +1858,7 @@ Should I add this comment?
     </pri_opcd>
 
     <pri_opcd value="8B">
-      <entry direction="1" op_size="0" r="yes">
+      <entry direction="1" op_size="1" r="yes">
         <syntax><mnem>MOV</mnem><dst depend="no"><a>G</a><t>vqp</t></dst><src><a>E</a><t>vqp</t></src></syntax>
         <grp1>gen</grp1><grp2>datamov</grp2>
         <note><brief>Move</brief></note>
@@ -2932,7 +2887,7 @@ Should I add this comment?
 	<modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>oac</undef_f>
 	<note><brief>Shift</brief></note>
       </entry>
-      <entry op_size="0" alias="C1_4" doc="u" doc_ref="gen_note_SAL_C0_4_C1_4_D0_4_D1_4">
+      <entry op_size="1" alias="C1_4" doc="u" doc_ref="gen_note_SAL_C0_4_C1_4_D0_4_D1_4">
 	<opcd_ext>6</opcd_ext>
 	<syntax><mnem>SAL</mnem><dst><a>E</a><t>vqp</t></dst><src><a>I</a><t>b</t></src></syntax>
 	<syntax><mnem>SHL</mnem><dst><a>E</a><t>vqp</t></dst><src><a>I</a><t>b</t></src></syntax>
@@ -4011,8 +3966,8 @@ Should I add this comment?
 	<note><brief>Store x87 FPU Environment</brief></note>
       </entry>
       <entry>
-	<opcd_ext>6</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>6</opcd_ext>
 	<!--<syntax mod="mem">-->
 	<syntax>
 	  <mnem>FSTENV</mnem><dst depend="no"><a>M</a><t>e</t></dst>
@@ -4146,8 +4101,8 @@ Should I add this comment?
 	<note><brief>Store x87 FPU Control Word</brief></note>
       </entry>
       <entry>
-	<opcd_ext>7</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>7</opcd_ext>
 	<!--<syntax mod="mem">-->
 	<syntax>
 	  <mnem>FSTCW</mnem><dst depend="no"><a>M</a><t>w</t></dst>
@@ -4559,8 +4514,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E0</sec_opcd>
 	<proc_start post="no">00</proc_start>
 	<proc_end>00</proc_end>
@@ -4597,8 +4552,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E1</sec_opcd>
 	<proc_start post="no">00</proc_start>
 	<proc_end>00</proc_end>
@@ -4635,8 +4590,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E2</sec_opcd>
 	<syntax>
 	  <mnem>FCLEX</mnem>
@@ -4660,8 +4615,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E3</sec_opcd>
 	<syntax>
 	  <mnem>FINIT</mnem>
@@ -4685,8 +4640,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E4</sec_opcd>
 	<proc_start post="no">02</proc_start>
 	<proc_end>02</proc_end>
@@ -5190,8 +5145,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="mem">-->
       <entry>
-	<opcd_ext>6</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>6</opcd_ext>
 	<syntax>
 	  <mnem>FSAVE</mnem>
           <dst><a>M</a><t>st</t></dst>
@@ -5224,8 +5179,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="mem">-->
       <entry>
-	<opcd_ext>7</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>7</opcd_ext>
 	<syntax>
 	  <mnem>FSTSW</mnem><dst><a>M</a><t>w</t></dst>
 	</syntax>
@@ -5711,8 +5666,8 @@ Should I add this comment?
       </entry>
       <!--<entry mod="nomem">-->
       <entry>   <!-- @mod=nomem not needed, because sec_opcd must be matched -->
-	<opcd_ext>4</opcd_ext>
 	<pref>9B</pref>
+	<opcd_ext>4</opcd_ext>
 	<sec_opcd>E0</sec_opcd>
 	<proc_start>02</proc_start>
 	<syntax>
@@ -6273,13 +6228,13 @@ Should I add this comment?
         <modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>a</undef_f><f_vals>oc</f_vals>
         <note><brief>Logical Compare</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="0" lock="yes">
 	<opcd_ext>2</opcd_ext>
 	<syntax><mnem>NOT</mnem><dst><a>E</a><t>b</t></dst></syntax>
         <grp1>gen</grp1><grp2>logical</grp2>
 	<note><brief>One's Complement Negation</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="0" lock="yes">
 	<opcd_ext>3</opcd_ext>
 	<syntax><mnem>NEG</mnem><dst><a>E</a><t>b</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
@@ -6341,25 +6296,25 @@ Should I add this comment?
     <pri_opcd value="F7">
       <entry op_size="1">
 	<opcd_ext>0</opcd_ext>
-	<syntax><mnem>TEST</mnem><src><a>E</a><t>vqp</t></src><src><a>I</a><t>vqp</t></src></syntax>
+	<syntax><mnem>TEST</mnem><src><a>E</a><t>vqp</t></src><src><a>I</a><t>vds</t></src></syntax>
         <grp1>gen</grp1><grp2>logical</grp2>
         <modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>a</undef_f><f_vals>oc</f_vals>
         <note><brief>Logical Compare</brief></note>
       </entry>
       <entry op_size="1" alias="F7_0" doc="u" doc_ref="gen_note_TEST_F6_1_F7_1">
 	<opcd_ext>1</opcd_ext>
-	<syntax><mnem>TEST</mnem><src><a>E</a><t>vqp</t></src><src><a>I</a><t>vqp</t></src></syntax>
+	<syntax><mnem>TEST</mnem><src><a>E</a><t>vqp</t></src><src><a>I</a><t>vds</t></src></syntax>
         <grp1>gen</grp1><grp2>logical</grp2>
         <modif_f>oszapc</modif_f><def_f>oszpc</def_f><undef_f>a</undef_f><f_vals>oc</f_vals>
         <note><brief>Logical Compare</brief></note>
       </entry>
-      <entry op_size="1">
+      <entry op_size="1" lock="yes">
 	<opcd_ext>2</opcd_ext>
 	<syntax><mnem>NOT</mnem><dst><a>E</a><t>vqp</t></dst></syntax>
         <grp1>gen</grp1><grp2>logical</grp2>
 	<note><brief>One's Complement Negation</brief></note>
       </entry>
-      <entry op_size="1">
+      <entry op_size="1" lock="yes">
 	<opcd_ext>3</opcd_ext>
 	<syntax><mnem>NEG</mnem><dst><a>E</a><t>vqp</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
@@ -6378,7 +6333,7 @@ Should I add this comment?
         <modif_f>oszapc</modif_f><def_f>oc</def_f><undef_f>szap</undef_f>
 	<note><brief>Unsigned Multiply</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="1">
 	<opcd_ext>5</opcd_ext>
 	<syntax>
           <mnem>IMUL</mnem>
@@ -6390,7 +6345,7 @@ Should I add this comment?
         <modif_f>oszapc</modif_f><def_f>oc</def_f><undef_f>szap</undef_f>
 	<note><brief>Signed Multiply</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="1">
 	<opcd_ext>6</opcd_ext>
 	<syntax>
           <mnem>DIV</mnem>
@@ -6402,7 +6357,7 @@ Should I add this comment?
         <modif_f>oszapc</modif_f><undef_f>oszapc</undef_f>
 	<note><brief>Unsigned Divide</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="1">
 	<opcd_ext>7</opcd_ext>
 	<syntax>
           <mnem>IDIV</mnem>
@@ -6471,14 +6426,14 @@ Should I add this comment?
     </pri_opcd>
 
     <pri_opcd value="FE">
-      <entry op_size="0">
+      <entry op_size="0" lock="yes">
 	<opcd_ext>0</opcd_ext>
         <syntax><mnem>INC</mnem><dst><a>E</a><t>b</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
         <modif_f>oszap</modif_f><def_f>oszap</def_f>
         <note><brief>Increment by 1</brief></note>
       </entry>
-      <entry op_size="0">
+      <entry op_size="0" lock="yes">
 	<opcd_ext>1</opcd_ext>
         <syntax><mnem>DEC</mnem><dst><a>E</a><t>b</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
@@ -6488,14 +6443,14 @@ Should I add this comment?
     </pri_opcd>
 
     <pri_opcd value="FF">
-      <entry op_size="1">
+      <entry op_size="1" lock="yes">
 	<opcd_ext>0</opcd_ext>
         <syntax><mnem>INC</mnem><dst><a>E</a><t>vqp</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
         <modif_f>oszap</modif_f><def_f>oszap</def_f>
         <note><brief>Increment by 1</brief></note>
       </entry>
-      <entry op_size="1">
+      <entry op_size="1" lock="yes">
 	<opcd_ext>1</opcd_ext>
         <syntax><mnem>DEC</mnem><dst><a>E</a><t>vqp</t></dst></syntax>
         <grp1>gen</grp1><grp2>arith</grp2><grp3>binary</grp3>
@@ -9937,6 +9892,7 @@ Should I add this comment?
 	  <mnem>PALIGNR</mnem>
 	  <dst><a>P</a><t>q</t></dst>
 	  <src><a>Q</a><t>q</t></src>
+	  <src><a>I</a><t>b</t></src>
 	</syntax>
         <instr_ext>ssse3</instr_ext>  
 	<grp1>simdint</grp1>
@@ -9950,6 +9906,7 @@ Should I add this comment?
 	  <mnem>PALIGNR</mnem>
 	  <dst><a>V</a><t>dq</t></dst>
 	  <src><a>W</a><t>dq</t></src>
+	  <src><a>I</a><t>b</t></src>
 	</syntax>
         <instr_ext>ssse3</instr_ext>  
 	<grp1>simdint</grp1>
@@ -10065,7 +10022,7 @@ Should I add this comment?
         <pref>66</pref>
         <sec_opcd escape="yes">20</sec_opcd>
         <proc_start lat_step="yes">12</proc_start>
-	<syntax mod="nomem">
+	<syntax mod="mem">
 	  <mnem>PINSRB</mnem>
 	  <dst><a>V</a><t>dq</t></dst>   
 	  <src><a>M</a><t>b</t></src>   
@@ -10073,7 +10030,7 @@ Should I add this comment?
 	</syntax>
         <!-- to keep the syntax of SSE zero-extending instructions
 	consistent, Rdqp must be used instead of just Rd -->
-	<syntax mod="mem">
+	<syntax mod="nomem">
 	  <mnem>PINSRB</mnem>
 	  <dst><a>V</a><t>dq</t></dst>   
 	  <src><a>R</a><t>dqp</t></src>   <!-- effective type is 'b' -->
@@ -10094,13 +10051,13 @@ Should I add this comment?
 	<syntax mod="mem">
 	  <mnem>INSERTPS</mnem>
 	  <dst><a>V</a><t>ps</t></dst>
-	  <src><a>U</a><t>ps</t></src>
+	  <src><a>M</a><t>d</t></src>
           <src><a>I</a><t>b</t></src>
 	</syntax>
 	<syntax mod="nomem">
 	  <mnem>INSERTPS</mnem>
 	  <dst><a>V</a><t>ps</t></dst>
-	  <src><a>M</a><t>d</t></src>
+	  <src><a>U</a><t>ps</t></src>
           <src><a>I</a><t>b</t></src>
 	</syntax>
 	<instr_ext>sse41</instr_ext>
@@ -10356,7 +10313,7 @@ Should I add this comment?
 	<syntax><mnem>CMOVE</mnem><dst depend="no"><a>G</a><t>vqp</t></dst><src><a>E</a><t>vqp</t></src></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>z</test_f>
-	<note><brief>Conditional Move - zero/equal (ZF=0)</brief></note>
+	<note><brief>Conditional Move - zero/equal (ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -10367,7 +10324,7 @@ Should I add this comment?
 	<syntax><mnem>CMOVNE</mnem><dst depend="no"><a>G</a><t>vqp</t></dst><src><a>E</a><t>vqp</t></src></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>z</test_f>
-	<note><brief>Conditional Move - not zero/not equal (ZF=1)</brief></note>
+	<note><brief>Conditional Move - not zero/not equal (ZF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -10379,7 +10336,7 @@ Should I add this comment?
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<!-- 1.02 <test_f>cz</test_f>-->
 	<test_f>zc</test_f>
-	<note><brief>Conditional Move - below or equal/not above (CF=1 AND ZF=1)</brief></note>
+	<note><brief>Conditional Move - below or equal/not above (CF=1 OR ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -10433,7 +10390,7 @@ Should I add this comment?
 	<syntax><mnem>CMOVPO</mnem><dst depend="no"><a>G</a><t>vqp</t></dst><src><a>E</a><t>vqp</t></src></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>p</test_f>
-	<note><brief>Conditional Move - not parity/parity odd</brief></note>
+	<note><brief>Conditional Move - not parity/parity odd (PF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -11718,8 +11675,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Right Logical</brief></note>
       </entry>
       <entry>
-        <opcd_ext>2</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>2</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSRLW</mnem>
@@ -11744,8 +11701,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Right Arithmetic</brief></note>
       </entry>
       <entry>
-        <opcd_ext>4</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>4</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSRAW</mnem>
@@ -11770,8 +11727,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Left Logical</brief></note>
       </entry>
       <entry> 
-        <opcd_ext>6</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>6</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSLLW</mnem>
@@ -11798,8 +11755,8 @@ Should I add this comment?
         <note><brief>Shift Double Quadword Right Logical</brief></note>
       </entry>
       <entry>
-        <opcd_ext>2</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>2</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSRLD</mnem>
@@ -11824,8 +11781,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Right Arithmetic</brief></note>
       </entry>
       <entry>
-        <opcd_ext>4</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>4</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSRAD</mnem>
@@ -11850,8 +11807,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Left Logical</brief></note>
       </entry>
       <entry>
-        <opcd_ext>6</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>6</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSLLD</mnem>
@@ -11878,8 +11835,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Right Logical</brief></note>
       </entry>
       <entry>
-        <opcd_ext>2</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>2</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSRLQ</mnem>
@@ -11893,8 +11850,8 @@ Should I add this comment?
 
       <!--<entry mod="nomem">-->
       <entry>
-        <opcd_ext>3</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>3</opcd_ext>
 	<proc_start>10</proc_start>
 	<syntax>
 	  <mnem>PSRLDQ</mnem>
@@ -11920,8 +11877,8 @@ Should I add this comment?
         <note><brief>Shift Packed Data Left Logical</brief></note>
       </entry>
       <entry>
-        <opcd_ext>6</opcd_ext>
 	<pref>66</pref>
+        <opcd_ext>6</opcd_ext>
         <proc_start>10</proc_start>
         <syntax>
           <mnem>PSLLQ</mnem>
@@ -11935,8 +11892,8 @@ Should I add this comment?
 
       <!--<entry mod="nomem">-->
       <entry>
-        <opcd_ext>7</opcd_ext> 
 	<pref>66</pref>   
+        <opcd_ext>7</opcd_ext> 
 	<proc_start>10</proc_start>   
 	<syntax>
 	  <mnem>PSLLDQ</mnem>
@@ -12237,7 +12194,7 @@ Should I add this comment?
         <syntax>
           <mnem>MOVQ</mnem>
           <dst depend="no"><a>E</a><t>qp</t></dst>
-          <src><a>E</a><t>dq </t></src>
+          <src><a>V</a><t>dq</t></src>
         </syntax>
         <instr_ext>sse2</instr_ext>
         <grp1>simdint</grp1>
@@ -12308,7 +12265,7 @@ Should I add this comment?
 	<syntax><mnem>JO</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>o</test_f>
-	<note><brief>Jump short if overflow (OF=1)</brief></note>
+	<note><brief>Jump near if overflow (OF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12318,7 +12275,7 @@ Should I add this comment?
 	<syntax><mnem>JNO</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>o</test_f>
-	<note><brief>Jump short if not overflow (OF=0)</brief></note>
+	<note><brief>Jump near if not overflow (OF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12330,7 +12287,7 @@ Should I add this comment?
 	<syntax><mnem>JC</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>c</test_f>
-	<note><brief>Jump short if below/not above or equal/carry (CF=1)</brief></note>
+	<note><brief>Jump near if below/not above or equal/carry (CF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12342,7 +12299,7 @@ Should I add this comment?
 	<syntax><mnem>JNC</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>c</test_f>
-	<note><brief>Jump short if not below/above or equal/not carry (CF=0)</brief></note>
+	<note><brief>Jump near if not below/above or equal/not carry (CF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12353,7 +12310,7 @@ Should I add this comment?
 	<syntax><mnem>JE</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>z</test_f>
-	<note><brief>Jump short if zero/equal (ZF=0)</brief></note>
+	<note><brief>Jump near if zero/equal (ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12364,7 +12321,7 @@ Should I add this comment?
 	<syntax><mnem>JNE</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>z</test_f>
-	<note><brief>Jump short if not zero/not equal (ZF=1)</brief></note>
+	<note><brief>Jump near if not zero/not equal (ZF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12376,7 +12333,7 @@ Should I add this comment?
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<!-- 1.02 <test_f>cz</test_f>-->
 	<test_f>zc</test_f>
-	<note><brief>Jump short if below or equal/not above (CF=1 AND ZF=1)</brief></note>
+	<note><brief>Jump near if below or equal/not above (CF=1 OR ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12388,7 +12345,7 @@ Should I add this comment?
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<!-- 1.02 <test_f>cz</test_f>-->
 	<test_f>zc</test_f>
-	<note><brief>Jump short if not below or equal/above (CF=0 AND ZF=0)</brief></note>
+	<note><brief>Jump near if not below or equal/above (CF=0 AND ZF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12398,7 +12355,7 @@ Should I add this comment?
 	<syntax><mnem>JS</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>s</test_f>
-	<note><brief>Jump short if sign (SF=1)</brief></note>
+	<note><brief>Jump near if sign (SF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12408,7 +12365,7 @@ Should I add this comment?
 	<syntax><mnem>JNS</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>s</test_f>
-	<note><brief>Jump short if not sign (SF=0)</brief></note>
+	<note><brief>Jump near if not sign (SF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12419,7 +12376,7 @@ Should I add this comment?
 	<syntax><mnem>JPE</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>p</test_f>
-	<note><brief>Jump short if parity/parity even (PF=1)</brief></note>
+	<note><brief>Jump near if parity/parity even (PF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12430,7 +12387,7 @@ Should I add this comment?
 	<syntax><mnem>JPO</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>p</test_f>
-	<note><brief>Jump short if not parity/parity odd</brief></note>
+	<note><brief>Jump near if not parity/parity odd (PF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12441,7 +12398,7 @@ Should I add this comment?
 	<syntax><mnem>JNGE</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>os</test_f>
-	<note><brief>Jump short if less/not greater (SF!=OF)</brief></note>
+	<note><brief>Jump near if less/not greater (SF!=OF)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12452,7 +12409,7 @@ Should I add this comment?
 	<syntax><mnem>JGE</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>os</test_f>
-	<note><brief>Jump short if not less/greater or equal (SF=OF)</brief></note>
+	<note><brief>Jump near if not less/greater or equal (SF=OF)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12463,7 +12420,7 @@ Should I add this comment?
 	<syntax><mnem>JNG</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>osz</test_f>
-	<note><brief>Jump short if less or equal/not greater ((ZF=1) OR (SF!=OF))</brief></note>
+	<note><brief>Jump near if less or equal/not greater ((ZF=1) OR (SF!=OF))</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12474,7 +12431,7 @@ Should I add this comment?
 	<syntax><mnem>JG</mnem><src><a>J</a><t>vds</t></src></syntax>
 	<grp1>gen</grp1><grp2>branch</grp2><grp3>cond</grp3>
 	<test_f>osz</test_f>
-	<note><brief>Jump short if not less nor equal/greater ((ZF=0) AND (SF=OF))</brief></note>
+	<note><brief>Jump near if not less nor equal/greater ((ZF=0) AND (SF=OF))</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12534,7 +12491,7 @@ Should I add this comment?
 	<syntax><mnem>SETE</mnem><dst depend="no"><a>E</a><t>b</t></dst></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>z</test_f>
-	<note><brief>Set Byte on Condition - zero/equal (ZF=0)</brief></note>
+	<note><brief>Set Byte on Condition - zero/equal (ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12546,7 +12503,7 @@ Should I add this comment?
 	<syntax><mnem>SETNE</mnem><dst depend="no"><a>E</a><t>b</t></dst></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>z</test_f>
-	<note><brief>Set Byte on Condition - not zero/not equal (ZF=1)</brief></note>
+	<note><brief>Set Byte on Condition - not zero/not equal (ZF=0)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12559,7 +12516,7 @@ Should I add this comment?
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<!-- 1.02 <test_f>cz</test_f>-->
 	<test_f>zc</test_f>
-	<note><brief>Set Byte on Condition - below or equal/not above (CF=1 AND ZF=1)</brief></note>
+	<note><brief>Set Byte on Condition - below or equal/not above (CF=1 OR ZF=1)</brief></note>
       </entry>
     </pri_opcd>
 
@@ -12618,7 +12575,7 @@ Should I add this comment?
 	<syntax><mnem>SETPO</mnem><dst depend="no"><a>E</a><t>b</t></dst></syntax>
 	<grp1>gen</grp1><grp2>datamov</grp2>
 	<test_f>p</test_f>
-	<note><brief>Set Byte on Condition - not parity/parity odd</brief></note>
+	<note><brief>Set Byte on Condition - not parity/parity odd (PF=0)</brief></note>
       </entry>
     </pri_opcd>
 
