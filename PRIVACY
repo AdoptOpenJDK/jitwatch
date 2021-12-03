@@ -1,8 +1,8 @@
 ========================
 JITWatch Privacy Policy
 ========================
-Version:            1.01
-Date   :      2017-11-10
+Version:            1.02
+Date   :      2021-12-03
 Author :   Chris Newland
 ========================
 
@@ -35,21 +35,9 @@ Build systems
 If you build JITWatch from source using maven or gradle then those build systems will download various further 
 dependencies required to compile, package, test, and execute the build targets.
 
-If you want to build JITWatch without downloading additional build dependencies please use the provided Apache 
-Ant build script (build.xml) which uses the local dependencies found in the lib folder.
-
 =======================
 Sharing JITWatch output
 =======================
 
 JITWatch contains a screenshot feature. If you share screenshots from JITWatch, or snippets of your LogCompilation 
-XML or disassembled compiled methods you may divulge information about your program that can be used to reverse 
-engineer the source code.
-
-====================
-jitwatch.com website
-====================
-
-The jitwatch.com website is served over HTTPS using LetsEncrypt SSL certificates. The website does not set any 
-cookies and does not use any JavaScript or tracking code such as Google Analytics. Your IP address will be 
-recorded in the webserver log files which are kept for up to 30 days for the purpose of diagnosing website errors.
+XML or disassembled compiled methods you may divulge information about your program.

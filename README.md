@@ -11,10 +11,7 @@ Log analyser and visualiser for the HotSpot JIT compiler.
 
 The JITWatch user interface is built using JavaFX which is downloaded as a maven dependency for JDK11+.
 
-For pre-JDK11 you will need to use a JDK that includes JavaFX.
-
-<h2>ant</h2>
-<pre>ant clean compile test run</pre>
+For pre-JDK11 you will need to use a Java runtime that includes JavaFX.
 
 <h2>maven</h2>
 <pre>mvn clean compile test exec:java</pre>
@@ -23,5 +20,5 @@ For pre-JDK11 you will need to use a JDK that includes JavaFX.
 <pre>gradlew clean build run</pre>
 
 <h2>Build an example HotSpot log</h2>
-<pre># Build the code first with ant / maven / IDE
+<pre># Build the code and then run
 ./makeDemoLogFile.sh</pre>

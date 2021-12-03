@@ -1,7 +1,7 @@
 apply plugin: "org.openjfx.javafxplugin"
 
 def javaVersion = JavaVersion.current()
-def openjfxVersion = "15.0.1"
+def openjfxVersion = "17.0.1"
 
 def javafxModules = [
         'javafx.controls',
