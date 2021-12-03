@@ -1,0 +1,90 @@
+<project name="jitwatch-core" default="all" basedir=".">
+
+	<property name="main_src" value="${basedir}/src/main/java" />
+	<property name="main_resources" value="${basedir}/src/main/resources" />
+	<property name="test_src" value="${basedir}/src/test/java" />
+	<property name="test_resources" value="${basedir}/src/test/resources" />
+	<property name="target" location="${basedir}/target" />
+	<property name="main_classes" location="${target}/classes" />
+	<property name="test_classes" location="${target}/test-classes" />
+	<property name="lib" value="../lib" />
+	<property environment="env" />
+	<loadproperties srcfile="../build.properties" />
+
+	<target name="clean">
+		<delete quiet="true" dir="${target}" />
+	</target>
+
+	<target name="init">
+		<mkdir dir="${target}" />
+	</target>
+
+	<path id="classpath">
+		<fileset dir="${lib}" includes="**/*.jar" />
+		<filelist>
+			<file name="${env.JAVA_HOME}/jre/lib/jfxrt.jar" />
+			<!-- Java 8 stores jfxrt in a different location -->
+			<file name="${env.JAVA_HOME}/jre/lib/ext/jfxrt.jar" />
+		</filelist>
+	</path>
+
+	<target name="compile" depends="init">
+		<mkdir dir="${main_classes}" />
+		<javac srcdir="${main_src}" destdir="${main_classes}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javac>
+
+		<copy todir="${main_classes}">
+			<fileset dir="${main_resources}" />
+		</copy>
+
+		<mkdir dir="${test_classes}" />
+		<javac srcdir="${test_src}" destdir="${test_classes}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
+			<classpath>
+				<path refid="classpath" />
+				<dirset dir="${main_classes}" />
+			</classpath>
+		</javac>
+
+		<copy todir="${test_classes}">
+			<fileset dir="${test_resources}" />
+		</copy>
+	</target>
+
+	<target name="test" depends="compile, doTest" />
+
+	<target name="doTest">
+		<mkdir dir="${target}/test-output" />
+		<junit printsummary="yes" haltonerror="yes" fork="yes">
+			<jvmarg value="-Duser.dir=${basedir}" />
+			<classpath>
+				<path refid="classpath" />
+				<pathelement path="${main_classes}" />
+				<pathelement path="${test_classes}" />
+			</classpath>
+
+			<formatter type="plain" />
+
+			<batchtest fork="yes" todir="${target}/test-output">
+				<fileset dir="${test_src}" includes="**/Test*.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="jar" depends="test, doJar" />
+
+	<target name="doJar" depends="compile">
+		<jar destfile="${target}/jitwatch-core-${version}.jar">
+			<fileset dir="${main_classes}" />
+		</jar>
+	</target>
+
+	<target name="run" depends="jar, doRun" />
+
+	<target name="doRun" />
+
+	<target name="all" depends="jar" />
+
+</project>

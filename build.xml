@@ -1,0 +1,30 @@
+<project name="jitwatch" default="all" basedir=".">
+
+	<target name="clean">
+		<ant inheritAll="false" dir="core" target="clean" />
+		<ant inheritAll="false" dir="ui" target="clean" />
+	</target>
+
+	<target name="compile">
+		<ant inheritAll="false" dir="core" target="compile" />
+		<ant inheritAll="false" dir="ui" target="compile" />
+	</target>
+
+	<target name="test">
+		<ant inheritAll="false" dir="core" target="test" />
+		<ant inheritAll="false" dir="ui" target="test" />
+	</target>
+
+	<target name="jar">
+		<ant inheritAll="false" dir="core" target="doJar" />
+		<ant inheritAll="false" dir="ui" target="doJar" />
+	</target>
+
+	<target name="run" depends="jar">
+		<ant inheritAll="false" dir="core" target="doRun" />
+		<ant inheritAll="false" dir="ui" target="doRun" />
+	</target>
+
+	<target name="all" depends="jar" />
+
+</project>
