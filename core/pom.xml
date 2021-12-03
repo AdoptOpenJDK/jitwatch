@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.2</version>
+		<version>1.4.3</version>
 	</parent>
 
 	<artifactId>jitwatch-core</artifactId>
@@ -65,5 +65,4 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
-
 </project>

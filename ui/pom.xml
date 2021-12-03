@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.2</version>
+		<version>1.4.3</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -14,12 +14,43 @@
 	<name>JITWatch UI</name>
 
 	<properties>
-		<openjfx.version>17.0.0.1</openjfx.version>
-
-		<!--set on command line with -Djavafx.platform={linux|win|mac} -->
+		<openjfx.version>17.0.1</openjfx.version>
 	</properties>
 
 	<profiles>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>win</javafx.platform>
+            </properties>
+        </profile>
 		<profile>
 			<id>with_built_in_javafx</id>
 			<activation>

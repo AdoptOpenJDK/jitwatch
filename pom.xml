@@ -5,7 +5,7 @@
 
 	<groupId>com.chrisnewland</groupId>
 	<artifactId>jitwatch-parent</artifactId>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -126,6 +126,9 @@
 		</contributor>
                 <contributor>
                         <name>Thiago Henrique Hüpner</name>
+                </contributor>
+                <contributor>
+                        <name>Gabriel Dutra</name>
                 </contributor>
 	</contributors>
 
