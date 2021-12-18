@@ -19,8 +19,8 @@ import java.util.Map;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class ClassBC
 {

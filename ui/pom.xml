@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.3</version>
+		<version>1.4.4</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -143,39 +143,6 @@
 			</build>
 		</profile>
 	</profiles>
-	<!-- ======== Dependencies ======== -->
-	<dependencyManagement>
-		<dependencies>
-
-			<!-- ======== SLF4J Logging Framework ======== -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-
-			<!-- ======== Logback bindings for SLF4J ======== -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-
-			<!-- ======== JUnit 4 ======== -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -183,21 +150,18 @@
 			<artifactId>jitwatch-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.chrisnewland</groupId>
+			<artifactId>FreeLogJ</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 

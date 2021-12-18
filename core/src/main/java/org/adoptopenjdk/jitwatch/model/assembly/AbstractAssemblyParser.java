@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Chris Newland.
+ * Copyright (c) 2017-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,8 +16,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_SQUARE_BRA
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public abstract class AbstractAssemblyParser implements IAssemblyParser
 {

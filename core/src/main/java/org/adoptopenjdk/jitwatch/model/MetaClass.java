@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -18,12 +18,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+//import com.chrisnewland.freelogj.Logger;
+//import com.chrisnewland.freelogj.LoggerFactory;
 import org.adoptopenjdk.jitwatch.loader.BytecodeLoader;
 import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class MetaClass implements Comparable<MetaClass>
 {

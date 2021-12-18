@@ -6,7 +6,6 @@
 package org.adoptopenjdk.jitwatch.ui.main;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEFAULT_PACKAGE_NAME;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
@@ -18,6 +17,7 @@ import static org.adoptopenjdk.jitwatch.util.UserInterfaceUtil.FONT_MONOSPACE_SI
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -65,8 +65,8 @@ import org.adoptopenjdk.jitwatch.ui.viewer.TextViewerStage;
 import org.adoptopenjdk.jitwatch.util.LocaleCell;
 import org.adoptopenjdk.jitwatch.util.OSUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -232,6 +232,8 @@ public class JITWatchUI extends Application
 
 	public JITWatchUI(String[] args)
 	{
+		LoggerFactory.setLogFile(Paths.get("jitwatch.out"));
+
 		launch(args);
 	}
 

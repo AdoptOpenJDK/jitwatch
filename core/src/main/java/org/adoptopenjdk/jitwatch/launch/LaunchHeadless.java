@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.chrisnewland.freelogj.LoggerFactory;
 import org.adoptopenjdk.jitwatch.core.IJITListener;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.inline.HeadlessInlineVisitor;
@@ -50,7 +51,9 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 
 	public LaunchHeadless(String[] args) throws IOException
 	{
-		String logFile = args[args.length - 1];
+		LoggerFactory.setLogFile(Paths.get("jitwatch.out"));
+
+		String compilationLog = args[args.length - 1];
 
 		parseOptions(args);
 
@@ -62,23 +65,21 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		config = new JITWatchConfig();
 
 		String parserProperty = System.getProperty("jitwatch.parser", ParserType.HOTSPOT.toString());
-		
+
 		ParserType parserType = ParserType.fromString(parserProperty);
-		
+
 		parser = ParserFactory.getParser(parserType, this);
-		
+
 		parser.setConfig(config);
 
-		parser.processLogFile(new File(logFile), this);
+		parser.processLogFile(new File(compilationLog), this);
 	}
 
-	@Override
-	public void handleLogEntry(String entry)
+	@Override public void handleLogEntry(String entry)
 	{
 	}
 
-	@Override
-	public void handleErrorEntry(String entry)
+	@Override public void handleErrorEntry(String entry)
 	{
 		if (showErrors)
 		{
@@ -86,8 +87,7 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		}
 	}
 
-	@Override
-	public void handleJITEvent(JITEvent event)
+	@Override public void handleJITEvent(JITEvent event)
 	{
 		if (showTimeLine)
 		{
@@ -98,13 +98,11 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 		}
 	}
 
-	@Override
-	public void handleReadStart()
+	@Override public void handleReadStart()
 	{
 	}
 
-	@Override
-	public void handleError(String title, String body)
+	@Override public void handleError(String title, String body)
 	{
 		if (showErrors)
 		{
@@ -144,40 +142,39 @@ public class LaunchHeadless implements IJITListener, ILogParseErrorListener
 			case "-c":
 				showOnlyCompiledMethods = true;
 				break;
-				
+
 			case "-e":
 				showErrors = true;
 				break;
-				
+
 			case "-m":
 				showModel = true;
 				break;
-				
+
 			case "-s":
 				showSuggestions = true;
 				break;
-				
+
 			case "-t":
 				showTimeLine = true;
 				break;
-				
+
 			case "-f":
 				outputFile = true;
 				break;
-				
+
 			case "-i":
 				showInlineFailedCalls = true;
 				break;
-				
-				// case "-o":
-				// showOptimizedVirtualCalls = true;
-				// break;s
+
+			// case "-o":
+			// showOptimizedVirtualCalls = true;
+			// break;s
 			}
 		}
 	}
 
-	@Override
-	public void handleReadComplete()
+	@Override public void handleReadComplete()
 	{
 		StringBuilder outputBuilder = new StringBuilder();
 

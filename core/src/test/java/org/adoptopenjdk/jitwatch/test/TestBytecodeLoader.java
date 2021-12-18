@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -784,8 +784,8 @@ public class TestBytecodeLoader
 				"                        Code:",
 				"                          stack=3, locals=0, args_size=0",
 				"                             0: ldc           #149                // class org/adoptopenjdk/jitwatch/loader/BytecodeLoader",
-				"                             2: invokestatic  #150                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;",
-				"                             5: putstatic     #33                 // Field logger:Lorg/slf4j/Logger;",
+				"                             2: invokestatic  #150                // Method com.chrisnewland.freelogj/LoggerFactory.getLogger:(Ljava/lang/Class;)Lcom.chrisnewland.freelogj/Logger;",
+				"                             5: putstatic     #33                 // Field logger:Lcom.chrisnewland.freelogj/Logger;",
 				"                             8: new           #151                // class java/util/HashMap",
 				"                            11: dup",
 				"                            12: invokespecial #152                // Method java/util/HashMap.\"<init>\":()V",

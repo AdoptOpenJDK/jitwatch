@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -7,8 +7,8 @@ package org.adoptopenjdk.jitwatch.util;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;

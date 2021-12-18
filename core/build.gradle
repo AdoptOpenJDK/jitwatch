@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.30', 'ch.qos.logback:logback-classic:1.2.3', 'ch.qos.logback:logback-core:1.2.3'
+    compile 'com.chrisnewland.freelogj:freelogj:0.0.1'
     testCompile 'junit:junit:4.13.1'
 }
 

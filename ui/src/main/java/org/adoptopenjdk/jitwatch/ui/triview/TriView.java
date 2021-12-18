@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -42,8 +42,8 @@ import org.adoptopenjdk.jitwatch.ui.triview.bytecode.BytecodeLabel;
 import org.adoptopenjdk.jitwatch.ui.triview.bytecode.ViewerBytecode;
 import org.adoptopenjdk.jitwatch.ui.triview.source.ViewerSource;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;

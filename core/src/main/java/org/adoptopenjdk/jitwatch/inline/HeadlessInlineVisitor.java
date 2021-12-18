@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Jean Phillipe BEMPEL
+ * Copyright (c) 2015-2021 Jean Phillipe BEMPEL
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -35,8 +35,8 @@ import org.adoptopenjdk.jitwatch.model.LogParseException;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.treevisitor.ITreeVisitable;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class HeadlessInlineVisitor implements ITreeVisitable
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Chris Newland.
+ * Copyright (c) 2017-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -11,8 +11,8 @@ import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class CodeCacheEventWalker extends AbstractCompilationWalker
 {
@@ -33,7 +33,7 @@ public class CodeCacheEventWalker extends AbstractCompilationWalker
 
 	@Override
 	public void visit(IMetaMember metaMember)
-	{			
+	{
 		if (metaMember != null && metaMember.isCompiled())
 		{
 			for (Compilation compilation : metaMember.getCompilations())

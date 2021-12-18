@@ -18,8 +18,8 @@ import org.adoptopenjdk.jitwatch.ui.filechooser.FileChooserListSrcZip;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 

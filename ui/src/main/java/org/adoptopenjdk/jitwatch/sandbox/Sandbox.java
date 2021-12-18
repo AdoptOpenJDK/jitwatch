@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020 Chris Newland.
+ * Copyright (c) 2013-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -38,8 +38,8 @@ import org.adoptopenjdk.jitwatch.process.runtime.IRuntime;
 import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class Sandbox
 {

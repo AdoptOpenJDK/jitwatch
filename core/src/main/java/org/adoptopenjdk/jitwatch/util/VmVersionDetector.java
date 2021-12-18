@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2019 Chris Newland.
+ * Copyright (c) 2019-2021 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.util;
 
 import org.adoptopenjdk.jitwatch.model.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 
 public class VmVersionDetector
 {

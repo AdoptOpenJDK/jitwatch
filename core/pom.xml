@@ -1,68 +1,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.chrisnewland</groupId>
-		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.3</version>
-	</parent>
+    <parent>
+        <groupId>com.chrisnewland</groupId>
+        <artifactId>jitwatch-parent</artifactId>
+        <version>1.4.4</version>
+    </parent>
 
-	<artifactId>jitwatch-core</artifactId>
+    <artifactId>jitwatch-core</artifactId>
 
-	<name>JITWatch Core</name>
+    <name>JITWatch Core</name>
 
-	<!-- ======== Dependencies ======== -->
-	<dependencyManagement>
-		<dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.chrisnewland</groupId>
+            <artifactId>FreeLogJ</artifactId>
+            <version>0.0.1</version>
+        </dependency>
 
-			<!-- ======== SLF4J Logging Framework ======== -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-
-			<!-- ======== Logback bindings for SLF4J ======== -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-
-			<!-- ======== JUnit 4 ======== -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
