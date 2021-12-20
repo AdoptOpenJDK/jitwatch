@@ -1,6 +1,7 @@
 buildscript {
    repositories {
       jcenter()
+      mavenCentral()
    }
 
    dependencies {
@@ -119,8 +120,6 @@ task makeDemoLogFile(type: JavaExec) {
     main = 'org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog'
     jvmArgs = [
         // --== required switches ==--
-        // Unlock the HotSpot logging options
-        "-XX:+UnlockDiagnosticVMOptions",
 
         // Log each time a class is loaded (how JITWatch builds the class model)
         "-XX:+TraceClassLoading",

@@ -4,9 +4,10 @@ plugins {
 }
 
 dependencies {
-    compile 'com.chrisnewland.freelogj:freelogj:0.0.1'
+    implementation 'com.chrisnewland:FreeLogJ:0.0.1'
     testCompile 'junit:junit:4.13.1'
 }
+
 
 publishing {
     publications {
