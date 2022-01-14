@@ -7,7 +7,7 @@
 
 @REM ---------------------------------------------------------------
 
-set CLASSPATH=lib\logback-classic-1.1.2.jar
+set CLASSPATH=lib\FreeLogJ-0.0.1.jar
 set CLASSPATH=%CLASSPATH%;lib\logback-core-1.1.2.jar
 set CLASSPATH=%CLASSPATH%;lib\slf4j-api-1.7.7.jar
 set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\jre\lib\jfxrt.jar
