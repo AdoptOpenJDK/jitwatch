@@ -14,11 +14,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_TYPE_NAME_VOID;
 
@@ -85,8 +81,7 @@ public class TestBytecodeLoaderWithInnerClasses
 	private ClassBC classBytecodeForInner1;
 	private ClassBC classBytecodeForInner2;
 
-	@Before
-	public void setUp()
+	@Before public void setUp()
 	{
 		try
 		{
@@ -108,7 +103,9 @@ public class TestBytecodeLoaderWithInnerClasses
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, pathToTempClassDir.toFile(), new NullLogListener());
+			boolean success = compiler.compile(sources, compileClasspath, pathToTempClassDir.toFile(), Collections.emptyMap(),
+					new NullLogListener());
+
 			if (!success)
 			{
 				System.err.println(compiler.getErrorStream());
@@ -134,8 +131,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		classBytecodeForInner2 = classBytecodeListForOuter.get(2);
 	}
 
-	@After
-	public void tearDown()
+	@After public void tearDown()
 	{
 	}
 
@@ -154,8 +150,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(memberNames.length, memberBytecodeList.size());
 	}
 
-	@Test
-	public void testCompilationCreatedCorrectOutputs()
+	@Test public void testCompilationCreatedCorrectOutputs()
 	{
 		assertTrue(Paths.get(pathToTempClassDir.toString(), classNameOuter + ".class").toFile().exists());
 		assertTrue(Paths.get(pathToTempClassDir.toString(), classNameInner1 + ".class").toFile().exists());
@@ -192,8 +187,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(3, classBytecodeListForOuter.size());
 	}
 
-	@Test
-	public void testSearchFromSourceOuterClassConstructor()
+	@Test public void testSearchFromSourceOuterClassConstructor()
 	{
 		String fqClassNameOuter = classBytecodeForOuter.getFullyQualifiedClassName();
 
@@ -212,8 +206,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(classNameOuter, mspOuterConstructor.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromSourceOuterClassMethod()
+	@Test public void testSearchFromSourceOuterClassMethod()
 	{
 		MemberBytecode memberBytecodeForMethod = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForOuter, 14);
 
@@ -228,8 +221,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals("a", mspOuterMethod.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromSourceInner1ClassConstructor()
+	@Test public void testSearchFromSourceInner1ClassConstructor()
 	{
 		String fqClassNameInner1 = classBytecodeForInner1.getFullyQualifiedClassName();
 
@@ -250,8 +242,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(classNameInner1, mspInner1Constructor.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromSourceInner1ClassMethod()
+	@Test public void testSearchFromSourceInner1ClassMethod()
 	{
 		MemberBytecode memberBytecodeForInner1Method = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner1, 30);
 
@@ -266,8 +257,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals("b", mspInner1Method.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromSourceInner2ClassConstructor()
+	@Test public void testSearchFromSourceInner2ClassConstructor()
 	{
 		String fqClassNameInner2 = classBytecodeForInner2.getFullyQualifiedClassName();
 
@@ -288,8 +278,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(classNameInner2, mspInner2Constructor.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromSourceInner2ClassMethod()
+	@Test public void testSearchFromSourceInner2ClassMethod()
 	{
 		MemberBytecode memberBytecodeForInner2Method = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner2, 44);
 
@@ -304,8 +293,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals("c", mspInner2Method.getMemberName());
 	}
 
-	@Test
-	public void testSearchFromBytecodeOuterClassConstructor()
+	@Test public void testSearchFromBytecodeOuterClassConstructor()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForOuter, 4);
 
@@ -322,8 +310,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(10, SourceMapper.getSourceLineFromBytecode(memberBytecode, 25));
 	}
 
-	@Test
-	public void testSearchFromBytecodeOuterClassMethod()
+	@Test public void testSearchFromBytecodeOuterClassMethod()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForOuter, 14);
 
@@ -334,8 +321,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(15, SourceMapper.getSourceLineFromBytecode(memberBytecode, 8));
 	}
 
-	@Test
-	public void testSearchFromBytecodeInner1ClassConstructor()
+	@Test public void testSearchFromBytecodeInner1ClassConstructor()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner1, 20);
 
@@ -352,8 +338,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(26, SourceMapper.getSourceLineFromBytecode(memberBytecode, 30));
 	}
 
-	@Test
-	public void testSearchFromBytecodeInner1ClassMethod()
+	@Test public void testSearchFromBytecodeInner1ClassMethod()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner1, 30);
 
@@ -363,16 +348,15 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(30, SourceMapper.getSourceLineFromBytecode(memberBytecode, 0));
 		assertEquals(31, SourceMapper.getSourceLineFromBytecode(memberBytecode, 8));
 	}
-	
-	@Test
-	public void testSearchFromBytecodeInner2ClassConstructor()
+
+	@Test public void testSearchFromBytecodeInner2ClassConstructor()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner2, 36);
 
-//		 line 36: 0
-//		 line 37: 9
-//		 line 39: 17
-//		 line 40: 21
+		//		 line 36: 0
+		//		 line 37: 9
+		//		 line 39: 17
+		//		 line 40: 21
 
 		assertEquals(36, SourceMapper.getSourceLineFromBytecode(memberBytecode, 0));
 		assertEquals(37, SourceMapper.getSourceLineFromBytecode(memberBytecode, 9));
@@ -380,13 +364,12 @@ public class TestBytecodeLoaderWithInnerClasses
 		assertEquals(40, SourceMapper.getSourceLineFromBytecode(memberBytecode, 21));
 	}
 
-	@Test
-	public void testSearchFromBytecodeInner2ClassMethod()
+	@Test public void testSearchFromBytecodeInner2ClassMethod()
 	{
 		MemberBytecode memberBytecode = SourceMapper.getMemberBytecodeForSourceLine(classBytecodeForInner2, 44);
 
-//		 line 44: 0
-//		 line 45: 8
+		//		 line 44: 0
+		//		 line 45: 8
 
 		assertEquals(44, SourceMapper.getSourceLineFromBytecode(memberBytecode, 0));
 		assertEquals(45, SourceMapper.getSourceLineFromBytecode(memberBytecode, 8));

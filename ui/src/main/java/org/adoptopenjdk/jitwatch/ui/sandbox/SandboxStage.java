@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -23,6 +23,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 import org.adoptopenjdk.jitwatch.ui.stage.IStageClosedListener;
 import org.adoptopenjdk.jitwatch.ui.stage.StageManager;
 import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
+import org.adoptopenjdk.jitwatch.util.NetUtil;
 import org.adoptopenjdk.jitwatch.util.UserInterfaceUtil;
 import com.chrisnewland.freelogj.Logger;
 import com.chrisnewland.freelogj.LoggerFactory;
@@ -219,7 +221,7 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 			}
 		});
 
-		Button btnResetSandbox =  UserInterfaceUtil.createButton("SANDBOX_RESET");
+		Button btnResetSandbox = UserInterfaceUtil.createButton("SANDBOX_RESET");
 		btnResetSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override public void handle(ActionEvent e)
@@ -399,11 +401,66 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 	private void initialiseLog()
 	{
 		taLog.setText(S_EMPTY);
-		log("Sandbox ready");
+		log("Sandbox ready. OS is '" + System.getProperty("os.name") + "' Architecture is '" + System.getProperty("os.arch") + "'");
+	}
+
+	public void checkHsdis()
+	{
+		String disassemblerFilename = DisassemblyUtil.getDisassemblerFilename();
+
+		Path downloadPath = Paths.get(disassemblerFilename);
 
 		Path disassemblerPath = DisassemblyUtil.getDisassemblerFilePath();
 
-		log("Disassembler available: " + (disassemblerPath != null ? disassemblerPath : "Not found"));
+		boolean noPromptHsdis = config.isNoPromptHsdis();
+
+		if (!noPromptHsdis && !DisassemblyUtil.isDisassemblerAvailable())
+		{
+			log("Disassembler not found");
+
+			String message = "The hsdis plugin " + disassemblerFilename + " could not be found. Would you like to download it?";
+
+			Response response = Dialogs.showYesNoDialogNever(SandboxStage.this, "Download hsdis plugin", message);
+
+			switch (response)
+			{
+			case YES:
+			{
+				String url = "https://chriswhocodes.com/hsdis/" + disassemblerFilename;
+
+				log("Downloading hsdis from " + url);
+
+				NetUtil.fetchBinary(url, downloadPath);
+
+				if (downloadPath.toFile().exists())
+				{
+					log("Downloaded OK");
+				}
+				else
+				{
+					log("Download failed");
+				}
+			}
+			break;
+			case NEVER:
+			{
+				config.setNoPromptHsdis(true);
+				config.saveConfig();
+			}
+			break;
+			}
+		}
+
+		if (DisassemblyUtil.downloadedDisassemblerPresent())
+		{
+			log("Disassembler available: " + downloadPath.toAbsolutePath());
+		}
+		else if (disassemblerPath != null)
+		{
+			log("Disassembler available: " + disassemblerPath);
+		}
+
+		//pb.environment.set(LD_LIBRARY_PATH);
 	}
 
 	private void loadLastEditorPanes()

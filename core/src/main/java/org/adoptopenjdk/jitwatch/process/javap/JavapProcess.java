@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -10,14 +10,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
-import com.chrisnewland.freelogj.Logger;
-import com.chrisnewland.freelogj.LoggerFactory;
 
 public class JavapProcess extends AbstractProcess
 {
@@ -90,12 +85,12 @@ public class JavapProcess extends AbstractProcess
 		return commands;
 	}
 		
-	public boolean execute(Collection<String> classLocations, String fqClassName)
+	public boolean execute(Collection<String> classLocations, String fqClassName, Map<String, String> environment)
 			throws IOException
 	{
 		
 		List<String> commands = getJavapCommands(classLocations, fqClassName);
 		
-		return runCommands(commands, null);
+		return runCommands(commands, environment, null);
 	}
 }

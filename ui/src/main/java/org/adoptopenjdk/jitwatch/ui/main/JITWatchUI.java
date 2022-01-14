@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -997,6 +997,8 @@ public class JITWatchUI extends Application
 			StageManager.addAndShow(this.stage, sandBoxStage);
 
 			btnSandbox.setDisable(true);
+
+			sandBoxStage.checkHsdis();
 		}
 	}
 

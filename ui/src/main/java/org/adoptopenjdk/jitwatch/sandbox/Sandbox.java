@@ -17,8 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig.BackgroundCompilation;
@@ -36,6 +35,7 @@ import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 import org.adoptopenjdk.jitwatch.process.compiler.ICompiler;
 import org.adoptopenjdk.jitwatch.process.runtime.IRuntime;
 import org.adoptopenjdk.jitwatch.ui.sandbox.ISandboxStage;
+import org.adoptopenjdk.jitwatch.util.DisassemblyUtil;
 import org.adoptopenjdk.jitwatch.util.FileUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 import com.chrisnewland.freelogj.Logger;
@@ -146,8 +146,7 @@ public class Sandbox
 		logListener.handleLogEntry("Running Sandbox");
 		logListener.handleLogEntry("Language is " + language);
 
-		String languagePath = logParser.getConfig()
-									   .getVMLanguagePath(language);
+		String languagePath = logParser.getConfig().getVMLanguagePath(language);
 
 		if (S_EMPTY.equals(languagePath) && (VM_LANGUAGE_JAVA.equals(language) || VM_LANGUAGE_JAVASCRIPT.equals(language)))
 		{
@@ -179,7 +178,7 @@ public class Sandbox
 		lastProcess = compiler;
 
 		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
-				logListener);
+				Collections.<String, String>emptyMap(), logListener);
 
 		logListener.handleLogEntry("Compilation success: " + compiledOK);
 
@@ -189,8 +188,7 @@ public class Sandbox
 
 			lastProcess = runtime;
 
-			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig()
-																						.isSandboxIntelMode());
+			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
 
 			logListener.handleLogEntry("Execution success: " + executionSuccess);
 
@@ -248,8 +246,7 @@ public class Sandbox
 		options.add("-XX:+LogCompilation");
 		options.add("-XX:LogFile=" + sandboxLogFile.getCanonicalPath());
 
-		if (logParser.getConfig()
-					 .isPrintAssembly())
+		if (logParser.getConfig().isPrintAssembly())
 		{
 			options.add("-XX:+PrintAssembly");
 
@@ -259,16 +256,14 @@ public class Sandbox
 			}
 		}
 
-		boolean isDisableInlining = logParser.getConfig()
-											 .isDisableInlining();
+		boolean isDisableInlining = logParser.getConfig().isDisableInlining();
 
 		if (isDisableInlining)
 		{
 			options.add("-XX:-Inline");
 		}
 
-		TieredCompilation tieredMode = logParser.getConfig()
-												.getTieredCompilationMode();
+		TieredCompilation tieredMode = logParser.getConfig().getTieredCompilationMode();
 
 		if (tieredMode == TieredCompilation.FORCE_TIERED)
 		{
@@ -279,8 +274,7 @@ public class Sandbox
 			options.add("-XX:-TieredCompilation");
 		}
 
-		CompressedOops oopsMode = logParser.getConfig()
-										   .getCompressedOopsMode();
+		CompressedOops oopsMode = logParser.getConfig().getCompressedOopsMode();
 
 		if (oopsMode == CompressedOops.FORCE_COMPRESSED)
 		{
@@ -291,8 +285,7 @@ public class Sandbox
 			options.add("-XX:-UseCompressedOops");
 		}
 
-		BackgroundCompilation backgroundCompilationMode = logParser.getConfig()
-																   .getBackgroundCompilationMode();
+		BackgroundCompilation backgroundCompilationMode = logParser.getConfig().getBackgroundCompilationMode();
 
 		if (backgroundCompilationMode == BackgroundCompilation.FORCE_BACKGROUND_COMPILATION)
 		{
@@ -303,8 +296,7 @@ public class Sandbox
 			options.add("-XX:-BackgroundCompilation");
 		}
 
-		OnStackReplacement onStackReplacementMode = logParser.getConfig()
-															 .getOnStackReplacementMode();
+		OnStackReplacement onStackReplacementMode = logParser.getConfig().getOnStackReplacementMode();
 
 		if (onStackReplacementMode == OnStackReplacement.FORCE_ON_STACK_REPLACEMENT)
 		{
@@ -315,33 +307,24 @@ public class Sandbox
 			options.add("-XX:-UseOnStackReplacement");
 		}
 
-		if (!isDisableInlining && logParser.getConfig()
-										   .getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getFreqInlineSize() != JITWatchConstants.DEFAULT_FREQ_INLINE_SIZE)
 		{
-			options.add("-XX:FreqInlineSize=" + logParser.getConfig()
-														 .getFreqInlineSize());
+			options.add("-XX:FreqInlineSize=" + logParser.getConfig().getFreqInlineSize());
 		}
 
-		if (!isDisableInlining && logParser.getConfig()
-										   .getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
+		if (!isDisableInlining && logParser.getConfig().getMaxInlineSize() != JITWatchConstants.DEFAULT_MAX_INLINE_SIZE)
 		{
-			options.add("-XX:MaxInlineSize=" + logParser.getConfig()
-														.getMaxInlineSize());
+			options.add("-XX:MaxInlineSize=" + logParser.getConfig().getMaxInlineSize());
 		}
 
-		if (logParser.getConfig()
-					 .getCompileThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
+		if (logParser.getConfig().getCompileThreshold() != JITWatchConstants.DEFAULT_COMPILER_THRESHOLD)
 		{
-			options.add("-XX:CompileThreshold=" + logParser.getConfig()
-														   .getCompileThreshold());
+			options.add("-XX:CompileThreshold=" + logParser.getConfig().getCompileThreshold());
 		}
 
-		if (logParser.getConfig()
-					 .getExtraVMSwitches()
-					 .length() > 0)
+		if (logParser.getConfig().getExtraVMSwitches().length() > 0)
 		{
-			String extraSwitchString = logParser.getConfig()
-												.getExtraVMSwitches();
+			String extraSwitchString = logParser.getConfig().getExtraVMSwitches();
 			String[] switches = extraSwitchString.split(S_SPACE);
 
 			for (String sw : switches)
@@ -354,7 +337,15 @@ public class Sandbox
 		logListener.handleLogEntry("Classpath: " + StringUtil.listToString(classpath, File.pathSeparatorChar));
 		logListener.handleLogEntry("VM options: " + StringUtil.listToString(options));
 
-		return runtime.execute(fqClassName, classpath, options, logListener);
+		Map<String, String> environment = new LinkedHashMap<>();
+
+		if (DisassemblyUtil.downloadedDisassemblerPresent())
+		{
+			environment.put(DisassemblyUtil.getDynamicLibraryPath(),
+					Paths.get(DisassemblyUtil.getDisassemblerFilename()).toAbsolutePath().getParent().toString());
+		}
+
+		return runtime.execute(fqClassName, classpath, options, environment, logListener);
 	}
 
 	private void runJITWatch() throws IOException
@@ -385,8 +376,7 @@ public class Sandbox
 
 		if (jdkSrcZip != null)
 		{
-			String jdkSourceZipString = jdkSrcZip.toPath()
-												 .toString();
+			String jdkSourceZipString = jdkSrcZip.toPath().toString();
 
 			if (!sourceLocations.contains(jdkSourceZipString))
 			{
@@ -431,8 +421,7 @@ public class Sandbox
 
 		logListener.handleLogEntry("Looking up class: " + openClassInTriView);
 
-		MetaClass metaClass = model.getPackageManager()
-								   .getMetaClass(openClassInTriView);
+		MetaClass metaClass = model.getPackageManager().getMetaClass(openClassInTriView);
 
 		if (metaClass != null)
 		{

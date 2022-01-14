@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
@@ -39,7 +40,7 @@ public class RuntimeJRuby extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ILogListener logListener)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 
@@ -59,7 +60,7 @@ public class RuntimeJRuby extends AbstractProcess implements IRuntime
 
 		commands.add(className);
 
-		return runCommands(commands, logListener);
+		return runCommands(commands, environment, logListener);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -33,7 +33,7 @@ public final class Dialogs
 
 	public enum Response
 	{
-		NO, YES
+		NO, YES, NEVER
 	};
 
 	private static Response response = Response.NO;
@@ -118,6 +118,73 @@ public final class Dialogs
 		hBox.setPadding(new Insets(10));
 
 		hBox.getChildren().addAll(btnYes, btnNo);
+
+		bp.setCenter(hBox);
+
+		vBox.getChildren().addAll(new Label(message), bp);
+
+		dialog.showDialog();
+
+		return response;
+	}
+
+	public static Response showYesNoDialogNever(Stage owner, String title, String message)
+	{
+		VBox vBox = new VBox();
+		vBox.setAlignment(Pos.CENTER);
+		vBox.setSpacing(10);
+		vBox.setPadding(new Insets(10));
+
+		int width = Math.max(320, message == null ? 0 : message.length() * 10);
+
+		Scene scene = UserInterfaceUtil.getScene(vBox, width, 80);
+
+		final Dialog dialog = new Dialog(title, owner, scene);
+
+		Button btnYes = UserInterfaceUtil.createButton("YES");
+
+		btnYes.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				dialog.close();
+				response = Response.YES;
+			}
+		});
+
+		Button btnNo = UserInterfaceUtil.createButton("NO");
+
+		btnNo.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				dialog.close();
+				response = Response.NO;
+			}
+		});
+
+		Button btnNever = UserInterfaceUtil.createButton("NEVER");
+
+		btnNever.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				dialog.close();
+				response = Response.NEVER;
+			}
+		});
+
+		BorderPane bp = new BorderPane();
+
+		HBox hBox = new HBox();
+		hBox.setAlignment(Pos.CENTER);
+		hBox.setSpacing(10);
+		hBox.setPadding(new Insets(10));
+
+		hBox.getChildren().addAll(btnYes, btnNo, btnNever);
 
 		bp.setCenter(hBox);
 

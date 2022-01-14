@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
 import org.adoptopenjdk.jitwatch.process.AbstractProcess;
@@ -38,7 +39,7 @@ public class CompilerJavaScript extends AbstractProcess implements ICompiler
 	}
 
 	@Override
-	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, ILogListener logListener)
+	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, Map<String, String> environment, ILogListener logListener)
 			throws IOException
 	{
 		List<String> commands = new ArrayList<>();
@@ -64,6 +65,6 @@ public class CompilerJavaScript extends AbstractProcess implements ICompiler
 			commands.add(sourceFile.getAbsolutePath());
 		}
 
-		return runCommands(commands, logListener);
+		return runCommands(commands, environment, logListener);
 	}
 }

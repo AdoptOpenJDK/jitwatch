@@ -667,9 +667,7 @@ public class SandboxConfigStage extends Stage
 
 		boolean checked = false;
 
-		boolean disassemblerAvailable = DisassemblyUtil.getDisassemblerFilePath() != null;
-
-		if (disassemblerAvailable)
+		if (DisassemblyUtil.isDisassemblerAvailable())
 		{
 			if (config.isPrintAssembly())
 			{

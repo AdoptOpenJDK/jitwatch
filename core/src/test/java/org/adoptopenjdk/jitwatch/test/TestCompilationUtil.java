@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.logger.NullLogListener;
@@ -29,8 +30,7 @@ public class TestCompilationUtil
 	private File testSourceFile;
 	private File testClassFile;
 
-	@Before
-	public void setUp()
+	@Before public void setUp()
 	{
 		try
 		{
@@ -43,17 +43,16 @@ public class TestCompilationUtil
 		}
 
 		testSourceFile = Paths.get(tempDirPath.toString(), "org", "adoptopenjdk", "jitwatch", "compiletest", "CompileTest.java")
-				.toFile();
+							  .toFile();
 
 		testClassFile = Paths.get(tempDirPath.toString(), "org", "adoptopenjdk", "jitwatch", "compiletest", "CompileTest.class")
-				.toFile();
+							 .toFile();
 
 		deleteFile(testSourceFile);
 		deleteFile(testClassFile);
 	}
 
-	@After
-	public void tearDown()
+	@After public void tearDown()
 	{
 		deleteFile(testSourceFile);
 		deleteFile(testClassFile);
@@ -67,8 +66,7 @@ public class TestCompilationUtil
 		}
 	}
 
-	@Test
-	public void testCompileSimple()
+	@Test public void testCompileSimple()
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("package org.adoptopenjdk.jitwatch.compiletest;\n");
@@ -93,7 +91,8 @@ public class TestCompilationUtil
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, tempDirPath.toFile(), new NullLogListener());
+			boolean success = compiler.compile(sources, compileClasspath, tempDirPath.toFile(), Collections.emptyMap(),
+					new NullLogListener());
 
 			if (!success)
 			{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -51,7 +51,9 @@ public final class OSUtil
 
 		if (arch != null)
 		{
-			if (arch.contains("arm"))
+			arch = arch.toLowerCase();
+
+			if (arch.contains("arm") || arch.contains("aarch"))
 			{
 				if (arch.contains("64"))
 				{

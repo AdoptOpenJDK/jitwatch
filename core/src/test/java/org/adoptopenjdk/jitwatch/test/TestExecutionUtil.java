@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -12,6 +12,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.adoptopenjdk.jitwatch.logger.StdLogListener;
@@ -50,7 +51,8 @@ public class TestExecutionUtil
 		{
 			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-			boolean success = executor.execute(DummyClassWithMain.class.getCanonicalName(), cp, options, new StdLogListener());
+			boolean success = executor.execute(DummyClassWithMain.class.getCanonicalName(), cp, options, Collections.emptyMap(),
+					new StdLogListener());
 
 			System.out.println(executor.getOutputStream());
 

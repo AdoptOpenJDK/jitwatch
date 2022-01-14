@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adoptopenjdk.jitwatch.loader.ResourceLoader;
@@ -45,7 +46,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, ILogListener logListener)
+	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 
@@ -65,7 +66,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 		commands.add("-jar");
 		commands.add(pathToRuntimeJar.toString());
 
-		return runCommands(commands, logListener);
+		return runCommands(commands, environment,logListener);
 	}
 
 	@Override

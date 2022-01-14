@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -26,7 +26,7 @@ public final class DisassemblyUtil
 
 	public static boolean isDisassemblerAvailable()
 	{
-		boolean found = false;
+		boolean found = downloadedDisassemblerPresent();
 
 		Path binaryPath = getDisassemblerFilePath();
 
@@ -48,7 +48,22 @@ public final class DisassemblyUtil
 		return found;
 	}
 
-	private static String getDisassemblerFilename()
+	public static String getDynamicLibraryPath()
+	{
+		switch (OSUtil.getOperatingSystem())
+		{
+		case WIN:
+			return "PATH";
+		case MAC:
+			return "DYLD_LIBRARY_PATH";
+		case LINUX:
+			return "LD_LIBRARY_PATH";
+		}
+
+		throw new RuntimeException("Unknown OS");
+	}
+
+	public static String getDisassemblerFilename()
 	{
 		OperatingSystem os = OSUtil.getOperatingSystem();
 		Architecture arch = OSUtil.getArchitecture();
@@ -58,29 +73,7 @@ public final class DisassemblyUtil
 			logger.debug("OS: {} Arch: {}", os, arch);
 		}
 
-		String binaryName = null;
-
-		switch (arch)
-		{
-		case X86_32:
-			binaryName = "hsdis-i386";
-			break;
-
-		case X86_64:
-			binaryName = "hsdis-amd64";
-			break;
-
-		case ARM_32:
-			binaryName = "hsdis-arm";
-			break;
-
-		case ARM_64:
-			binaryName = "hsdis-arm";
-			break;
-
-		default:
-			break;
-		}
+		String binaryName = "hsdis-" + System.getProperty("os.arch");
 
 		if (os != null)
 		{
@@ -106,10 +99,41 @@ public final class DisassemblyUtil
 		return binaryName;
 	}
 
+	public static boolean downloadedDisassemblerPresent()
+	{
+		return new File(getDisassemblerFilename()).exists();
+	}
+
 	public static Path getDisassemblerFilePath()
 	{
 		String binaryName = getDisassemblerFilename();
 
+		// first check the dynamic library path in case user has overridden JDK location for hsdis
+		String dynLibPath = System.getenv(getDynamicLibraryPath());
+
+		if (dynLibPath != null)
+		{
+			String[] dirs = dynLibPath.split(":");
+
+			for (String dir : dirs)
+			{
+				Path path = Paths.get(dir, binaryName);
+
+				if (DEBUG_LOGGING_ASSEMBLY)
+				{
+					logger.debug("looking in {}", path);
+				}
+
+				File file = path.toFile();
+
+				if (file.exists() && file.isFile())
+				{
+					return path;
+				}
+			}
+		}
+
+		// next search JDK
 		String javaHome = System.getProperty("java.home", "");
 
 		if (DEBUG_LOGGING_ASSEMBLY)
@@ -156,31 +180,10 @@ public final class DisassemblyUtil
 			}
 		}
 
-		if (OSUtil.OperatingSystem.LINUX == OSUtil.getOperatingSystem())
+		// finally search for locally downloaded
+		if (downloadedDisassemblerPresent())
 		{
-			String dynLibPath = System.getenv("LD_LIBRARY_PATH");
-
-			if (dynLibPath != null)
-			{
-				String[] dirs = dynLibPath.split(":");
-
-				for (String dir : dirs)
-				{
-					Path path = Paths.get(dir, binaryName);
-
-					if (DEBUG_LOGGING_ASSEMBLY)
-					{
-						logger.debug("looking in {}", path);
-					}
-
-					File file = path.toFile();
-
-					if (file.exists() && file.isFile())
-					{
-						return path;
-					}
-				}
-			}
+			return Paths.get(getDisassemblerFilename());
 		}
 
 		return null;

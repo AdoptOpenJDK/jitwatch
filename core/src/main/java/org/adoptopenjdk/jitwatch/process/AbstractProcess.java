@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -27,7 +27,7 @@ public abstract class AbstractProcess implements IExternalProcess
 
 	private Path stdErr;
 	private Path stdOut;
-	
+
 	public AbstractProcess()
 	{
 		try
@@ -56,8 +56,7 @@ public abstract class AbstractProcess implements IExternalProcess
 		return System.getProperty("os.name", S_EMPTY).contains("Windows");
 	}
 
-	@Override
-	public String getOutputStream()
+	@Override public String getOutputStream()
 	{
 		String result = null;
 
@@ -76,8 +75,7 @@ public abstract class AbstractProcess implements IExternalProcess
 		return result;
 	}
 
-	@Override
-	public String getErrorStream()
+	@Override public String getErrorStream()
 	{
 		String result = null;
 
@@ -113,9 +111,9 @@ public abstract class AbstractProcess implements IExternalProcess
 		return cpBuilder.toString();
 	}
 
-	protected boolean runCommands(List<String> commands, ILogListener logListener)
+	protected boolean runCommands(List<String> commands, Map<String, String> environment, ILogListener logListener)
 	{
-		return runCommands(commands, null, null, logListener);
+		return runCommands(commands, null, environment, logListener);
 	}
 
 	protected boolean runCommands(List<String> commands, File workingDirectory, Map<String, String> environment,
@@ -134,7 +132,7 @@ public abstract class AbstractProcess implements IExternalProcess
 		{
 			logListener.handleLogEntry("Running: " + cmdBuilder.toString());
 		}
-		
+
 		int result = -1;
 
 		try
@@ -148,6 +146,8 @@ public abstract class AbstractProcess implements IExternalProcess
 				for (Map.Entry<String, String> entry : environment.entrySet())
 				{
 					processEnvironment.put(entry.getKey(), entry.getValue());
+
+					logListener.handleLogEntry("Environment: " + entry.getKey() + "=" + entry.getValue());
 				}
 			}
 
@@ -169,7 +169,7 @@ public abstract class AbstractProcess implements IExternalProcess
 			{
 				logListener.handleErrorEntry("Could not run external process:" + e);
 			}
-			
+
 			logger.error("Could not run external process:", e);
 		}
 

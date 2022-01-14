@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -85,6 +85,7 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_ON_STACK_REPLACEMENT = SANDBOX_PREFIX + ".on.stack.replacement";
 
 	private static final String KEY_LAST_PROFILE = "last.profile";
+	private static final String KEY_NO_PROMPT_HSDIS = SANDBOX_PREFIX + ".no.prompt.hsdis";
 
 	private List<String> sourceLocations = new ArrayList<>();
 	private List<String> classLocations = new ArrayList<>();
@@ -117,12 +118,15 @@ public class JITWatchConfig
 
 	private final String CONFIG_OVERRIDE = System.getProperty("jitwatch.config.file", null);
 
-	private File propertiesFile = (CONFIG_OVERRIDE != null) ? new File(CONFIG_OVERRIDE)
-			: new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
+	private File propertiesFile = (CONFIG_OVERRIDE != null) ?
+			new File(CONFIG_OVERRIDE) :
+			new File(System.getProperty("user.dir"), PROPERTIES_FILENAME);
 
 	private Properties loadedProps;
 
 	private String preSandboxProfile = S_PROFILE_DEFAULT;
+
+	private boolean noPromptHsdis = false;
 
 	private ParsedClasspath parsedClasspath = new ParsedClasspath();
 
@@ -174,8 +178,7 @@ public class JITWatchConfig
 		return parsedClasspath;
 	}
 
-	@Override
-	public JITWatchConfig clone()
+	@Override public JITWatchConfig clone()
 	{
 		if (DEBUG_LOGGING)
 		{
@@ -352,6 +355,8 @@ public class JITWatchConfig
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 
 		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, JITWatchConstants.S_EMPTY);
+
+		noPromptHsdis = loadBooleanFromProperty(loadedProps, KEY_NO_PROMPT_HSDIS, false);
 	}
 
 	private void loadTieredMode()
@@ -614,6 +619,7 @@ public class JITWatchConfig
 
 		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, extraVMSwitches);
 
+		putProperty(loadedProps, KEY_NO_PROMPT_HSDIS, Boolean.toString(noPromptHsdis));
 	}
 
 	public void savePropertiesToFile()
@@ -846,7 +852,7 @@ public class JITWatchConfig
 	{
 		this.backgroundCompilationMode = backgroundCompilationMode;
 	}
-	
+
 	public OnStackReplacement getOnStackReplacementMode()
 	{
 		return onStackReplacementMode;
@@ -918,5 +924,15 @@ public class JITWatchConfig
 	public void setLocalAsmLabels(boolean localAsmLabels)
 	{
 		this.localAsmLabels = localAsmLabels;
+	}
+
+	public boolean isNoPromptHsdis()
+	{
+		return noPromptHsdis;
+	}
+
+	public void setNoPromptHsdis(boolean noPromptHsdis)
+	{
+		this.noPromptHsdis = noPromptHsdis;
 	}
 }

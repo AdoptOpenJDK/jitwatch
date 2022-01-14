@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -154,7 +154,7 @@ public final class BytecodeLoader
 		{
 			logger.error("Could not fetch bytecode for {}", fqClassName, e);
 		}
-		
+
 		return classBytecode;
 	}
 
@@ -172,7 +172,9 @@ public final class BytecodeLoader
 			javapProcess = new JavapProcess();
 		}
 
-		javapProcess.execute(classLocations, fqClassName);
+		Map<String, String> environment = new HashMap<>();
+
+		javapProcess.execute(classLocations, fqClassName, environment);
 
 		return javapProcess.getOutputStream();
 	}

@@ -1,8 +1,8 @@
 ========================
 JITWatch Privacy Policy
 ========================
-Version:            1.02
-Date   :      2021-12-03
+Version:            1.03
+Date   :      2022-01-08
 Author :   Chris Newland
 ========================
 
@@ -27,6 +27,10 @@ https://docs.oracle.com/javase/specs/javaspec.css
 
 These downloads are made over the HTTPS protocol and once successfully downloaded they will be stored in your 
 jitwatch folder and will not be downloaded again.
+
+JITWatch offers the option to download the hsdis HotSpot disassembly binary from https://chriswhocodes.com
+This is an optional download. If you choose to download the binary your IP address will be logged in the webserver
+logs which are retained for 14 days.
 
 =============
 Build systems
