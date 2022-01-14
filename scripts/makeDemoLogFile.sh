@@ -65,20 +65,15 @@ if [ "$JAVA_HOME" = '' ]; then
   fi
 fi
 
-
-$JAVA_HOME/bin/java -version
-
 echo "VM Switches $REQUIRED_SWITCHES $OPTIONAL_SWITCHES"
 
 echo "Building example HotSpot log"
 
-CLASSPATH=$CLASSPATH:core/target/classes
-CLASSPATH=$CLASSPATH:ui/target/classes
-CLASSPATH=$CLASSPATH:core/build/classes/java/main
-CLASSPATH=$CLASSPATH:ui/build/classes/java/main
-CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
+if [ "$unamestr" = 'Darwin' ]; then
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-mac.jar
+else
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-linux.jar
+fi
 
 "$JAVA_HOME/bin/java" $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
 echo "Done"

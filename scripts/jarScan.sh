@@ -48,20 +48,10 @@ if [ "$JAVA_HOME" = '' ]; then
   fi
 fi
 
-# make jarScan.sh runnable from any directory (only works on Linux where readlink -f returns canonical path)
 if [ "$unamestr" = 'Darwin' ]; then
-  export JITWATCH=`dirname $0`
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-mac.jar
 else
-  export JARSCAN=`readlink -f $0`
-  export JITWATCH=`dirname $JARSCAN`
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-linux.jar
 fi
-
-CLASSPATH=$CLASSPATH:$JITWATCH/lib/logback-classic-1.1.2.jar
-CLASSPATH=$CLASSPATH:$JITWATCH/lib/logback-core-1.1.2.jar
-CLASSPATH=$CLASSPATH:$JITWATCH/lib/slf4j-api-1.7.7.jar
-CLASSPATH=$CLASSPATH:$JITWATCH/core/target/classes
-CLASSPATH=$CLASSPATH:$JITWATCH/ui/target/classes
-CLASSPATH=$CLASSPATH:$JITWATCH/core/build/classes/java/main
-CLASSPATH=$CLASSPATH:$JITWATCH/ui/build/classes/java/main
 
 "$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.JarScan "$@"

@@ -19,13 +19,10 @@ fi
 # You may need to set -Xmx (max heap) and -XX:MaxPermSize
 # if your hotspot.log references a lot of classes
 
-CLASSPATH=$CLASSPATH:lib/logback-classic-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/logback-core-1.1.2.jar
-CLASSPATH=$CLASSPATH:lib/slf4j-api-1.7.7.jar
-CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jfxrt.jar
-CLASSPATH=$CLASSPATH:core/target/classes
-CLASSPATH=$CLASSPATH:ui/target/classes
-CLASSPATH=$CLASSPATH:core/build/classes/java/main
-CLASSPATH=$CLASSPATH:ui/build/classes/java/main
+if [ "$unamestr" = 'Darwin' ]; then
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-mac.jar
+else
+   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-linux.jar
+fi
 
 "$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.visualiser.HistoPlotter $@
