@@ -76,6 +76,7 @@ public class VMLanguageList extends FlowPane implements IStageClosedListener
 					if (openVMLCStage == null)
 					{
 						openVMLCStage = new VMLanguageConfigStage(VMLanguageList.this, config, lang);
+
 						StageManager.addAndShow(parent, openVMLCStage, VMLanguageList.this);
 					}
 				}

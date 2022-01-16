@@ -206,6 +206,10 @@ public class StageManager
 
 		childStage.setX(childX);
 		childStage.setY(childY);
+
+		childStage.requestFocus();
+
+		childStage.toFront();
 	}
 
 	public static EventHandler<ActionEvent> getCloseHandler(final Stage stage)
