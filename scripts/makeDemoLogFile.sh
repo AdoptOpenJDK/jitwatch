@@ -7,10 +7,11 @@
 # such as inlining, intrinsics, and branch analysis.
 
 # Make sure you have first built JITWatch using
-# mvn clean compile test
+# mvn clean package
 
 # Start JITWatch using
-# mvn exec:java
+# java -jar ui/target/jitwatch-ui-shaded.jar
+
 
 # When you start JITWatch open up the configuration (Config button) and mount
 # JDK's src.zip (use the JDK src zip button)

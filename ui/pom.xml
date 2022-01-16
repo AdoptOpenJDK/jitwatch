@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.chrisnewland</groupId>
 		<artifactId>jitwatch-parent</artifactId>
-		<version>1.4.4</version>
+		<version>1.4.5</version>
 	</parent>
 
 	<artifactId>jitwatch-ui</artifactId>
@@ -71,7 +71,7 @@
 								<configuration>
 									<shadedArtifactAttached>true</shadedArtifactAttached>
 									<shadedClassifierName>project-classifier</shadedClassifierName>
-									<outputFile>target/jitwatch-ui-${project.version}-shaded.jar</outputFile>
+									<outputFile>target/jitwatch-ui-shaded.jar</outputFile>
 									<transformers>
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<mainClass>${main.class}</mainClass>
@@ -126,7 +126,7 @@
 								<configuration>
 									<shadedArtifactAttached>true</shadedArtifactAttached>
 									<shadedClassifierName>project-classifier</shadedClassifierName>
-                                                                        <outputFile>target/jitwatch-ui-${project.version}-shaded-${javafx.platform}.jar</outputFile>
+                                                                        <outputFile>target/jitwatch-ui-shaded.jar</outputFile>
 									<transformers>
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<mainClass>${main.class}</mainClass>

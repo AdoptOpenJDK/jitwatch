@@ -60,7 +60,7 @@ echo "VM Switches %REQUIRED_SWITCHES% %OPTIONAL_SWITCHES%"
 
 echo "Building example HotSpot log"
 
-set CLASSPATH=..\ui\target\jitwatch-ui-1.4.4-shaded-win.jar
+set CLASSPATH=..\ui\target\jitwatch-ui-shaded.jar
 
 "%JAVA_HOME%\bin\java" %REQUIRED_SWITCHES% %OPTIONAL_SWITCHES% -cp %CLASSPATH% org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog
 echo "Done"

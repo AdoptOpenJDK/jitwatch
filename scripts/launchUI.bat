@@ -7,7 +7,7 @@
 
 @REM ---------------------------------------------------------------
 
-set CLASSPATH=..\ui\target\jitwatch-ui-1.4.4-shaded-win.jar
+set CLASSPATH=..\ui\target\jitwatch-ui-shaded.jar
 
 echo %CLASSPATH%
 

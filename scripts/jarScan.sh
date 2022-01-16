@@ -48,10 +48,6 @@ if [ "$JAVA_HOME" = '' ]; then
   fi
 fi
 
-if [ "$unamestr" = 'Darwin' ]; then
-   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-mac.jar
-else
-   export CLASSPATH=../ui/target/jitwatch-ui-1.4.4-shaded-linux.jar
-fi
+export CLASSPATH=../ui/target/jitwatch-ui-shaded.jar
 
 "$JAVA_HOME/bin/java" -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.jarscan.JarScan "$@"
