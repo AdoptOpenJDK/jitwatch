@@ -241,7 +241,8 @@ public class JITWatchUI extends Application
 	{
 		Thread jwThread = new Thread(new Runnable()
 		{
-			@Override public void run()
+			@Override
+			public void run()
 			{
 				try
 				{
@@ -257,7 +258,8 @@ public class JITWatchUI extends Application
 		jwThread.start();
 	}
 
-	@Override public void handleReadStart()
+	@Override
+	public void handleReadStart()
 	{
 		startDelayedByConfig = false;
 
@@ -267,7 +269,8 @@ public class JITWatchUI extends Application
 
 		Platform.runLater(new Runnable()
 		{
-			@Override public void run()
+			@Override
+			public void run()
 			{
 				updateButtons();
 			}
@@ -292,7 +295,8 @@ public class JITWatchUI extends Application
 
 		Platform.runLater(new Runnable()
 		{
-			@Override public void run()
+			@Override
+			public void run()
 			{
 				classMemberList.clear();
 
@@ -317,7 +321,8 @@ public class JITWatchUI extends Application
 		});
 	}
 
-	@Override public void handleReadComplete()
+	@Override
+	public void handleReadComplete()
 	{
 		log("Finished reading log file.");
 
@@ -331,7 +336,8 @@ public class JITWatchUI extends Application
 
 		Platform.runLater(new Runnable()
 		{
-			@Override public void run()
+			@Override
+			public void run()
 			{
 				updateButtons();
 
@@ -354,7 +360,8 @@ public class JITWatchUI extends Application
 
 					Platform.runLater(new Runnable()
 					{
-						@Override public void run()
+						@Override
+						public void run()
 						{
 							focusTreeOnMember(member);
 						}
@@ -413,7 +420,8 @@ public class JITWatchUI extends Application
 
 	public CodeCacheWalkerResult getCodeCacheWalkerResult()
 	{
-		if (codeCacheWalkerResult == null || codeCacheWalkerResult.getEvents().isEmpty())
+		if (codeCacheWalkerResult == null || codeCacheWalkerResult.getEvents()
+																  .isEmpty())
 		{
 			codeCacheWalkerResult = buildCodeCacheResult();
 		}
@@ -421,13 +429,15 @@ public class JITWatchUI extends Application
 		return codeCacheWalkerResult;
 	}
 
-	@Override public void handleError(final String title, final String body)
+	@Override
+	public void handleError(final String title, final String body)
 	{
 		logger.error(title);
 
 		Platform.runLater(new Runnable()
 		{
-			@Override public void run()
+			@Override
+			public void run()
 			{
 				Dialogs.showOKDialog(JITWatchUI.this.stage, title, body);
 			}
@@ -449,12 +459,14 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public JITWatchConfig getConfig()
+	@Override
+	public JITWatchConfig getConfig()
 	{
 		return logParser.getConfig();
 	}
 
-	@Override public void start(final Stage stage)
+	@Override
+	public void start(final Stage stage)
 	{
 		StageManager.registerStageClosedListener(this);
 
@@ -462,7 +474,8 @@ public class JITWatchUI extends Application
 
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>()
 		{
-			@Override public void handle(WindowEvent arg0)
+			@Override
+			public void handle(WindowEvent arg0)
 			{
 				StageManager.closeStage(stage);
 
@@ -480,12 +493,14 @@ public class JITWatchUI extends Application
 
 		String parserProperty = System.getProperty("jitwatch.parser", ParserType.HOTSPOT.toString());
 
-		comboParser.getSelectionModel().select(ParserType.fromString(parserProperty));
+		comboParser.getSelectionModel()
+				   .select(ParserType.fromString(parserProperty));
 
 		Button btnChooseWatchFile = UserInterfaceUtil.createButton("OPEN_LOG");
 		btnChooseWatchFile.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				stopParsing();
 				chooseJITLog();
@@ -496,12 +511,15 @@ public class JITWatchUI extends Application
 
 		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				if (nothingMountedStage == null)
 				{
-					int classCount = getConfig().getConfiguredClassLocations().size();
-					int sourceCount = getConfig().getSourceLocations().size();
+					int classCount = getConfig().getConfiguredClassLocations()
+												.size();
+					int sourceCount = getConfig().getSourceLocations()
+												 .size();
 
 					if (classCount == 0 && sourceCount == 0)
 					{
@@ -526,7 +544,8 @@ public class JITWatchUI extends Application
 		btnStop = UserInterfaceUtil.createButton("STOP");
 		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				stopParsing();
 			}
@@ -535,7 +554,8 @@ public class JITWatchUI extends Application
 		btnConfigure = UserInterfaceUtil.createButton("CONFIG");
 		btnConfigure.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				openConfigStage();
 			}
@@ -544,7 +564,8 @@ public class JITWatchUI extends Application
 		btnTimeLine = UserInterfaceUtil.createButton("TIMELINE");
 		btnTimeLine.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				timeLineStage = new TimeLineStage(JITWatchUI.this);
 
@@ -557,7 +578,8 @@ public class JITWatchUI extends Application
 		btnHisto = UserInterfaceUtil.createButton("HISTO");
 		btnHisto.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				histoStage = new HistoStage(JITWatchUI.this);
 
@@ -570,7 +592,8 @@ public class JITWatchUI extends Application
 		btnTopList = UserInterfaceUtil.createButton("TOPLIST");
 		btnTopList.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				topListStage = new TopListStage(JITWatchUI.this, getJITDataModel());
 
@@ -583,7 +606,8 @@ public class JITWatchUI extends Application
 		btnCodeCacheTimeline = UserInterfaceUtil.createButton("CACHE");
 		btnCodeCacheTimeline.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				codeCacheTimelineStage = new CodeCacheStage(JITWatchUI.this);
 
@@ -596,7 +620,8 @@ public class JITWatchUI extends Application
 		btnNMethods = UserInterfaceUtil.createButton("NMETHODS");
 		btnNMethods.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				codeCacheBlocksStage = new CodeCacheLayoutStage(JITWatchUI.this);
 
@@ -612,7 +637,8 @@ public class JITWatchUI extends Application
 		btnCompilerThreads = UserInterfaceUtil.createButton("THREADS");
 		btnCompilerThreads.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				compilerThreadStage = new CompilerThreadStage(JITWatchUI.this);
 
@@ -628,7 +654,8 @@ public class JITWatchUI extends Application
 		btnTriView = UserInterfaceUtil.createButton("TRIVIEW");
 		btnTriView.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				if (selectedMember == null && selectedMetaClass != null)
 				{
@@ -642,7 +669,8 @@ public class JITWatchUI extends Application
 		btnReportSuggestions = UserInterfaceUtil.createButton("SUGGEST", suggestionsCounterMessage);
 		btnReportSuggestions.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				reportStageSuggestions = new ReportStage(JITWatchUI.this, "JITWatch Code Suggestions", ReportStageType.SUGGESTION,
 						reportListSuggestions);
@@ -656,7 +684,8 @@ public class JITWatchUI extends Application
 		btnReportEliminatedAllocations = UserInterfaceUtil.createButton("ELIM_ALLOCS", eliminatedAllocationsCounterMessage);
 		btnReportEliminatedAllocations.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				reportStageElminatedAllocations = new ReportStage(JITWatchUI.this, "JITWatch Eliminated Allocation Report",
 						ReportStageType.ELIMINATED_ALLOCATION, reportListEliminatedAllocations);
@@ -670,7 +699,8 @@ public class JITWatchUI extends Application
 		btnReportOptimisedLocks = UserInterfaceUtil.createButton("ELIM_LOCKS", eliminatedLocksCounterMessage);
 		btnReportOptimisedLocks.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				reportStageOptimisedLocks = new ReportStage(JITWatchUI.this, "JITWatch Optimised Lock Report",
 						ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
@@ -684,7 +714,8 @@ public class JITWatchUI extends Application
 		btnSandbox = UserInterfaceUtil.createButton("SANDBOX");
 		btnSandbox.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				openSandbox();
 			}
@@ -694,17 +725,19 @@ public class JITWatchUI extends Application
 		btnErrorLog.setStyle("-fx-padding: 2 6;");
 		btnErrorLog.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				openTextViewer("Error Log", errorLog.toString(), false, false);
 			}
 		});
 
-		btnStats =  UserInterfaceUtil.createButton("STATS");
+		btnStats = UserInterfaceUtil.createButton("STATS");
 		btnStats.setStyle("-fx-padding: 2 6;");
 		btnStats.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				statsStage = new StatsStage(JITWatchUI.this);
 
@@ -714,11 +747,12 @@ public class JITWatchUI extends Application
 			}
 		});
 
-		btnReset =  UserInterfaceUtil.createButton("RESET");
+		btnReset = UserInterfaceUtil.createButton("RESET");
 		btnReset.setStyle("-fx-padding: 2 6;");
 		btnReset.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				logParser.reset();
 				clear();
@@ -751,42 +785,60 @@ public class JITWatchUI extends Application
 		hboxTop.setPadding(new Insets(10));
 		hboxTop.setPrefHeight(menuBarHeight);
 		hboxTop.setSpacing(10);
-		hboxTop.getChildren().add(btnSandbox);
-		hboxTop.getChildren().add(btnChooseWatchFile);
-		hboxTop.getChildren().add(btnStart);
-		hboxTop.getChildren().add(btnStop);
-		hboxTop.getChildren().add(btnConfigure);
-		hboxTop.getChildren().add(btnTimeLine);
-		hboxTop.getChildren().add(btnHisto);
-		hboxTop.getChildren().add(btnTopList);
-		hboxTop.getChildren().add(btnCodeCacheTimeline);
-		hboxTop.getChildren().add(btnNMethods);
-		hboxTop.getChildren().add(btnCompilerThreads);
-		hboxTop.getChildren().add(btnTriView);
-		hboxTop.getChildren().add(btnReportSuggestions);
-		hboxTop.getChildren().add(btnReportEliminatedAllocations);
-		hboxTop.getChildren().add(btnReportOptimisedLocks);
+		hboxTop.getChildren()
+			   .add(btnSandbox);
+		hboxTop.getChildren()
+			   .add(btnChooseWatchFile);
+		hboxTop.getChildren()
+			   .add(btnStart);
+		hboxTop.getChildren()
+			   .add(btnStop);
+		hboxTop.getChildren()
+			   .add(btnConfigure);
+		hboxTop.getChildren()
+			   .add(btnTimeLine);
+		hboxTop.getChildren()
+			   .add(btnHisto);
+		hboxTop.getChildren()
+			   .add(btnTopList);
+		hboxTop.getChildren()
+			   .add(btnCodeCacheTimeline);
+		hboxTop.getChildren()
+			   .add(btnNMethods);
+		hboxTop.getChildren()
+			   .add(btnCompilerThreads);
+		hboxTop.getChildren()
+			   .add(btnTriView);
+		hboxTop.getChildren()
+			   .add(btnReportSuggestions);
+		hboxTop.getChildren()
+			   .add(btnReportEliminatedAllocations);
+		hboxTop.getChildren()
+			   .add(btnReportOptimisedLocks);
 
 		compilationRowList = FXCollections.observableArrayList();
 		compilationTable = CompilationTableBuilder.buildTableMemberAttributes(compilationRowList);
 		compilationTable.setPlaceholder(new Text("Select a JIT-compiled class member to view compilations."));
 
-		compilationTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<CompilationTableRow>()
-		{
-			@Override public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
-					CompilationTableRow newVal)
-			{
-				if (!selectedProgrammatically)
-				{
-					if (selectedMember != null && newVal != null)
-					{
-						selectedMember.setSelectedCompilation(newVal.getIndex());
+		compilationTable.getSelectionModel()
+						.selectedItemProperty()
+						.addListener(new ChangeListener<CompilationTableRow>()
+						{
+							@Override
+							public void changed(ObservableValue<? extends CompilationTableRow> arg0, CompilationTableRow oldVal,
+									CompilationTableRow newVal)
+							{
+								if (!selectedProgrammatically)
+								{
+									if (selectedMember != null && newVal != null)
+									{
+										selectedMember.setSelectedCompilation(newVal.getIndex());
 
-						setSelectedMetaMemberFromCompilationTable();
-					}
-				}
-			}
-		});
+										setSelectedMetaMemberFromCompilationTable();
+									}
+								}
+							}
+						});
 
 		SplitPane spMethodInfo = new SplitPane();
 		spMethodInfo.setOrientation(Orientation.VERTICAL);
@@ -794,21 +846,28 @@ public class JITWatchUI extends Application
 		classMemberList = new ClassMemberList(this, getConfig());
 		classMemberList.registerListener(this);
 
-		spMethodInfo.getItems().add(classMemberList);
-		spMethodInfo.getItems().add(compilationTable);
+		spMethodInfo.getItems()
+					.add(classMemberList);
+		spMethodInfo.getItems()
+					.add(compilationTable);
 
-		classMemberList.prefHeightProperty().bind(scene.heightProperty());
-		compilationTable.prefHeightProperty().bind(scene.heightProperty());
+		classMemberList.prefHeightProperty()
+					   .bind(scene.heightProperty());
+		compilationTable.prefHeightProperty()
+						.bind(scene.heightProperty());
 
 		classTree = new ClassTree(this, getConfig());
-		classTree.prefWidthProperty().bind(scene.widthProperty());
+		classTree.prefWidthProperty()
+				 .bind(scene.widthProperty());
 
 		SplitPane spMain = new SplitPane();
 		spMain.setOrientation(Orientation.VERTICAL);
 
 		SplitPane spCentre = new SplitPane();
-		spCentre.getItems().add(classTree);
-		spCentre.getItems().add(spMethodInfo);
+		spCentre.getItems()
+				.add(classTree);
+		spCentre.getItems()
+				.add(spMethodInfo);
 		spCentre.setDividerPositions(0.33, 0.67);
 
 		textAreaLog = new TextArea();
@@ -817,9 +876,9 @@ public class JITWatchUI extends Application
 
 		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
 
-		log("Please send feedback to our mailing list (https://groups.google.com/forum/#!forum/jitwatch) \nor come and find us on GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
+		log("Please report issues via GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 
-		log("Includes assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
+		log("Includes an assembly reference from x86asm.net licenced under http://ref.x86asm.net/index.html#License\n");
 
 		String logFileFromProperty = System.getProperty(PROPERTY_LOGFILE);
 
@@ -835,7 +894,8 @@ public class JITWatchUI extends Application
 
 				Platform.runLater(new Runnable()
 				{
-					@Override public void run()
+					@Override
+					public void run()
 					{
 						readLogFile();
 
@@ -859,8 +919,10 @@ public class JITWatchUI extends Application
 			log("Using JIT log file: " + jitLogFile.getAbsolutePath());
 		}
 
-		spMain.getItems().add(spCentre);
-		spMain.getItems().add(textAreaLog);
+		spMain.getItems()
+			  .add(spCentre);
+		spMain.getItems()
+			  .add(textAreaLog);
 		spMain.setDividerPositions(0.68, 0.32);
 
 		HBox hboxBottom = new HBox();
@@ -883,16 +945,20 @@ public class JITWatchUI extends Application
 		labelLanguage.setStyle(labelStyle);
 
 		ComboBox<Locale> comboLanguage = new ComboBox<>();
-		comboLanguage.getItems().addAll(Locale.ENGLISH, Locale.GERMAN, Locale.FRENCH, Locale.SIMPLIFIED_CHINESE, Locale.forLanguageTag("pl"), Locale.forLanguageTag("es"), Locale.forLanguageTag("pt-BR"));
+		comboLanguage.getItems()
+					 .addAll(Locale.ENGLISH, Locale.GERMAN, Locale.FRENCH, Locale.SIMPLIFIED_CHINESE, Locale.forLanguageTag("pl"),
+							 Locale.forLanguageTag("es"), Locale.forLanguageTag("pt-BR"));
 		comboLanguage.setValue(Locale.ENGLISH);
 		comboLanguage.setCellFactory(lv -> new LocaleCell());
 		comboLanguage.setButtonCell(new LocaleCell());
 
-		comboLanguage.valueProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue != null) {
-				UserInterfaceUtil.configureLocale(newValue);
-			}
-		});
+		comboLanguage.valueProperty()
+					 .addListener((obs, oldValue, newValue) -> {
+						 if (newValue != null)
+						 {
+							 UserInterfaceUtil.configureLocale(newValue);
+						 }
+					 });
 
 		Button buttonSnapShot = UserInterfaceUtil.getSnapshotButton(scene, "JITWatch");
 
@@ -900,22 +966,35 @@ public class JITWatchUI extends Application
 		hboxBottom.setPrefHeight(statusBarHeight);
 		hboxBottom.setSpacing(4);
 
-		hboxBottom.getChildren().add(labelLanguage);
-		hboxBottom.getChildren().add(comboLanguage);
+		hboxBottom.getChildren()
+				  .add(labelLanguage);
+		hboxBottom.getChildren()
+				  .add(comboLanguage);
 
-		hboxBottom.getChildren().add(labelParser);
-		hboxBottom.getChildren().add(comboParser);
+		hboxBottom.getChildren()
+				  .add(labelParser);
+		hboxBottom.getChildren()
+				  .add(comboParser);
 
-		hboxBottom.getChildren().add(btnErrorLog);
-		hboxBottom.getChildren().add(btnStats);
-		hboxBottom.getChildren().add(btnReset);
-		hboxBottom.getChildren().add(lblHeap);
-		hboxBottom.getChildren().add(springLeft);
+		hboxBottom.getChildren()
+				  .add(btnErrorLog);
+		hboxBottom.getChildren()
+				  .add(btnStats);
+		hboxBottom.getChildren()
+				  .add(btnReset);
+		hboxBottom.getChildren()
+				  .add(lblHeap);
+		hboxBottom.getChildren()
+				  .add(springLeft);
 
-		hboxBottom.getChildren().add(lblTweakLog);
-		hboxBottom.getChildren().add(springRight);
-		hboxBottom.getChildren().add(lblVmVersion);
-		hboxBottom.getChildren().add(buttonSnapShot);
+		hboxBottom.getChildren()
+				  .add(lblTweakLog);
+		hboxBottom.getChildren()
+				  .add(springRight);
+		hboxBottom.getChildren()
+				  .add(lblVmVersion);
+		hboxBottom.getChildren()
+				  .add(buttonSnapShot);
 
 		borderPane.setTop(hboxTop);
 		borderPane.setCenter(spMain);
@@ -931,7 +1010,8 @@ public class JITWatchUI extends Application
 
 		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt, new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent arg0)
+			@Override
+			public void handle(ActionEvent arg0)
 			{
 				refresh();
 			}
@@ -939,7 +1019,8 @@ public class JITWatchUI extends Application
 
 		Timeline timeline = new Timeline();
 		timeline.setCycleCount(Animation.INDEFINITE);
-		timeline.getKeyFrames().add(oneFrame);
+		timeline.getKeyFrames()
+				.add(oneFrame);
 		timeline.play();
 
 		updateButtons();
@@ -957,12 +1038,14 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public void openTriView(IMetaMember member)
+	@Override
+	public void openTriView(IMetaMember member)
 	{
 		openTriView(member, 0);
 	}
 
-	@Override public void openTriView(IMetaMember member, int highlightBCI)
+	@Override
+	public void openTriView(IMetaMember member, int highlightBCI)
 	{
 		openTriView();
 
@@ -1002,7 +1085,8 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public void openBrowser(String title, String html, String stylesheet)
+	@Override
+	public void openBrowser(String title, String html, String stylesheet)
 	{
 		if (browserStage == null)
 		{
@@ -1029,15 +1113,19 @@ public class JITWatchUI extends Application
 		btnStart.setDisable(jitLogFile == null || isReadingLogFile);
 		btnStop.setDisable(!isReadingLogFile);
 
-		if (reportListSuggestions.size() != 0) {
+		if (reportListSuggestions.size() != 0)
+		{
 			suggestionsCounterMessage.setValue(S_OPEN_PARENTHESES + reportListSuggestions.size() + S_CLOSE_PARENTHESES);
 		}
 
-		if (reportListEliminatedAllocations.size() != 0) {
-			eliminatedAllocationsCounterMessage.setValue(S_OPEN_PARENTHESES + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
+		if (reportListEliminatedAllocations.size() != 0)
+		{
+			eliminatedAllocationsCounterMessage.setValue(
+					S_OPEN_PARENTHESES + reportListEliminatedAllocations.size() + S_CLOSE_PARENTHESES);
 		}
 
-		if (reportListOptimisedLocks.size() != 0) {
+		if (reportListOptimisedLocks.size() != 0)
+		{
 			eliminatedLocksCounterMessage.setValue(S_OPEN_PARENTHESES + reportListOptimisedLocks.size() + S_CLOSE_PARENTHESES);
 		}
 	}
@@ -1080,7 +1168,8 @@ public class JITWatchUI extends Application
 			{
 				rowsAbove++;
 
-				String nodeText = node.getValue().toString();
+				String nodeText = node.getValue()
+									  .toString();
 
 				if (matching.equals(nodeText) || (S_EMPTY.equals(matching) && DEFAULT_PACKAGE_NAME.equals(nodeText)))
 				{
@@ -1160,7 +1249,8 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
+	@Override
+	public void openTextViewer(String title, String content, boolean lineNumbers, boolean highlighting)
 	{
 		TextViewerStage tvs = new TextViewerStage(this, title, content, lineNumbers, highlighting);
 		StageManager.addAndShow(this.stage, tvs);
@@ -1171,7 +1261,8 @@ public class JITWatchUI extends Application
 		openTextViewer(title, content, false, false);
 	}
 
-	@Override public void openCompileChain(IMetaMember member)
+	@Override
+	public void openCompileChain(IMetaMember member)
 	{
 		if (member != null && member.isCompiled())
 		{
@@ -1183,7 +1274,8 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public void openInlinedIntoReport(IMetaMember member)
+	@Override
+	public void openInlinedIntoReport(IMetaMember member)
 	{
 		if (member != null)
 		{
@@ -1220,7 +1312,8 @@ public class JITWatchUI extends Application
 		String osNameProperty = System.getProperty("os.name");
 
 		// don't use ExtensionFilter on OSX due to JavaFX2 missing combo bug
-		if (osNameProperty != null && !osNameProperty.toLowerCase().contains("mac"))
+		if (osNameProperty != null && !osNameProperty.toLowerCase()
+													 .contains("mac"))
 		{
 			fc.getExtensionFilters()
 			  .addAll(new FileChooser.ExtensionFilter("Log Files", "*.log"), new FileChooser.ExtensionFilter("All Files", "*.*"));
@@ -1252,7 +1345,8 @@ public class JITWatchUI extends Application
 
 			if (JITWatchConstants.S_PROFILE_SANDBOX.equals(config.getProfileName()))
 			{
-				logParser.getConfig().switchFromSandbox();
+				logParser.getConfig()
+						 .switchFromSandbox();
 			}
 		}
 	}
@@ -1300,7 +1394,8 @@ public class JITWatchUI extends Application
 		StageManager.notifyCompilationChanged(selectedMember);
 	}
 
-	@Override public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
+	@Override
+	public synchronized void selectMember(IMetaMember member, boolean updateTree, boolean updateTriView)
 	{
 		// TimerUtil.timerStart(getClass().getName() + ".selectMember()");
 
@@ -1337,7 +1432,8 @@ public class JITWatchUI extends Application
 
 			if (selectedCompilation != null)
 			{
-				compilationTable.getSelectionModel().clearAndSelect(selectedCompilation.getIndex());
+				compilationTable.getSelectionModel()
+								.clearAndSelect(selectedCompilation.getIndex());
 			}
 		}
 
@@ -1346,7 +1442,8 @@ public class JITWatchUI extends Application
 		// TimerUtil.timerEnd(getClass().getName() + ".selectMember()");
 	}
 
-	@Override public synchronized void selectCompilation(IMetaMember member, int compilationIndex)
+	@Override
+	public synchronized void selectCompilation(IMetaMember member, int compilationIndex)
 	{
 		selectedProgrammatically = true;
 
@@ -1455,7 +1552,8 @@ public class JITWatchUI extends Application
 		classTree.showTree(sameVmCommand());
 	}
 
-	@Override public void handleStageClosed(Stage stage)
+	@Override
+	public void handleStageClosed(Stage stage)
 	{
 		if (stage instanceof TimeLineStage)
 		{
@@ -1547,18 +1645,21 @@ public class JITWatchUI extends Application
 		}
 	}
 
-	@Override public void handleJITEvent(JITEvent event)
+	@Override
+	public void handleJITEvent(JITEvent event)
 	{
 		log(event.toString());
 		repaintTree = true;
 	}
 
-	@Override public void handleLogEntry(String entry)
+	@Override
+	public void handleLogEntry(String entry)
 	{
 		log(entry);
 	}
 
-	@Override public void handleErrorEntry(String entry)
+	@Override
+	public void handleErrorEntry(String entry)
 	{
 		errorLog.addEntry(entry);
 		errorCount++;
@@ -1582,17 +1683,20 @@ public class JITWatchUI extends Application
 
 	public PackageManager getPackageManager()
 	{
-		return logParser.getModel().getPackageManager();
+		return logParser.getModel()
+						.getPackageManager();
 	}
 
-	@Override public Stage getStageForDialog()
+	@Override
+	public Stage getStageForDialog()
 	{
 		return stage;
 	}
 
-	@Override public void parserSelected(ParserType parserType)
+	@Override
+	public void parserSelected(ParserType parserType)
 	{
-		log("Selected Parser: " + parserType);
+		logger.info("Selected Parser: {}", parserType);
 
 		if (logParser != null)
 		{

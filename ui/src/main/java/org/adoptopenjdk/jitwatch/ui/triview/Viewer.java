@@ -70,7 +70,7 @@ public class Viewer extends VBox
 			+ "px;";
 
 	public static final String STYLE_UNHIGHLIGHTED = FONT_STYLE + "-fx-background-color:white;";
-	public static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:red;";
+	public static final String STYLE_HIGHLIGHTED = FONT_STYLE + "-fx-background-color:#ff6666;";
 	public static final String STYLE_UNHIGHLIGHTED_SUGGESTION = FONT_STYLE + "-fx-background-color:yellow;";
 	public static final String STYLE_SAFEPOINT = FONT_STYLE + "-fx-background-color:yellow;";
 	public static final String STYLE_HIGHLIGHTED_RANGE = FONT_STYLE + "-fx-background-color:#ffdddd;";
