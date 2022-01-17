@@ -408,6 +408,8 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 	{
 		String disassemblerFilename = DisassemblyUtil.getDisassemblerFilename();
 
+		log("Looking for disassembler: " + disassemblerFilename);
+
 		Path downloadPath = Paths.get(disassemblerFilename);
 
 		Path disassemblerPath = DisassemblyUtil.getDisassemblerFilePath();
@@ -418,15 +420,17 @@ public class SandboxStage extends Stage implements ISandboxStage, IStageClosedLi
 		{
 			log("Disassembler not found");
 
-			String message = "The hsdis plugin " + disassemblerFilename + " could not be found. Would you like to download it?";
+			String hsdisDownloadUrl = "https://chriswhocodes.com/hsdis/";
 
-			Response response = Dialogs.showYesNoDialogNever(SandboxStage.this, "Download hsdis plugin", message);
+			String message = "The disassembly plugin " + disassemblerFilename + " could not be found.\n Would you like to download it from "+hsdisDownloadUrl+" ?";
+
+			Response response = Dialogs.showYesNoDialogNever(SandboxStage.this, "Download disassembly plugin", message);
 
 			switch (response)
 			{
 			case YES:
 			{
-				String url = "https://chriswhocodes.com/hsdis/" + disassemblerFilename;
+				String url = hsdisDownloadUrl + disassemblerFilename;
 
 				log("Downloading hsdis from " + url);
 

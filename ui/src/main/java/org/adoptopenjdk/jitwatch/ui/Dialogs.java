@@ -135,9 +135,18 @@ public final class Dialogs
 		vBox.setSpacing(10);
 		vBox.setPadding(new Insets(10));
 
-		int width = Math.max(320, message == null ? 0 : message.length() * 10);
+		String[] messageParts = message.split("\n");
 
-		Scene scene = UserInterfaceUtil.getScene(vBox, width, 80);
+		int width = 320;
+
+		for (String part : messageParts)
+		{
+			vBox.getChildren().add(new Label(part));
+
+			width = Math.max(width, part.length() * 10);
+		}
+
+		Scene scene = UserInterfaceUtil.getScene(vBox, width, 80+ messageParts.length * 30);
 
 		final Dialog dialog = new Dialog(title, owner, scene);
 
@@ -177,7 +186,7 @@ public final class Dialogs
 			}
 		});
 
-		BorderPane bp = new BorderPane();
+		BorderPane borderPane = new BorderPane();
 
 		HBox hBox = new HBox();
 		hBox.setAlignment(Pos.CENTER);
@@ -186,9 +195,9 @@ public final class Dialogs
 
 		hBox.getChildren().addAll(btnYes, btnNo, btnNever);
 
-		bp.setCenter(hBox);
+		vBox.getChildren().add(borderPane);
 
-		vBox.getChildren().addAll(new Label(message), bp);
+		borderPane.setCenter(hBox);
 
 		dialog.showDialog();
 

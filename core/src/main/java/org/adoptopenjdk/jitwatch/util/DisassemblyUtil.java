@@ -66,14 +66,15 @@ public final class DisassemblyUtil
 	public static String getDisassemblerFilename()
 	{
 		OperatingSystem os = OSUtil.getOperatingSystem();
-		Architecture arch = OSUtil.getArchitecture();
 
-		if (DEBUG_LOGGING_ASSEMBLY)
+		String archName =  System.getProperty("os.arch");
+
+		if ("x86_64".equals(archName))
 		{
-			logger.debug("OS: {} Arch: {}", os, arch);
+			archName = "amd64";
 		}
 
-		String binaryName = "hsdis-" + System.getProperty("os.arch");
+		String binaryName = "hsdis-" + archName;
 
 		if (os != null)
 		{
@@ -150,9 +151,9 @@ public final class DisassemblyUtil
 
 		String[] libPath = new String[] { "lib", "bin", "" };
 
-		String[] serverPath = new String[] { "server", "" };
+		String[] serverPath = new String[] { "server", "client", "" };
 
-		String[] archPath = new String[] { "i386", "amd64", "" };
+		String[] archPath = new String[] { "i386", "amd64", "arm", "aarch64", "" };
 
 		for (String jre : jrePath)
 		{

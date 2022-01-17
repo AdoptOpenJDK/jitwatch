@@ -1696,8 +1696,6 @@ public class JITWatchUI extends Application
 	@Override
 	public void parserSelected(ParserType parserType)
 	{
-		logger.info("Selected Parser: {}", parserType);
-
 		if (logParser != null)
 		{
 			logParser.reset();
