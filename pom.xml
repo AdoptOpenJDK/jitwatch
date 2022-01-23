@@ -5,7 +5,7 @@
 
     <groupId>com.chrisnewland</groupId>
     <artifactId>jitwatch-parent</artifactId>
-    <version>1.4.6</version>
+    <version>1.4.7</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
