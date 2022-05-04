@@ -224,7 +224,7 @@ public final class BytecodeLoader
 				logger.debug("Line: '{}'", line);
 			}
 
-			BytecodeSection nextSection = getNextSection(line);
+			BytecodeSection nextSection = getNextSection(section, line);
 
 			if (nextSection != null)
 			{
@@ -634,14 +634,18 @@ public final class BytecodeLoader
 
 		return nextSection;
 	}
-
-	private static BytecodeSection getNextSection(final String line)
+	
+	private static BytecodeSection getNextSection(BytecodeSection currentSection, final String line)
 	{
 		BytecodeSection nextSection = null;
 
 		if (line != null)
 		{
-			if (line.isEmpty() || "}".equals(line.trim()))
+			if (line.isEmpty())
+			{
+				nextSection = BytecodeSection.NONE;
+			}
+			else if ( currentSection != BytecodeSection.CODE &&  "}".equals(line.trim()))
 			{
 				nextSection = BytecodeSection.NONE;
 			}
