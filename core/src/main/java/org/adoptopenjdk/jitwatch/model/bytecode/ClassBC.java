@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2021 Chris Newland.
+ * Copyright (c) 2013-2022 Chris Newland.
  * Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
@@ -187,42 +187,6 @@ public class ClassBC
 
 		switch (majorVersion)
 		{
-		case 62:
-			result = "Java 18";
-			break;
-		case 61:
-			result = "Java 17";
-			break;
-		case 60:
-			result = "Java 16";
-			break;
-		case 59:
-			result = "Java 15";
-			break;
-		case 58:
-			result = "Java 14";
-			break;
-		case 57:
-			result = "Java 13";
-			break;
-		case 56:
-			result = "Java 12";
-			break;
-		case 55:
-			result = "Java 11";
-			break;
-		case 54:
-			result = "Java 10";
-			break;
-		case 53:
-			result = "Java 9";
-			break;
-		case 52:
-			result = "Java 8";
-			break;
-		case 51:
-			result = "Java 7";
-			break;
 		case 50:
 			result = "Java 6.0";
 			break;
@@ -242,7 +206,7 @@ public class ClassBC
 			result = "Java 1.1";
 			break;
 		default:
-			result = "Unknown java version";
+			result = "Java " + (majorVersion - 44);
 			break;
 		}
 
@@ -264,7 +228,8 @@ public class ClassBC
 		return moduleName;
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
 
