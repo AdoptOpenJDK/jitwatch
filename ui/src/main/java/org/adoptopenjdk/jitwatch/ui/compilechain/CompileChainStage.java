@@ -235,19 +235,19 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 		else
 		{
 			member = node.getMember();
-		}
 
-		if (member == null)
-		{
-			result = "Unknown";
-		}
-		else if (member.isConstructor())
-		{
-			result = member.getMetaClass().getAbbreviatedFullyQualifiedName() + "()";
-		}
-		else
-		{
-			result = member.getAbbreviatedFullyQualifiedMemberName() + "()";
+			if (member == null)
+			{
+				result = "Unknown";
+			}
+			else if (member.isConstructor())
+			{
+				result = member.getMetaClass().getAbbreviatedFullyQualifiedName() + "()";
+			}
+			else
+			{
+				result = member.getAbbreviatedFullyQualifiedMemberName() + "()";
+			}
 		}
 
 		return result;
@@ -372,7 +372,12 @@ public class CompileChainStage extends Stage implements ICompilationChangeListen
 
 			String rootMemberName = getLabelText(root);
 			
-			title += rootMemberName + " " + root.getCompilation().getSignature();
+			title += rootMemberName;
+
+			if (root != null)
+			{
+				title += " " + root.getCompilation().getSignature();
+			}
 
 			setTitle(title);
 			
