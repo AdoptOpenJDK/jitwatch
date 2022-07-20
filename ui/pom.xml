@@ -14,7 +14,7 @@
 	<name>JITWatch UI</name>
 
 	<properties>
-		<openjfx.version>17.0.2</openjfx.version>
+		<openjfx.version>18.0.2</openjfx.version>
 	</properties>
 
 	<profiles>
