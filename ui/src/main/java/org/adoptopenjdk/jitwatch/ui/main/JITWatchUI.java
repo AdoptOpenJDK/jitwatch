@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -153,6 +154,9 @@ public class JITWatchUI extends Application
 	private String focusMemberFromProperty = null;
 
 	private static final String PROPERTY_LOGFILE = "jitwatch.logfile";
+	private static final String PROPERTY_SOURCES = "jitwatch.sourcepath";
+	private static final String PROPERTY_CLASSPATH = "jitwatch.classpath";
+
 	private static final String PROPERTY_FOCUS_MEMBER = "jitwatch.focus.member";
 
 	private boolean isReadingLogFile = false;
@@ -891,6 +895,20 @@ public class JITWatchUI extends Application
 				jitLogFile = tempLogFile;
 
 				log("Setting JIT log file from property " + PROPERTY_LOGFILE + ": " + logFileFromProperty);
+
+				JITWatchConfig config = logParser.getConfig();
+
+				String sourceLocations = System.getProperty(PROPERTY_SOURCES);
+				String classLocations = System.getProperty(PROPERTY_CLASSPATH);
+
+				List<String> configSources = new ArrayList<>();
+				List<String> configClasses = new ArrayList<>();
+
+				configSources.addAll(Arrays.asList(sourceLocations.split(File.pathSeparator)));
+				configClasses.addAll(Arrays.asList(classLocations.split(File.pathSeparator)));
+
+				config.setSourceLocations(configSources);
+				config.setClassLocations(configClasses);
 
 				Platform.runLater(new Runnable()
 				{
