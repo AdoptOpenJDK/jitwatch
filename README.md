@@ -21,4 +21,4 @@ For pre-JDK11 you will need to use a Java runtime that includes JavaFX.
 
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code and then run
-./makeDemoLogFile.sh</pre>
+cd scripts && ./makeDemoLogFile.sh</pre>
