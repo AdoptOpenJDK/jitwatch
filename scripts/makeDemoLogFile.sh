@@ -70,11 +70,7 @@ echo "VM Switches $REQUIRED_SWITCHES $OPTIONAL_SWITCHES"
 
 echo "Building example HotSpot log"
 
-if [ "$unamestr" = 'Darwin' ]; then
-   export CLASSPATH=../ui/target/jitwatch-ui-shaded-mac.jar
-else
-   export CLASSPATH=../ui/target/jitwatch-ui-shaded.jar
-fi
+export CLASSPATH=../ui/target/jitwatch-ui-shaded.jar
 
 "$JAVA_HOME/bin/java" $REQUIRED_SWITCHES $OPTIONAL_SWITCHES -cp "$CLASSPATH" org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog 2>&1 >/dev/null
 echo "Done"
