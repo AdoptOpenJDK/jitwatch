@@ -14,7 +14,7 @@ The JITWatch user interface is built using JavaFX which is downloaded as a maven
 For pre-JDK11 you will need to use a Java runtime that includes JavaFX.
 
 <h2>maven</h2>
-<pre>mvn clean compile test exec:java</pre>
+<pre>mvn clean package && java -jar ui/target/jitwatch-ui-shaded.jar</pre>
 
 <h2>gradle</h2>
 <pre>gradlew clean build run</pre>
