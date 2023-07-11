@@ -16,9 +16,6 @@ For pre-JDK11 you will need to use a Java runtime that includes JavaFX.
 <h2>maven</h2>
 <pre>mvn clean package && java -jar ui/target/jitwatch-ui-shaded.jar</pre>
 
-<h2>gradle</h2>
-<pre>gradlew clean build run</pre>
-
 <h2>Build an example HotSpot log</h2>
 <pre># Build the code and then run
 cd scripts && ./makeDemoLogFile.sh</pre>

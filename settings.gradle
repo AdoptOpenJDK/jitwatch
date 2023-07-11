@@ -1,2 +1,0 @@
-rootProject.name = 'jitwatch'
-include 'core', 'ui'

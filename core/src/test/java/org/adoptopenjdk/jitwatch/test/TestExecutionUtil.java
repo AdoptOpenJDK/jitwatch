@@ -35,14 +35,6 @@ public class TestExecutionUtil
 			cp.add(path.toString());
 		}
 
-		// path for gradle build
-		path = FileSystems.getDefault().getPath(userDir, "build", "classes", "java", "test");
-
-		if (Files.exists(path))
-		{
-			cp.add(path.toString());
-		}
-
 		List<String> options = new ArrayList<>();
 		options.add("-XX:+UnlockDiagnosticVMOptions");
 		options.add("-XX:+LogCompilation");

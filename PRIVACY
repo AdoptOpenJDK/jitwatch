@@ -36,7 +36,7 @@ logs which are retained for 14 days.
 Build systems
 =============
 
-If you build JITWatch from source using maven or gradle then those build systems will download various further 
+If you build JITWatch from source using maven then the build system will download various further 
 dependencies required to compile, package, test, and execute the build targets.
 
 =======================
