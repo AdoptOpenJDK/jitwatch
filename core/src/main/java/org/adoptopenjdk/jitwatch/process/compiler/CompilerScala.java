@@ -44,7 +44,7 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 	}
 
 	@Override
-	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, Map<String, String> environment,ILogListener logListener)
+	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, List<String> vmOptions, File outputDir, Map<String, String> environment,ILogListener logListener)
 			throws IOException
 	{
 		List<String> commands = new ArrayList<>();
@@ -54,6 +54,7 @@ public class CompilerScala extends AbstractProcess implements ICompiler
 		String outputDirPath = outputDir.getAbsolutePath().toString();
 
 		List<String> compileOptions = Arrays.asList(new String[] { "-print", "-g:vars", "-d", outputDirPath });
+		commands.addAll(vmOptions);
 
 		commands.addAll(compileOptions);
 		

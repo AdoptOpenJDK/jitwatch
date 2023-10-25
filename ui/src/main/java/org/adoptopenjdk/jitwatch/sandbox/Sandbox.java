@@ -177,7 +177,9 @@ public class Sandbox
 
 		lastProcess = compiler;
 
-		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
+		List<String> compilationSwitches = Arrays.asList(logParser.getConfig().getExtraVMCompilationSwitches().split(" "));
+
+		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), compilationSwitches, SANDBOX_CLASS_DIR.toFile(),
 				Collections.<String, String>emptyMap(), logListener);
 
 		logListener.handleLogEntry("Compilation success: " + compiledOK);
