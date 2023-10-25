@@ -322,9 +322,9 @@ public class Sandbox
 			options.add("-XX:CompileThreshold=" + logParser.getConfig().getCompileThreshold());
 		}
 
-		if (logParser.getConfig().getExtraVMSwitches().length() > 0)
+		if (logParser.getConfig().getExtraVMRuntimeSwitches().length() > 0)
 		{
-			String extraSwitchString = logParser.getConfig().getExtraVMSwitches();
+			String extraSwitchString = logParser.getConfig().getExtraVMRuntimeSwitches();
 			String[] switches = extraSwitchString.split(S_SPACE);
 
 			for (String sw : switches)

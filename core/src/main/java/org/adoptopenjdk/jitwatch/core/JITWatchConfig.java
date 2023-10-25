@@ -80,7 +80,8 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_PRINT_ASSEMBLY = SANDBOX_PREFIX + ".print.assembly";
 	private static final String KEY_SANDBOX_DISABLE_INLINING = SANDBOX_PREFIX + ".disable.inlining";
 	private static final String KEY_SANDBOX_COMPILER_THRESHOLD = SANDBOX_PREFIX + ".compiler.threshold";
-	private static final String KEY_SANDBOX_EXTRA_VM_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches";
+	private static final String KEY_SANDBOX_EXTRA_VM_COMPILATION_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches.compilation";
+	private static final String KEY_SANDBOX_EXTRA_VM_RUNTIME_SWITCHES = SANDBOX_PREFIX + ".extra.vm.switches.runtime";
 	private static final String KEY_SANDBOX_BACKGROUND_COMPILATION = SANDBOX_PREFIX + ".background.compilation";
 	private static final String KEY_SANDBOX_ON_STACK_REPLACEMENT = SANDBOX_PREFIX + ".on.stack.replacement";
 
@@ -112,7 +113,8 @@ public class JITWatchConfig
 	private boolean disableInlining = false;
 
 	private int compileThreshold;
-	private String extraVMSwitches;
+	private String extraVMCompilationSwitches;
+	private String extraVMRuntimeSwitches;
 
 	private String profileName = S_PROFILE_DEFAULT;
 
@@ -354,7 +356,8 @@ public class JITWatchConfig
 		compileThreshold = loadIntFromProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD,
 				JITWatchConstants.DEFAULT_COMPILER_THRESHOLD);
 
-		extraVMSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, JITWatchConstants.S_EMPTY);
+		extraVMCompilationSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_COMPILATION_SWITCHES, JITWatchConstants.S_EMPTY);
+		extraVMRuntimeSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_RUNTIME_SWITCHES, JITWatchConstants.S_EMPTY);
 
 		noPromptHsdis = loadBooleanFromProperty(loadedProps, KEY_NO_PROMPT_HSDIS, false);
 	}
@@ -617,7 +620,9 @@ public class JITWatchConfig
 
 		putProperty(loadedProps, KEY_SANDBOX_COMPILER_THRESHOLD, Integer.toString(compileThreshold));
 
-		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_SWITCHES, extraVMSwitches);
+		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_COMPILATION_SWITCHES, extraVMCompilationSwitches);
+
+		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_RUNTIME_SWITCHES, extraVMRuntimeSwitches);
 
 		putProperty(loadedProps, KEY_NO_PROMPT_HSDIS, Boolean.toString(noPromptHsdis));
 	}
@@ -823,14 +828,24 @@ public class JITWatchConfig
 		this.compileThreshold = compileThreshold;
 	}
 
-	public String getExtraVMSwitches()
+	public String getExtraVMCompilationSwitches()
 	{
-		return extraVMSwitches;
+		return extraVMCompilationSwitches;
 	}
 
-	public void setExtraVMSwitches(String extraVMSwitches)
+	public void setExtraVMCompilationSwitches(String extraVMCompilationSwitches)
 	{
-		this.extraVMSwitches = extraVMSwitches;
+		this.extraVMCompilationSwitches = extraVMCompilationSwitches;
+	}
+
+	public String getExtraVMRuntimeSwitches()
+	{
+		return extraVMRuntimeSwitches;
+	}
+
+	public void setExtraVMRuntimeSwitches(String extraVMRuntimeSwitches)
+	{
+		this.extraVMRuntimeSwitches = extraVMRuntimeSwitches;
 	}
 
 	public CompressedOops getCompressedOopsMode()
