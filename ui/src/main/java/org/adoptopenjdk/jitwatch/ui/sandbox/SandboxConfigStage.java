@@ -541,7 +541,7 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		Label labelExtraCompilation = new Label("Extra VM compilation switches:");
+		Label labelExtraCompilation = new Label("Compilation options:");
 		labelExtraCompilation.setMinWidth(labelWidth);
 
 		txtExtraCompilationSwitches = new TextField(config.getExtraVMCompilationSwitches());
@@ -558,7 +558,7 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		Label labelExtraRuntime = new Label("Extra VM runtime switches:");
+		Label labelExtraRuntime = new Label("Runtime options:");
 		labelExtraRuntime.setMinWidth(labelWidth);
 
 		txtExtraRuntimeSwitches = new TextField(config.getExtraVMRuntimeSwitches());
