@@ -57,7 +57,7 @@ public class SandboxConfigStage extends Stage
 
 	private Scene scene;
 
-	private static final int labelWidth = 160;
+	private static final int labelWidth = 170;
 
 	private static final Logger logger = LoggerFactory.getLogger(SandboxConfigStage.class);
 
@@ -541,7 +541,7 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		Label labelExtraCompilation = new Label("Extra VM compilation switches:");
+		Label labelExtraCompilation = new Label("Extra Compilation options:");
 		labelExtraCompilation.setMinWidth(labelWidth);
 
 		txtExtraCompilationSwitches = new TextField(config.getExtraVMCompilationSwitches());
@@ -558,7 +558,7 @@ public class SandboxConfigStage extends Stage
 	{
 		HBox hbox = new HBox();
 
-		Label labelExtraRuntime = new Label("Extra VM runtime switches:");
+		Label labelExtraRuntime = new Label("Extra Runtime Options:");
 		labelExtraRuntime.setMinWidth(labelWidth);
 
 		txtExtraRuntimeSwitches = new TextField(config.getExtraVMRuntimeSwitches());
