@@ -44,7 +44,8 @@ public class SandboxConfigStage extends Stage
 	private TextField txtFreqInline;
 	private TextField txtMaxInline;
 	private TextField txtCompilerThreshold;
-	private TextField txtExtraSwitches;
+	private TextField txtExtraCompilationSwitches;
+	private TextField txtExtraRuntimeSwitches;
 
 	private CheckBox checkBoxPrintAssembly;
 	private CheckBox checkBoxDisableInlining;
@@ -102,7 +103,9 @@ public class SandboxConfigStage extends Stage
 
 		vbox.getChildren().add(buildHBoxCompilationThreshold());
 
-		vbox.getChildren().add(buildHBoxExtraSwitches());
+		vbox.getChildren().add(buildHBoxExtraCompilationSwitches());
+
+		vbox.getChildren().add(buildHBoxExtraRuntimeSwitches());
 
 		vbox.getChildren().add(buildHBoxButtons());
 
@@ -124,7 +127,9 @@ public class SandboxConfigStage extends Stage
 
 				setCompilerThreshold(config);
 
-				setExtraVMSwitches(config);
+				setExtraVMCompilationSwitches(config);
+
+				setExtraVMRuntimeSwitches(config);
 
 				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
 				config.setDisableInlining(checkBoxDisableInlining.isSelected());
@@ -162,9 +167,14 @@ public class SandboxConfigStage extends Stage
 		}
 	}
 
-	private void setExtraVMSwitches(JITWatchConfig config)
+	private void setExtraVMCompilationSwitches(JITWatchConfig config)
 	{
-		config.setExtraVMSwitches(txtExtraSwitches.getText().trim());
+		config.setExtraVMCompilationSwitches(txtExtraCompilationSwitches.getText().trim());
+	}
+
+	private void setExtraVMRuntimeSwitches(JITWatchConfig config)
+	{
+		config.setExtraVMRuntimeSwitches(txtExtraRuntimeSwitches.getText().trim());
 	}
 
 	private void setMaximumInlineSize(JITWatchConfig config)
@@ -527,19 +537,36 @@ public class SandboxConfigStage extends Stage
 		return hbox;
 	}
 
-	private HBox buildHBoxExtraSwitches()
+	private HBox buildHBoxExtraCompilationSwitches()
 	{
 		HBox hbox = new HBox();
 
-		Label labelExtra = new Label("Extra VM switches:");
-		labelExtra.setMinWidth(labelWidth);
+		Label labelExtraCompilation = new Label("Extra VM compilation switches:");
+		labelExtraCompilation.setMinWidth(labelWidth);
 
-		txtExtraSwitches = new TextField(config.getExtraVMSwitches());
-		txtExtraSwitches.prefWidthProperty().bind(scene.widthProperty());
-		txtExtraSwitches.setAlignment(Pos.BASELINE_LEFT);
+		txtExtraCompilationSwitches = new TextField(config.getExtraVMCompilationSwitches());
+		txtExtraCompilationSwitches.prefWidthProperty().bind(scene.widthProperty());
+		txtExtraCompilationSwitches.setAlignment(Pos.BASELINE_LEFT);
 
-		hbox.getChildren().add(labelExtra);
-		hbox.getChildren().add(txtExtraSwitches);
+		hbox.getChildren().add(labelExtraCompilation);
+		hbox.getChildren().add(txtExtraCompilationSwitches);
+
+		return hbox;
+	}
+
+	private HBox buildHBoxExtraRuntimeSwitches()
+	{
+		HBox hbox = new HBox();
+
+		Label labelExtraRuntime = new Label("Extra VM runtime switches:");
+		labelExtraRuntime.setMinWidth(labelWidth);
+
+		txtExtraRuntimeSwitches = new TextField(config.getExtraVMRuntimeSwitches());
+		txtExtraRuntimeSwitches.prefWidthProperty().bind(scene.widthProperty());
+		txtExtraRuntimeSwitches.setAlignment(Pos.BASELINE_LEFT);
+
+		hbox.getChildren().add(labelExtraRuntime);
+		hbox.getChildren().add(txtExtraRuntimeSwitches);
 
 		return hbox;
 	}

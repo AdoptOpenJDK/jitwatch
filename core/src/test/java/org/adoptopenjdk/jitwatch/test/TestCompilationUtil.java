@@ -91,7 +91,9 @@ public class TestCompilationUtil
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, tempDirPath.toFile(), Collections.emptyMap(),
+			List<String> vmOptions = new ArrayList<>();
+
+			boolean success = compiler.compile(sources, compileClasspath, vmOptions, tempDirPath.toFile(), Collections.emptyMap(),
 					new NullLogListener());
 
 			if (!success)

@@ -103,7 +103,9 @@ public class TestBytecodeLoaderWithInnerClasses
 
 			List<String> compileClasspath = new ArrayList<>();
 
-			boolean success = compiler.compile(sources, compileClasspath, pathToTempClassDir.toFile(), Collections.emptyMap(),
+			List<String> vmOptions = new ArrayList<>();
+
+			boolean success = compiler.compile(sources, compileClasspath, vmOptions, pathToTempClassDir.toFile(), Collections.emptyMap(),
 					new NullLogListener());
 
 			if (!success)

@@ -15,5 +15,5 @@ import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 
 public interface ICompiler extends IExternalProcess
 {
-	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, File outputDir, Map<String, String> environment, ILogListener logListener) throws IOException;
+	public boolean compile(List<File> sourceFiles, List<String> classpathEntries, List<String> vmOptions, File outputDir, Map<String, String> environment, ILogListener logListener) throws IOException;
 }

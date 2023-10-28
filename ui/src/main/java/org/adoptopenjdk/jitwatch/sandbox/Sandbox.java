@@ -177,7 +177,9 @@ public class Sandbox
 
 		lastProcess = compiler;
 
-		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), SANDBOX_CLASS_DIR.toFile(),
+		List<String> compilationSwitches = Arrays.asList(logParser.getConfig().getExtraVMCompilationSwitches().split(" "));
+
+		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), compilationSwitches, SANDBOX_CLASS_DIR.toFile(),
 				Collections.<String, String>emptyMap(), logListener);
 
 		logListener.handleLogEntry("Compilation success: " + compiledOK);
@@ -322,9 +324,9 @@ public class Sandbox
 			options.add("-XX:CompileThreshold=" + logParser.getConfig().getCompileThreshold());
 		}
 
-		if (logParser.getConfig().getExtraVMSwitches().length() > 0)
+		if (logParser.getConfig().getExtraVMRuntimeSwitches().length() > 0)
 		{
-			String extraSwitchString = logParser.getConfig().getExtraVMSwitches();
+			String extraSwitchString = logParser.getConfig().getExtraVMRuntimeSwitches();
 			String[] switches = extraSwitchString.split(S_SPACE);
 
 			for (String sw : switches)
