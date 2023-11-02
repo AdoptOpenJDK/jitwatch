@@ -8,7 +8,11 @@ package org.adoptopenjdk.jitwatch.test;
 import static org.junit.Assert.*;
 
 import org.adoptopenjdk.jitwatch.histo.*;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.Map;
 
 public class TestHisto
 {
@@ -16,6 +20,12 @@ public class TestHisto
 	 * Nearest rank percentile calculation from
 	 * http://en.wikipedia.org/wiki/Percentile
 	 */
+
+	private Histo histo;
+	@Before
+	public void setUp() {
+		histo = new Histo();
+	}
 	
 	@Test
 	public void testHistoPercentiles()
@@ -36,5 +46,51 @@ public class TestHisto
 		assertEquals(0, h.getPercentile(0), epsilon);	
 		assertEquals(50, h.getPercentile(100), epsilon);	
 
+	}
+
+	@Test
+	public void testAddValue() {
+		histo.addValue(5);
+		histo.addValue(10);
+		histo.addValue(5);
+		histo.addValue(15);
+
+		// to check the values are added correctly
+		List<Map.Entry<Long, Integer>> sortedData = histo.getSortedData();
+		assertEquals(4, sortedData.size());
+	}
+
+	@Test
+	public void testClear() {
+		histo.addValue(5);
+		histo.addValue(10);
+		histo.addValue(5);
+
+		histo.clear();
+
+		// check that the histogram is clear
+		List<Map.Entry<Long, Integer>> sortedData = histo.getSortedData();
+		assertEquals(0, sortedData.size());
+		assertEquals(0, histo.getMaxCount());
+		assertEquals(0, histo.getLastTime());
+	}
+
+
+	@Test
+	public void testGetLastTime() {
+		histo.addValue(5);
+		histo.addValue(15);
+		histo.addValue(10);
+		// to get last but one item
+		assertEquals(15, histo.getLastTime());
+	}
+
+	@Test
+	public void testGetMaxCount() {
+		histo.addValue(5);
+		histo.addValue(5);
+		histo.addValue(10);
+		// to test max count of value
+		assertEquals(2, histo.getMaxCount());
 	}
 }
