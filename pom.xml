@@ -5,12 +5,12 @@
 
     <groupId>com.chrisnewland</groupId>
     <artifactId>jitwatch-parent</artifactId>
-    <version>1.4.7</version>
+    <version>1.4.8</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <junit.version>4.13.1</junit.version>
+        <junit.version>4.13.2</junit.version> <!-- https://mvnrepository.com/artifact/junit/junit -->
         <javac.source>1.8</javac.source>
         <javac.target>1.8</javac.target>
 
@@ -41,7 +41,7 @@
     <developers>
         <developer>
             <name>Chris Newland</name>
-            <url>https://www.chrisnewland.com</url>
+            <url>https://www.chriswhocodes.com</url>
             <email>chris@chrisnewland.com</email>
             <timezone>GMT</timezone>
         </developer>

@@ -158,7 +158,8 @@ public final class UserInterfaceUtil
 
 		buttonSnapShot.setOnAction(new EventHandler<ActionEvent>()
 		{
-			@Override public void handle(ActionEvent e)
+			@Override
+			public void handle(ActionEvent e)
 			{
 				takeSnapShot(scene, filenamePrefix);
 			}
@@ -183,14 +184,11 @@ public final class UserInterfaceUtil
 
 			Class<?> classSwingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
 
-			Method methodWrite = classImageIO.getMethod("write",
-					new Class[] { java.awt.image.RenderedImage.class, String.class, File.class });
+			Method methodWrite = classImageIO.getMethod("write", java.awt.image.RenderedImage.class, String.class, File.class);
 
-			Method methodFromFXImage = classSwingFXUtils.getMethod("fromFXImage",
-					new Class[] { javafx.scene.image.Image.class, java.awt.image.BufferedImage.class });
+			Method methodFromFXImage = classSwingFXUtils.getMethod("fromFXImage", Image.class, java.awt.image.BufferedImage.class);
 
-			methodWrite.invoke(null, new Object[] { methodFromFXImage.invoke(null, new Object[] { imageSnap, null }), "png",
-					new File(snapshotFilename) });
+			methodWrite.invoke(null, methodFromFXImage.invoke(null, imageSnap, null), "png", new File(snapshotFilename));
 		}
 		catch (Throwable t)
 		{
@@ -281,7 +279,8 @@ public final class UserInterfaceUtil
 			this.tooltipKey = tooltipKey;
 		}
 
-		@Override protected Tooltip computeValue()
+		@Override
+		protected Tooltip computeValue()
 		{
 			return new Tooltip(RESOURCE_FACTORY.getString(tooltipKey));
 		}

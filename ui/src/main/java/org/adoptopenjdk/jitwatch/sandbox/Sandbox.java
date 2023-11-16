@@ -177,7 +177,14 @@ public class Sandbox
 
 		lastProcess = compiler;
 
-		List<String> compilationSwitches = Arrays.asList(logParser.getConfig().getExtraVMCompilationSwitches().split(" "));
+		String compilationSwitchesText = logParser.getConfig().getExtraVMCompilationSwitches().trim();
+
+		List<String> compilationSwitches = new ArrayList<>();
+
+		if (!compilationSwitchesText.isEmpty())
+		{
+			compilationSwitches.addAll(Arrays.asList(compilationSwitchesText.split("\\s+")));
+		}
 
 		boolean compiledOK = compiler.compile(compileList, buildUniqueClasspath(logParser.getConfig()), compilationSwitches, SANDBOX_CLASS_DIR.toFile(),
 				Collections.<String, String>emptyMap(), logListener);

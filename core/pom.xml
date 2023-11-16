@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chrisnewland</groupId>
         <artifactId>jitwatch-parent</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.8</version>
     </parent>
 
     <artifactId>jitwatch-core</artifactId>
@@ -20,7 +20,13 @@
             <artifactId>FreeLogJ</artifactId>
             <version>0.0.1</version>
         </dependency>
-
+<!--
+        <dependency>
+            <groupId>com.chrisnewland</groupId>
+            <artifactId>ClassAct</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

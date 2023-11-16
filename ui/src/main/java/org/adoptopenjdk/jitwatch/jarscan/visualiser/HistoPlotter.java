@@ -171,9 +171,8 @@ public class HistoPlotter extends Application
 
 				Class<?> swingFXUtils = Class.forName("javafx.embed.swing.SwingFXUtils");
 
-				Method methodFromFXImage = swingFXUtils.getMethod("fromFXImage", new Class[] {
-						javafx.scene.image.Image.class,
-						java.awt.image.BufferedImage.class });
+				Method methodFromFXImage = swingFXUtils.getMethod("fromFXImage", javafx.scene.image.Image.class,
+						java.awt.image.BufferedImage.class);
 
 				ImageIO.write((RenderedImage) methodFromFXImage.invoke(null, new Object[] {
 						imageSnap,
