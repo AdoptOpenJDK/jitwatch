@@ -136,7 +136,7 @@ public class LanguageManager
 
 	public static String getFileExtension(File file)
 	{
-		String result = null;
+		String fileExtension = null;
 
 		if (file != null)
 		{
@@ -146,11 +146,11 @@ public class LanguageManager
 
 			if (lastDotPos != -1)
 			{
-				result = filename.substring(lastDotPos + 1);
+				fileExtension = filename.substring(lastDotPos + 1);
 			}
 		}
 
-		return result;
+		return fileExtension;
 	}
 
 	public static String getLanguageFromFile(File sourceFile)

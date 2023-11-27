@@ -60,7 +60,8 @@ public class RateLimitedResizeListener implements ChangeListener<Number>
 					{						
 						try
 						{
-							Thread.sleep(1000); // wait is off UI thread
+							int timeInMillisForUIThread = 1000;
+							Thread.sleep(timeInMillisForUIThread); // wait is off UI thread
 
 							Platform.runLater(new Runnable()
 							{

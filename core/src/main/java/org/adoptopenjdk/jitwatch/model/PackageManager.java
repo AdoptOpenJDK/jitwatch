@@ -30,6 +30,8 @@ public class PackageManager
 
 	private List<MetaPackage> roots;
 
+	private String packageName;
+
 	public PackageManager()
 	{
 		clear();
@@ -73,12 +75,15 @@ public class PackageManager
 
 	public MetaPackage buildPackage(String packageName)
 	{
+		// using class variable
+		this.packageName = packageName;
+
 		if (DEBUG_LOGGING)
 		{
-			logger.debug("Building package {}", packageName);
+			logger.debug("Building package {}", this.packageName);
 		}
 		
-		String[] parts = packageName.split(S_ESCAPED_DOT);
+		String[] parts = this.packageName.split(S_ESCAPED_DOT);
 
 		StringBuilder builder = new StringBuilder();
 

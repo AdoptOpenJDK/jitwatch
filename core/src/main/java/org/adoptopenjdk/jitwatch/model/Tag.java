@@ -12,6 +12,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SLASH;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,17 +150,6 @@ public class Tag
 		return StringUtil.attributeStringToMap(attributeString);
 	}
 
-	private int getDepth(Tag tag)
-	{
-		if (tag.getParent() != null)
-		{
-			return 1 + getDepth(tag.getParent());
-		}
-		else
-		{
-			return 0;
-		}
-	}
 
 	@Override
 	public String toString()
@@ -167,73 +157,12 @@ public class Tag
 		return toString(true);
 	}
 
-	public String toString(boolean showChildren)
-	{
-		StringBuilder builder = new StringBuilder();
-
-		int myDepth = getDepth(this);
-
-		for (int i = 0; i < myDepth; i++)
-		{
-			builder.append(INDENT);
-		}
-
-		builder.append(C_OPEN_ANGLE).append(name);
-		
-		Map<String,String> attrs = getAttributes();
-
-		if (attrs.size() > 0)
-		{
-			for (Map.Entry<String, String> entry : attrs.entrySet())
-			{
-				builder.append(C_SPACE).append(entry.getKey()).append(C_EQUALS).append(C_DOUBLE_QUOTE);
-				builder.append(entry.getValue()).append(C_DOUBLE_QUOTE);
-			}
-		}
-
-		if (selfClosing)
-		{
-			builder.append(C_SLASH).append(C_CLOSE_ANGLE).append(C_NEWLINE);
-		}
-		else
-		{
-			if (showChildren && children.size() > 0)
-			{
-				builder.append(C_CLOSE_ANGLE).append(C_NEWLINE);
-
-				for (Tag child : children)
-				{
-					builder.append(child.toString());
-				}
-			}
-			else
-			{
-				builder.append(C_CLOSE_ANGLE).append(C_NEWLINE);
-
-				if (textContent != null)
-				{
-					for (int i = 0; i < myDepth; i++)
-					{
-						builder.append(INDENT);
-					}
-
-					builder.append(textContent).append(C_NEWLINE);
-				}
-			}
-
-			for (int i = 0; i < myDepth; i++)
-			{
-				builder.append(INDENT);
-			}
-
-			builder.append(C_OPEN_ANGLE).append(C_SLASH);
-			builder.append(name).append(C_CLOSE_ANGLE).append(C_NEWLINE);
-		}
-
-		return builder.toString();
+	public String toString(boolean showChildren) {
+		return XMLStringBuilder.buildXMLString(this, showChildren);
 	}
 
-    @Override
+
+	@Override
     public boolean equals(Object o) {
         if (this == o)
 		{
@@ -292,5 +221,12 @@ public class Tag
 	public void setFragment(boolean isFragment)
 	{
 		this.isFragment = isFragment;
+	}
+	int getDepth() {
+		if (parent != null) {
+			return 1 + parent.getDepth();
+		} else {
+			return 0;
+		}
 	}
 }

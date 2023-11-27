@@ -520,7 +520,8 @@ public class MakeHotSpotLog
 	{
 		try
 		{
-			Thread.sleep(500);
+			int timeInMillisToEndUIThread = 500;
+			Thread.sleep(timeInMillisToEndUIThread);
 			System.out.println("done");
 		}
 		catch (InterruptedException ie)
