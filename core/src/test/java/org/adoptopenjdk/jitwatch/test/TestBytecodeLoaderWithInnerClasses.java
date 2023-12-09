@@ -25,8 +25,8 @@ import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.process.compiler.CompilerJava;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /*
@@ -69,19 +69,19 @@ import org.junit.Test;
  */
 public class TestBytecodeLoaderWithInnerClasses
 {
-	private String classNameOuter = "TestInner";
-	private String classNameInner1 = "TestInner$Inner1";
-	private String classNameInner2 = "TestInner$Inner1$Inner2";
+	private static String classNameOuter = "TestInner";
+	private static String classNameInner1 = "TestInner$Inner1";
+	private static String classNameInner2 = "TestInner$Inner1$Inner2";
 
-	private Path pathToSourceDir;
-	private Path pathToTempClassDir;
-	private List<String> classpathLocations;
+	private static Path pathToSourceDir;
+	private static Path pathToTempClassDir;
+	private static List<String> classpathLocations;
 
-	private ClassBC classBytecodeForOuter;
-	private ClassBC classBytecodeForInner1;
-	private ClassBC classBytecodeForInner2;
+	private static ClassBC classBytecodeForOuter;
+	private static ClassBC classBytecodeForInner1;
+	private static ClassBC classBytecodeForInner2;
 
-	@Before public void setUp()
+	@BeforeClass public static void setUp()
 	{
 		try
 		{
@@ -133,7 +133,7 @@ public class TestBytecodeLoaderWithInnerClasses
 		classBytecodeForInner2 = classBytecodeListForOuter.get(2);
 	}
 
-	@After public void tearDown()
+	@AfterClass public static void tearDown()
 	{
 	}
 
