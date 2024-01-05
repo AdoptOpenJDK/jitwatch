@@ -46,7 +46,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 	}
 
 	@Override
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener)
+	public boolean execute(Path workingDir, String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public class RuntimeKotlin extends AbstractProcess implements IRuntime
 		commands.add("-jar");
 		commands.add(pathToRuntimeJar.toString());
 
-		return runCommands(commands, environment,logListener);
+		return runCommands(commands, workingDir, environment,logListener);
 	}
 
 	@Override

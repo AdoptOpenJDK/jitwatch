@@ -48,7 +48,7 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 		runtimePath = runtimePath.normalize();
 	}
 
-	@Override public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions,
+	@Override public boolean execute(Path workingDir, String className, List<String> classpathEntries, List<String> vmOptions,
 			Map<String, String> environment, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
@@ -69,7 +69,7 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 
 		commands.add(className);
 
-		return runCommands(commands, environment, logListener);
+		return runCommands(commands, workingDir, environment, logListener);
 	}
 
 	@Override public String getClassToExecute(File fileToRun)
@@ -78,8 +78,9 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 
 		try
 		{
-			String fileContents = new String(Files.readAllBytes(fileToRun.toPath()), StandardCharsets.UTF_8).trim();
+			List<String> lines = Files.readAllLines(fileToRun.toPath());
 
+			
 			if (fileContents.startsWith("package "))
 			{
 				int indexEndOfLine = fileContents.indexOf(S_NEWLINE);

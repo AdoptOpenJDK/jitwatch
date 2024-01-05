@@ -6,6 +6,7 @@
 package org.adoptopenjdk.jitwatch.process.runtime;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import org.adoptopenjdk.jitwatch.process.IExternalProcess;
 
 public interface IRuntime extends IExternalProcess
 {
-	public boolean execute(String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener);
+	public boolean execute(Path workingDir, String className, List<String> classpathEntries, List<String> vmOptions, Map<String, String> environment, ILogListener logListener);
 	
 	public String getClassToExecute(File fileToRun);
 	

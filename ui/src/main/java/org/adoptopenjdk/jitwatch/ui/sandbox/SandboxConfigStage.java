@@ -47,6 +47,8 @@ public class SandboxConfigStage extends Stage
 	private TextField txtExtraCompilationSwitches;
 	private TextField txtExtraRuntimeSwitches;
 
+	private TextField txtWorkingDir;
+
 	private CheckBox checkBoxPrintAssembly;
 	private CheckBox checkBoxDisableInlining;
 
@@ -70,7 +72,7 @@ public class SandboxConfigStage extends Stage
 
 		VBox vbox = new VBox();
 
-		scene = UserInterfaceUtil.getScene(vbox, 620, 550);
+		scene = UserInterfaceUtil.getScene(vbox, 620, 580);
 
 		setScene(scene);
 
@@ -107,6 +109,8 @@ public class SandboxConfigStage extends Stage
 
 		vbox.getChildren().add(buildHBoxExtraRuntimeSwitches());
 
+		vbox.getChildren().add(buildHBoxSandboxWorkingDir());
+
 		vbox.getChildren().add(buildHBoxButtons());
 
 		setTitle("Sandbox Configuration");
@@ -130,6 +134,8 @@ public class SandboxConfigStage extends Stage
 				setExtraVMCompilationSwitches(config);
 
 				setExtraVMRuntimeSwitches(config);
+
+				setSandboxWorkingDir(config);
 
 				config.setPrintAssembly(checkBoxPrintAssembly.isSelected());
 				config.setDisableInlining(checkBoxDisableInlining.isSelected());
@@ -175,6 +181,11 @@ public class SandboxConfigStage extends Stage
 	private void setExtraVMRuntimeSwitches(JITWatchConfig config)
 	{
 		config.setExtraVMRuntimeSwitches(txtExtraRuntimeSwitches.getText().trim());
+	}
+
+	private void setSandboxWorkingDir(JITWatchConfig config)
+	{
+		config.setSandboxWorkingDir(txtWorkingDir.getText().trim());
 	}
 
 	private void setMaximumInlineSize(JITWatchConfig config)
@@ -567,6 +578,23 @@ public class SandboxConfigStage extends Stage
 
 		hbox.getChildren().add(labelExtraRuntime);
 		hbox.getChildren().add(txtExtraRuntimeSwitches);
+
+		return hbox;
+	}
+
+	private HBox buildHBoxSandboxWorkingDir()
+	{
+		HBox hbox = new HBox();
+
+		Label labelWorkingDir = new Label("Working Dir:");
+		labelWorkingDir.setMinWidth(labelWidth);
+
+		txtWorkingDir = new TextField(config.getSandboxWorkingDir());
+		txtWorkingDir.prefWidthProperty().bind(scene.widthProperty());
+		txtWorkingDir.setAlignment(Pos.BASELINE_LEFT);
+
+		hbox.getChildren().add(labelWorkingDir);
+		hbox.getChildren().add(txtWorkingDir);
 
 		return hbox;
 	}

@@ -43,7 +43,7 @@ public class TestExecutionUtil
 		{
 			RuntimeJava executor = new RuntimeJava(System.getProperty("java.home"));
 
-			boolean success = executor.execute(DummyClassWithMain.class.getCanonicalName(), cp, options, Collections.emptyMap(),
+			boolean success = executor.execute(null, DummyClassWithMain.class.getCanonicalName(), cp, options, Collections.emptyMap(),
 					new StdLogListener());
 
 			System.out.println(executor.getOutputStream());

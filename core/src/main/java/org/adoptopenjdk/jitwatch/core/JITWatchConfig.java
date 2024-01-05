@@ -85,6 +85,8 @@ public class JITWatchConfig
 	private static final String KEY_SANDBOX_BACKGROUND_COMPILATION = SANDBOX_PREFIX + ".background.compilation";
 	private static final String KEY_SANDBOX_ON_STACK_REPLACEMENT = SANDBOX_PREFIX + ".on.stack.replacement";
 
+	private static final String KEY_SANDBOX_WORKING_DIR = SANDBOX_PREFIX + ".working.dir";
+
 	private static final String KEY_LAST_PROFILE = "last.profile";
 	private static final String KEY_NO_PROMPT_HSDIS = SANDBOX_PREFIX + ".no.prompt.hsdis";
 
@@ -115,6 +117,8 @@ public class JITWatchConfig
 	private int compileThreshold;
 	private String extraVMCompilationSwitches;
 	private String extraVMRuntimeSwitches;
+
+	private String sandboxWorkingDir;
 
 	private String profileName = S_PROFILE_DEFAULT;
 
@@ -360,6 +364,8 @@ public class JITWatchConfig
 		extraVMRuntimeSwitches = getProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_RUNTIME_SWITCHES, JITWatchConstants.S_EMPTY);
 
 		noPromptHsdis = loadBooleanFromProperty(loadedProps, KEY_NO_PROMPT_HSDIS, false);
+
+		sandboxWorkingDir = getProperty(loadedProps, KEY_SANDBOX_WORKING_DIR, JITWatchConstants.S_EMPTY);
 	}
 
 	private void loadTieredMode()
@@ -625,6 +631,8 @@ public class JITWatchConfig
 		putProperty(loadedProps, KEY_SANDBOX_EXTRA_VM_RUNTIME_SWITCHES, extraVMRuntimeSwitches);
 
 		putProperty(loadedProps, KEY_NO_PROMPT_HSDIS, Boolean.toString(noPromptHsdis));
+
+		putProperty(loadedProps, KEY_SANDBOX_WORKING_DIR, sandboxWorkingDir);
 	}
 
 	public void savePropertiesToFile()
@@ -836,6 +844,16 @@ public class JITWatchConfig
 	public void setExtraVMCompilationSwitches(String extraVMCompilationSwitches)
 	{
 		this.extraVMCompilationSwitches = extraVMCompilationSwitches;
+	}
+
+	public String getSandboxWorkingDir()
+	{
+		return sandboxWorkingDir;
+	}
+
+	public void setSandboxWorkingDir(String sandboxWorkingDir)
+	{
+		this.sandboxWorkingDir = sandboxWorkingDir;
 	}
 
 	public String getExtraVMRuntimeSwitches()

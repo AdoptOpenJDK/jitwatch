@@ -116,7 +116,7 @@ public abstract class AbstractProcess implements IExternalProcess
 		return runCommands(commands, null, environment, logListener);
 	}
 
-	protected boolean runCommands(List<String> commands, File workingDirectory, Map<String, String> environment,
+	protected boolean runCommands(List<String> commands, Path workingDirectory, Map<String, String> environment,
 			ILogListener logListener)
 	{
 		StringBuilder cmdBuilder = new StringBuilder();
@@ -153,7 +153,7 @@ public abstract class AbstractProcess implements IExternalProcess
 
 			if (workingDirectory != null)
 			{
-				pb.directory(workingDirectory);
+				pb.directory(workingDirectory.toFile());
 			}
 
 			pb.redirectError(stdErr.toFile());

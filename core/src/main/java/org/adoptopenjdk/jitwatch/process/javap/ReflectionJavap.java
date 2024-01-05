@@ -96,9 +96,9 @@ public class ReflectionJavap
 			{
 				try
 				{
-					classJavapTask.getMethod("setLog", new Class[] { OutputStream.class });
-					classJavapTask.getMethod("handleOptions", new Class[] { String[].class });
-					classJavapTask.getMethod("call", new Class[] {});
+					classJavapTask.getMethod("setLog", OutputStream.class);
+					classJavapTask.getMethod("handleOptions", String[].class);
+					classJavapTask.getMethod("call");
 
 					available = true;
 				}
@@ -133,9 +133,9 @@ public class ReflectionJavap
 			Constructor<?> constructor = classJavapTask.getDeclaredConstructor();
 			Object javapObject = constructor.newInstance();
 
-			Method methodSetLog = classJavapTask.getMethod("setLog", new Class[] { OutputStream.class });
-			Method methodHandleOptions = classJavapTask.getMethod("handleOptions", new Class[] { String[].class });
-			Method methodCall = classJavapTask.getMethod("call", new Class[] {});
+			Method methodSetLog = classJavapTask.getMethod("setLog", OutputStream.class);
+			Method methodHandleOptions = classJavapTask.getMethod("handleOptions", String[].class);
+			Method methodCall = classJavapTask.getMethod("call");
 
 			try (ByteArrayOutputStream baos = new ByteArrayOutputStream(BUFFER_SIZE))
 			{

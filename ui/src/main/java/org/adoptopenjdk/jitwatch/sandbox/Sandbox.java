@@ -354,7 +354,14 @@ public class Sandbox
 					Paths.get(DisassemblyUtil.getDisassemblerFilename()).toAbsolutePath().getParent().toString());
 		}
 
-		return runtime.execute(fqClassName, classpath, options, environment, logListener);
+		Path workingDirPath = null;
+
+		if (!logParser.getConfig().getSandboxWorkingDir().isEmpty())
+		{
+			workingDirPath = Paths.get(logParser.getConfig().getSandboxWorkingDir());
+		}
+
+		return runtime.execute(workingDirPath, fqClassName, classpath, options, environment, logListener);
 	}
 
 	private void runJITWatch() throws IOException

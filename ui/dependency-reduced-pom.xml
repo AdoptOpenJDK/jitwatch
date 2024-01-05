@@ -127,17 +127,20 @@
         <dependency>
           <groupId>org.openjfx</groupId>
           <artifactId>javafx-controls</artifactId>
-          <version>${openjfx.version}</version>
+          <version>19.0.2.1</version>
+          <scope>compile</scope>
         </dependency>
         <dependency>
           <groupId>org.openjfx</groupId>
           <artifactId>javafx-web</artifactId>
-          <version>${openjfx.version}</version>
+          <version>19.0.2.1</version>
+          <scope>compile</scope>
         </dependency>
         <dependency>
           <groupId>org.openjfx</groupId>
           <artifactId>javafx-swing</artifactId>
-          <version>${openjfx.version}</version>
+          <version>19.0.2.1</version>
+          <scope>compile</scope>
         </dependency>
       </dependencies>
     </profile>

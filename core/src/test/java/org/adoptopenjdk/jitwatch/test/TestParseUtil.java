@@ -437,7 +437,7 @@ public class TestParseUtil
 
 		String testMethodName = "unicodeMethodNameµµµµµ";
 
-		Method method = getClass().getDeclaredMethod(testMethodName, new Class[0]);
+		Method method = getClass().getDeclaredMethod(testMethodName);
 
 		MetaMethod testMethod = new MetaMethod(method, metaClass);
 
