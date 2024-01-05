@@ -48,7 +48,8 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 		runtimePath = runtimePath.normalize();
 	}
 
-	@Override public boolean execute(Path workingDir, String className, List<String> classpathEntries, List<String> vmOptions,
+	@Override
+	public boolean execute(Path workingDir, String className, List<String> classpathEntries, List<String> vmOptions,
 			Map<String, String> environment, ILogListener logListener)
 	{
 		List<String> commands = new ArrayList<>();
@@ -72,7 +73,8 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 		return runCommands(commands, workingDir, environment, logListener);
 	}
 
-	@Override public String getClassToExecute(File fileToRun)
+	@Override
+	public String getClassToExecute(File fileToRun)
 	{
 		String packageName = S_EMPTY;
 
@@ -80,14 +82,11 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 		{
 			List<String> lines = Files.readAllLines(fileToRun.toPath());
 
-			
-			if (fileContents.startsWith("package "))
+			for (String line : lines)
 			{
-				int indexEndOfLine = fileContents.indexOf(S_NEWLINE);
-
-				if (indexEndOfLine != -1)
+				if (line.startsWith("package "))
 				{
-					packageName = fileContents.substring("package".length(), indexEndOfLine).trim();
+					packageName = line.substring("package".length()).trim();
 					packageName = packageName.replace(';', '.');
 				}
 			}
@@ -100,7 +99,8 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 		return packageName + filename.substring(0, filename.length() - (VM_LANGUAGE_JAVA.length() + 1));
 	}
 
-	@Override public String getClassForTriView(File fileToRun)
+	@Override
+	public String getClassForTriView(File fileToRun)
 	{
 		return getClassToExecute(fileToRun);
 	}
