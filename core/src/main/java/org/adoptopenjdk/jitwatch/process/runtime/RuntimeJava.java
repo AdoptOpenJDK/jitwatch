@@ -88,6 +88,7 @@ public class RuntimeJava extends AbstractProcess implements IRuntime
 				{
 					packageName = line.substring("package".length()).trim();
 					packageName = packageName.replace(';', '.');
+					break;
 				}
 			}
 		}
