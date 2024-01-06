@@ -21,3 +21,4 @@ hotspot_pid*
 *.iml
 *pom.xml.versionsBackup
 junit*.properties
+*/dependency-reduced-pom.xml
