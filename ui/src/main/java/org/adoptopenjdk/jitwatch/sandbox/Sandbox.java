@@ -197,9 +197,13 @@ public class Sandbox
 
 			lastProcess = runtime;
 
+			long start = System.currentTimeMillis();
+
 			boolean executionSuccess = executeClass(fqClassNameToRun, runtime, logParser.getConfig().isSandboxIntelMode());
 
-			logListener.handleLogEntry("Execution success: " + executionSuccess);
+			long stop = System.currentTimeMillis();
+
+			logListener.handleLogEntry("Execution success: " + executionSuccess + " in " + (stop - start) + "ms");
 
 			if (executionSuccess)
 			{
