@@ -5,25 +5,25 @@ plugins {
 
 dependencies {
     implementation 'com.chrisnewland:FreeLogJ:0.0.1'
-    testCompile 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.1'
 }
 
-
-publishing {
-    publications {
-        bintray(MavenPublication) {
-            from components.java
-            groupId project.group
-            artifactId project.name
-            version project.version
-
-            artifact sourceJar {
-                classifier 'sources'
-            }
-
-            artifact javadocJar {
-                classifier 'javadoc'
-            }
-        }
-    }
-}
+//
+//publishing {
+//    publications {
+//        bintray(MavenPublication) {
+//            from components.java
+//            groupId project.group
+//            artifactId project.name
+//            version project.version
+//
+//            artifact sourceJar {
+//                classifier 'sources'
+//            }
+//
+//            artifact javadocJar {
+//                classifier 'javadoc'
+//            }
+//        }
+//    }
+//}
