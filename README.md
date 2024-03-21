@@ -4,7 +4,7 @@ JITWatch
 Log analyser and visualiser for the HotSpot JIT compiler.
 
 * Video introduction to JITWatch [video](https://www.youtube.com/watch?v=p7ipmAa9_9E)
-* Slides from my LJC lightning talk on JITWatch  [slides](http://www.chrisnewland.com/images/jitwatch/HotSpot_Profiling_Using_JITWatch.pdf)
+* Slides from my LJC lightning talk on JITWatch  [slides](https://chriswhocodes.com/LJC2022.pdf)
 
 <h3>For instructions and screenshots see the wiki</h3>
 <h3>https://github.com/AdoptOpenJDK/jitwatch/wiki</h3>
