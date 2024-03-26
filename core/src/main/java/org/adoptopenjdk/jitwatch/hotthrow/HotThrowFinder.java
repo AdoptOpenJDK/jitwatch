@@ -32,11 +32,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_UNCOMMON_TRAP
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_HOT_THROW;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_BCI;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.adoptopenjdk.jitwatch.compilation.AbstractCompilationVisitable;
 import org.adoptopenjdk.jitwatch.compilation.CompilationUtil;
@@ -233,5 +229,9 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 				break;
 			}
 		}
+	}
+
+	public Set<HotThrowResult> getResult() {
+		return result;
 	}
 }

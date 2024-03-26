@@ -165,6 +165,7 @@ public class TestCompileChain
 		assertTrue(c1.isInlined());
 	}
 
+	@Test
 	public void testJava8TieredCompilation() throws Exception
 	{
 		String[] lines = new String[] {
