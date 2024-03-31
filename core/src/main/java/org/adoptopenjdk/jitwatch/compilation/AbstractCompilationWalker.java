@@ -28,6 +28,6 @@ public abstract class AbstractCompilationWalker extends AbstractCompilationVisit
 
 	@Override
 	public void visitTag(Tag toVisit, IParseDictionary parseDictionary) throws LogParseException
-	{		
+	{
 	}
 }

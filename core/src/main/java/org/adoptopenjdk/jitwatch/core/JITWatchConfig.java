@@ -557,9 +557,11 @@ public class JITWatchConfig
 
 		if (!isSandboxProperty(result))
 		{
-			if (profileName != null && !profileName.equals(S_PROFILE_DEFAULT) && profileName.length() > 0)
+			if (profileName != null && !profileName.isEmpty())
 			{
-				result = propertyName + S_DOT + profileName;
+				if(!profileName.equals(S_PROFILE_DEFAULT)){
+					result = propertyName + S_DOT + profileName;
+				}
 			}
 		}
 

@@ -143,35 +143,7 @@ public class HeadlessInlineVisitor implements ITreeVisitable
                     
                     case TAG_INLINE_FAIL:
                     {
-                        String reason = tagAttrs.get(ATTR_REASON);
-                        Map<String, InlineFailureInfo> inlineFailureInfos = failures.get(reason);
-                   
-                        if (inlineFailureInfos == null)
-                        {
-                            inlineFailureInfos = new HashMap<>();
-                            failures.put(reason, inlineFailureInfos);
-                        }
-                     
-                        IMetaMember metaMember = ParseUtil.lookupMember(methodID, parseDictionary, model);
-                     
-                        if (metaMember == null)
-                        {
-                            logger.warn("Cannot find name of methodId: ", methodID);
-                        }
-                        else
-                        {
-                            String memberName = metaMember.toString();
-                            InlineFailureInfo inlineFailureInfo = inlineFailureInfos.get(memberName);
-                            if (inlineFailureInfo == null)
-                            {
-                                Tag methodTag = parseDictionary.getMethod(methodID);
-                                int byteCodeSize = Integer.parseInt(methodTag.getAttributes().get(ATTR_BYTES));
-                                inlineFailureInfo = new InlineFailureInfo(memberName, byteCodeSize);
-                                inlineFailureInfos.put(memberName, inlineFailureInfo);
-                            }
-                            inlineFailureInfo.addCaller(callerName);
-                            inlineFailureInfo.incFailureCount();
-                        }
+                        handleTagInlineFail(tagAttrs, failures, methodID, parseDictionary, model, callerName);
                         methodID = null;
                         
                         break;
@@ -209,6 +181,37 @@ public class HeadlessInlineVisitor implements ITreeVisitable
                         break;
                 }
             }
+        }
+    }
+    private static void handleTagInlineFail(Map<String, String> tagAttrs, Map<String, Map<String, InlineFailureInfo>> failures, String methodID, IParseDictionary parseDictionary, IReadOnlyJITDataModel model, String callerName){
+        String reason = tagAttrs.get(ATTR_REASON);
+        Map<String, InlineFailureInfo> inlineFailureInfos = failures.get(reason);
+
+        if (inlineFailureInfos == null)
+        {
+            inlineFailureInfos = new HashMap<>();
+            failures.put(reason, inlineFailureInfos);
+        }
+
+        IMetaMember metaMember = ParseUtil.lookupMember(methodID, parseDictionary, model);
+
+        if (metaMember == null)
+        {
+            logger.warn("Cannot find name of methodId: ", methodID);
+        }
+        else
+        {
+            String memberName = metaMember.toString();
+            InlineFailureInfo inlineFailureInfo = inlineFailureInfos.get(memberName);
+            if (inlineFailureInfo == null)
+            {
+                Tag methodTag = parseDictionary.getMethod(methodID);
+                int byteCodeSize = Integer.parseInt(methodTag.getAttributes().get(ATTR_BYTES));
+                inlineFailureInfo = new InlineFailureInfo(memberName, byteCodeSize);
+                inlineFailureInfos.put(memberName, inlineFailureInfo);
+            }
+            inlineFailureInfo.addCaller(callerName);
+            inlineFailureInfo.incFailureCount();
         }
     }
 

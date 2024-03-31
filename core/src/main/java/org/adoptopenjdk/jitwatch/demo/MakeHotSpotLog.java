@@ -418,33 +418,18 @@ public class MakeHotSpotLog
 
 		for (int i = 0; i < iterations; i++)
 		{
-			count = leaf1(count);
-			count = leaf2(count);
-			count = leaf3(count);
-			count = leaf4(count);
+			count = leaf(count, 1);
+			count = leaf(count, 2);
+			count = leaf(count, 3);
+			count = leaf(count, 4);
 		}
 
 		System.out.println("testLeaf: " + count);
 	}
 
-	private long leaf1(long count)
+	private long leaf(long count, int num)
 	{
-		return count + 1;
-	}
-
-	private long leaf2(long count)
-	{
-		return count + 2;
-	}
-
-	private long leaf3(long count)
-	{
-		return count + 3;
-	}
-
-	private long leaf4(long count)
-	{
-		return count + 4;
+		return count + num;
 	}
 
 	private void testToUpperCase(long iterations)
