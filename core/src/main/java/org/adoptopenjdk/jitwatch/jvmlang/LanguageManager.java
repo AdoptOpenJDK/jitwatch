@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.logger.ILogListener;
@@ -40,6 +42,7 @@ public class LanguageManager
 {
 	private JITWatchConfig config;
 	private ILogListener logListener;
+	private static final List<String> knownFileNameExtensions = Stream.of("java", "scala", "rb", "js", "kt", "groovy", "gvy", "gy", "clj").collect(Collectors.toList());
 
 	public LanguageManager(JITWatchConfig config, ILogListener logListener)
 	{
@@ -196,19 +199,7 @@ public class LanguageManager
 
 	public static List<String> getKnownFilenameExtensions()
 	{
-		List<String> result = new ArrayList<>();
-
-		result.add("java");
-		result.add("scala");
-		result.add("rb");
-		result.add("js");
-		result.add("kt");
-		result.add("groovy");
-		result.add("gvy");
-		result.add("gy");
-		result.add("clj");
-
-		return result;
+		return knownFileNameExtensions;
 	}
 
 	public static boolean isLanguageEnabled(String vmLanguage)
