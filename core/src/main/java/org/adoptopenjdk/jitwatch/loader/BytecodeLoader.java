@@ -306,6 +306,26 @@ public final class BytecodeLoader
 							classBytecode.setModuleName(moduleName);
 						}
 					}
+					else
+					{
+						String jrt = "jrt:/";
+
+						 startIndex = line.indexOf(jrt);
+
+						if (startIndex != -1)
+						{
+							startIndex += jrt.length();
+
+							int endIndex = line.indexOf('/', startIndex);
+
+							if (endIndex != -1)
+							{
+								String moduleName = line.substring(startIndex, endIndex);
+
+								classBytecode.setModuleName(moduleName);
+							}
+						}
+					}
 				}
 				else if (line.startsWith(S_BYTECODE_SOURCE_FILE))
 				{
