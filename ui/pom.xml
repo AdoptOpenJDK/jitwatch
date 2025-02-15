@@ -14,7 +14,7 @@
 	<name>JITWatch UI</name>
 
 	<properties>
-		<openjfx.version>19.0.2.1</openjfx.version> <!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
+		<openjfx.version>21.0.6</openjfx.version> <!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
 	</properties>
 
 	<profiles>
