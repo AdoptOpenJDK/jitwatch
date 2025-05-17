@@ -14,6 +14,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.SAXParser; 
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.helpers.DefaultHandler;
+
 import com.chrisnewland.freelogj.Logger;
 import com.chrisnewland.freelogj.LoggerFactory;
 
@@ -28,7 +33,7 @@ public final class AssemblyReference
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
-	private static final String ASM_REF_PATH = "/x86reference.xml";
+	private static final String ASM_REF_PATH = "/x86reference.xml"; // TODO --> support both X86 and Aarch64 instruction sets
 
 	static
 	{
@@ -46,6 +51,12 @@ public final class AssemblyReference
 			}
 			else
 			{
+				// SAX parser to anticipate for better XML parsing and less pressure on the GC 
+				SAXParserFactory assemblyRefFactory = SAXParserFactory.newInstance(); 
+				SAXParser xmlparser = factory.newSAXParser(); 
+
+
+
 				bufferedReader = new BufferedReader(new InputStreamReader(asmRefInputStream), 65536);
 
 				String currentLine = bufferedReader.readLine();
@@ -125,6 +136,74 @@ public final class AssemblyReference
 	{
 	}
 
+	private static class AssemblyReferenceHandler extends DefaultHandler
+	/* 
+	 * SAX is an event-driven system so we need a Handler that can help send these events  
+	 * 
+	 */
+	{
+		private final Map<String, String> resultMap = new HashMap<>(); 
+		private final Set<String> currentMnemonics = new HashSet<>(); 
+		private final StringBuilder txtBuffer = new StringBuilder();
+
+		private boolean insideMnem = false;
+		private boolean insideBrief = false;
+
+		@Override
+		public void startElement(String uri, String localname, String qname, Attributes attributes)
+		/* 
+		 * Overriden from the DefaultHandler class of the SAX XML API in Java that acts as you could say 
+		 * a "message" to notify Java that we want to start parsing a specific part of the XML, which, for now, 
+		 * seems to be the <mnem> and <brief> tags.
+		 * 
+		 */
+		{ 
+			if ("mnem".equalsIgnoreCase(qname))
+			{ 
+				insideMnem = true; 
+				txtBuffer.setLength(0);
+			} 
+			else if ("brief".equalsIgnoreCase(qname))
+			{ 
+				insideBrief = true; 
+				txtBuffer.setLength(0);
+			}
+		}
+
+		@Override
+		public void characters(char[] character, int start, int length)
+		{ 
+			txtBuffer.append(character, start, length);
+		}
+
+		@Override
+		public void endElem(String uri, String localname, String qname)
+		/* 
+		 * Overriden from the DefaultHandler class of the SAX XML API in Java that acts as you could say 
+		 * a "message" to notify Java that we want to end parsing a specific part of the XML, which, for now, 
+		 * only be the <mnem> and <brief> tags.
+		 * 
+		 */
+		{ 
+			if ("mnem".equalsIgnoreCase(qname))
+			{ 
+				currentMnemonics.add(txtBuffer.toString().trim().toLowerCase());
+				insideMnem = false; 
+			} 
+			else if ("brief".equalsIgnoreCase(qname))
+			{ 
+				String brief = txtBuffer.toString().trim();
+				for (String mnemonic : currentMnemonics)
+				{ 
+					mnemonicMap.computeIfAbsent(mnemonic, k -> brief);
+				}
+
+				currentMnemonics.clear();
+				insideBrief = false; 
+			}
+		}
+	}
+	
 	public static String lookupMnemonic(String mnemonic)
 	{
 		String result = mnemonicMap.get(mnemonic);
