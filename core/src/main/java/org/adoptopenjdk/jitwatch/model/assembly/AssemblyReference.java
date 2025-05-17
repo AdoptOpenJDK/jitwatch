@@ -25,12 +25,6 @@ import com.chrisnewland.freelogj.LoggerFactory;
 public final class AssemblyReference
 {
 	private static Map<String, String> mnemonicMap = new HashMap<>();
-
-	private static final String TAG_MNEM_OPEN = "<mnem>";
-	private static final String TAG_MNEM_CLOSE = "</mnem>";
-	private static final String TAG_BRIEF_OPEN = "<brief>";
-	private static final String TAG_BRIEF_CLOSE = "</brief>";
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	private static final String ASM_REF_PATH = "/x86reference.xml"; // TODO --> support both X86 and Aarch64 instruction sets
@@ -54,75 +48,21 @@ public final class AssemblyReference
 				// SAX parser to anticipate for better XML parsing and less pressure on the GC 
 				SAXParserFactory assemblyRefFactory = SAXParserFactory.newInstance(); 
 				SAXParser xmlparser = factory.newSAXParser(); 
+				
+				AssemblyReferenceHandler handler = new AssemblyReferenceHandler(); 
+				xmlparser.parse(input, handler);
 
-
-
-				bufferedReader = new BufferedReader(new InputStreamReader(asmRefInputStream), 65536);
+				mnemonicMap = handler.getMnemonicMap();
 
 				String currentLine = bufferedReader.readLine();
 
 				Set<String> mnemonics = new HashSet<>();
 
-				while (currentLine != null)
-				{
-					int openMnemPos = currentLine.indexOf(TAG_MNEM_OPEN);
-
-					if (openMnemPos != -1)
-					{
-						int closeMnemPos = currentLine.indexOf(TAG_MNEM_CLOSE);
-
-						if (closeMnemPos != -1)
-						{
-							String mnemonic = currentLine.substring(openMnemPos + TAG_MNEM_OPEN.length(), closeMnemPos)
-									.toLowerCase();
-
-							mnemonics.add(mnemonic);
-						}
-					}
-
-					int openBriefPos = currentLine.indexOf(TAG_BRIEF_OPEN);
-
-					if (openBriefPos != -1)
-					{
-						int closeBriefPos = currentLine.indexOf(TAG_BRIEF_CLOSE);
-
-						if (closeBriefPos != -1)
-						{
-							String brief = currentLine.substring(openBriefPos + TAG_BRIEF_OPEN.length(), closeBriefPos);
-
-							for (String mnemonic : mnemonics)
-							{
-								if (!mnemonicMap.containsKey(mnemonic))
-								{
-									mnemonicMap.put(mnemonic, brief);
-								}
-							}
-
-							mnemonics.clear();
-						}
-					}
-
-					currentLine = bufferedReader.readLine();
-				}
 			}
 		}
 		catch (IOException ioe)
 		{
 			LOGGER.error("Could not load assembly reference", ioe);
-		}
-		finally
-		{
-			if (bufferedReader != null)
-			{
-				try
-				{
-					bufferedReader.close();
-				}
-				catch (IOException ioe)
-				{
-					LOGGER.error("Could not close reader", ioe);
-				}
-			}
 		}
 
 		// patch up missing descriptions
