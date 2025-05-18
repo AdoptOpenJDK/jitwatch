@@ -4,6 +4,8 @@
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.util.Set;
 
 import javax.xml.parsers.SAXParser; 
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -47,10 +51,10 @@ public final class AssemblyReference
 			{
 				// SAX parser to anticipate for better XML parsing and less pressure on the GC 
 				SAXParserFactory assemblyRefFactory = SAXParserFactory.newInstance(); 
-				SAXParser xmlparser = factory.newSAXParser(); 
+				SAXParser xmlparser = assemblyRefFactory.newSAXParser();
 				
 				AssemblyReferenceHandler handler = new AssemblyReferenceHandler(); 
-				xmlparser.parse(input, handler);
+				xmlparser.parse(asmRefInputStream, handler);
 
 				mnemonicMap = handler.getMnemonicMap();
 
@@ -63,6 +67,14 @@ public final class AssemblyReference
 		catch (IOException ioe)
 		{
 			LOGGER.error("Could not load assembly reference", ioe);
+		}
+		catch (ParserConfigurationException pce)
+		{ 
+			LOGGER.error("The XML Parser suffered a malformed configuration when trying to load in the assembly reference", pce);
+		}
+		catch (SAXException saxe)
+		{ 
+			LOGGER.error("The SAX XML Parser failed when trying to load in the assembly reference", saxe);
 		}
 
 		// patch up missing descriptions
@@ -117,7 +129,7 @@ public final class AssemblyReference
 		}
 
 		@Override
-		public void endElem(String uri, String localname, String qname)
+		public void endElement(String uri, String localname, String qname)
 		/* 
 		 * Overriden from the DefaultHandler class of the SAX XML API in Java that acts as you could say 
 		 * a "message" to notify Java that we want to end parsing a specific part of the XML, which, for now, 
@@ -141,6 +153,11 @@ public final class AssemblyReference
 				currentMnemonics.clear();
 				insideBrief = false; 
 			}
+		}
+
+		public Map<String, String> getMnemonicMap() 
+		{ 
+			return mnemonicMap;
 		}
 	}
 	
