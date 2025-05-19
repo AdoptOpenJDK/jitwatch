@@ -31,12 +31,10 @@ public final class AssemblyReference
 	private static Map<String, String> mnemonicMap = new HashMap<>();
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
-	private static final String ASM_REF_PATH = "/x86reference.xml"; // TODO --> support both X86 and Aarch64 instruction sets
+	private static final String ASM_REF_PATH = "/aarch64reference.xml";
 
 	static
 	{
-		BufferedReader bufferedReader = null;
-
 		try
 		{
 			InputStream asmRefInputStream = AssemblyReference.class.getResourceAsStream(ASM_REF_PATH);
@@ -55,13 +53,9 @@ public final class AssemblyReference
 				
 				AssemblyReferenceHandler handler = new AssemblyReferenceHandler(); 
 				xmlparser.parse(asmRefInputStream, handler);
-
+				
 				mnemonicMap = handler.getMnemonicMap();
-
-				String currentLine = bufferedReader.readLine();
-
-				Set<String> mnemonics = new HashSet<>();
-
+				
 			}
 		}
 		catch (IOException ioe)
@@ -111,7 +105,7 @@ public final class AssemblyReference
 		 */
 		{ 
 			if ("mnem".equalsIgnoreCase(qname))
-			{ 
+			{
 				insideMnem = true; 
 				txtBuffer.setLength(0);
 			} 

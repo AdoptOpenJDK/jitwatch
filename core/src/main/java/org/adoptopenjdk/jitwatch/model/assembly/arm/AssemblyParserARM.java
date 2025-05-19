@@ -213,13 +213,43 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	@Override
 	public boolean isConstant(String mnemonic, String operand)
 	{
+		if (operand == null || isJump(mnemonic)) return false;
+    
+		// Match ARM-style immediates with the # prefix
+		if (architecture == Architecture.ARM_64 || architecture == Architecture.ARM_32) {
+			String value = operand.startsWith("#") ? operand.substring(1) : operand;
+			
+			return value.matches("-?[0-9]+") || value.matches(S_HEX_PREFIX + "[0-9a-fA-F]+");
+		}
+
 		return ASSEMBLY_CONSTANT.matcher(operand).find() && !isJump(mnemonic);
 	}
 
 	@Override
 	public boolean isRegister(String mnemonic, String operand)
 	{
-		return false; // TODO fixme
+		if (operand == null) return false; 
+
+		// aarch64 has X and W registers to represent the different sf options (more profound in the aarch64reference.xml file)
+		if (architecture == Architecture.ARM_64)
+		{
+			if (operand.matches("(?i)^[xw][0-9]{1,2}$")) return true; // X0-X30, W0-W30
+			if (operand.equals("sp")) return true; // Stack pointer
+			if (operand.matches("(?i)^(xzr|wzr)$")) return true; // Zero registers
+
+			// vec registers
+			if (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$")) return true;
+		}
+
+		// aarch32 has a simplified register system
+		else if (architecture == Architecture.ARM_32) 
+		{
+			if (operand.matches("(?i)^r[0-9]{1,2}$")) return true; // r0-r15
+			if (operand.matches("(?i)^(sp|lr|pc)$")) return true; // Special registers
+			
+			return false;
+		}
+		return false;
 	}
 
 	@Override
