@@ -31,7 +31,7 @@ public final class AssemblyReference
 	private static Map<String, String> mnemonicMap = new HashMap<>();
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
-	private static final String ASM_REF_PATH = "/aarch64reference.xml";
+	protected static String ASM_REF_PATH = "/x86reference.xml"; // protected so that AssemblyUtil can change the XML path based on the detected system architecture
 
 	static
 	{
@@ -55,7 +55,7 @@ public final class AssemblyReference
 				xmlparser.parse(asmRefInputStream, handler);
 				
 				mnemonicMap = handler.getMnemonicMap();
-				
+
 			}
 		}
 		catch (IOException ioe)
