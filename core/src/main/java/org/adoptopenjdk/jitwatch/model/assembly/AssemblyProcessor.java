@@ -51,6 +51,11 @@ public class AssemblyProcessor
 	{
 	}
 
+	public AssemblyProcessor(Architecture architecture)
+	{
+		this.architecture = architecture;
+	}
+
 	public List<AssemblyMethod> getAssemblyMethods()
 	{
 		return assemblyMethods;

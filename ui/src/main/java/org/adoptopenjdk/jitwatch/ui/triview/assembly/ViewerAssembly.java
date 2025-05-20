@@ -31,6 +31,9 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMRegisterType;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.AssemblyParserARM;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
@@ -213,6 +216,17 @@ public class ViewerAssembly extends Viewer
 		// http://www.x86-64.org/documentation/assembly.html
 
 		String regName = parser.extractRegisterName(input);
+
+
+		if ((parser != null) && ((AssemblyParserARM) parser).architecture == Architecture.ARM_64)
+		{
+			if (regName.startsWith("x")) {
+				builder.append("64-bit register ").append(regName);
+			}
+			else if (regName.startsWith("w")) {
+				builder.append("32-bit register ").append(regName);
+			}
+		}
 
 		if (regName.startsWith("e"))
 		{

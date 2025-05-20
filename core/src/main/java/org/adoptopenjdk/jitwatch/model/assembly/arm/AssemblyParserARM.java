@@ -38,10 +38,13 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT);
-	
+
+	public final Architecture architecture;
+
 	public AssemblyParserARM(Architecture architecture)
 	{
 		super(architecture);
+		this.architecture = architecture;
 	}
 	
 	@Override
@@ -268,6 +271,51 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	@Override
 	public String extractRegisterName(String input)
 	{
+		if (input == null) return null;
+
+		String regName = input;
+
+		int indexOpenParentheses = input.indexOf(C_OPEN_PARENTHESES);
+		int indexCloseParentheses = input.indexOf(C_CLOSE_PARENTHESES);
+
+		if (indexOpenParentheses != -1 && indexCloseParentheses != -1) regName = regName.substring(indexOpenParentheses + 1, indexCloseParentheses);
+
+		// square brackets -- common in ARM addressing modes
+		int indexOpenSquareBracket = regName.indexOf(C_OPEN_SQUARE_BRACKET);
+		int indexCloseSquareBracket = regName.indexOf(C_CLOSE_SQUARE_BRACKET);
+
+		if (indexOpenSquareBracket != -1 && indexCloseSquareBracket != -1)
+		{
+			regName = input.substring(indexOpenSquareBracket + 1, indexCloseSquareBracket).trim(); // base register first
+			if (regName.contains(",")) regName = regName.substring(0, regName.indexOf(',')).trim();
+		}
+
+		// immediate values -- obtain just the integer value
+		if (regName.startsWith("#")) regName = regName.substring(1);
+
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < regName.length(); i++)
+		{
+			char c = regName.charAt(i);
+
+			if (Character.isAlphabetic(c) || Character.isDigit(c))
+			{
+				builder.append(c);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		regName = builder.toString();
+
+		if (isRegister(null, regName))
+		{
+			return regName;
+		}
+
 		return null;
 	}
 }

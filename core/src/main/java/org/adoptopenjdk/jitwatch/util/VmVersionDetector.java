@@ -74,4 +74,20 @@ public class VmVersionDetector
 
 		return result;
 	}
+
+	public static String getArchitectureFromHotSpotTag(Tag tagVmVersion)
+	{
+		String archFromHotSpotTag = "";
+		if (tagVmVersion != null)
+		{
+			Tag tagInfo = tagVmVersion.getFirstNamedChild("info");
+
+			if (tagInfo != null)
+			{
+				String infoText = tagInfo.getTextContent().trim();
+				archFromHotSpotTag = "'" + StringUtil.getSubstringBetween(infoText, "for ", " JRE").split("-")[1] + "'";
+			}
+		}
+		return archFromHotSpotTag;
+	}
 }
