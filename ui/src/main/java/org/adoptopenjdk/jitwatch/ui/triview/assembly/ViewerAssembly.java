@@ -34,6 +34,8 @@ import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMRegisterType;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.AssemblyParserARM;
+import org.adoptopenjdk.jitwatch.model.assembly.x86.AssemblyParserX86;
+import org.adoptopenjdk.jitwatch.model.assembly.x86.X86RegisterType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.ui.main.IStageAccessProxy;
 import org.adoptopenjdk.jitwatch.ui.triview.ILineListener;
@@ -128,8 +130,7 @@ public class ViewerAssembly extends Viewer
 		StringBuilder builder = new StringBuilder();
 
 		String mnemonic = instruction.getMnemonic();
-
-		String ref = AssemblyReference.lookupMnemonic(mnemonic);
+		String ref = AssemblyReference.lookupMnemonic(mnemonic, ((AssemblyParserARM) parser).architecture);
 
 		if (ref == null)
 		{
@@ -220,71 +221,15 @@ public class ViewerAssembly extends Viewer
 
 		if ((parser != null) && ((AssemblyParserARM) parser).architecture == Architecture.ARM_64)
 		{
-			if (regName.startsWith("x")) {
-				builder.append("64-bit register ").append(regName);
-			}
-			else if (regName.startsWith("w")) {
-				builder.append("32-bit register ").append(regName);
-			}
-		}
-
-		if (regName.startsWith("e"))
-		{
-			builder.append("32-bit register ").append(regName);
-		}
-		else if (regName.startsWith("r"))
-		{
-			builder.append("64-bit register ").append(regName);
-		}
-		else if (regName.startsWith("db"))
-		{
-			builder.append("debug register ").append(regName);
-		}
-		else if (regName.startsWith("cr"))
-		{
-			builder.append("processor control register ").append(regName);
-		}
-		else if (regName.startsWith("tr"))
-		{
-			builder.append("test register ").append(regName);
-		}
-		else if (regName.startsWith("st"))
-		{
-			builder.append("floating point register stack ").append(regName);
-		}
-		else if (regName.startsWith("mm"))
-		{
-			builder.append("MMX register ").append(regName);
-		}
-		else if (regName.startsWith("xmm"))
-		{
-			builder.append("SSE register ").append(regName);
-		}
-		else if (regName.endsWith("s"))
-		{
-			builder.append("section register ").append(regName);
+			ARMRegisterType regType = ARMRegisterType.fromRegisterName(regName);
+			builder.append(regType.getDescription()).append(" ").append(regName);
+			builder.append(ARMRegisterType.getSpecialPurpose(regName));
 		}
 		else
 		{
-			builder.append("Register ").append(regName);
-		}
-
-		if (regName.endsWith("ax"))
-		{
-			builder.append(" (accumulator)");
-		}
-		else if (regName.endsWith("bp"))
-		{
-			builder.append(" (frame pointer)");
-		}
-		else if (regName.endsWith("sp"))
-		{
-			builder.append(" (stack pointer)");
-		}
-
-		if (input.startsWith("*"))
-		{
-			builder.append(" (indirect)");
+			X86RegisterType regType = X86RegisterType.fromRegisterName(regName);
+			builder.append(regType.getDescription()).append(" ").append(regName);
+			builder.append(X86RegisterType.getSpecialPurpose(regName));
 		}
 
 		return builder.toString();

@@ -53,7 +53,6 @@ public final class AssemblyUtil
 			{
 			case ARM_32:
 			case ARM_64:
-				AssemblyReference.ASM_REF_PATH = "/aarch64reference.xml";
 				parser = new AssemblyParserARM(architecture);
 				break;
 			case X86_32:
