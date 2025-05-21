@@ -72,9 +72,44 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 			}
 		}
 
+		// now let's display those directives
+		if (line.matches(S_HEX_PREFIX + "[a-f0-9]+:\\s+\\..*"))
+		{
+			// Directive with an address
+			String address = line.substring(0, line.indexOf(':'));
+			String directiveAndComment = line.substring(line.indexOf(':') + 1).trim();
+
+			String comment = null;
+			if (directiveAndComment.contains(";"))
+			{
+				comment = directiveAndComment.substring(directiveAndComment.indexOf(';')).trim();
+				directiveAndComment = directiveAndComment.substring(0, directiveAndComment.indexOf(';')).trim();
+			}
+
+			// Split directive into parts
+			String[] parts = directiveAndComment.trim().split("\\s+", 2);
+			String directive = parts[0]; // e.g., ".inst"
+			String operand = parts.length > 1 ? parts[1] : ""; // e.g., "0x8cc91c30"
+
+			long addressValue = AssemblyUtil.getValueFromAddress(address);
+
+			// Create instruction with the directive as the mnemonic
+			List<String> operands = new ArrayList<>();
+			if (!operand.isEmpty()) {
+				operands.add(operand);
+			}
+
+			instr = new AssemblyInstruction(annotation, addressValue,
+					new ArrayList<>(), directive,
+					operands, comment, labels);
+			labels.newInstruction(instr);
+			return instr;
+		}
+
 		Matcher matcher = PATTERN_ASSEMBLY_INSTRUCTION.matcher(line);
 
 		if (matcher.find())
+
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
@@ -233,24 +268,20 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	{
 		if (operand == null) return false; 
 
-		// aarch64 has X and W registers to represent the different sf options (more profound in the aarch64reference.xml file)
+		// after the first operand, we should trim additional whitespaces
+		operand = operand.trim();
+
+		// aarch64 has X and W registers to represent the different sf flag options
 		if (architecture == Architecture.ARM_64)
 		{
-			if (operand.matches("(?i)^[xw][0-9]{1,2}$")) return true; // X0-X30, W0-W30
-			if (operand.equals("sp")) return true; // Stack pointer
-			if (operand.matches("(?i)^(xzr|wzr)$")) return true; // Zero registers
-
-			// vec registers
-			if (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$")) return true;
+			// first bool expression evaluates for 32-bit & 64-bit register conventions, second bool expression evaluates the stack pointer register, third bool expression evaluates the zero register, and finally the fourth bool expression evaluates the vec registers
+			return (operand.matches("(?i)^[xw][0-9]{1,2}$")) || (operand.equals("sp")) || (operand.matches("(?i)^(xzr|wzr)$")) || (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$"));
 		}
 
 		// aarch32 has a simplified register system
 		else if (architecture == Architecture.ARM_32) 
 		{
-			if (operand.matches("(?i)^r[0-9]{1,2}$")) return true; // r0-r15
-			if (operand.matches("(?i)^(sp|lr|pc)$")) return true; // Special registers
-			
-			return false;
+			return (operand.matches("(?i)^(sp|lr|pc)$")) || (operand.matches("(?i)^r[0-9]{1,2}$")); // either r0-r15 match OR the special registers match
 		}
 		return false;
 	}
@@ -272,6 +303,9 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	public String extractRegisterName(String input)
 	{
 		if (input == null) return null;
+
+		// also remove leading/trailing spaces for the input
+		input = input.trim();
 
 		String regName = input;
 

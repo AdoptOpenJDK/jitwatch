@@ -130,7 +130,17 @@ public class ViewerAssembly extends Viewer
 		StringBuilder builder = new StringBuilder();
 
 		String mnemonic = instruction.getMnemonic();
-		String ref = AssemblyReference.lookupMnemonic(mnemonic, ((AssemblyParserARM) parser).architecture);
+		String ref = "";
+
+		Architecture arch = null;
+		if (parser instanceof AssemblyParserARM) {
+			arch = ((AssemblyParserARM) parser).architecture; // this could be either ARM64 or ARM32
+		} else if (parser instanceof AssemblyParserX86) {
+			arch = Architecture.X86_64;
+		}
+
+		// Lookup with proper architecture
+		ref = AssemblyReference.lookupMnemonic(mnemonic, arch);
 
 		if (ref == null)
 		{
@@ -162,6 +172,7 @@ public class ViewerAssembly extends Viewer
 
 	private void decodeOperand(String mnemonic, String operand, StringBuilder builder)
 	{
+		operand = operand.trim(); // trim away any leading/trailing whitespaces
 		if (parser.isRegister(mnemonic, operand))
 		{
 			builder.append(decodeRegister(operand));
