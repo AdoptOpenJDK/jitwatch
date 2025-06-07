@@ -25,6 +25,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
+import javafx.scene.input.Mnemonic;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
@@ -34,7 +35,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMRegisterType;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.AssemblyParserARM;
-import org.adoptopenjdk.jitwatch.model.assembly.arm.MnemonicInfo;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.MnemonicEntry;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.AssemblyParserX86;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.X86RegisterType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -144,7 +145,7 @@ public class ViewerAssembly extends Viewer
 		ref = AssemblyReference.lookupMnemonic(mnemonic, arch);
 
 		if (ref == null) {
-			MnemonicInfo info = AssemblyReference.lookupMnemonicInfo(mnemonic, arch);
+			MnemonicEntry info = AssemblyReference.lookupMnemonicInfo(instruction.toString(), arch);
 			if (info != null) {
 				ref = info.brief;
 			}
