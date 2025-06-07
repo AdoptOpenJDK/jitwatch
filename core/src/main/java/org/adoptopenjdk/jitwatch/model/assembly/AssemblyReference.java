@@ -4,17 +4,15 @@
  * Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
  */
 package org.adoptopenjdk.jitwatch.model.assembly;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.MnemonicInfo;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.xml.parsers.SAXParser; 
 import javax.xml.parsers.SAXParserFactory;
@@ -30,6 +28,7 @@ public final class AssemblyReference
 {
 	private static Map<String, String> x86MnemonicMap = null;
 	private static Map<String, String> aarch64MnemonicMap = null;
+	private static Map<String, MnemonicInfo> patternMapAARCH64 = new HashMap<>();
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	private static final String ASM_REF_PATH_X86 = "/x86reference.xml";
@@ -42,11 +41,14 @@ public final class AssemblyReference
 	private static class AssemblyReferenceHandler extends DefaultHandler
 	{
 		private final Map<String, String> resultMap = new HashMap<>();
+		private final Map<String, MnemonicInfo> patternMapAARCH64 = new HashMap<>();
 		private final Set<String> currentMnemonics = new HashSet<>();
 		private final StringBuilder txtBuffer = new StringBuilder();
+		private String currentBrief = "";
 
 		private boolean insideMnem = false;
 		private boolean insideBrief = false;
+		private boolean insideInsFormat = false;
 
 		@Override
 		public void startElement(String uri, String localname, String qname, Attributes attributes)
@@ -60,7 +62,12 @@ public final class AssemblyReference
 			{
 				insideBrief = true;
 				txtBuffer.setLength(0);
+			} else if ("insFormat".equalsIgnoreCase(qname))
+			{
+				insideInsFormat = true;
+				txtBuffer.setLength(0);
 			}
+
 		}
 
 		@Override
@@ -80,6 +87,7 @@ public final class AssemblyReference
 			else if ("brief".equalsIgnoreCase(qname))
 			{
 				String brief = txtBuffer.toString().trim();
+				currentBrief = brief;
 				for (String mnemonic : currentMnemonics)
 				{
 					resultMap.put(mnemonic, brief);
@@ -87,12 +95,37 @@ public final class AssemblyReference
 
 				currentMnemonics.clear();
 				insideBrief = false;
+			} else if ("insFormat".equalsIgnoreCase(qname)) {
+				String regexPattern = txtBuffer.toString().trim();
+				try {
+					Pattern compiledPattern = Pattern.compile(regexPattern);
+					for (String mnemonic : currentMnemonics) {
+						resultMap.remove(mnemonic); // Remove from simple map
+						patternMapAARCH64.computeIfAbsent(mnemonic,
+								k -> new MnemonicInfo(currentBrief, new ArrayList<>())).patterns.add(compiledPattern);
+					}
+				} catch (PatternSyntaxException pse) {
+					LOGGER.error("Invalid regex pattern for mnemonics: " + currentMnemonics + " - " + regexPattern, pse);
+				}
+				currentMnemonics.clear();
+				insideInsFormat = false;
 			}
 		}
 
 		public Map<String, String> getMnemonicMap()
 		{
+			if (!patternMapAARCH64.isEmpty()) {
+				for (String mnemonic : patternMapAARCH64.keySet()) { // redundant if we already keep track in the pattern map
+					resultMap.remove(mnemonic);
+				}
+			}
+
 			return resultMap;
+		}
+
+		public Map<String, MnemonicInfo> getPatternMapAARCH64()
+		{
+			return patternMapAARCH64;
 		}
 	}
 
@@ -116,6 +149,12 @@ public final class AssemblyReference
 	{
 		if (aarch64MnemonicMap == null) aarch64MnemonicMap = loadReferenceFile(ASM_REF_PATH_AARCH64);
 		return aarch64MnemonicMap;
+	}
+
+	private static synchronized Map<String, MnemonicInfo> getAarch64PatternMap()
+	{
+		if (patternMapAARCH64 == null) patternMapAARCH64 = loadPatternReferenceFile(ASM_REF_PATH_AARCH64);
+		return patternMapAARCH64;
 	}
 
 	private static Map<String, String> loadReferenceFile(String path)
@@ -155,6 +194,28 @@ public final class AssemblyReference
 		return new HashMap<>();
 	}
 
+	// only suitable for AARCH64 due to the various duplicate of instruction types which requires regexes for the assembly line
+	private static Map<String, MnemonicInfo> loadPatternReferenceFile(String path)
+	{
+		try {
+			InputStream asmRefInputStream = AssemblyReference.class.getResourceAsStream(path);
+			if (asmRefInputStream == null) {
+				LOGGER.error("Could not find assembly reference {}", path);
+				return new HashMap<>();
+			}
+
+			SAXParserFactory assemblyRefFactory = SAXParserFactory.newInstance();
+			SAXParser xmlparser = assemblyRefFactory.newSAXParser();
+			AssemblyReferenceHandler handler = new AssemblyReferenceHandler();
+			xmlparser.parse(asmRefInputStream, handler);
+
+			return handler.getPatternMapAARCH64();
+		} catch (IOException | ParserConfigurationException | SAXException e) {
+			LOGGER.error("Could not load assembly reference patterns " + path, e);
+			return new HashMap<>();
+		}
+	}
+
 	// now, we are tailoring this more toward a specific architecture type
 	public static String lookupMnemonic(String mnemonic, Architecture arch)
 	{
@@ -174,9 +235,9 @@ public final class AssemblyReference
 		return result;
 	}
 
-	// X86 by default -- overloaded if architecture is invalid or not supported
-	public static String lookupMnemonic(String mnemonic)
+	public static MnemonicInfo lookupMnemonicInfo(String mnemonic, Architecture arch)
 	{
-		return lookupMnemonic(mnemonic, Architecture.X86_64);
+		if (arch == Architecture.ARM_32 || arch == Architecture.ARM_64) return getAarch64PatternMap().get(mnemonic.toLowerCase());
+		return null;
 	}
 }

@@ -34,6 +34,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMRegisterType;
 import org.adoptopenjdk.jitwatch.model.assembly.arm.AssemblyParserARM;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.MnemonicInfo;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.AssemblyParserX86;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.X86RegisterType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -142,8 +143,14 @@ public class ViewerAssembly extends Viewer
 		// Lookup with proper architecture
 		ref = AssemblyReference.lookupMnemonic(mnemonic, arch);
 
-		if (ref == null)
-		{
+		if (ref == null) {
+			MnemonicInfo info = AssemblyReference.lookupMnemonicInfo(mnemonic, arch);
+			if (info != null) {
+				ref = info.brief;
+			}
+		}
+
+		if (ref == null) {
 			ref = "Unknown instruction. Assembly reference loaded?";
 		}
 
