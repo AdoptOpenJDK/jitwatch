@@ -145,7 +145,8 @@ public class ViewerAssembly extends Viewer
 		ref = AssemblyReference.lookupMnemonic(mnemonic, arch);
 
 		if (ref == null) {
-			MnemonicEntry info = AssemblyReference.lookupMnemonicInfo(instruction.toString(), arch);
+			String instructionline = instruction.toString().split(":")[1].trim().split(";")[0].trim();
+			MnemonicEntry info = AssemblyReference.lookupMnemonicInfo(instructionline, arch);
 			if (info != null) {
 				ref = info.brief;
 			}

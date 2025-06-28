@@ -28,7 +28,7 @@ public final class AssemblyReference
 {
 	private static Map<String, String> x86MnemonicMap = null;
 	private static Map<String, String> aarch64MnemonicMap = null;
-	private static Map<Pattern, MnemonicEntry> patternMapAARCH64 = new HashMap<Pattern, MnemonicEntry>();
+	private static Map<Pattern, MnemonicEntry> patternMapAARCH64 = null;
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	private static final String ASM_REF_PATH_X86 = "/x86reference.xml";
@@ -81,6 +81,7 @@ public final class AssemblyReference
 		{
 			if ("mnem".equalsIgnoreCase(qname))
 			{
+				currentMnemonics.clear();
 				currentMnemonics.add(txtBuffer.toString().trim().toLowerCase());
 				insideMnem = false;
 			}
@@ -93,7 +94,6 @@ public final class AssemblyReference
 					resultMap.put(mnemonic, brief);
 				}
 
-				currentMnemonics.clear();
 				insideBrief = false;
 			} else if ("insFormat".equalsIgnoreCase(qname)) {
 				String regexPattern = txtBuffer.toString().trim();
