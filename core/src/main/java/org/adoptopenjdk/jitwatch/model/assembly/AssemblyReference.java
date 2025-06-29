@@ -29,6 +29,7 @@ public final class AssemblyReference
 	private static Map<String, String> x86MnemonicMap = null;
 	private static Map<String, String> aarch64MnemonicMap = null;
 	private static Map<Pattern, MnemonicEntry> patternMapAARCH64 = null;
+	private static Map<String, String> aarch64DirectiveMap = null;
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssemblyReference.class);
 
 	private static final String ASM_REF_PATH_X86 = "/x86reference.xml";
@@ -42,6 +43,7 @@ public final class AssemblyReference
 	{
 		private final Map<String, String> resultMap = new HashMap<>();
 		private final Map<Pattern, MnemonicEntry> patternMapAARCH64 = new HashMap<Pattern, MnemonicEntry>();
+		private final Map<String, String> directiveMap = new HashMap<String, String>();
 		private final Set<String> currentMnemonics = new HashSet<>();
 		private final StringBuilder txtBuffer = new StringBuilder();
 		private String currentBrief = "";
@@ -67,7 +69,16 @@ public final class AssemblyReference
 				insideInsFormat = true;
 				txtBuffer.setLength(0);
 			}
+			else if ("directive".equalsIgnoreCase(qname))
+			{
+				String directiveName = attributes.getValue("name");
+				String directiveDescription = attributes.getValue("description");
 
+				if (directiveName != null && directiveDescription != null)
+				{
+					directiveMap.put(directiveName, directiveDescription);
+				}
+			}
 		}
 
 		@Override
@@ -128,6 +139,11 @@ public final class AssemblyReference
 		{
 			return patternMapAARCH64;
 		}
+
+		public Map<String, String> getDirectiveMap()
+		{
+			return directiveMap;
+		}
 	}
 
 	// defer obtaining the x86 map unless we actually need it
@@ -156,6 +172,15 @@ public final class AssemblyReference
 	{
 		if (patternMapAARCH64 == null) patternMapAARCH64 = loadPatternReferenceFile(ASM_REF_PATH_AARCH64);
 		return patternMapAARCH64;
+	}
+
+	private static synchronized Map<String, String> getAarch64DirectiveMap()
+	{
+		if (aarch64DirectiveMap == null)
+		{
+			aarch64DirectiveMap = loadDirectiveReferenceFile(ASM_REF_PATH_AARCH64);
+		}
+		return aarch64DirectiveMap;
 	}
 
 	private static Map<String, String> loadReferenceFile(String path)
@@ -217,6 +242,33 @@ public final class AssemblyReference
 		}
 	}
 
+	private static Map<String, String> loadDirectiveReferenceFile(String path)
+	{
+		try
+		{
+			InputStream asmRefInputStream = AssemblyReference.class.getResourceAsStream(path);
+
+			if (asmRefInputStream == null)
+			{
+				LOGGER.error("Could not find assembly reference {}", path);
+				return new HashMap<>();
+			}
+
+			SAXParserFactory assemblyRefFactory = SAXParserFactory.newInstance();
+			SAXParser xmlparser = assemblyRefFactory.newSAXParser();
+
+			AssemblyReferenceHandler handler = new AssemblyReferenceHandler();
+			xmlparser.parse(asmRefInputStream, handler);
+
+			return handler.getDirectiveMap();
+
+		} catch (IOException | ParserConfigurationException | SAXException e)
+		{
+			LOGGER.error("Could not load assembly directive reference " + path, e);
+			return new HashMap<>();
+		}
+	}
+
 	// now, we are tailoring this more toward a specific architecture type
 	public static String lookupMnemonic(String mnemonic, Architecture arch)
 	{
@@ -262,5 +314,15 @@ public final class AssemblyReference
 			}
 		}
 		return null;
+	}
+
+	public static String lookupDirective(String directiveName, Architecture arch)
+	{
+		if (arch == Architecture.ARM_32 || arch == Architecture.ARM_64) {
+			Map<String, String> directiveMap = getAarch64DirectiveMap();
+			return directiveMap.get(directiveName);
+		}
+
+		return null; // default if not either ARM 32 or 64
 	}
 }

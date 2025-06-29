@@ -274,8 +274,15 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 		// aarch64 has X and W registers to represent the different sf flag options
 		if (architecture == Architecture.ARM_64)
 		{
-			// first bool expression evaluates for 32-bit & 64-bit register conventions, second bool expression evaluates the stack pointer register, third bool expression evaluates the zero register, and finally the fourth bool expression evaluates the vec registers
-			return (operand.matches("(?i)^[xw][0-9]{1,2}$")) || (operand.equals("sp")) || (operand.matches("(?i)^(xzr|wzr)$")) || (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$"));
+			// simple registers that go from x0-x30 & w0-w30, sp, zero registers (x and w), and vector registers
+			if ((operand.matches("(?i)^[xw][0-9]{1,2}$")) || (operand.equals("sp")) || (operand.matches("(?i)^(xzr|wzr)$")) || (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$")))
+			{
+				return true;
+			}
+
+			if (operand.matches("(?i)^\\[.*\\]!?$") || operand.matches("(?i)^\\[.*\\],\\s*#.*$")) return true; // memory addressing in ARM assembly [reg] or [reg, #offset]
+
+			return false; // if nothing worked above
 		}
 
 		// aarch32 has a simplified register system

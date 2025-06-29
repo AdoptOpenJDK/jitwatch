@@ -135,16 +135,19 @@ public class ViewerAssembly extends Viewer
 		String ref = "";
 
 		Architecture arch = null;
-		if (parser instanceof AssemblyParserARM) {
+		if (parser instanceof AssemblyParserARM)
+		{
 			arch = ((AssemblyParserARM) parser).architecture; // this could be either ARM64 or ARM32
-		} else if (parser instanceof AssemblyParserX86) {
+		} else if (parser instanceof AssemblyParserX86)
+		{
 			arch = Architecture.X86_64;
 		}
 
 		// Lookup with proper architecture
 		ref = AssemblyReference.lookupMnemonic(mnemonic, arch);
 
-		if (ref == null) {
+		if (ref == null)
+		{
 			String instructionline = instruction.toString().split(":")[1].trim().split(";")[0].trim();
 			MnemonicEntry info = AssemblyReference.lookupMnemonicInfo(instructionline, arch);
 			if (info != null) {
@@ -152,7 +155,13 @@ public class ViewerAssembly extends Viewer
 			}
 		}
 
-		if (ref == null) {
+		if (mnemonic != null && mnemonic.startsWith("."))
+		{
+			ref = AssemblyReference.lookupDirective(mnemonic, arch);
+		}
+
+		if (ref == null)
+		{
 			ref = "Unknown instruction. Assembly reference loaded?";
 		}
 
@@ -162,7 +171,6 @@ public class ViewerAssembly extends Viewer
 
 		// AT&T = source, dest
 		// Intel = dest, source
-
 		int pos = 1;
 
 		for (String operand : operands)
