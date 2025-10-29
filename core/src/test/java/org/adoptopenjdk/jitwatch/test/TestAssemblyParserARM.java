@@ -28,252 +28,598 @@ import org.junit.Test;
 public class TestAssemblyParserARM extends AbstractAssemblyTest
 {
 	@Test
-	public void testAssemblyParse()
+	public void testAssemblyParseARM64()
 	{ 
 		testAssemblyParse(new String[]
-			{ 
-				"# {method} {0x0000ffff50917ec8} 'toNarrowWidePattern' '([I)I' in 'com/google/zxing/oned/Code39Reader'",
-				"# parm0:    c_rarg1:c_rarg1 ",
-				"                        = '[I'",
-				"#           [sp+0x40]  (sp of caller)",
-				"0x0000ffff6d685400:   nop",
-				"0x0000ffff6d685404:   sub	x9, sp, #0x14, lsl #12",
-				"0x0000ffff6d685408:   str	xzr, [x9]",
-				"0x0000ffff6d68540c:   sub	sp, sp, #0x40",
-				"0x0000ffff6d685410:   stp	x29, x30, [sp, #48]",
-				"0x0000ffff6d685414:   add	x29, sp, #0x30",
-				"0x0000ffff6d685418:   mov	x0, #0x37b0                	// #14256",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50917ec8} 'toNarrowWidePattern' '([I)I' in 'com/google/zxing/oned/Code39Reader')}",
-				"0x0000ffff6d68541c:   movk	x0, #0x5094, lsl #16",
-				"0x0000ffff6d685420:   movk	x0, #0xffff, lsl #32",
-				"0x0000ffff6d685424:   ldr	w2, [x0, #252]",
-				"0x0000ffff6d685428:   add	w2, w2, #0x2",
-				"0x0000ffff6d68542c:   str	w2, [x0, #252]",
-				"0x0000ffff6d685430:   and	w2, w2, #0x7fe",
-				"0x0000ffff6d685434:   cmp	w2, #0x0",
-				"0x0000ffff6d685438:   b.eq	0x0000ffff6d685828  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code39Reader::toNarrowWidePattern@0 (line 218)",
-				"0x0000ffff6d68543c:   ldr	w0, [x1, #12]               ; implicit exception: dispatches to 0x0000ffff6d685848",
-				"                                                            ;*arraylength {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code39Reader::toNarrowWidePattern@1 (line 218)",
-				"0x0000ffff6d685440:   movz	w2, #0x0, lsl #16           ;*ldc {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code39Reader::toNarrowWidePattern@5 (line 222)",
-				"0x0000ffff6d685444:   movz	w3, #0x0, lsl #16",
-				"0x0000ffff6d685448:   orr	w4, wzr, #0x7fffffff        ;*iload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code39Reader::toNarrowWidePattern@20 (line 223)",
-				"0x0000ffff6d68544c:   cmp	w3, w0",
-				"0x0000ffff6d685450:   mov	x5, #0x37b0                	// #14256",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50917ec8} 'toNarrowWidePattern' '([I)I' in 'com/google/zxing/oned/Code39Reader')}",
-				"0x0000ffff6d685454:   movk	x5, #0x5094, lsl #16",
-				"0x0000ffff6d685458:   movk	x5, #0xffff, lsl #32",
-				"0x0000ffff6d68545c:   mov	x8, #0x140                 	// #320",
-				"0x0000ffff6d685460:   mov	x9, #0x150                 	// #336",
-				"0x0000ffff6d685464:   csel	x6, x8, x9, ge  // ge = tcont",
-				"0x0000ffff6d685468:   ldr	x7, [x5, x6]",
-				"0x0000ffff6d68546c:   add	x7, x7, #0x1",
-				"0x0000ffff6d685470:   str	x7, [x5, x6]",
-				"0x0000ffff6d685474:   b.ge	0x0000ffff6d685530  // b.tcont;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code39Reader::toNarrowWidePattern@24 (line 223)"
+			{
+					"[Entry Point]",
+					"  # {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword'",
+					"  #           [sp+0x40]  (sp of caller)",
+					"  0x0000ffff6d68c3c0:   ldr	w8, [x1, #8]",
+					"  0x0000ffff6d68c3c4:   cmp	w9, w8",
+					"  0x0000ffff6d68c3c8:   b.eq	0x0000ffff6d68c400  // b.none",
+					"  0x0000ffff6d68c3cc:   b	0x0000ffff74acac00          ;   {runtime_call ic_miss_stub}",
+					"  0x0000ffff6d68c3d0:   nop",
+					"  0x0000ffff6d68c3d4:   nop",
+					"  0x0000ffff6d68c3d8:   nop",
+					"  0x0000ffff6d68c3dc:   nop",
+					"  0x0000ffff6d68c3e0:   nop",
+					"  0x0000ffff6d68c3e4:   nop",
+					"  0x0000ffff6d68c3e8:   nop",
+					"  0x0000ffff6d68c3ec:   nop",
+					"  0x0000ffff6d68c3f0:   nop",
+					"  0x0000ffff6d68c3f4:   nop",
+					"  0x0000ffff6d68c3f8:   nop",
+					"  0x0000ffff6d68c3fc:   nop",
+					"[Verified Entry Point]",
+					"  0x0000ffff6d68c400:   nop",
+					"  0x0000ffff6d68c404:   sub	x9, sp, #0x14, lsl #12",
+					"  0x0000ffff6d68c408:   str	xzr, [x9]",
+					"  0x0000ffff6d68c40c:   sub	sp, sp, #0x40",
+					"  0x0000ffff6d68c410:   stp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c414:   add	x29, sp, #0x30",
+					"  0x0000ffff6d68c418:   mov	x2, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c41c:   movk	x2, #0x5097, lsl #16",
+					"  0x0000ffff6d68c420:   movk	x2, #0xffff, lsl #32",
+					"  0x0000ffff6d68c424:   ldr	w0, [x2, #252]",
+					"  0x0000ffff6d68c428:   add	w0, w0, #0x2",
+					"  0x0000ffff6d68c42c:   str	w0, [x2, #252]",
+					"  0x0000ffff6d68c430:   and	w0, w0, #0x7fe",
+					"  0x0000ffff6d68c434:   cmp	w0, #0x0",
+					"  0x0000ffff6d68c438:   b.eq	0x0000ffff6d68c47c  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@0 (line 40)",
+					"  0x0000ffff6d68c43c:   ldr	w2, [x1, #28]               ;*getfield rowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@2 (line 40)",
+					"  0x0000ffff6d68c440:   mov	x0, x1",
+					"  0x0000ffff6d68c444:   mov	x3, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c448:   movk	x3, #0x5097, lsl #16",
+					"  0x0000ffff6d68c44c:   movk	x3, #0xffff, lsl #32",
+					"  0x0000ffff6d68c450:   ldr	x8, [x3, #320]",
+					"  0x0000ffff6d68c454:   add	x8, x8, #0x1",
+					"  0x0000ffff6d68c458:   str	x8, [x3, #320]",
+					"  0x0000ffff6d68c45c:   bl	0x0000ffff74acaf00          ; ImmutableOopMap {}",
+					"                                                            ;*invokevirtual isValidRowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@5 (line 40)",
+					"                                                            ;   {optimized virtual_call}",
+					"  0x0000ffff6d68c460:   and	w0, w0, #0x1",
+					"  0x0000ffff6d68c464:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c468:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c46c:   ldr	x8, [x28, #832]             ;   {poll_return}",
+					"  0x0000ffff6d68c470:   cmp	sp, x8",
+					"  0x0000ffff6d68c474:   b.hi	0x0000ffff6d68c49c  // b.pmore",
+					"  0x0000ffff6d68c478:   ret",
+					"  0x0000ffff6d68c47c:   mov	x8, #0x7208                	// #29192",
+					"                                                            ;   {metadata({method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c480:   movk	x8, #0x5096, lsl #16",
+					"  0x0000ffff6d68c484:   movk	x8, #0xffff, lsl #32",
+					"  0x0000ffff6d68c488:   str	x8, [sp, #8]",
+					"  0x0000ffff6d68c48c:   mov	x8, #0xffffffffffffffff    	// #-1",
+					"  0x0000ffff6d68c490:   str	x8, [sp]",
+					"  0x0000ffff6d68c494:   bl	0x0000ffff74b83000          ; ImmutableOopMap {c_rarg1=Oop }",
+					"                                                            ;*synchronization entry",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@-1 (line 40)",
+					"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
+					"  0x0000ffff6d68c498:   b	0x0000ffff6d68c43c",
+					"  0x0000ffff6d68c49c:   adr	x8, 0x0000ffff6d68c46c      ;   {internal_word}",
+					"  0x0000ffff6d68c4a0:   str	x8, [x28, #856]",
+					"  0x0000ffff6d68c4a4:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}",
+					"  0x0000ffff6d68c4a8:   nop",
+					"  0x0000ffff6d68c4ac:   nop",
+					"  0x0000ffff6d68c4b0:   ldr	x0, [x28, #976]",
+					"  0x0000ffff6d68c4b4:   str	xzr, [x28, #976]",
+					"  0x0000ffff6d68c4b8:   str	xzr, [x28, #984]",
+					"  0x0000ffff6d68c4bc:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c4c0:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c4c4:   b	0x0000ffff74b7b380          ;   {runtime_call unwind_exception Runtime1 stub}",
+					"  0x0000ffff6d68c4c8:   udf	#0",
+					"  0x0000ffff6d68c4cc:   udf	#0",
+					"  0x0000ffff6d68c4d0:   udf	#0",
+					"  0x0000ffff6d68c4d4:   udf	#0",
+					"  0x0000ffff6d68c4d8:   udf	#0",
+					"  0x0000ffff6d68c4dc:   udf	#0",
+					"  0x0000ffff6d68c4e0:   udf	#0",
+					"  0x0000ffff6d68c4e4:   udf	#0",
+					"  0x0000ffff6d68c4e8:   udf	#0",
+					"  0x0000ffff6d68c4ec:   udf	#0",
+					"  0x0000ffff6d68c4f0:   udf	#0",
+					"  0x0000ffff6d68c4f4:   udf	#0",
+					"  0x0000ffff6d68c4f8:   udf	#0",
+					"  0x0000ffff6d68c4fc:   udf	#0",
+					"[Stub Code]",
+					"  0x0000ffff6d68c500:   isb                                 ;   {no_reloc}",
+					"  0x0000ffff6d68c504:   mov	x12, #0x0                   	// #0",
+					"                                                            ;   {metadata(NULL)}",
+					"  0x0000ffff6d68c508:   movk	x12, #0x0, lsl #16",
+					"  0x0000ffff6d68c50c:   movk	x12, #0x0, lsl #32",
+					"  0x0000ffff6d68c510:   mov	x8, #0x0                   	// #0",
+					"  0x0000ffff6d68c514:   movk	x8, #0x0, lsl #16",
+					"  0x0000ffff6d68c518:   movk	x8, #0x0, lsl #32",
+					"  0x0000ffff6d68c51c:   br	x8",
+					"  0x0000ffff6d68c520:   ldr	x8, 0x0000ffff6d68c528      ;   {trampoline_stub}",
+					"  0x0000ffff6d68c524:   br	x8",
+					"  0x0000ffff6d68c528:   .inst	0x74acaf00 ; undefined",
+					"  0x0000ffff6d68c52c:   udf	#65535",
+					"[Exception Handler]",
+					"  0x0000ffff6d68c530:   bl	0x0000ffff74b7e080          ;   {runtime_call handle_exception_from_callee Runtime1 stub}",
+					"  0x0000ffff6d68c534:   dcps1	#0xdeae",
+					"  0x0000ffff6d68c538:   .inst	0x8cc91c30 ; undefined",
+					"  0x0000ffff6d68c53c:   udf	#65535",
+					"[Deopt Handler Code]",
+					"  0x0000ffff6d68c540:   adr	x30, 0x0000ffff6d68c540",
+					"  0x0000ffff6d68c544:   b	0x0000ffff74ad1540          ;   {runtime_call DeoptimizationBlob}"
 			}
 		);
 	}
 
 	@Test 
-	public void testAssemblyParseBrokenHeader()
+	public void testAssemblyParseARM64BrokenHeader()
 	{ 
 		testAssemblyParse(new String[] 
 			{
-				"# {method} {0x0000ffff50924fc0} 'isFinderPattern' '([I)Z' in 'com/google/zxing/oned/rss/AbstractRSSReader'",
-				"# parm0:    c_rarg1:c_rarg1 ",
-				"                        = '[I'",
-				"#           [sp+0x40]  (sp of caller)",
-				"0x0000ffff6d6830c0:   nop                                 ;   {no_reloc}",
-				"0x0000ffff6d6830c4:   sub	x9, sp, #0x14, lsl #12",
-				"0x0000ffff6d6830c8:   str	xzr, [x9]",
-				"0x0000ffff6d6830cc:   sub	sp, sp, #0x40",
-				"0x0000ffff6d6830d0:   stp	x29, x30, [sp, #48]",
-				"0x0000ffff6d6830d4:   add	x29, sp, #0x30",
-				"0x0000ffff6d6830d8:   mov	x0, #0x2e98                	// #11928",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50924fc0} 'isFinderPattern' '([I)Z' in 'com/google/zxing/oned/rss/AbstractRSSReader')}",
-				"0x0000ffff6d6830dc:   movk	x0, #0x5094, lsl #16",
-				"0x0000ffff6d6830e0:   movk	x0, #0xffff, lsl #32",
-				"0x0000ffff6d6830e4:   ldr	w2, [x0, #252]",
-				"0x0000ffff6d6830e8:   add	w2, w2, #0x2",
-				"0x0000ffff6d6830ec:   str	w2, [x0, #252]",
-				"0x0000ffff6d6830f0:   and	w2, w2, #0x7fe",
-				"0x0000ffff6d6830f4:   cmp	w2, #0x0",
-				"0x0000ffff6d6830f8:   b.eq	0x0000ffff6d683358  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.rss.AbstractRSSReader::isFinderPattern@0 (line 123)",
-				"0x0000ffff6d6830fc:   ldr	w0, [x1, #12]               ; implicit exception: dispatches to 0x0000ffff6d683378",
-				"0x0000ffff6d683100:   cmp	w0, #0x0",
-				"0x0000ffff6d683104:   b.ls	0x0000ffff6d68337c  // b.plast",
-				"0x0000ffff6d683108:   ldp	w2, w0, [x1, #12]",
-				"0x0000ffff6d68310c:   cmp	w2, #0x1",
-				"0x0000ffff6d683110:   b.ls	0x0000ffff6d683394  // b.plast",
-				"0x0000ffff6d683114:   ldr	w2, [x1, #20]               ;*iaload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.rss.AbstractRSSReader::isFinderPattern@5 (line 123)",
-				"0x0000ffff6d683118:   add	w0, w0, w2",
-				"0x0000ffff6d68311c:   ldr	w2, [x1, #12]",
-				"0x0000ffff6d683120:   cmp	w2, #0x2",
-				"0x0000ffff6d683124:   b.ls	0x0000ffff6d6833ac  // b.plast",
-				"0x0000ffff6d683128:   ldr	w2, [x1, #24]               ;*iaload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.rss.AbstractRSSReader::isFinderPattern@11 (line 124)",
-				"0x0000ffff6d68312c:   ldr	w3, [x1, #12]",
-				"0x0000ffff6d683130:   cmp	w3, #0x3",
-				"0x0000ffff6d683134:   b.ls	0x0000ffff6d6833c4  // b.plast",
-				"0x0000ffff6d683138:   ldr	w3, [x1, #28]               ;*iaload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.rss.AbstractRSSReader::isFinderPattern@15 (line 124)",
-				"0x0000ffff6d68313c:   add	w2, w2, w0",
-				"0x0000ffff6d683140:   add	w2, w2, w3",
-				"0x0000ffff6d683144:   scvtf	s0, w0",
-				"0x0000ffff6d683148:   scvtf	s1, w2",
-				"0x0000ffff6d68314c:   fdiv	s2, s0, s1",
-				"0x0000ffff6d683150:   adr	x8, 0x0000ffff6d683080      ;   {section_word}",
-				"0x0000ffff6d683154:   ldr	s0, [x8]",
-				"0x0000ffff6d683158:   fcmp	s2, s0",
-				"0x0000ffff6d68315c:   cset	x0, ne  // ne = any",
-				"0x0000ffff6d683160:   cneg	x0, x0, lt  // lt = tstop   ;*fcmpl {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.rss.AbstractRSSReader::isFinderPattern@27 (line 126)",
-				"0x0000ffff6d683164:   cmp	w0, #0x0",
-				"0x0000ffff6d683168:   mov	x0, #0x2e98                	// #11928",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50924fc0} 'isFinderPattern' '([I)Z' in 'com/google/zxing/oned/rss/AbstractRSSReader')}"
+					"[Entry Point]",
+					"  # {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/",
+					"pdf417/decoder/Codeword'",
+					"  #           [sp+0x40]  (sp of caller)",
+					"  0x0000ffff6d68c3c0:   ldr	w8, [x1, #8]",
+					"  0x0000ffff6d68c3c4:   cmp	w9, w8",
+					"  0x0000ffff6d68c3c8:   b.eq	0x0000ffff6d68c400  // b.none",
+					"  0x0000ffff6d68c3cc:   b	0x0000ffff74acac00          ;   {runtime_call ic_miss_stub}",
+					"  0x0000ffff6d68c3d0:   nop",
+					"  0x0000ffff6d68c3d4:   nop",
+					"  0x0000ffff6d68c3d8:   nop",
+					"  0x0000ffff6d68c3dc:   nop",
+					"  0x0000ffff6d68c3e0:   nop",
+					"  0x0000ffff6d68c3e4:   nop",
+					"  0x0000ffff6d68c3e8:   nop",
+					"  0x0000ffff6d68c3ec:   nop",
+					"  0x0000ffff6d68c3f0:   nop",
+					"  0x0000ffff6d68c3f4:   nop",
+					"  0x0000ffff6d68c3f8:   nop",
+					"  0x0000ffff6d68c3fc:   nop",
+					"[Verified Entry Point]",
+					"  0x0000ffff6d68c400:   nop",
+					"  0x0000ffff6d68c404:   sub	x9, sp, #0x14, lsl #12",
+					"  0x0000ffff6d68c408:   str	xzr, [x9]",
+					"  0x0000ffff6d68c40c:   sub	sp, sp, #0x40",
+					"  0x0000ffff6d68c410:   stp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c414:   add	x29, sp, #0x30",
+					"  0x0000ffff6d68c418:   mov	x2, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c41c:   movk	x2, #0x5097, lsl #16",
+					"  0x0000ffff6d68c420:   movk	x2, #0xffff, lsl #32",
+					"  0x0000ffff6d68c424:   ldr	w0, [x2, #252]",
+					"  0x0000ffff6d68c428:   add	w0, w0, #0x2",
+					"  0x0000ffff6d68c42c:   str	w0, [x2, #252]",
+					"  0x0000ffff6d68c430:   and	w0, w0, #0x7fe",
+					"  0x0000ffff6d68c434:   cmp	w0, #0x0",
+					"  0x0000ffff6d68c438:   b.eq	0x0000ffff6d68c47c  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@0 (line 40)",
+					"  0x0000ffff6d68c43c:   ldr	w2, [x1, #28]               ;*getfield rowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@2 (line 40)",
+					"  0x0000ffff6d68c440:   mov	x0, x1",
+					"  0x0000ffff6d68c444:   mov	x3, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c448:   movk	x3, #0x5097, lsl #16",
+					"  0x0000ffff6d68c44c:   movk	x3, #0xffff, lsl #32",
+					"  0x0000ffff6d68c450:   ldr	x8, [x3, #320]",
+					"  0x0000ffff6d68c454:   add	x8, x8, #0x1",
+					"  0x0000ffff6d68c458:   str	x8, [x3, #320]",
+					"  0x0000ffff6d68c45c:   bl	0x0000ffff74acaf00          ; ImmutableOopMap {}",
+					"                                                            ;*invokevirtual isValidRowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@5 (line 40)",
+					"                                                            ;   {optimized virtual_call}",
+					"  0x0000ffff6d68c460:   and	w0, w0, #0x1",
+					"  0x0000ffff6d68c464:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c468:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c46c:   ldr	x8, [x28, #832]             ;   {poll_return}",
+					"  0x0000ffff6d68c470:   cmp	sp, x8",
+					"  0x0000ffff6d68c474:   b.hi	0x0000ffff6d68c49c  // b.pmore",
+					"  0x0000ffff6d68c478:   ret",
+					"  0x0000ffff6d68c47c:   mov	x8, #0x7208                	// #29192",
+					"                                                            ;   {metadata({method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c480:   movk	x8, #0x5096, lsl #16",
+					"  0x0000ffff6d68c484:   movk	x8, #0xffff, lsl #32",
+					"  0x0000ffff6d68c488:   str	x8, [sp, #8]",
+					"  0x0000ffff6d68c48c:   mov	x8, #0xffffffffffffffff    	// #-1",
+					"  0x0000ffff6d68c490:   str	x8, [sp]",
+					"  0x0000ffff6d68c494:   bl	0x0000ffff74b83000          ; ImmutableOopMap {c_rarg1=Oop }",
+					"                                                            ;*synchronization entry",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@-1 (line 40)",
+					"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
+					"  0x0000ffff6d68c498:   b	0x0000ffff6d68c43c",
+					"  0x0000ffff6d68c49c:   adr	x8, 0x0000ffff6d68c46c      ;   {internal_word}",
+					"  0x0000ffff6d68c4a0:   str	x8, [x28, #856]",
+					"  0x0000ffff6d68c4a4:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}",
+					"  0x0000ffff6d68c4a8:   nop",
+					"  0x0000ffff6d68c4ac:   nop",
+					"  0x0000ffff6d68c4b0:   ldr	x0, [x28, #976]",
+					"  0x0000ffff6d68c4b4:   str	xzr, [x28, #976]",
+					"  0x0000ffff6d68c4b8:   str	xzr, [x28, #984]",
+					"  0x0000ffff6d68c4bc:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c4c0:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c4c4:   b	0x0000ffff74b7b380          ;   {runtime_call unwind_exception Runtime1 stub}",
+					"  0x0000ffff6d68c4c8:   udf	#0",
+					"  0x0000ffff6d68c4cc:   udf	#0",
+					"  0x0000ffff6d68c4d0:   udf	#0",
+					"  0x0000ffff6d68c4d4:   udf	#0",
+					"  0x0000ffff6d68c4d8:   udf	#0",
+					"  0x0000ffff6d68c4dc:   udf	#0",
+					"  0x0000ffff6d68c4e0:   udf	#0",
+					"  0x0000ffff6d68c4e4:   udf	#0",
+					"  0x0000ffff6d68c4e8:   udf	#0",
+					"  0x0000ffff6d68c4ec:   udf	#0",
+					"  0x0000ffff6d68c4f0:   udf	#0",
+					"  0x0000ffff6d68c4f4:   udf	#0",
+					"  0x0000ffff6d68c4f8:   udf	#0",
+					"  0x0000ffff6d68c4fc:   udf	#0",
+					"[Stub Code]",
+					"  0x0000ffff6d68c500:   isb                                 ;   {no_reloc}",
+					"  0x0000ffff6d68c504:   mov	x12, #0x0                   	// #0",
+					"                                                            ;   {metadata(NULL)}",
+					"  0x0000ffff6d68c508:   movk	x12, #0x0, lsl #16",
+					"  0x0000ffff6d68c50c:   movk	x12, #0x0, lsl #32",
+					"  0x0000ffff6d68c510:   mov	x8, #0x0                   	// #0",
+					"  0x0000ffff6d68c514:   movk	x8, #0x0, lsl #16",
+					"  0x0000ffff6d68c518:   movk	x8, #0x0, lsl #32",
+					"  0x0000ffff6d68c51c:   br	x8",
+					"  0x0000ffff6d68c520:   ldr	x8, 0x0000ffff6d68c528      ;   {trampoline_stub}",
+					"  0x0000ffff6d68c524:   br	x8",
+					"  0x0000ffff6d68c528:   .inst	0x74acaf00 ; undefined",
+					"  0x0000ffff6d68c52c:   udf	#65535",
+					"[Exception Handler]",
+					"  0x0000ffff6d68c530:   bl	0x0000ffff74b7e080          ;   {runtime_call handle_exception_from_callee Runtime1 stub}",
+					"  0x0000ffff6d68c534:   dcps1	#0xdeae",
+					"  0x0000ffff6d68c538:   .inst	0x8cc91c30 ; undefined",
+					"  0x0000ffff6d68c53c:   udf	#65535",
+					"[Deopt Handler Code]",
+					"  0x0000ffff6d68c540:   adr	x30, 0x0000ffff6d68c540",
+					"  0x0000ffff6d68c544:   b	0x0000ffff74ad1540          ;   {runtime_call DeoptimizationBlob}"
 			}
 		);
 	}
 
 	@Test 
-	public void testAssemblyParseBrokenInsn()
+	public void testAssemblyParseARM64BrokenInsn()
 	{ 
 		testAssemblyParse(
-			new String[]{ 
-				"# {method} {0x0000ffff50919c00} 'toPattern' '([I)I' in 'com/google/zxing/oned/Code93Reader'",
-				"# parm0:    c_rarg1:c_rarg1 ",
-				"                        = '[I'",
-				"#           [sp+0x50]  (sp of caller)",
-				"0x0000ffff6d685f80:   nop",
-				"0x0000ffff6d685f84:   sub	x9, sp, #0x14, lsl #12",
-				"0x0000ffff6d685f88:   str	xzr, [x9]",
-				"0x0000ffff6d685f8c:   sub	sp, sp, #0x50",
-				"0x0000ffff6d685f90:   stp	x29, x30, [sp, #64]",
-				"0x0000ffff6d685f94:   add	x29, sp, #0x40",
-				"0x0000ffff6d685f98:   str	x1, [sp, #48]",
-				"0x0000ffff6d685f9c:   mov	x0, #0x3c80                	// #15488",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50919c00} 'toPattern' '([I)I' in 'com/google/zxing/oned/Code93Reader')}",
-				"0x0000ffff6d685fa0:   movk	x0, #0x5094, lsl #16",
-				"0x0000ffff6d685fa4:   movk	x0, #0xffff, lsl #32",
-				"0x0000ffff6d685fa8:   ldr	w2, [x0, #252]",
-				"0x0000ffff6d685fac:   add	w2, w2, #0x2",
-				"0x0000ffff6d685fb0:   str	w2, [x0, #252]",
-				"0x0000ffff6d685fb4:   and	w2, w2, #0x7fe",
-				"0x0000ffff6d685fb8:   cmp	w2, #0x0",
-				"0x0000ffff6d685fbc:   b.eq	0x0000ffff6d6862b8  // b.none;*iconst_0 {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code93Reader::toPattern@0 (line 169)",
-				"0x0000ffff6d685fc0:   ldr	w0, [x1, #12]               ; implicit exception: dispatches to 0x0000ffff6d6862d8",
-				"                                                            ;*arraylength {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code93Reader::toPattern@5 (line 170)",
-				"0x0000ffff6d685fc4:   str	w0, [sp, #40]",
-				"0x0000ffff6d685fc8:   movz	w2, #0x0, lsl #16",
-				"0x0000ffff6d685fcc:   movz	w3, #0x0, lsl #16",
-				"0x0000ffff6d685fd0:   b	0x0000ffff6d686030          ;*iload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code93Reader::toPattern@10 (line 170)",
-				"0x0000ffff6d685fd4:   sxtw	x4, w2",
-				"0x0000ffff6d685fd8:   lsl	x4, x4, #2",
-				"0x0000ffff6d685fdc:   add	x4, x4, #0x10",
-				"0x0000ffff6d685fe0:   ldr	w4, [x1, x4]                ;*iaload {reexecute=0 rethrow=0 return_oop=0}",
-				"                                                            ; - com.google.zxing.oned.Code93Reader::toPattern@19 (line 170)",
-				"0x0000ffff6d685fe4:   add	w3, w4, w3",
-				"0x0000ffff6d685fe8:   add	w2, w2, #0x1",
-				"0x0000ffff6d685fec:   mov	x4, #0x3c80                	// #15488",
-				"                                                            ;   {metadata(method data for {method} {0x0000ffff50919c00} 'toPattern' '([I)I' in 'com/google/zxing/oned/Code93Reader')}",
-				"0x0000ffff6d685ff0:   movk	x4, #0x5094, lsl #16",
-				"0x0000ffff6d685ff4:   movk	x4, #0xffff, lsl #32",
-				"0x0000ffff6d685ff8:   ldr	w5, [x4, #256]",
-				"0x0000ffff6d685ffc:   add	w5, w5, #0x2",
-				"0x0000ffff6d686000:   str	w5, [x4, #256]",
-				"0x0000ffff6d686004:   and	w5, w5, #0x3ffe"
+			new String[]{
+					"[Entry Point]",
+					"  # {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword'",
+					"  #           [sp+0x40]  (sp of caller)",
+					"  0x0000ffff6d68c3c0:   ldr	w8, [x1, #8]",
+					"  0x0000ffff6d68c3c4:   cmp	w9, w8",
+					"  0x0000ffff6d68c3c8:   b.eq	0x0000ffff6d68c400  // b.none",
+					"  0x0000ffff6d68c3cc:   b	0x0000ffff74acac00          ;   {runtime_call ic_miss_stub}",
+					"  0x0000ffff6d68c3d0:   nop",
+					"  0x0000ffff6d68c3d4:   nop",
+					"  0x0000ffff6d68c3d8:   nop",
+					"  0x0000ffff6d68c3dc:   nop",
+					"  0x0000ffff6d68c3e0:   nop",
+					"  0x0000ffff6d68c3e4:   nop",
+					"  0x0000ffff6d68c3e8:   nop",
+					"  0x0000ffff6d68c3ec:   nop",
+					"  0x0000ffff6d68c3f0:   nop",
+					"  0x0000ffff6d68c3f4:   nop",
+					"  0x0000ffff6d68c3f8:   nop",
+					"  0x0000ffff6d68c3fc:   nop",
+					"[Verified Entry Point]",
+					"  0x0000ffff6d68c400:   nop",
+					"  0x0000ffff6d68c404:   sub	x9, sp, #0x14, lsl #12",
+					"  0x0000ffff6d68c408:   str	x0, [xzr, #0x1000000]",
+					"  0x0000ffff6d68c40c:   sub	sp, sp, #0x40",
+					"  0x0000ffff6d68c410:   stp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c414:   add	x29, sp, #0x30",
+					"  0x0000ffff6d68c418:   mov	x2, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c41c:   movk	x2, #0x5097, lsl #16",
+					"  0x0000ffff6d68c420:   movk	x2, #0xffff, lsl #32",
+					"  0x0000ffff6d68c424:   ldr	w0, [x2, #252]",
+					"  0x0000ffff6d68c428:   add	w0, w0, #0x2",
+					"  0x0000ffff6d68c42c:   str	w0, [x2, #252]",
+					"  0x0000ffff6d68c430:   and	w0, w0, #0x7fe",
+					"  0x0000ffff6d68c434:   cmp	w0, #0x0",
+					"  0x0000ffff6d68c438:   b.eq	0x0000ffff6d68c47c  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@0 (line 40)",
+					"  0x0000ffff6d68c43c:   ldr	w2, [x1, #28]               ;*getfield rowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@2 (line 40)",
+					"  0x0000ffff6d68c440:   mov	x0, x1",
+					"  0x0000ffff6d68c444:   mov	x3, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c448:   movk	x3, #0x5097, lsl #16",
+					"  0x0000ffff6d68c44c:   movk	x3, #0xffff, lsl #32",
+					"  0x0000ffff6d68c450:   ldr	x8, [x3, #320]",
+					"  0x0000ffff6d68c454:   add	x8, x8, #0x1",
+					"  0x0000ffff6d68c458:   str	x8, [x3, #320]",
+					"  0x0000ffff6d68c45c:   bl	0x0000ffff74acaf00          ; ImmutableOopMap {}",
+					"                                                            ;*invokevirtual isValidRowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@5 (line 40)",
+					"                                                            ;   {optimized virtual_call}",
+					"  0x0000ffff6d68c460:   and	w0, w0, #0x1",
+					"  0x0000ffff6d68c464:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c468:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c46c:   ldr	x8, [x28, #832]             ;   {poll_return}",
+					"  0x0000ffff6d68c470:   cmp	sp, x8",
+					"  0x0000ffff6d68c474:   b.hi	0x0000ffff6d68c49c  // b.pmore",
+					"  0x0000ffff6d68c478:   ret",
+					"  0x0000ffff6d68c47c:   mov	x8, #0x7208                	// #29192",
+					"                                                            ;   {metadata({method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c480:   movk	x8, #0x5096, lsl #16",
+					"  0x0000ffff6d68c484:   movk	x8, #0xffff, lsl #32",
+					"  0x0000ffff6d68c488:   str	x8, [sp, #8]",
+					"  0x0000ffff6d68c48c:   mov	x8, #0xffffffffffffffff    	// #-1",
+					"  0x0000ffff6d68c490:   str	x8, [sp]",
+					"  0x0000ffff6d68c494:   bl	0x0000ffff74b83000          ; ImmutableOopMap {c_rarg1=Oop }",
+					"                                                            ;*synchronization entry",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@-1 (line 40)",
+					"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
+					"  0x0000ffff6d68c498:   b	0x0000ffff6d68c43c",
+					"  0x0000ffff6d68c49c:   adr	x8, 0x0000ffff6d68c46c      ;   {internal_word}",
+					"  0x0000ffff6d68c4a0:   str	x8, [x28, #856]",
+					"  0x0000ffff6d68c4a4:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}",
+					"  0x0000ffff6d68c4a8:   nop",
+					"  0x0000ffff6d68c4ac:   nop",
+					"  0x0000ffff6d68c4b0:   ldr	x0, [x28, #976]",
+					"  0x0000ffff6d68c4b4:   str	xzr, [x28, #976]",
+					"  0x0000ffff6d68c4b8:   str	xzr, [x28, #984]",
+					"  0x0000ffff6d68c4bc:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c4c0:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c4c4:   b	0x0000ffff74b7b380          ;   {runtime_call unwind_exception Runtime1 stub}",
+					"  0x0000ffff6d68c4c8:   udf	#0",
+					"  0x0000ffff6d68c4cc:   udf	#0",
+					"  0x0000ffff6d68c4d0:   udf	#0",
+					"  0x0000ffff6d68c4d4:   udf	#0",
+					"  0x0000ffff6d68c4d8:   udf	#0",
+					"  0x0000ffff6d68c4dc:   udf	#0",
+					"  0x0000ffff6d68c4e0:   udf	#0",
+					"  0x0000ffff6d68c4e4:   udf	#0",
+					"  0x0000ffff6d68c4e8:   udf	#0",
+					"  0x0000ffff6d68c4ec:   udf	#0",
+					"  0x0000ffff6d68c4f0:   udf	#0",
+					"  0x0000ffff6d68c4f4:   udf	#0",
+					"  0x0000ffff6d68c4f8:   udf	#0",
+					"  0x0000ffff6d68c4fc:   udf	#0",
+					"[Stub Code]",
+					"  0x0000ffff6d68c500:   isb                                 ;   {no_reloc}",
+					"  0x0000ffff6d68c504:   mov	x12, #0x0                   	// #0",
+					"                                                            ;   {metadata(NULL)}",
+					"  0x0000ffff6d68c508:   movk	x12, #0x0, lsl #16",
+					"  0x0000ffff6d68c50c:   movk	x12, #0x0, lsl #32",
+					"  0x0000ffff6d68c510:   mov	x8, #0x0                   	// #0",
+					"  0x0000ffff6d68c514:   movk	x8, #0x0, lsl #16",
+					"  0x0000ffff6d68c518:   movk	x8, #0x0, lsl #32",
+					"  0x0000ffff6d68c51c:   br	x8",
+					"  0x0000ffff6d68c520:   ldr	x8, 0x0000ffff6d68c528      ;   {trampoline_stub}",
+					"  0x0000ffff6d68c524:   br	x8",
+					"  0x0000ffff6d68c528:   .inst	0x74acaf00 ; undefined",
+					"  0x0000ffff6d68c52c:   udf	#65535",
+					"[Exception Handler]",
+					"  0x0000ffff6d68c530:   bl	0x0000ffff74b7e080          ;   {runtime_call handle_exception_from_callee Runtime1 stub}",
+					"  0x0000ffff6d68c534:   dcps1	#0xdeae",
+					"  0x0000ffff6d68c538:   .inst	0x8cc91c30 ; undefined",
+					"  0x0000ffff6d68c53c:   udf	#65535",
+					"[Deopt Handler Code]",
+					"  0x0000ffff6d68c540:   adr	x30, 0x0000ffff6d68c540",
+					"  0x0000ffff6d68c544:   b	0x0000ffff74ad1540          ;   {runtime_call DeoptimizationBlob}"
 			}
 		);
 	}
 
 	@Test
-	public void testAssemblyParseBrokenComment()
+	public void testAssemblyParseARM64BrokenComment()
 	{
 		testAssemblyParse(
 			new String[]
-			{ 
-				"0x0000ffff6d6862f4:   bl	0x0000ffff74b83000          ; ImmutableOopMap {c_rarg1=Oop [48]=Oop }",
-				"                                                            ;*goto {reexecute=1 rethrow=0 return_oop=0}",
-				"                                                            ; - (reexecute) com.google.zxing.oned.Code93Reader::toPattern@30 (line 170)",
-				"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
-				"0x0000ffff6d6862f8:   b	0x0000ffff6d686010",
-				"0x0000ffff6d6862fc:   mov	x8, #0x9c00                	// #39936",
-				"                                                            ;   {metadata({method} {0x0000ffff50919c00} 'toPattern' '([I)I' in 'com/google/zxing/oned/Code93Reader')}",
-				"0x0000ffff6d686300:   movk	x8, #0x5091, lsl #16",
-				"0x0000ffff6d686304:   movk	x8, #0xffff, lsl #32",
-				"0x0000ffff6d686308:   str	x8, [sp, #8]",
-				"0x0000ffff6d68630c:   mov	x8, #0x67                  	// #103",
-				"0x0000ffff6d686310:   str	x8, [sp]",
-				"0x0000ffff6d686314:   bl	0x0000ffff74b83000          ; ImmutableOopMap {[48]=Oop }",
-				"                                                            ;*goto {reexecute=1 rethrow=0 return_oop=0}",
-				"                                                            ; - (reexecute) com.google.zxing.oned.Code93Reader::toPattern@103 (line 181)",
-				"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
-				"0x0000ffff6d686318:   b	0x0000ffff6d6861a8",
-				"0x0000ffff6d68631c:   mov	x8, #0x9c00                 // #39936",
-				"                                                            ;   {metadata({method} {0x0000ffff50919c00} 'toPattern' '([I)I' in 'com/google/zxing/oned/Code93Reader')}",
-				"0x0000ffff6d686320:   movk	x8, #0x5091, lsl #16",
-				"0x0000ffff6d686324:   movk	x8, #0xffff, lsl #32",
-				"0x0000ffff6d686328:   str	x8, [sp, #8]",
-				"0x0000ffff6d68632c:   mov	x8, #0x75                  	// #117",
-				"0x0000ffff6d686330:   str	x8, [sp]",
-				"0x0000ffff6d686334:   bl	0x0000ffff74b83000          ; ImmutableOopMap {[48]=Oop }",
-				"                                                            ;*goto {reexecute=1 rethrow=0 return_oop=0}",
-				"                                                            ; - (reexecute) com.google.zxing.oned.Code93Reader::toPattern@117 (line 175)",
-				"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
-				"0x0000ffff6d686338:   b	0x0000ffff6d686248",
-				"0x0000ffff6d68633c:   adr	x8, 0x0000ffff6d686288      ;   {internal_word}",
-				"0x0000ffff6d686340:   str	x8, [x28, #856]",
-				"0x0000ffff6d686344:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}",
-				"0x0000ffff6d686348:   adr	x8, 0x0000ffff6d6862a8      ;   {internal_word}",
-				"0x0000ffff6d68634c:   str	x8, [x28, #856]",
-				"0x0000ffff6d686350:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}"
+			{
+					"[Entry Point]",
+					"  # {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword'",
+					"  #           [sp+0x40]  (sp of caller)",
+					"  0x0000ffff6d68c3c0:   ldr	w8, [x1, #8]",
+					"  0x0000ffff6d68c3c4:   cmp	w9, w8",
+					"  0x0000ffff6d68c3c8:   b.eq	0x0000ffff6d68c400  // b.none",
+					"  0x0000ffff6d68c3cc:   b	0x0000ffff74acac00          ;   {runtime_call ic_miss_stub}",
+					"  0x0000ffff6d68c3d0:   nop",
+					"  0x0000ffff6d68c3d4:   nop",
+					"  0x0000ffff6d68c3d8:   nop",
+					"  0x0000ffff6d68c3dc:   nop",
+					"  0x0000ffff6d68c3e0:   nop",
+					"  0x0000ffff6d68c3e4:   nop",
+					"  0x0000ffff6d68c3e8:   nop",
+					"  0x0000ffff6d68c3ec:   nop",
+					"  0x0000ffff6d68c3f0:   nop",
+					"  0x0000ffff6d68c3f4:   nop",
+					"  0x0000ffff6d68c3f8:   nop",
+					"  0x0000ffff6d68c3fc:   nop",
+					"[Verified Entry Point]",
+					"  0x0000ffff6d68c400:   nop",
+					"  0x0000ffff6d68c404:   sub	x9, sp, #0x14, lsl #12",
+					"  0x0000ffff6d68c408:   str	xzr, [x9]",
+					"  0x0000ffff6d68c40c:   sub	sp, sp, #0x40",
+					"  0x0000ffff6d68c410:   stp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c414:   add	x29, sp, #0x30",
+					"  0x0000ffff6d68c418:   mov	x2, #0xf688                	// #63112",
+					"                                                            ;",
+					"{metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c41c:   movk	x2, #0x5097, lsl #16",
+					"  0x0000ffff6d68c420:   movk	x2, #0xffff, lsl #32",
+					"  0x0000ffff6d68c424:   ldr	w0, [x2, #252]",
+					"  0x0000ffff6d68c428:   add	w0, w0, #0x2",
+					"  0x0000ffff6d68c42c:   str	w0, [x2, #252]",
+					"  0x0000ffff6d68c430:   and	w0, w0, #0x7fe",
+					"  0x0000ffff6d68c434:   cmp	w0, #0x0",
+					"  0x0000ffff6d68c438:   b.eq	0x0000ffff6d68c47c  // b.none;*aload_0 {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@0 (line 40)",
+					"  0x0000ffff6d68c43c:   ldr	w2, [x1, #28]               ;*getfield rowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@2 (line 40)",
+					"  0x0000ffff6d68c440:   mov	x0, x1",
+					"  0x0000ffff6d68c444:   mov	x3, #0xf688                	// #63112",
+					"                                                            ;   {metadata(method data for {method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c448:   movk	x3, #0x5097, lsl #16",
+					"  0x0000ffff6d68c44c:   movk	x3, #0xffff, lsl #32",
+					"  0x0000ffff6d68c450:   ldr	x8, [x3, #320]",
+					"  0x0000ffff6d68c454:   add	x8, x8, #0x1",
+					"  0x0000ffff6d68c458:   str	x8, [x3, #320]",
+					"  0x0000ffff6d68c45c:   bl	0x0000ffff74acaf00          ; ImmutableOopMap {}",
+					"                                                            ;*invokevirtual isValidRowNumber {reexecute=0 rethrow=0 return_oop=0}",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@5 (line 40)",
+					"                                                            ;   {optimized virtual_call}",
+					"  0x0000ffff6d68c460:   and	w0, w0, #0x1",
+					"  0x0000ffff6d68c464:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c468:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c46c:   ldr	x8, [x28, #832]             ;   {poll_return}",
+					"  0x0000ffff6d68c470:   cmp	sp, x8",
+					"  0x0000ffff6d68c474:   b.hi	0x0000ffff6d68c49c  // b.pmore",
+					"  0x0000ffff6d68c478:   ret",
+					"  0x0000ffff6d68c47c:   mov	x8, #0x7208                	// #29192",
+					"                                                            ;   {metadata({method} {0x0000ffff50967208} 'hasValidRowNumber' '()Z' in 'com/google/zxing/pdf417/decoder/Codeword')}",
+					"  0x0000ffff6d68c480:   movk	x8, #0x5096, lsl #16",
+					"  0x0000ffff6d68c484:   movk	x8, #0xffff, lsl #32",
+					"  0x0000ffff6d68c488:   str	x8, [sp, #8]",
+					"  0x0000ffff6d68c48c:   mov	x8, #0xffffffffffffffff    	// #-1",
+					"  0x0000ffff6d68c490:   str	x8, [sp]",
+					"  0x0000ffff6d68c494:   bl	0x0000ffff74b83000          ; ImmutableOopMap {c_rarg1=Oop }",
+					"                                                            ;*synchronization entry",
+					"                                                            ; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@-1 (line 40)",
+					"                                                            ;   {runtime_call counter_overflow Runtime1 stub}",
+					"  0x0000ffff6d68c498:   b	0x0000ffff6d68c43c",
+					"  0x0000ffff6d68c49c:   adr	x8, 0x0000ffff6d68c46c      ;   {internal_word}",
+					"  0x0000ffff6d68c4a0:   str	x8, [x28, #856]",
+					"  0x0000ffff6d68c4a4:   b	0x0000ffff74ad1200          ;   {runtime_call SafepointBlob}",
+					"  0x0000ffff6d68c4a8:   nop",
+					"  0x0000ffff6d68c4ac:   nop",
+					"  0x0000ffff6d68c4b0:   ldr	x0, [x28, #976]",
+					"  0x0000ffff6d68c4b4:   str	xzr, [x28, #976]",
+					"  0x0000ffff6d68c4b8:   str	xzr, [x28, #984]",
+					"  0x0000ffff6d68c4bc:   ldp	x29, x30, [sp, #48]",
+					"  0x0000ffff6d68c4c0:   add	sp, sp, #0x40",
+					"  0x0000ffff6d68c4c4:   b	0x0000ffff74b7b380          ;   {runtime_call unwind_exception Runtime1 stub}",
+					"  0x0000ffff6d68c4c8:   udf	#0",
+					"  0x0000ffff6d68c4cc:   udf	#0",
+					"  0x0000ffff6d68c4d0:   udf	#0",
+					"  0x0000ffff6d68c4d4:   udf	#0",
+					"  0x0000ffff6d68c4d8:   udf	#0",
+					"  0x0000ffff6d68c4dc:   udf	#0",
+					"  0x0000ffff6d68c4e0:   udf	#0",
+					"  0x0000ffff6d68c4e4:   udf	#0",
+					"  0x0000ffff6d68c4e8:   udf	#0",
+					"  0x0000ffff6d68c4ec:   udf	#0",
+					"  0x0000ffff6d68c4f0:   udf	#0",
+					"  0x0000ffff6d68c4f4:   udf	#0",
+					"  0x0000ffff6d68c4f8:   udf	#0",
+					"  0x0000ffff6d68c4fc:   udf	#0",
+					"[Stub Code]",
+					"  0x0000ffff6d68c500:   isb                                 ;   {no_reloc}",
+					"  0x0000ffff6d68c504:   mov	x12, #0x0                   	// #0",
+					"                                                            ;   {metadata(NULL)}",
+					"  0x0000ffff6d68c508:   movk	x12, #0x0, lsl #16",
+					"  0x0000ffff6d68c50c:   movk	x12, #0x0, lsl #32",
+					"  0x0000ffff6d68c510:   mov	x8, #0x0                   	// #0",
+					"  0x0000ffff6d68c514:   movk	x8, #0x0, lsl #16",
+					"  0x0000ffff6d68c518:   movk	x8, #0x0, lsl #32",
+					"  0x0000ffff6d68c51c:   br	x8",
+					"  0x0000ffff6d68c520:   ldr	x8, 0x0000ffff6d68c528      ;   {trampoline_stub}",
+					"  0x0000ffff6d68c524:   br	x8",
+					"  0x0000ffff6d68c528:   .inst	0x74acaf00 ; undefined",
+					"  0x0000ffff6d68c52c:   udf	#65535",
+					"[Exception Handler]",
+					"  0x0000ffff6d68c530:   bl	0x0000ffff74b7e080          ;   {runtime_call handle_exception_from_callee Runtime1 stub}",
+					"  0x0000ffff6d68c534:   dcps1	#0xdeae",
+					"  0x0000ffff6d68c538:   .inst	0x8cc91c30 ; undefined",
+					"  0x0000ffff6d68c53c:   udf	#65535",
+					"[Deopt Handler Code]",
+					"  0x0000ffff6d68c540:   adr	x30, 0x0000ffff6d68c540",
+					"  0x0000ffff6d68c544:   b	0x0000ffff74ad1540          ;   {runtime_call DeoptimizationBlob}"
 			}
 		);
 	}
 
+	// Specific ARM instruction invariants
 	@Test 
-	public void testARMInstructionParse()
+	public void testARM64InstructionParse()
 	{
-		String line = "0x0000ffff6d686a10:   ldr	x8, [x28, #840]             ; ImmutableOopMap {c_rarg1=Oop }";
+		String line = "  0x0000ffff6d68c50c:   movk	x12, #0x0, lsl #32; comment here";
 		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.ARM_64);
 		AssemblyInstruction instruction = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instruction);
 
-		assertEquals("0x0000ffff6d686a10", instruction.getAddress()); // address? 
-		assertEquals("ldr", instruction.getMnemonic()); // mnemonia? 
+		assertEquals(Long.parseLong("0000ffff6d68c50c", 16), instruction.getAddress()); // address?
+		assertEquals("movk", instruction.getMnemonic());
 
 		//operands?
 		List<String> operands = instruction.getOperands();
-		assertEquals(2, operands.size());
-		assertEquals("x8", operands.get(0));
-		assertEquals("[x28, #840]", operands.get(1));
-
-		assertEquals("ImmutableOopMap {c_rarg1=Oop }", instruction.getComment()); // comment?
+		assertEquals(3, operands.size());
+		assertEquals("x12", operands.get(0));
+		assertEquals("#0x0", operands.get(1).trim());
+		assertEquals("lsl #32", operands.get(2).trim());
+		assertEquals("; comment here", instruction.getComment()); // comment?
 	}
 
-	@Test 
-	public void testARMInstructionParseNOP()
-	{ 
+	@Test
+	public void testARM64InstructionParseNOP()
+	{
 		String line = "0x0000ffff6d686b04:   nop";
 
 		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.ARM_64);
 		AssemblyInstruction instruction = parser.createInstruction(new AssemblyLabels(), line);
 
 		assertNotNull(instruction);
-		assertEquals(Long.parseLong("0x0000ffff6d686b04", 16), instruction.getAddressAsLong());
+		assertEquals(Long.parseLong("0000ffff6d686b04", 16), instruction.getAddress());
 		assertEquals("nop", instruction.getMnemonic());
 		assertEquals(0, instruction.getOperands().size());
 		assertEquals(S_EMPTY, instruction.getComment());
+	}
+
+	@Test
+	public void testARM32InstructionParseNOP()
+	{
+		String line = "0x00008b04:   nop";
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.ARM_32);
+
+		AssemblyInstruction instruction = parser.createInstruction(new AssemblyLabels(), line);
+
+		assertNotNull(instruction);
+		assertEquals(Long.parseLong("00008b04", 16), instruction.getAddress());
+		assertEquals("nop", instruction.getMnemonic());
+		assertEquals(0, instruction.getOperands().size());
+		assertEquals(S_EMPTY, instruction.getComment());
+	}
+
+	@Test
+	public void testIdentifyOperandsARM()
+	{
+		testOperand(OperandType.REGISTER, "mov", "x12");
+		testOperand(OperandType.CONSTANT, "movk", "#0x0");
+
+		testOperand(OperandType.REGISTER, "ldr", "x0");
+		testOperand(OperandType.ADDRESS, "bl", "0x0000000000401000");
+
+		testOperand(OperandType.REGISTER, "str", "[x28, #840]");
+		testOperand(OperandType.REGISTER, "add", "w10, w11, lsl #2");
+	}
+
+	@Test
+	public void testExtractRegisterNameARM64() {
+		IAssemblyParser parser64 = AssemblyUtil.getParserForArchitecture(Architecture.ARM_64);
+
+		assertEquals("x28", parser64.extractRegisterName("x28"));
+		assertEquals("x28", parser64.extractRegisterName("[x28, #840]"));
+		assertEquals("w10", parser64.extractRegisterName("w10, lsl #2"));
+		assertEquals("x12", parser64.extractRegisterName("x12"));
+		assertEquals("x0", parser64.extractRegisterName("[x0]"));
+
+	}
+
+	@Test
+	public void testExtractRegisterNameARM32() {
+		IAssemblyParser parser32 = AssemblyUtil.getParserForArchitecture(Architecture.ARM_32);
+		
+		assertEquals("r10", parser32.extractRegisterName("r10"));
+		assertEquals("r10", parser32.extractRegisterName("[r10, #840]"));
+		assertEquals("r5", parser32.extractRegisterName("r5, lsl #2"));
+		assertEquals("sp", parser32.extractRegisterName("sp"));
+		assertEquals("r0", parser32.extractRegisterName("[r0]"));
 	}
 
 	// helper method 
@@ -293,7 +639,6 @@ public class TestAssemblyParserARM extends AbstractAssemblyTest
 		String header = asmMethod.getHeader();
 
 		assertNotNull(header);
-		assertEquals("# this:     rsi:rsi   = 'org/adoptopenjdk/jitwatch/demo/MakeHotSpotLog'", header.split("\n")[1]);
 
 		List<AssemblyBlock> blocks = asmMethod.getBlocks();
 
@@ -303,33 +648,58 @@ public class TestAssemblyParserARM extends AbstractAssemblyTest
 		assertEquals("[Entry Point]", block0.getTitle());
 
 		List<AssemblyInstruction> instructions0 = block0.getInstructions();
-		assertEquals(4, instructions0.size());
+		assertEquals(16, instructions0.size());
 
 		AssemblyBlock block1 = blocks.get(1);
 		assertEquals("[Verified Entry Point]", block1.getTitle());
 
 		List<AssemblyInstruction> instructions1 = block1.getInstructions();
-		assertEquals(26, instructions1.size());
+		assertEquals(64, instructions1.size()); // from (0x4FC to 0x400) / 4 + 1 = 64
 		assertEquals(2, instructions1.get(2).getOperands().size());
-		assertEquals(";*ladd\n; - org.adoptopenjdk.jitwatch.demo.MakeHotSpotLog::add@2 (line 144)",
-				instructions1.get(3).getComment());
+
+		assertEquals(";*getfield rowNumber {reexecute=0 rethrow=0 return_oop=0}\n; - com.google.zxing.pdf417.decoder.Codeword::hasValidRowNumber@2 (line 40)",
+				instructions1.get(15).getComment());
 
 		AssemblyBlock block2 = blocks.get(2);
-		assertEquals("[Exception Handler]", block2.getTitle());
+		assertEquals("[Stub Code]", block2.getTitle());
 
 		List<AssemblyInstruction> instructions2 = block2.getInstructions();
-		assertEquals(0, instructions2.size());
+		assertEquals(12, instructions2.size());
 
 		AssemblyBlock block3 = blocks.get(3);
-		assertEquals("[Stub Code]", block3.getTitle());
+		assertEquals("[Exception Handler]", block3.getTitle());
 
 		List<AssemblyInstruction> instructions3 = block3.getInstructions();
-		assertEquals(1, instructions3.size());
+		assertEquals(4, instructions3.size());
 
 		AssemblyBlock block4 = blocks.get(4);
 		assertEquals("[Deopt Handler Code]", block4.getTitle());
 
 		List<AssemblyInstruction> instructions4 = block4.getInstructions();
-		assertEquals(7, instructions4.size());
+		assertEquals(2, instructions4.size());
+	}
+
+	private void testOperand(OperandType type, String mnemonic, String operand)
+	{
+		IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.ARM_64);
+
+		switch (type)
+		{
+			case ADDRESS:
+				assertTrue(parser.isAddress(mnemonic, operand));
+				assertFalse(parser.isConstant(mnemonic, operand));
+				assertFalse(parser.isRegister(mnemonic, operand));
+				break;
+			case CONSTANT:
+				assertFalse(parser.isAddress(mnemonic, operand));
+				assertTrue(parser.isConstant(mnemonic, operand));
+				assertFalse(parser.isRegister(mnemonic, operand));
+				break;
+			case REGISTER:
+				assertFalse(parser.isAddress(mnemonic, operand));
+				assertFalse(parser.isConstant(mnemonic, operand));
+				assertTrue(parser.isRegister(mnemonic, operand));
+				break;
+		}
 	}
 }

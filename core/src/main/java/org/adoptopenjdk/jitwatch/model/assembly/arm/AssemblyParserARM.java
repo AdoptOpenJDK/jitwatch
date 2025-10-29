@@ -280,15 +280,44 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 				return true;
 			}
 
+			// checks the "bracket" notation of the registers
 			if (operand.matches("(?i)^\\[.*\\]!?$") || operand.matches("(?i)^\\[.*\\],\\s*#.*$")) return true; // memory addressing in ARM assembly [reg] or [reg, #offset]
 
-			return false; // if nothing worked above
+			// If multiple registers without any brackets, then split by comma
+			String[] parts = operand.split(",");
+			for (String part : parts) {
+				part = part.trim();
+
+				// Accept simple registers but only set to false if we encounter a not good example
+				if (!(part.matches("(?i)^[xw][0-9]{1,2}$") || part.equalsIgnoreCase("sp") ||
+						part.equalsIgnoreCase("xzr") || part.equalsIgnoreCase("wzr") ||
+						part.matches("(?i)^[vbhsdq][0-9]{1,2}$") ||
+						part.matches("(?i)^\\[.*\\]!?$") || part.matches("(?i)^\\[.*\\],\\s*#.*$") ||
+						part.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$"))) {
+
+					return false;
+				}
+			}
+
+			return true; // if everything went through (mainly after the loop ends)
 		}
 
 		// aarch32 has a simplified register system
 		else if (architecture == Architecture.ARM_32) 
 		{
-			return (operand.matches("(?i)^(sp|lr|pc)$")) || (operand.matches("(?i)^r[0-9]{1,2}$")); // either r0-r15 match OR the special registers match
+			if ((operand.matches("(?i)^(sp|lr|pc)$")) || (operand.matches("(?i)^r[0-9]{1,2}$"))) return true; // either r0-r15 match OR the special registers match
+
+			// multi-part entry
+			String[] parts = operand.split(",");
+			for (String part : parts) {
+				part = part.trim();
+				if (!(part.matches("(?i)^(sp|lr|pc)$") ||
+						part.matches("(?i)^r[0-9]{1,2}$") ||
+						part.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$"))) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
