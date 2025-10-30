@@ -289,11 +289,19 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 				part = part.trim();
 
 				// Accept simple registers but only set to false if we encounter a not good example
+				/*
+					Here we check for the following
+					- do we have x0-x31 or w0-x31 registers?
+					- do we have a stack pointer or zero registers (xzr and wzr respectively)
+					- SIMD/FPU registers (v0-v31, etc)
+					- memory addressing [..] or [..]!
+					- post-index addressing (such as [x0], #4)
+					- sometimes shifting operators apply as well
+				 */
 				if (!(part.matches("(?i)^[xw][0-9]{1,2}$") || part.equalsIgnoreCase("sp") ||
 						part.equalsIgnoreCase("xzr") || part.equalsIgnoreCase("wzr") ||
 						part.matches("(?i)^[vbhsdq][0-9]{1,2}$") ||
-						part.matches("(?i)^\\[.*\\]!?$") || part.matches("(?i)^\\[.*\\],\\s*#.*$") ||
-						part.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$"))) {
+						part.matches("(?i)^\\[.*\\]!?$") || part.matches("(?i)^\\[.*\\],\\s*#.*$"))) {
 
 					return false;
 				}
@@ -312,8 +320,7 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 			for (String part : parts) {
 				part = part.trim();
 				if (!(part.matches("(?i)^(sp|lr|pc)$") ||
-						part.matches("(?i)^r[0-9]{1,2}$") ||
-						part.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$"))) {
+						part.matches("(?i)^r[0-9]{1,2}$"))) {
 					return false;
 				}
 			}
@@ -325,14 +332,21 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	@Override
 	public boolean isJump(String mnemonic)
 	{
-		boolean result = false;
+		if (mnemonic == null) return false;
 
-		if (mnemonic != null)
-		{
-			result = mnemonic.toLowerCase().startsWith("b") || mnemonic.toLowerCase().startsWith("call");
-		}
+		return mnemonic.matches("^(b|bl|br|blr|b\\.[a-z]{2}|cbz|cbnz|tbz|tbnz)$");
+	}
 
-		return result;
+	@Override
+	public boolean isShift(String mnemonic, String operand)
+	{
+		return operand.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$");
+	}
+
+	@Override
+	public boolean isExtend(String mnemonic, String operand)
+	{
+		return operand.matches("(?i)^(sxtw|sxtb|sxth|uxtw|uxtb|uxth)\\s*#?[0-9]+$");
 	}
 
 	@Override

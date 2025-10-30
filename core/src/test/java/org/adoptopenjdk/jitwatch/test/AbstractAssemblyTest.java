@@ -9,6 +9,6 @@ public abstract class AbstractAssemblyTest
 {
 	enum OperandType
 	{
-		ADDRESS, CONSTANT, REGISTER
+		ADDRESS, CONSTANT, REGISTER, SHIFT
 	}
 }

@@ -3,7 +3,7 @@ package org.adoptopenjdk.jitwatch.model.assembly.arm;
 public enum ARMRegisterType
     /*
         All references go to the ARM developer documentation --> https://developer.arm.com/documentation/dui0801/l/Overview-of-AArch64-state/Registers-in-AArch64-state
-     */
+    */
 {
     // ARM64 registers
     ARM64_GENERAL("64-bit ARM register", "x\\d+"),

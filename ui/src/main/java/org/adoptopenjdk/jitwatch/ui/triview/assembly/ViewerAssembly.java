@@ -33,9 +33,7 @@ import org.adoptopenjdk.jitwatch.model.assembly.AssemblyReference;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
 import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
-import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMRegisterType;
-import org.adoptopenjdk.jitwatch.model.assembly.arm.AssemblyParserARM;
-import org.adoptopenjdk.jitwatch.model.assembly.arm.MnemonicEntry;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.*;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.AssemblyParserX86;
 import org.adoptopenjdk.jitwatch.model.assembly.x86.X86RegisterType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
@@ -202,6 +200,11 @@ public class ViewerAssembly extends Viewer
 		{
 			builder.append("Address ");
 			builder.append(operand);
+		} else if (parser.isShift(mnemonic, operand))
+		{
+			builder.append(getShiftLabel(operand));
+		} else if (parser.isExtend(mnemonic, operand)) {
+			builder.append(getExtendLabel(operand));
 		}
 	}
 
@@ -258,6 +261,51 @@ public class ViewerAssembly extends Viewer
 			X86RegisterType regType = X86RegisterType.fromRegisterName(regName);
 			builder.append(regType.getDescription()).append(" ").append(regName);
 			builder.append(X86RegisterType.getSpecialPurpose(regName));
+		}
+
+		return builder.toString();
+	}
+
+	private String getShiftLabel(String operand)
+	{
+		if (operand == null || operand.isEmpty()) return "";
+
+		StringBuilder builder = new StringBuilder();
+		String[] shifterParts = operand.split("\\s+");
+		ARMShifter shifter = ARMShifter.fromString(shifterParts[0]);
+
+		if (shifter != null)
+		{
+			builder.append("Shift ").append(shifter.name())
+					.append(S_SPACE + S_OPEN_PARENTHESES).append(shifter.getDescription()).append(S_CLOSE_PARENTHESES);
+
+			// check for immediate values
+			if (shifterParts.length > 1)
+			{
+				builder.append(" - ").append(getConstantLabel(shifterParts[1]));
+			}
+		}
+
+		return builder.toString();
+	}
+
+	private String getExtendLabel(String operand)
+	{
+		if (operand == null || operand.isEmpty()) return "";
+
+		StringBuilder builder = new StringBuilder();
+		String[] extendParts = operand.split("\\s+");
+		ARMExtend extend = ARMExtend.fromString(extendParts[0]);
+
+		if (extend != null)
+		{
+			builder.append("Extend ").append(extend.name())
+					.append(S_SPACE + S_OPEN_PARENTHESES).append(extend.getDescription()).append(S_CLOSE_PARENTHESES);
+
+			if (extendParts.length > 1)
+			{
+				builder.append(" - ").append(getConstantLabel(extendParts[1]));
+			}
 		}
 
 		return builder.toString();
