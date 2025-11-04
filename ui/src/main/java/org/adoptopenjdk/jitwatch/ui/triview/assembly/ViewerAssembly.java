@@ -250,7 +250,7 @@ public class ViewerAssembly extends Viewer
 		String regName = parser.extractRegisterName(input);
 
 
-		if ((parser != null) && ((AssemblyParserARM) parser).architecture == Architecture.ARM_64)
+		if ((parser != null) && (parser.getArchitecture() == Architecture.ARM_64))
 		{
 			ARMRegisterType regType = ARMRegisterType.fromRegisterName(regName);
 			builder.append(regType.getDescription()).append(" ").append(regName);

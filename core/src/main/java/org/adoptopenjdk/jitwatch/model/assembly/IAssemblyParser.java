@@ -33,4 +33,6 @@ public interface IAssemblyParser
 	}
 
 	String extractRegisterName(final String input);
+
+	Architecture getArchitecture();
 }
