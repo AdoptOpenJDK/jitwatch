@@ -12,18 +12,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.adoptopenjdk.jitwatch.model.assembly.*;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
-import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyLabels;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
-import org.adoptopenjdk.jitwatch.model.assembly.AssemblyUtil;
-import org.adoptopenjdk.jitwatch.model.assembly.IAssemblyParser;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import javax.tools.ToolProvider;
 
 public class TestAssemblyParserARM extends AbstractAssemblyTest
 {

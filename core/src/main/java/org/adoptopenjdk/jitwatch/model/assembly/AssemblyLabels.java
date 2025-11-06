@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.chrisnewland.freelogj.Logger;
+import com.chrisnewland.freelogj.LoggerFactory;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 /**
@@ -38,6 +40,8 @@ public final class AssemblyLabels
 	private long lowest = Long.MAX_VALUE;
 	private long highest;
 
+	protected static final Logger LOGGER = LoggerFactory.getLogger(AssemblyLabels.class);
+
 	public void newInstruction(AssemblyInstruction instruction)
 	{
 		final long address = instruction.getAddress();
@@ -57,7 +61,7 @@ public final class AssemblyLabels
 	{
 		final List<String> operands = instruction.getOperands();
 
-		if (instruction.getMnemonic().startsWith("j") && operands.size() == 1)
+		if (instruction.getMnemonic() != null && instruction.getMnemonic().startsWith("j") && operands.size() == 1)
 		{
 			try
 			{
@@ -68,6 +72,8 @@ public final class AssemblyLabels
 				// could be Intel format jump to Stub:: reference
 			}
 		}
+
+		if (instruction.getMnemonic() == null || instruction == null) LOGGER.error("Instruction is null: " + instruction);
 
 		return null;
 	}

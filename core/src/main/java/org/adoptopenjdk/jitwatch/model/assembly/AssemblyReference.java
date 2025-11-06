@@ -298,7 +298,7 @@ public final class AssemblyReference
 			}
 		}
 
-		if (result == null) if (mnemonic.endsWith("b") || mnemonic.endsWith("w") || mnemonic.endsWith("l") || mnemonic.endsWith("q")) result = mnemonicMap.get(mnemonic.substring(0, mnemonic.length() - 1));
+		if (result == null && mnemonic != null) if (mnemonic.endsWith("b") || mnemonic.endsWith("w") || mnemonic.endsWith("l") || mnemonic.endsWith("q")) result = mnemonicMap.get(mnemonic.substring(0, mnemonic.length() - 1));
 
 		return result;
 	}

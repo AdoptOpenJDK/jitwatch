@@ -15,6 +15,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_PREFIX;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HEX_POSTFIX;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
