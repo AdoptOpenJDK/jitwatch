@@ -2,7 +2,11 @@ package org.adoptopenjdk.jitwatch.test;
 
 import com.chrisnewland.freelogj.Logger;
 import com.chrisnewland.freelogj.LoggerFactory;
+import org.adoptopenjdk.jitwatch.model.NumberedLine;
+import org.adoptopenjdk.jitwatch.model.SplitLog;
 import org.adoptopenjdk.jitwatch.model.assembly.*;
+import org.adoptopenjdk.jitwatch.parser.ILogParser;
+import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -11,12 +15,11 @@ import javax.tools.ToolProvider;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
@@ -56,33 +59,52 @@ public class TestAssemblyParserARMOnJitwatchExamples extends AbstractAssemblyTes
 
     @Test
     public void testForMissingAssemblyMnemonics() throws IOException, InterruptedException {
-        String hotspotLog = getHotspotLogFromJavaSourceFile();
+        String className = javaSource.getName();
+
+        // Parse Hotspot log from stdout
+        ILogParser logParse = new HotSpotLogParser(UnitTestUtil.getNoOpJITListener());
+        logParse.processLogFile(getHotspotLogFromJavaSourceFile(), UnitTestUtil.getNoOpParseErrorListener());
+
+        SplitLog log = logParse.getSplitLog();
+        List<NumberedLine> assemblyLines = log.getAssemblyLines();
+        String hotspotLog = assemblyLines.stream()
+                .map(NumberedLine::getLine)
+                .collect(Collectors.joining("\n"));
+
+        // Now, we can obtain just the assembly
         IAssemblyParser parser = AssemblyUtil.getParserForArchitecture(Architecture.ARM_64);
         AssemblyMethod asmMethod = parser.parseAssembly(hotspotLog);
 
-        List<AssemblyInstruction> unparsedInstructions = new ArrayList<>();
+        Set<String> unparsedInstructions = new HashSet<>();
 
         for (AssemblyBlock assemblyBlock : asmMethod.getBlocks()) {
             for (final AssemblyInstruction instruction : assemblyBlock.getInstructions()) {
-                if (AssemblyReference.lookupMnemonic(instruction.getMnemonic(), Architecture.ARM_64) == null) {
-                    unparsedInstructions.add(instruction);
+                String instructionLine = instruction.toString();
+
+                if (!instruction.toString().matches("^0x[0-9a-fA-F]{16}.*")) continue;
+
+                if (AssemblyReference.lookupDirective(instruction.getMnemonic(), Architecture.ARM_64) == null
+                        &&    AssemblyReference.lookupMnemonic(instruction.getMnemonic(), Architecture.ARM_64) == null
+                        && AssemblyReference.lookupMnemonicInfo(instruction.toString().split(":")[1].trim().split(";")[0].trim(), Architecture.ARM_64) == null) {
+                    unparsedInstructions.add(instruction.toString().replace("^0x[0-9a-fA-F]{16}.*\"", ""));
                 }
             }
         }
 
         if (!unparsedInstructions.isEmpty()) {
             unparsedInstructions.forEach(instruction ->
-                logger.error("Unparsed ARM Mnemonic: {}", instruction)
+                    logger.error("Unparsed ARM Mnemonic: {}", instruction)
             );
-            fail();
+            fail("Found " + unparsedInstructions.size() + " unparsed mnemonics" + " in " + className);
         }
     }
 
-    private String getHotspotLogFromJavaSourceFile() throws IOException, InterruptedException {
+    private File getHotspotLogFromJavaSourceFile() throws IOException, InterruptedException {
         int exitCode = ToolProvider.getSystemJavaCompiler().run(null, null, null, javaSource.getAbsolutePath());
-        if (exitCode != 0) return "";
+        if (exitCode != 0) return null;
 
         String className = javaSource.getName().replace(".java", "");
+        String hotspotLogLocation = javaSource.getParent() + "/hotspot-" + className + ".log";
 
         List<String> hotspotAssemblyCommand = new ArrayList<>();
         hotspotAssemblyCommand.add(javaHome);
@@ -90,24 +112,30 @@ public class TestAssemblyParserARMOnJitwatchExamples extends AbstractAssemblyTes
         hotspotAssemblyCommand.add(javaSource.getParent());
         hotspotAssemblyCommand.add("-XX:+UnlockDiagnosticVMOptions");
         hotspotAssemblyCommand.add("-XX:+PrintAssembly");
+        hotspotAssemblyCommand.add("-XX:+LogCompilation");
+        hotspotAssemblyCommand.add("-XX:LogFile="+hotspotLogLocation);
         hotspotAssemblyCommand.add(className);
+
 
         ProcessBuilder processBuilder = new ProcessBuilder(hotspotAssemblyCommand);
         processBuilder.directory(javaSource.getParentFile());
+
+        processBuilder.redirectErrorStream(true);
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.PIPE);
+
         Process process = processBuilder.start();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuilder output = new StringBuilder();
         String line;
-        while ((line = reader.readLine()) != null) {
-            output.append(line).append("\n");
-        }
+        while ((line = reader.readLine()) != null) { }
 
         int processExitCode = process.waitFor();
         if (processExitCode != 0) {
-            return "";
+            return null;
         }
 
-        return output.toString();
+        Path logPath = Paths.get(hotspotLogLocation);
+
+        return logPath.toFile();
     }
 }

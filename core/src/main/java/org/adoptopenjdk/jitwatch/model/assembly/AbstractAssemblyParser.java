@@ -24,12 +24,13 @@ import org.adoptopenjdk.jitwatch.model.assembly.x86.X86Directive;
 public abstract class AbstractAssemblyParser implements IAssemblyParser
 {
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractAssemblyParser.class);
-
 	protected Architecture architecture;
+	protected AssemblyProcessor processor;
 
 	public AbstractAssemblyParser(Architecture architecture)
 	{
 		this.architecture = architecture;
+		processor = new AssemblyProcessor(architecture);
 	}
 
 	public Architecture getArchitecture()
@@ -60,6 +61,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 
 		for (int i = 0; i < lines.length; i++)
 		{
+
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("line: '{}'", lines[i]);
@@ -226,10 +228,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 					}
 					else
 					{
-						if (seenInstructions && !line.trim().startsWith("ImmutableOopMap"))
-						{
-							logger.error("Could not parse assembly: {}", line);
-						}
+						processor.handleLine(line.trim());
 					}
 				}
 			}
