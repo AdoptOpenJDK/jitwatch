@@ -56,6 +56,7 @@ import org.adoptopenjdk.jitwatch.model.NumberedLine;
 import org.adoptopenjdk.jitwatch.model.Tag;
 import org.adoptopenjdk.jitwatch.model.Task;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyProcessor;
+import org.adoptopenjdk.jitwatch.model.assembly.Architecture;
 import org.adoptopenjdk.jitwatch.parser.AbstractLogParser;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
@@ -67,6 +68,8 @@ public class HotSpotLogParser extends AbstractLogParser
     {
         super(jitListener);
     }
+
+    private static Architecture architecture;
 
     private void checkIfErrorDialogNeeded()
     {
@@ -157,14 +160,19 @@ public class HotSpotLogParser extends AbstractLogParser
         }
     }
 
-    private void parseAssemblyLines()
-    {
-        if (DEBUG_LOGGING_ASSEMBLY)
-        {
-            logger.debug("parseAssemblyLines()");
+    private void parseAssemblyLines() {
+        AssemblyProcessor asmProcessor;
+
+        if (DEBUG_LOGGING_ASSEMBLY) {
+            logger.error("parseAssemblyLines()");
         }
 
-        AssemblyProcessor asmProcessor = new AssemblyProcessor();
+        if (model.getJDKMajorVersion() > 11) {
+            asmProcessor = new AssemblyProcessor(architecture);
+        } else
+        {
+            asmProcessor = new AssemblyProcessor();
+        }
 
         for (NumberedLine numberedLine : splitLog.getAssemblyLines())
         {
@@ -392,6 +400,7 @@ public class HotSpotLogParser extends AbstractLogParser
     private void handleVmVersion(Tag tag)
     {
         model.setJDKMajorVersion(VmVersionDetector.getMajorVersionFromHotSpotTag(tag));
+        if (model.getJDKMajorVersion() > 11) architecture = Architecture.parseFromLogLine(VmVersionDetector.getArchitectureFromHotSpotTag(tag));
     }
 
     private void handleTagVmArguments(Tag tag)

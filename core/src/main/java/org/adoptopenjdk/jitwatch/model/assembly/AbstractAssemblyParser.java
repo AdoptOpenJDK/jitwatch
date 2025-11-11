@@ -18,16 +18,19 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 
 import com.chrisnewland.freelogj.Logger;
 import com.chrisnewland.freelogj.LoggerFactory;
+import org.adoptopenjdk.jitwatch.model.assembly.arm.ARMDirective;
+import org.adoptopenjdk.jitwatch.model.assembly.x86.X86Directive;
 
 public abstract class AbstractAssemblyParser implements IAssemblyParser
 {
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractAssemblyParser.class);
-
 	protected Architecture architecture;
+	protected AssemblyProcessor processor;
 
 	public AbstractAssemblyParser(Architecture architecture)
 	{
 		this.architecture = architecture;
+		processor = new AssemblyProcessor(architecture);
 	}
 
 	public Architecture getArchitecture()
@@ -58,6 +61,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 
 		for (int i = 0; i < lines.length; i++)
 		{
+
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
 				logger.debug("line: '{}'", lines[i]);
@@ -148,21 +152,51 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 						// try appending current and next lines together
 						String nextUntrimmedLine = lines[i + 1].replace(S_ENTITY_APOS, S_QUOTE);
 
-						instr = createInstruction(labels, line + nextUntrimmedLine);
+						// directives can sometimes get mangled in the final out for the ViewerAssembly
+						boolean isNextLineAddress = nextUntrimmedLine.trim().matches("^0x[0-9a-f]+:.*");
+						boolean isNextLineDirective;
 
-						if (instr != null)
+						if (architecture == Architecture.ARM_32 || architecture == Architecture.ARM_64)
 						{
-							i++;
+							isNextLineDirective = ARMDirective.isDirective(nextUntrimmedLine);
+						} else
+						{
+							isNextLineDirective = X86Directive.isDirective(nextUntrimmedLine);
+						}
+
+						// Don't combine lines if next line is address or directive
+						if (!isNextLineAddress && !isNextLineDirective)
+						{
+							instr = createInstruction(labels, line + nextUntrimmedLine);
+
+							if (instr != null)
+							{
+								i++;
+							}
 						}
 					}
 
 					if (instr == null && lastInstruction != null)
 					{
-						// try appending last and current lines together
-						instr = createInstruction(labels, lastLine + line);
-						if (instr != null)
+						boolean isCurrentLineAddress = line.trim().matches("^0x[0-9a-f]+:.*"); // Check if current line is an address
+						boolean isCurrentLineDirective; // or directive
+
+						if (architecture == Architecture.ARM_32 || architecture == Architecture.ARM_64)
 						{
-							replaceLast = true;
+							isCurrentLineDirective = ARMDirective.isDirective(line);
+						} else
+						{
+							isCurrentLineDirective = X86Directive.isDirective(line);
+						}
+
+						if (!isCurrentLineAddress && !isCurrentLineDirective)
+						{
+							// try appending last and current lines together
+							instr = createInstruction(labels, lastLine + line);
+							if (instr != null)
+							{
+								replaceLast = true;
+							}
 						}
 					}
 
@@ -194,10 +228,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 					}
 					else
 					{
-						if (seenInstructions && !line.trim().startsWith("ImmutableOopMap"))
-						{
-							logger.error("Could not parse assembly: {}", line);
-						}
+						processor.handleLine(line.trim());
 					}
 				}
 			}

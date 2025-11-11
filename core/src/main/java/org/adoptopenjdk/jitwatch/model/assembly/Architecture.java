@@ -19,6 +19,7 @@ public enum Architecture
 
 	private static final String ARCH_ARM_32 = "arm";
 	private static final String ARCH_ARM_64 = "arm-64";
+	private static final String ARCH_AARCH64 = "aarch64";
 
 	public static Architecture parseFromLogLine(String line)
 	{
@@ -36,6 +37,7 @@ public enum Architecture
 			case ARCH_ARM_32:
 				return ARM_32;
 			case ARCH_ARM_64:
+			case ARCH_AARCH64:
 				return ARM_64;
 			}
 		}

@@ -43,9 +43,11 @@ public final class AssemblyParserX86 extends AbstractAssemblyParser
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT);
 
+	public final Architecture architecture;
 	public AssemblyParserX86(Architecture architecture)
 	{
 		super(architecture);
+		this.architecture = architecture;
 	}
 	
 	@Override

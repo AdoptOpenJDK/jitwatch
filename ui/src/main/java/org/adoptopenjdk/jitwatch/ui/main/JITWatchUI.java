@@ -904,8 +904,8 @@ public class JITWatchUI extends Application
 				List<String> configSources = new ArrayList<>();
 				List<String> configClasses = new ArrayList<>();
 
-				configSources.addAll(Arrays.asList(sourceLocations.split(File.pathSeparator)));
-				configClasses.addAll(Arrays.asList(classLocations.split(File.pathSeparator)));
+				if (sourceLocations != null) configSources.addAll(Arrays.asList(sourceLocations.split(File.pathSeparator)));
+				if (classLocations != null) configClasses.addAll(Arrays.asList(classLocations.split(File.pathSeparator)));
 
 				config.setSourceLocations(configSources);
 				config.setClassLocations(configClasses);

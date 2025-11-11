@@ -38,10 +38,13 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 
 	private static final Pattern PATTERN_ASSEMBLY_INSTRUCTION = Pattern
 			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT);
-	
+
+	public final Architecture architecture;
+
 	public AssemblyParserARM(Architecture architecture)
 	{
 		super(architecture);
+		this.architecture = architecture;
 	}
 	
 	@Override
@@ -69,9 +72,44 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 			}
 		}
 
+		// now let's display those directives
+		if (line.matches(S_HEX_PREFIX + "[a-f0-9]+:\\s+\\..*"))
+		{
+			// Directive with an address
+			String address = line.substring(0, line.indexOf(':'));
+			String directiveAndComment = line.substring(line.indexOf(':') + 1).trim();
+
+			String comment = null;
+			if (directiveAndComment.contains(";"))
+			{
+				comment = directiveAndComment.substring(directiveAndComment.indexOf(';')).trim();
+				directiveAndComment = directiveAndComment.substring(0, directiveAndComment.indexOf(';')).trim();
+			}
+
+			// Split directive into parts
+			String[] parts = directiveAndComment.trim().split("\\s+", 2);
+			String directive = parts[0]; // e.g., ".inst"
+			String operand = parts.length > 1 ? parts[1] : ""; // e.g., "0x8cc91c30"
+
+			long addressValue = AssemblyUtil.getValueFromAddress(address);
+
+			// Create instruction with the directive as the mnemonic
+			List<String> operands = new ArrayList<>();
+			if (!operand.isEmpty()) {
+				operands.add(operand);
+			}
+
+			instr = new AssemblyInstruction(annotation, addressValue,
+					new ArrayList<>(), directive,
+					operands, comment, labels);
+			labels.newInstruction(instr);
+			return instr;
+		}
+
 		Matcher matcher = PATTERN_ASSEMBLY_INSTRUCTION.matcher(line);
 
 		if (matcher.find())
+
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
@@ -213,31 +251,155 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 	@Override
 	public boolean isConstant(String mnemonic, String operand)
 	{
+		if (operand == null || isJump(mnemonic)) return false;
+    
+		// Match ARM-style immediates with the # prefix
+		if (architecture == Architecture.ARM_64 || architecture == Architecture.ARM_32) {
+			String value = operand.startsWith("#") ? operand.substring(1) : operand;
+			
+			return value.matches("-?[0-9]+") || value.matches(S_HEX_PREFIX + "[0-9a-fA-F]+");
+		}
+
 		return ASSEMBLY_CONSTANT.matcher(operand).find() && !isJump(mnemonic);
 	}
 
 	@Override
 	public boolean isRegister(String mnemonic, String operand)
 	{
-		return false; // TODO fixme
+		if (operand == null) return false; 
+
+		// after the first operand, we should trim additional whitespaces
+		operand = operand.trim();
+
+		// aarch64 has X and W registers to represent the different sf flag options
+		if (architecture == Architecture.ARM_64)
+		{
+			// simple registers that go from x0-x30 & w0-w30, sp, zero registers (x and w), and vector registers
+			if ((operand.matches("(?i)^[xw][0-9]{1,2}$")) || (operand.equals("sp")) || (operand.matches("(?i)^(xzr|wzr)$")) || (operand.matches("(?i)^[vbhsdq][0-9]{1,2}$")))
+			{
+				return true;
+			}
+
+			// checks the "bracket" notation of the registers
+			if (operand.matches("(?i)^\\[.*\\]!?$") || operand.matches("(?i)^\\[.*\\],\\s*#.*$")) return true; // memory addressing in ARM assembly [reg] or [reg, #offset]
+
+			// If multiple registers without any brackets, then split by comma
+			String[] parts = operand.split(",");
+			for (String part : parts) {
+				part = part.trim();
+
+				// Accept simple registers but only set to false if we encounter a not good example
+				/*
+					Here we check for the following
+					- do we have x0-x31 or w0-x31 registers?
+					- do we have a stack pointer or zero registers (xzr and wzr respectively)
+					- SIMD/FPU registers (v0-v31, etc)
+					- memory addressing [..] or [..]!
+					- post-index addressing (such as [x0], #4)
+					- sometimes shifting operators apply as well
+				 */
+				if (!(part.matches("(?i)^[xw][0-9]{1,2}$") || part.equalsIgnoreCase("sp") ||
+						part.equalsIgnoreCase("xzr") || part.equalsIgnoreCase("wzr") ||
+						part.matches("(?i)^[vbhsdq][0-9]{1,2}$") ||
+						part.matches("(?i)^\\[.*\\]!?$") || part.matches("(?i)^\\[.*\\],\\s*#.*$"))) {
+
+					return false;
+				}
+			}
+
+			return true; // if everything went through (mainly after the loop ends)
+		}
+
+		// aarch32 has a simplified register system
+		else if (architecture == Architecture.ARM_32) 
+		{
+			if ((operand.matches("(?i)^(sp|lr|pc)$")) || (operand.matches("(?i)^r[0-9]{1,2}$"))) return true; // either r0-r15 match OR the special registers match
+
+			// multi-part entry
+			String[] parts = operand.split(",");
+			for (String part : parts) {
+				part = part.trim();
+				if (!(part.matches("(?i)^(sp|lr|pc)$") ||
+						part.matches("(?i)^r[0-9]{1,2}$"))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean isJump(String mnemonic)
 	{
-		boolean result = false;
+		if (mnemonic == null) return false;
 
-		if (mnemonic != null)
-		{
-			result = mnemonic.toLowerCase().startsWith("b") || mnemonic.toLowerCase().startsWith("call");
-		}
+		return mnemonic.matches("^(b|bl|br|blr|b\\.[a-z]{2}|cbz|cbnz|tbz|tbnz)$");
+	}
 
-		return result;
+	@Override
+	public boolean isShift(String mnemonic, String operand)
+	{
+		return operand.matches("(?i)^(lsl|lsr|asr|ror|rrx)\\s*#?[0-9]+$");
+	}
+
+	@Override
+	public boolean isExtend(String mnemonic, String operand)
+	{
+		return operand.matches("(?i)^(sxtw|sxtb|sxth|uxtw|uxtb|uxth)\\s*#?[0-9]+$");
 	}
 
 	@Override
 	public String extractRegisterName(String input)
 	{
+		if (input == null) return null;
+
+		// also remove leading/trailing spaces for the input
+		input = input.trim();
+
+		String regName = input;
+
+		int indexOpenParentheses = input.indexOf(C_OPEN_PARENTHESES);
+		int indexCloseParentheses = input.indexOf(C_CLOSE_PARENTHESES);
+
+		if (indexOpenParentheses != -1 && indexCloseParentheses != -1) regName = regName.substring(indexOpenParentheses + 1, indexCloseParentheses);
+
+		// square brackets -- common in ARM addressing modes
+		int indexOpenSquareBracket = regName.indexOf(C_OPEN_SQUARE_BRACKET);
+		int indexCloseSquareBracket = regName.indexOf(C_CLOSE_SQUARE_BRACKET);
+
+		if (indexOpenSquareBracket != -1 && indexCloseSquareBracket != -1)
+		{
+			regName = input.substring(indexOpenSquareBracket + 1, indexCloseSquareBracket).trim(); // base register first
+			if (regName.contains(",")) regName = regName.substring(0, regName.indexOf(',')).trim();
+		}
+
+		// immediate values -- obtain just the integer value
+		if (regName.startsWith("#")) regName = regName.substring(1);
+
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < regName.length(); i++)
+		{
+			char c = regName.charAt(i);
+
+			if (Character.isAlphabetic(c) || Character.isDigit(c))
+			{
+				builder.append(c);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		regName = builder.toString();
+
+		if (isRegister(null, regName))
+		{
+			return regName;
+		}
+
 		return null;
 	}
 }

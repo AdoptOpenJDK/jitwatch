@@ -21,5 +21,18 @@ public interface IAssemblyParser
 
 	boolean isJump(String mnemonic);
 
+	// ARM has these two methods
+	default boolean isShift(String mnemonic, String operand)
+	{
+		return false;
+	}
+
+	default boolean isExtend(String mnemonic, String operand)
+	{
+		return false;
+	}
+
 	String extractRegisterName(final String input);
+
+	Architecture getArchitecture();
 }
