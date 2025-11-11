@@ -878,7 +878,7 @@ public class JITWatchUI extends Application
 		textAreaLog.setStyle("-fx-font-family:" + FONT_MONOSPACE_FAMILY + ";-fx-font-size:" + FONT_MONOSPACE_SIZE + "px");
 		textAreaLog.setPrefHeight(textAreaHeight);
 
-		log("Welcome to JITWatch by Chris Newland (@chriswhocodes on Twitter) and the AdoptOpenJDK project.\n");
+		log("Welcome to JITWatch by Chris Newland (https://chriswhocodes.com) and the AdoptOpenJDK project.\n");
 
 		log("Please report issues via GitHub (https://github.com/AdoptOpenJDK/jitwatch).\n");
 
