@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chrisnewland</groupId>
         <artifactId>jitwatch-parent</artifactId>
-        <version>1.4.9</version>
+        <version>1.5</version>
     </parent>
 
     <artifactId>jitwatch-core</artifactId>
