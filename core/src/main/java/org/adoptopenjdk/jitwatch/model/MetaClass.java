@@ -221,11 +221,11 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		if (member instanceof MetaConstructor)
 		{
-			classMethods.add(member);
+			classConstructors.add(member);
 		}
 		else
 		{
-			classConstructors.add(member);
+			classMethods.add(member);
 		}
 	}
 
