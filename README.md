@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/CIResearchGroup/jitwatch.svg?branch=master)](https://travis-ci.org/CIResearchGroup/jitwatch)
 JITWatch
 ========
 
