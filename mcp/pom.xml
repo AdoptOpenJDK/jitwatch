@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.chrisnewland</groupId>
+        <artifactId>jitwatch-parent</artifactId>
+        <version>1.7</version>
+    </parent>
+
+    <artifactId>jitwatch-mcp</artifactId>
+    <packaging>jar</packaging>
+
+    <name>JITWatch MCP Server</name>
+    <description>Model Context Protocol server exposing JITWatch's analysis to AI agents</description>
+
+    <!--
+        This module is the only one that needs a modern language level: the MCP Java SDK is
+        compiled for Java 17. core and ui are untouched and still build at 1.8.
+
+        The parent only includes this module when the build is running on JDK 17 or later, so a
+        pre-JDK10 build of JITWatch behaves exactly as it did before.
+    -->
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <mcp.sdk.version>2.0.1</mcp.sdk.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <jetty.version>12.0.16</jetty.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.chrisnewland</groupId>
+            <artifactId>jitwatch-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-core</artifactId>
+            <version>${mcp.sdk.version}</version>
+        </dependency>
+
+        <!-- Supplies McpJsonMapper and JsonSchemaValidator through the ServiceLoader -->
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-json-jackson2</artifactId>
+            <version>${mcp.sdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+
+        <!--
+            Embedded servlet container for the optional HTTP transport, enabled by the http port
+            argument. The MCP SDK's streamable HTTP transport is a jakarta servlet, so it needs a
+            container to be mounted in. stdio, which is the default, does not touch any of this.
+        -->
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- release supersedes the parent's source/target of 1.8 for this module only -->
+                    <source combine.self="override">${maven.compiler.release}</source>
+                    <target combine.self="override">${maven.compiler.release}</target>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>shaded</shadedClassifierName>
+                            <finalName>jitwatch-mcp-shaded</finalName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.chrisnewland.jitwatch.mcp.JitWatchMcpServer</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

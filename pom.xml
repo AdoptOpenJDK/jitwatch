@@ -24,6 +24,24 @@
         <module>ui</module>
     </modules>
 
+    <!--
+        The MCP server module is built only when the build is running on JDK 17 or later, which is
+        what the Model Context Protocol Java SDK requires. On an older JDK the module is not part
+        of the reactor at all, so building and running JITWatch on a pre-JDK10 setup with bundled
+        JavaFX is unaffected. core and ui keep source and target 1.8 either way.
+    -->
+    <profiles>
+        <profile>
+            <id>mcp</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <modules>
+                <module>mcp</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <name>JITWatch Parent</name>
     <description>Visualisation of JIT behaviour</description>
     <url>https://github.com/chriswhocodes/jitwatch</url>

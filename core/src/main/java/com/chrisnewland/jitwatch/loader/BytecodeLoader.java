@@ -66,6 +66,7 @@ import com.chrisnewland.jitwatch.model.bytecode.Opcode;
 import com.chrisnewland.jitwatch.model.bytecode.SourceMapper;
 import com.chrisnewland.jitwatch.process.javap.JavapProcess;
 import com.chrisnewland.jitwatch.process.javap.ReflectionJavap;
+import com.chrisnewland.jitwatch.process.javap.ToolProviderJavap;
 import com.chrisnewland.jitwatch.util.ParseUtil;
 import com.chrisnewland.jitwatch.util.StringUtil;
 import com.chrisnewland.freelogj.Logger;
@@ -165,7 +166,21 @@ public final class BytecodeLoader
 
 		try
 		{
-			if (ReflectionJavap.canUseReflectionJavap())
+			// Cheapest route first: forking javap costs around sixty times more per class.
+			if (ToolProviderJavap.isAvailable())
+			{
+				try
+				{
+					byteCodeString = ToolProviderJavap.getBytecode(javapLocations, javapTarget);
+				}
+				catch (Exception e)
+				{
+					logger.info("Could not fetch bytecode via ToolProvider, trying Process");
+
+					byteCodeString = getBytecodeStringViaProcess(javapLocations, javapTarget, javapPath);
+				}
+			}
+			else if (ReflectionJavap.canUseReflectionJavap())
 			{
 				try
 				{

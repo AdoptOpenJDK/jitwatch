@@ -1,0 +1,275 @@
+{
+  "info": {
+    "name": "JITWatch MCP Server",
+    "description": "Drives the JITWatch MCP server over its HTTP transport.\n\nStart the server first:\n\n    java -jar mcp/target/jitwatch-mcp-shaded.jar --http 8765 --allowed-root \"$HOME\"\n\nRun \"1. initialize\" once. Its post-response script captures the mcp-session-id header into the collection variable {{mcpSessionId}}, which every later request sends. Then run \"2. notifications/initialized\" before any tool call.\n\nEvery request prints a matching pair of lines on the server console:\n    [jitwatch-mcp] -> load_log {...}\n    [jitwatch-mcp] <- load_log ok 77ms 2852 chars\n\nResponses come back either as plain JSON or as a text/event-stream frame prefixed with \"data: \". Both carry the same JSON-RPC body.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8765/mcp",
+      "description": "The --http endpoint. Change the port if you started the server on another one."
+    },
+    {
+      "key": "mcpSessionId",
+      "value": "",
+      "description": "Filled in automatically by the initialize request. Do not set by hand."
+    },
+    {
+      "key": "jitSession",
+      "value": "s1",
+      "description": "The JITWatch session id returned by load_log. The first log loaded is s1, the next s2."
+    },
+    {
+      "key": "logPath",
+      "value": "/Users/omarmahamid/Documents/Github/jitwatch/mcp/target/fixture/hotspot.log",
+      "description": "A -XX:+LogCompilation log. Must sit under an --allowed-root."
+    },
+    {
+      "key": "classRoots",
+      "value": "/Users/omarmahamid/Documents/Github/jitwatch/mcp/target/fixture/classes",
+      "description": "Compiled classes for that run. Without this, answers carry no source line numbers."
+    }
+  ],
+  "item": [
+    {
+      "name": "1. initialize (run first, captures session id)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const id = pm.response.headers.get('mcp-session-id');",
+              "",
+              "if (id) {",
+              "    pm.collectionVariables.set('mcpSessionId', id);",
+              "    console.log('mcp-session-id captured: ' + id);",
+              "} else {",
+              "    console.error('No mcp-session-id header. Is the server running with --http?');",
+              "}",
+              "",
+              "pm.test('handshake succeeded', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(id, 'mcp-session-id header').to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": { \"name\": \"postman\", \"version\": \"1.0\" }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "Opens an MCP session. The response header mcp-session-id is captured into {{mcpSessionId}} and sent by every later request."
+      }
+    },
+    {
+      "name": "2. notifications/initialized (required before tool calls)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "A notification, so the server returns 202 with no body. The protocol requires it before any tools/call."
+      }
+    },
+    {
+      "name": "3. tools/list",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "Every tool with its JSON input schema. Nine of them."
+      }
+    },
+    {
+      "name": "4. load_log (start here, gives you s1)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"load_log\",\n    \"arguments\": {\n      \"log_path\": \"{{logPath}}\",\n      \"class_roots\": [\"{{classRoots}}\"]\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "Parses the log and returns a session id plus the run summary and every inlining flag in effect with its provenance."
+      }
+    },
+    {
+      "name": "5. checkup (what is worth looking at)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 4,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"checkup\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"limit\": 5\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "Ranked findings. Slow on first call: bytecode loading spawns javap once per class."
+      }
+    },
+    {
+      "name": "6. find_methods",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 5,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"find_methods\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"query\": \"JitDemo\",\n      \"limit\": 10\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+      }
+    },
+    {
+      "name": "7. explain_method (big)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 6,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"explain_method\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"signature\": \"big\"\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "The planted oversized callee: 404 bytes of bytecode against FreqInlineSize 325."
+      }
+    },
+    {
+      "name": "8. explain_call_site (why big was refused)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 7,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"explain_call_site\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"signature\": \"JitDemo.main\",\n      \"bci\": 25\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "The counterfactual: C1 refuses against MaxInlineSize 35, C2 against FreqInlineSize 325. Both verdicts, each with its own flag."
+      }
+    },
+    {
+      "name": "9. get_inlining_tree",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 8,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_inlining_tree\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"signature\": \"JitDemo.main\",\n      \"max_depth\": 6\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+      }
+    },
+    {
+      "name": "10. top_list (inline_fail_reasons)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 9,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"top_list\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"kind\": \"inline_fail_reasons\",\n      \"limit\": 10\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "kind is one of: largest_native, longest_compile, inline_fail_reasons, most_intrinsics, hot_throws."
+      }
+    },
+    {
+      "name": "11. get_deopts",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 10,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_deopts\",\n    \"arguments\": {\n      \"session_id\": \"{{jitSession}}\",\n      \"limit\": 10\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+      }
+    },
+    {
+      "name": "12. list_sessions",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 11,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"list_sessions\",\n    \"arguments\": {}\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+      }
+    },
+    {
+      "name": "13. error case (unknown session)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json, text/event-stream" },
+          { "key": "mcp-session-id", "value": "{{mcpSessionId}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 12,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"checkup\",\n    \"arguments\": {\n      \"session_id\": \"nope\"\n    }\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+        "description": "Returns isError true with the live session list, and logs '<- checkup bad-argument' on the server console. A tool error, not a JSON-RPC error."
+      }
+    }
+  ]
+}
